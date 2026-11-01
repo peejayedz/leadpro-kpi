@@ -125,3 +125,13 @@ The page finds the workflow run it started by its title (`run-name`: "Sync <slug
 
 - The dashboard footer shows the latest version, and "How this works" lists the `[client]` entries under What's new.
 - The admin page's **What's new** button shows everything.
+
+## Tests
+
+`node tests/mapping/run.mjs` (Node 20+, no install) checks the admin page's stage mapping against every fixture in `tests/mapping/fixtures/`:
+
+- **Pre-selection:** what the mapping panel starts with (`admin/mapping.mjs`, the same code the page runs) against an expected answer written by hand. Mahdavi and LFMP use their live `discovery.json` and `config.json` and must match them exactly.
+- **Round trip:** Edit mapping, then saving with no changes, must leave `config.json` byte-identical.
+- **Funnel:** `scripts/sync.mjs` runs in a temp copy against a mock GHL (`tests/mapping/mock-ghl.mjs`) with one lead in every stage. Each funnel count, the no-shows and the turned-away reasons must match what the expected mapping implies.
+
+It prints a table and exits 1 on any failure. Run it after any change to the mapping panel, `kpi-core.mjs`, the sync or a firm's mapping (update that firm's fixture when its mapping changes on purpose). Add a fixture for any new pipeline style that should be recognised.

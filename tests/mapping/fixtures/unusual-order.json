@@ -1,0 +1,89 @@
+{
+  "description": "Same funnel, stages listed out of order (signed first, new lead in the middle).",
+  "kind": "new",
+  "discovery": {
+    "pipelines": [
+      {
+        "id": "p1",
+        "name": "Cases",
+        "stages": [
+          {
+            "id": "p1-0",
+            "name": "Signed Client",
+            "position": 0
+          },
+          {
+            "id": "p1-1",
+            "name": "Lost / Declined",
+            "position": 1
+          },
+          {
+            "id": "p1-2",
+            "name": "Consultation No-Show",
+            "position": 2
+          },
+          {
+            "id": "p1-3",
+            "name": "Consultation Held",
+            "position": 3
+          },
+          {
+            "id": "p1-4",
+            "name": "New Lead",
+            "position": 4
+          },
+          {
+            "id": "p1-5",
+            "name": "Consultation Booked",
+            "position": 5
+          },
+          {
+            "id": "p1-6",
+            "name": "Qualified Lead",
+            "position": 6
+          },
+          {
+            "id": "p1-7",
+            "name": "Fee Agreement Sent",
+            "position": 7
+          },
+          {
+            "id": "p1-8",
+            "name": "Contacted",
+            "position": 8
+          }
+        ]
+      }
+    ],
+    "calendars": []
+  },
+  "expected": {
+    "pipelines": [
+      "Cases"
+    ],
+    "contacted": [
+      "Contacted"
+    ],
+    "qualified": [
+      "Qualified Lead"
+    ],
+    "consultBooked": [
+      "Consultation Booked"
+    ],
+    "consultHeld": [
+      "Consultation Held"
+    ],
+    "agreementSent": [
+      "Fee Agreement Sent"
+    ],
+    "signed": [
+      "Signed Client"
+    ],
+    "noShow": [
+      "Consultation No-Show"
+    ],
+    "turnedAway": [
+      "Lost / Declined"
+    ]
+  }
+}

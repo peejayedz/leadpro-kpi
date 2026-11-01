@@ -1,0 +1,41 @@
+{
+  "description": "The Mahdavi Law Firm (real GHL snapshot, ACME 'Lead Stages'). Edit mapping must pre-select the live config exactly; a new-firm guess on the same stages must give the same answer.",
+  "kind": "existing",
+  "alsoGuess": true,
+  "discoveryFrom": "firms/mahdavi/discovery.json",
+  "configFrom": "firms/mahdavi/config.json",
+  "expected": {
+    "pipelines": [
+      "Lead Stages"
+    ],
+    "contacted": [
+      "Stage 3: Lead Contacted?"
+    ],
+    "qualified": [
+      "Stage 4: Lead Qualified?"
+    ],
+    "consultBooked": [
+      "Stage 5: Booked Consultation"
+    ],
+    "consultHeld": [
+      "Stage 6: Consultation Showed - Agreement Sent",
+      "Stage 7: Consultation Showed - Lead Rejected",
+      "Stage 8: Consultation Showed - Lead Referred",
+      "Stage 9: Consultation Showed - Lead Thinking"
+    ],
+    "agreementSent": [
+      "Stage 6: Consultation Showed - Agreement Sent"
+    ],
+    "signed": [
+      "Stage 11: Agreement Signed"
+    ],
+    "noShow": [
+      "Stage 10: Consultation No Show"
+    ],
+    "turnedAway": [
+      "Stage 7: Consultation Showed - Lead Rejected",
+      "Stage 8: Consultation Showed - Lead Referred",
+      "Stage 12: Referred Lead Accepted?"
+    ]
+  }
+}

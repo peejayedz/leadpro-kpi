@@ -1,0 +1,99 @@
+{
+  "description": "Common intake wording. 'Attempted Contact' must NOT count as Contacted; 'New Inquiry' maps to nothing.",
+  "kind": "new",
+  "discovery": {
+    "pipelines": [
+      {
+        "id": "p1",
+        "name": "Intake",
+        "stages": [
+          {
+            "id": "p1-0",
+            "name": "New Inquiry",
+            "position": 0
+          },
+          {
+            "id": "p1-1",
+            "name": "Attempted Contact",
+            "position": 1
+          },
+          {
+            "id": "p1-2",
+            "name": "Contacted",
+            "position": 2
+          },
+          {
+            "id": "p1-3",
+            "name": "Qualified",
+            "position": 3
+          },
+          {
+            "id": "p1-4",
+            "name": "Consult Scheduled",
+            "position": 4
+          },
+          {
+            "id": "p1-5",
+            "name": "Consult Completed",
+            "position": 5
+          },
+          {
+            "id": "p1-6",
+            "name": "No Show",
+            "position": 6
+          },
+          {
+            "id": "p1-7",
+            "name": "Retainer Sent",
+            "position": 7
+          },
+          {
+            "id": "p1-8",
+            "name": "Retained",
+            "position": 8
+          },
+          {
+            "id": "p1-9",
+            "name": "Not a Fit",
+            "position": 9
+          }
+        ]
+      }
+    ],
+    "calendars": [
+      {
+        "id": "c1",
+        "name": "Free Consultation"
+      }
+    ]
+  },
+  "expected": {
+    "pipelines": [
+      "Intake"
+    ],
+    "contacted": [
+      "Contacted"
+    ],
+    "qualified": [
+      "Qualified"
+    ],
+    "consultBooked": [
+      "Consult Scheduled"
+    ],
+    "consultHeld": [
+      "Consult Completed"
+    ],
+    "agreementSent": [
+      "Retainer Sent"
+    ],
+    "signed": [
+      "Retained"
+    ],
+    "noShow": [
+      "No Show"
+    ],
+    "turnedAway": [
+      "Not a Fit"
+    ]
+  }
+}

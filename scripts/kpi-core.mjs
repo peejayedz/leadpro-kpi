@@ -65,7 +65,8 @@ export function classify(lead, cfg, consultsByContact = {}, nowMs = Date.now()) 
   const signed = lead.status === 'won' || st('signed') || tag('signed');
   const agreementSent = signed || st('agreementSent') || tag('agreementSent');
   const held = agreementSent || st('consultHeld') || tag('consultHeld') || appts.some(a => marked(a, /^showed$/));
-  const booked = held || st('consultBooked') || tag('consultBooked') || appts.length > 0;
+  // A no-show stage or tag also proves a consult was booked (it just didn't happen).
+  const booked = held || st('consultBooked') || tag('consultBooked') || st('noShow') || tag('noShow') || appts.length > 0;
   const markedNo = hasAny(Q.notTags, tags) || vals.some(v => (Q.noValues || []).map(norm).includes(v));
   const markedYes = hasAny(Q.tags, tags) || vals.some(v => (Q.yesValues || []).map(norm).includes(v));
   const qualified = booked || (!markedNo && (markedYes || st('qualified')));

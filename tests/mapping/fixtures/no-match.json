@@ -1,0 +1,53 @@
+{
+  "description": "Nothing recognisable: the panel must pre-select no stages rather than guess (one pipeline still ticked so it can be mapped by hand).",
+  "kind": "new",
+  "discovery": {
+    "pipelines": [
+      {
+        "id": "p1",
+        "name": "Pipeline 1",
+        "stages": [
+          {
+            "id": "p1-0",
+            "name": "Stage A",
+            "position": 0
+          },
+          {
+            "id": "p1-1",
+            "name": "Stage B",
+            "position": 1
+          },
+          {
+            "id": "p1-2",
+            "name": "In Progress",
+            "position": 2
+          },
+          {
+            "id": "p1-3",
+            "name": "Done",
+            "position": 3
+          },
+          {
+            "id": "p1-4",
+            "name": "Archive",
+            "position": 4
+          }
+        ]
+      }
+    ],
+    "calendars": []
+  },
+  "expected": {
+    "pipelines": [
+      "Pipeline 1"
+    ],
+    "contacted": [],
+    "qualified": [],
+    "consultBooked": [],
+    "consultHeld": [],
+    "agreementSent": [],
+    "signed": [],
+    "noShow": [],
+    "turnedAway": []
+  }
+}

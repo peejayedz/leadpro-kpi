@@ -258,6 +258,7 @@ input[readonly]{color:var(--ink-2)}
 // =====================================================================
 import { mergeConfig, practiceSlug } from '../scripts/config-merge.mjs';
 import { parseChangelog, latestVersion, inlineMd } from '../scripts/changelog.mjs';
+import { STEPS_MAP, initialState, stageList as stagesOf, buildMapping, applyMapping } from './mapping.mjs';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -756,65 +757,13 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('ovl').
 // =====================================================================
 // Mapping panel
 // =====================================================================
-const STEPS_MAP = [
-  ['contacted', 'Contacted', 'Someone reached the lead'],
-  ['qualified', 'Qualified', 'The lead fits the firm'],
-  ['consultBooked', 'Consult booked', 'A consultation is on the calendar'],
-  ['consultHeld', 'Consult held', 'The consultation happened'],
-  ['agreementSent', 'Agreement sent', 'Retainer or agreement sent'],
-  ['signed', 'Signed', 'Became a client'],
-  ['noShow', 'No-show', 'Missed the consultation'],
-  ['turnedAway', 'Turned away', 'Rejected, referred out or not a fit'],
-];
-// The ACME snapshot ("Lead Stages") stage names, as mapped for Mahdavi.
-const ACME = {
-  contacted: ['Stage 3: Lead Contacted?'], qualified: ['Stage 4: Lead Qualified?'], consultBooked: ['Stage 5: Booked Consultation'],
-  consultHeld: ['Stage 6: Consultation Showed - Agreement Sent', 'Stage 7: Consultation Showed - Lead Rejected', 'Stage 8: Consultation Showed - Lead Referred', 'Stage 9: Consultation Showed - Lead Thinking'],
-  agreementSent: ['Stage 6: Consultation Showed - Agreement Sent'], signed: ['Stage 11: Agreement Signed'], noShow: ['Stage 10: Consultation No Show'],
-  turnedAway: ['Stage 7: Consultation Showed - Lead Rejected', 'Stage 8: Consultation Showed - Lead Referred', 'Stage 12: Referred Lead Accepted?'],
-};
-const NEG = /\b(not|un|non|dis)[\s-]?(contacted|qualified|qualify)|\bno[\s-]?show/i;
-const GUESS = {
-  contacted: [/\bcontact(ed)?\b|\breached\b|initial contact|first contact/i, /attempt|\b(not|un|non)[\s-]?(contacted|reached)|no[\s-]?show/i],
-  qualified: [/qualif/i, NEG],
-  consultBooked: [/(book|schedul)\w*\W+(\w+\W+){0,2}(consult|appointment|meeting|call)|(consult|appointment|meeting)\w*\W+(\w+\W+){0,2}(book|schedul)|^scheduled$/i, /no[\s-]?show|cancel/i],
-  consultHeld: [/(show(ed)?|held|attended|completed?)\w*\W+(\w+\W+){0,2}(consult|appointment|meeting)|(consult|appointment|meeting)\w*\W+(\w+\W+){0,2}(show(ed)?|held|attended|completed?)/i, /no[\s-]?show/i],
-  agreementSent: [/(agreement|retainer|contract|proposal|engagement)\w*\W+(\w+\W+){0,2}sent|sent\W+(\w+\W+){0,2}(agreement|retainer|contract|proposal)/i, null],
-  signed: [/\bsigned\b|\bretained\b|\bhired\b|closed[\s-]?won|^won$|new client/i, /\bnot\b|\bun/i],
-  noShow: [/no[\s-]?show/i, null],
-  turnedAway: [/reject|referr|declin|disqualif|turned away|not a fit|unqualified|not qualified|\blost\b/i, null],
-};
-function guessMapping(stageNames) {
-  const out = {};
-  for (const [k] of STEPS_MAP) {
-    const acme = stageNames.filter(n => ACME[k].some(a => norm(a) === norm(n)));
-    if (acme.length) { out[k] = acme; continue; }
-    const [yes, no] = GUESS[k];
-    out[k] = stageNames.filter(n => yes.test(n) && !(no && no.test(n)));
-  }
-  return out;
-}
-
 // Renders the panel into `host`. Resolves with { pipelines, stages, turnedAway, calendarKeywords } when the user saves.
 function mappingPanel(host, { discovery, config, isNew, saveLabel }) {
   const pipelines = discovery.pipelines || [];
-  const cfgPipes = (config?.pipelines || []).map(norm);
-  let chosenPipes;
-  if (!isNew) chosenPipes = new Set(pipelines.filter(p => !cfgPipes.length || cfgPipes.includes(norm(p.name))).map(p => p.id));
-  else {
-    const allNames = pipelines.flatMap(p => p.stages.map(s => s.name));
-    const g = guessMapping(allNames); const hit = new Set(Object.values(g).flat().map(norm));
-    const scored = pipelines.map(p => ({ id: p.id, n: p.stages.filter(s => hit.has(norm(s.name))).length }));
-    const best = Math.max(0, ...scored.map(s => s.n));
-    chosenPipes = new Set(best > 0 ? scored.filter(s => s.n === best).map(s => s.id) : pipelines.slice(0, 1).map(p => p.id));
-  }
-  const stageList = () => { const seen = new Set(), out = []; for (const p of pipelines) if (chosenPipes.has(p.id)) for (const s of p.stages) if (!seen.has(norm(s.name))) { seen.add(norm(s.name)); out.push(s.name); } return out; };
-  // selection per step: Map(normName -> displayName)
-  const sel = {};
-  const fromCfg = k => k === 'turnedAway' ? (config?.turnedAway?.stages || []) : (config?.stages?.[k] || []);
-  const initial = isNew ? guessMapping(stageList()) : Object.fromEntries(STEPS_MAP.map(([k]) => [k, fromCfg(k)]));
-  for (const [k] of STEPS_MAP) sel[k] = new Map((initial[k] || []).map(n => [norm(n), n]));
-  let keywords = [...(config?.booking?.calendarKeywords || [])];
+  const state = initialState({ discovery, config, isNew });     // admin/mapping.mjs (also used by tests/mapping)
+  const { chosenPipes, sel } = state;
+  let keywords = state.keywords;
+  const stageList = () => stagesOf(discovery, chosenPipes);
 
   return new Promise(resolve => {
     const draw = () => {
@@ -857,23 +806,13 @@ function mappingPanel(host, { discovery, config, isNew, saveLabel }) {
           $('mapWarn').innerHTML = `<div class="warnbox">No stage picked for: <b>${warn.map(esc).join(', ')}</b>. Those steps will rely on tags only and may show zero. Click again to save anyway.</div>`;
           $('mapSave').textContent = `${saveLabel} anyway`; return;
         }
-        const pick = k => [...sel[k].values()];
-        resolve({ pipelines: chosen, stages: Object.fromEntries(STEPS_MAP.filter(([k]) => k !== 'turnedAway').map(([k]) => [k, pick(k)])), turnedAway: pick('turnedAway'), calendarKeywords: parseKw() });
+        resolve(buildMapping({ ...state, keywords: parseKw() }, discovery));
       });
     };
     const parseKw = () => ($('calKw')?.value ?? keywords.join(',')).split(',').map(s => s.trim()).filter(Boolean);
     draw();
   });
 }
-function applyMapping(cfg, m) {
-  cfg.pipelines = m.pipelines;
-  cfg.stages = { ...(cfg.stages || {}), ...m.stages };
-  const labels = cfg.turnedAway?.reasonLabels || {};
-  cfg.turnedAway = { ...(cfg.turnedAway || {}), stages: m.turnedAway, reasonLabels: Object.fromEntries(Object.entries(labels).filter(([k]) => m.turnedAway.some(s => norm(s) === norm(k)))) };
-  cfg.booking = { ...(cfg.booking || {}), calendarKeywords: m.calendarKeywords };
-  return cfg;
-}
-
 // =====================================================================
 // New firm
 // =====================================================================

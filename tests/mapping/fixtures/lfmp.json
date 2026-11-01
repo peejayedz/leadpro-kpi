@@ -1,0 +1,32 @@
+{
+  "description": "LFMP agency (real GHL snapshot, 14 pipelines). Edit mapping must pre-select the live config exactly.",
+  "kind": "existing",
+  "discoveryFrom": "firms/lfmp/discovery.json",
+  "configFrom": "firms/lfmp/config.json",
+  "expected": {
+    "pipelines": [
+      "01. Sales Pipeline"
+    ],
+    "contacted": [
+      "Initial Contact",
+      "Right Fit Call"
+    ],
+    "qualified": [
+      "Discovery Call"
+    ],
+    "consultBooked": [
+      "Strategy Session"
+    ],
+    "consultHeld": [
+      "Price Negotiation"
+    ],
+    "agreementSent": [
+      "Contract"
+    ],
+    "signed": [],
+    "noShow": [],
+    "turnedAway": [
+      "Archived"
+    ]
+  }
+}

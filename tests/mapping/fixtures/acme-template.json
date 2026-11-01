@@ -1,0 +1,109 @@
+{
+  "description": "A new firm built from the ACME snapshot: every stage should be recognised.",
+  "kind": "new",
+  "discovery": {
+    "pipelines": [
+      {
+        "id": "p1",
+        "name": "Lead Stages",
+        "stages": [
+          {
+            "id": "p1-0",
+            "name": "Stage 1: Web Lead",
+            "position": 0
+          },
+          {
+            "id": "p1-1",
+            "name": "Stage 2: Phone lead",
+            "position": 1
+          },
+          {
+            "id": "p1-2",
+            "name": "Stage 3: Lead Contacted?",
+            "position": 2
+          },
+          {
+            "id": "p1-3",
+            "name": "Stage 4: Lead Qualified?",
+            "position": 3
+          },
+          {
+            "id": "p1-4",
+            "name": "Stage 5: Booked Consultation",
+            "position": 4
+          },
+          {
+            "id": "p1-5",
+            "name": "Stage 6: Consultation Showed - Agreement Sent",
+            "position": 5
+          },
+          {
+            "id": "p1-6",
+            "name": "Stage 7: Consultation Showed - Lead Rejected",
+            "position": 6
+          },
+          {
+            "id": "p1-7",
+            "name": "Stage 8: Consultation Showed - Lead Referred",
+            "position": 7
+          },
+          {
+            "id": "p1-8",
+            "name": "Stage 9: Consultation Showed - Lead Thinking",
+            "position": 8
+          },
+          {
+            "id": "p1-9",
+            "name": "Stage 10: Consultation No Show",
+            "position": 9
+          },
+          {
+            "id": "p1-10",
+            "name": "Stage 11: Agreement Signed",
+            "position": 10
+          },
+          {
+            "id": "p1-11",
+            "name": "Stage 12: Referred Lead Accepted?",
+            "position": 11
+          }
+        ]
+      }
+    ],
+    "calendars": []
+  },
+  "expected": {
+    "pipelines": [
+      "Lead Stages"
+    ],
+    "contacted": [
+      "Stage 3: Lead Contacted?"
+    ],
+    "qualified": [
+      "Stage 4: Lead Qualified?"
+    ],
+    "consultBooked": [
+      "Stage 5: Booked Consultation"
+    ],
+    "consultHeld": [
+      "Stage 6: Consultation Showed - Agreement Sent",
+      "Stage 7: Consultation Showed - Lead Rejected",
+      "Stage 8: Consultation Showed - Lead Referred",
+      "Stage 9: Consultation Showed - Lead Thinking"
+    ],
+    "agreementSent": [
+      "Stage 6: Consultation Showed - Agreement Sent"
+    ],
+    "signed": [
+      "Stage 11: Agreement Signed"
+    ],
+    "noShow": [
+      "Stage 10: Consultation No Show"
+    ],
+    "turnedAway": [
+      "Stage 7: Consultation Showed - Lead Rejected",
+      "Stage 8: Consultation Showed - Lead Referred",
+      "Stage 12: Referred Lead Accepted?"
+    ]
+  }
+}

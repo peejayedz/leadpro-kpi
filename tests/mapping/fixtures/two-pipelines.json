@@ -1,0 +1,144 @@
+{
+  "description": "A firm with two intake pipelines (both must be included, stages from both picked) plus an unrelated referral-partner pipeline that must be left out.",
+  "kind": "new",
+  "discovery": {
+    "pipelines": [
+      {
+        "id": "p1",
+        "name": "PI Intake",
+        "stages": [
+          {
+            "id": "p1-0",
+            "name": "New Lead",
+            "position": 0
+          },
+          {
+            "id": "p1-1",
+            "name": "Contacted",
+            "position": 1
+          },
+          {
+            "id": "p1-2",
+            "name": "Qualified",
+            "position": 2
+          },
+          {
+            "id": "p1-3",
+            "name": "Consult Booked",
+            "position": 3
+          },
+          {
+            "id": "p1-4",
+            "name": "Consult Held",
+            "position": 4
+          },
+          {
+            "id": "p1-5",
+            "name": "Retainer Sent",
+            "position": 5
+          },
+          {
+            "id": "p1-6",
+            "name": "Signed Up",
+            "position": 6
+          },
+          {
+            "id": "p1-7",
+            "name": "Declined",
+            "position": 7
+          }
+        ]
+      },
+      {
+        "id": "p2",
+        "name": "Family Law Intake",
+        "stages": [
+          {
+            "id": "p2-0",
+            "name": "New Lead",
+            "position": 0
+          },
+          {
+            "id": "p2-1",
+            "name": "Contacted",
+            "position": 1
+          },
+          {
+            "id": "p2-2",
+            "name": "Consultation Scheduled",
+            "position": 2
+          },
+          {
+            "id": "p2-3",
+            "name": "Consultation Held",
+            "position": 3
+          },
+          {
+            "id": "p2-4",
+            "name": "Retainer Signed",
+            "position": 4
+          },
+          {
+            "id": "p2-5",
+            "name": "Not a Fit",
+            "position": 5
+          }
+        ]
+      },
+      {
+        "id": "p3",
+        "name": "Referral Partners",
+        "stages": [
+          {
+            "id": "p3-0",
+            "name": "New Partner",
+            "position": 0
+          },
+          {
+            "id": "p3-1",
+            "name": "Active Partner",
+            "position": 1
+          },
+          {
+            "id": "p3-2",
+            "name": "Inactive",
+            "position": 2
+          }
+        ]
+      }
+    ],
+    "calendars": []
+  },
+  "expected": {
+    "pipelines": [
+      "PI Intake",
+      "Family Law Intake"
+    ],
+    "contacted": [
+      "Contacted"
+    ],
+    "qualified": [
+      "Qualified"
+    ],
+    "consultBooked": [
+      "Consult Booked",
+      "Consultation Scheduled"
+    ],
+    "consultHeld": [
+      "Consult Held",
+      "Consultation Held"
+    ],
+    "agreementSent": [
+      "Retainer Sent"
+    ],
+    "signed": [
+      "Signed Up",
+      "Retainer Signed"
+    ],
+    "noShow": [],
+    "turnedAway": [
+      "Declined",
+      "Not a Fit"
+    ]
+  }
+}

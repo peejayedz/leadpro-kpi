@@ -5,6 +5,13 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.3.0 — 2 Nov 2026
+- [client] A lead in a "no show" stage (or tagged no show) now counts as a booked consult that was missed, so it shows under Consult booked and No-shows instead of being left out of both.
+- [internal] Stage-mapping test suite (`node tests/mapping/run.mjs`): 7 fixtures (Mahdavi, LFMP, the ACME template and four made-up law firms) checked for pre-selection, an unchanged-save round trip and the funnel counts from a real sync against a mock GHL.
+- [internal] New firm: every pipeline with at least 3 recognised funnel stages is pre-selected, so a firm with one intake pipeline per practice area keeps them all.
+- [internal] Saving an unchanged mapping leaves config.json byte-identical (no empty keys added).
+- [internal] The mapping logic moved to `admin/mapping.mjs`, shared by the admin page and the tests.
+
 ## v1.2.0 — 2 Nov 2026
 - [client] "How this works" has a What's new section, and the dashboard footer shows the version number.
 - [internal] CHANGELOG.md added; the admin page shows the full changelog in a What's new panel.
