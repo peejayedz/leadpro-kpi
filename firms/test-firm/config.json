@@ -129,7 +129,9 @@
   },
   "_bookingNote": "A consult = an appointment on a calendar whose name contains one of these words. Empty list = every calendar counts.",
   "booking": {
-    "calendarKeywords": []
+    "calendarKeywords": [
+      "consult"
+    ]
   },
   "speedToLead": {
     "useBusinessHours": true,
