@@ -61,7 +61,7 @@ for (let pass = 1; pass <= PASSES; pass++) {
     const s = { pass, pages: pages.length, stop, unique: ids.size, dupes, inWindowAll, syncStopPage, syncStopReason, inWindowSync,
       unordered: pages.filter(p => p.ordered === false).length, short: pages.filter(p => p.status === 200 && p.n < 100 && p.next).length,
       retries: pages.reduce((n, p) => n + (p.retries || 0), 0), slowest: Math.max(...pages.map(p => p.ms)), errors: pages.filter(p => p.status !== 200).map(p => `${p.status} ${p.error || ''}`.trim()),
-      idHash: h([...ids].sort().join(',')), minRemaining: Math.min(...pages.map(p => Number(p.rl?.remaining)).filter(Number.isFinite)), pageList: pages };
+      idHash: h([...ids].sort().join(',')), minRemaining: Math.min(...pages.map(p => p.rl?.remaining).filter(v => v != null && v !== '').map(Number)), pageList: pages };
     (results[channel] ||= []).push(s);
     console.log(`pass ${pass} ${channel.padEnd(9)} pages=${s.pages} stop="${s.stop}" unique=${s.unique} dupes=${s.dupes} inWindow(all pages)=${s.inWindowAll} | sync would stop at page ${s.syncStopPage} (${s.syncStopReason}) keeping ${s.inWindowSync} | unordered pages=${s.unordered} short-but-more pages=${s.short} 429 retries=${s.retries} slowest=${s.slowest}ms minRemaining=${s.minRemaining} ids#${s.idHash}${s.errors.length ? ' errors=' + s.errors.join('|') : ''}`);
   }
