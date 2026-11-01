@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-01T19:15:59.190Z",
+  "generatedAt": "2026-11-01T19:17:01.876Z",
   "slug": "mahdavi",
   "locationId": "INZKoa3nu45xtcZB0Yuq",
   "scopes": {
-    "checkedAt": "2026-11-01T19:15:59.189Z",
+    "checkedAt": "2026-11-01T19:17:01.876Z",
     "ok": [
       "opportunities.readonly",
       "contacts.readonly",
@@ -12,12 +12,11 @@
       "locations/customFields.readonly",
       "calendars.readonly",
       "calendars/events.readonly",
-      "conversations.readonly"
-    ],
-    "missing": [],
-    "unchecked": [
+      "conversations.readonly",
       "conversations/message.readonly"
     ],
+    "missing": [],
+    "unchecked": [],
     "tokenRejected": false
   },
   "pipelines": [
