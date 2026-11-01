@@ -7,7 +7,6 @@
 // Env: GHL_TOKEN (read-only Private Integration Token for this firm's sub-account),
 //      GHL_LOCATION_ID (optional; config.json locationId wins),
 //      DASHBOARD_PASSPHRASE (team passphrase that unlocks names, custom dates and drill-downs)
-//      DISPATCH_TOKEN (optional; fine-grained PAT, Actions: write on this repo only, for the Refresh button)
 
 import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 import { computeAll, encryptJSON, tzOffsetMin } from './kpi-core.mjs';
@@ -292,8 +291,6 @@ console.log('Message export diagnostics:', JSON.stringify(diag));
 // ---------- Compute + write ----------
 const records = {
   generatedAt: new Date(now).toISOString(), locationId: LOC, ghlBase: cfg.ghlAppBase, users, leads, appointments, calls,
-  // Lets unlocked viewers press "Refresh data": a fine-grained token that can ONLY start this repo's workflow.
-  refresh: process.env.DISPATCH_TOKEN ? { repo: process.env.GITHUB_REPOSITORY, workflow: 'sync.yml', slug: SLUG, token: process.env.DISPATCH_TOKEN } : null,
 };
 const periods = computeAll(records, cfg, now);
 // Public file: numbers only (bySource and turned-away reasons are names + counts, no people).

@@ -249,9 +249,9 @@ button.mini{cursor:pointer} button.mini:hover span:first-child{color:var(--link)
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>
         <span id="cmpBtnLabel">Compare to prior</span>
       </button>
-      <button class="btn" id="refreshBtn" title="Pull the latest numbers from GoHighLevel">
+      <button class="btn" id="refreshBtn" data-tip="Shows the latest data. The dashboard updates from GHL every 30 minutes." aria-description="Shows the latest data. The dashboard updates from GHL every 30 minutes.">
         <svg id="refreshIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-        Refresh data
+        Reload
       </button>
       <button class="btn" id="lockBtn" hidden></button>
       <div class="pop" id="rangePop" role="dialog" aria-label="Choose dates">
@@ -515,7 +515,7 @@ function render() {
   $('cmpBtn').classList.toggle('on', cmp.on);
   $('cmpBtnLabel').textContent = cmp.on ? 'Comparing' : 'Compare to prior';
   const ts = new Date((records || pub).generatedAt);
-  $('updated').textContent = `${cfg.locationName}, ${sel.key === 'custom' ? range.label : `${range.label.toLowerCase()} (${fmtSpan(range.from, range.to)})`}. Data as of ${ts.toLocaleString('en-US', { timeZone: TZ(), dateStyle: 'medium', timeStyle: 'short' })}; syncs from GoHighLevel a few times a day.`;
+  $('updated').textContent = `${cfg.locationName}, ${sel.key === 'custom' ? range.label : `${range.label.toLowerCase()} (${fmtSpan(range.from, range.to)})`}. Data as of ${ts.toLocaleString('en-US', { timeZone: TZ(), dateStyle: 'medium', timeStyle: 'short' })}; updates from GoHighLevel every 30 minutes.`;
   renderCompareLine();
   renderNotice();
 
@@ -870,7 +870,7 @@ function openHow() {
         <p>How new leads move from first contact to signed client, and where they drop off. The top boxes summarise what's on track, what needs attention and what to fix first. The funnel shows how many leads reached each step, and the four columns below break each step down against its goal.</p></section>
       <section><h4>Where the numbers come from</h4>
         <ul>
-          <li>Pulled from GoHighLevel automatically a few times a day. Last sync: <b>${esc(ts)}</b>. Press <b>Refresh data</b> any time you need the newest numbers.</li>
+          <li>Pulled from GoHighLevel automatically every 30 minutes. Last sync: <b>${esc(ts)}</b>. Press <b>Reload</b> to show the newest numbers.</li>
           <li>Pipeline: ${list(cfg.pipelines?.length ? cfg.pipelines : ['All pipelines'])}. Each opportunity created in the selected dates counts as one new lead.</li>
           <li>Consults come from the GHL calendar, and speed to first contact and missed calls come from the GHL call log.</li>
         </ul></section>
@@ -878,7 +878,7 @@ function openHow() {
         <ul>
           <li><b>Date selector:</b> pick a preset like Last 30 days or This month, or choose any From and To dates.</li>
           <li><b>Compare to prior:</b> shows each number next to the previous period, with the change in green (better) or red (worse). You can also compare any two date ranges.</li>
-          <li><b>Refresh data:</b> starts a fresh pull from GoHighLevel. New numbers appear in 1–2 minutes.</li>
+          <li><b>Reload:</b> shows the latest data. The dashboard updates from GHL every 30 minutes.</li>
           <li><b>Unlock names:</b> enter the team passphrase once to use custom dates and to click any number, funnel step or source and see the people behind it.</li>
         </ul></section>
       <section><h4>How each step is counted</h4>
@@ -916,32 +916,16 @@ function setRange(next) { sel = next; cmp.b = null; compute(); render(); $('rang
 function closeCmp() { $('cmpPop').classList.remove('open'); $('cmpBtn').setAttribute('aria-expanded', 'false'); }
 function applyCompare(next) { Object.assign(cmp, next); compute(); render(); }
 
-// ---------- refresh: starts a sync, then waits for the new data ----------
+// ---------- reload: shows the latest published data (syncs run every 30 minutes; the admin page's Re-sync forces one) ----------
 async function refresh() {
   const btn = $('refreshBtn'), icon = $('refreshIcon');
   btn.disabled = true; icon.classList.add('spin');
   const before = (records || pub).generatedAt;
   const say = t => { $('statusLine').textContent = t; };
   try {
-    const r = records?.refresh;
-    if (r?.token) {
-      const res = await fetch(`https://api.github.com/repos/${r.repo}/actions/workflows/${r.workflow}/dispatches`, {
-        method: 'POST', headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${r.token}` }, body: JSON.stringify({ ref: 'main', inputs: { slug: r.slug || SLUG } }) });
-      if (res.status !== 204) throw new Error(`GitHub said ${res.status}`);
-      say('Pulling fresh data from GoHighLevel… this usually takes 1–2 minutes. You can keep using the dashboard.');
-      for (let i = 0; i < 24; i++) {
-        await new Promise(s => setTimeout(s, 10000));
-        const p = await getJSON('data/kpis.json');
-        if (p.generatedAt !== before) { await reloadAll(); say('Updated with the latest GoHighLevel data.'); return; }
-      }
-      say('Still running. The page will pick up the new data on its own when it lands.');
-    } else {
-      await reloadAll();
-      const newer = (records || pub).generatedAt !== before;
-      say(!records ? (newer ? 'Loaded newer data.' : 'Reloaded the latest published data. Open the scorecard from inside your CRM to start a sync on demand.')
-        : newer ? 'Loaded newer data.' : 'You already have the newest data. It syncs a few times a day.');
-    }
-  } catch (e) { say(`Refresh failed: ${e.message}`); }
+    await reloadAll();
+    say((records || pub).generatedAt !== before ? 'Loaded newer data.' : 'You already have the latest data. The dashboard updates from GHL every 30 minutes.');
+  } catch (e) { say(`Reload failed: ${e.message}`); }
   finally { btn.disabled = false; icon.classList.remove('spin'); }
 }
 async function reloadAll() {

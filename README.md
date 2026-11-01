@@ -33,13 +33,14 @@ scripts/set-admin-password.mjs  sets the admin password (prompts in the terminal
 
 A slug is the firm name in lowercase, letters, digits and hyphens only (`mahdavi`, `harrison-law-group`). `admin`, `app`, `scripts` and `_template` are reserved.
 
+The dashboards' **Reload** button only shows the latest published data; syncs run every 30 minutes, and the admin page's **Re-sync** forces one for a single firm.
+
 Each firm has a `secretKey` in `firms/index.json`: the slug in capitals, hyphens as underscores (`test-firm` → `TEST_FIRM`). It names the firm's two repository secrets (Settings → Secrets and variables → Actions):
 
 | Secret | What it is |
 | --- | --- |
 | `GHL_TOKEN_<secretKey>` | read-only GHL Private Integration Token from that firm's sub-account (scopes below) |
 | `PASSPHRASE_<secretKey>` | the firm's team passphrase that unlocks names, custom dates and drill-downs |
-| `DISPATCH_TOKEN` | optional, one for the whole repo: fine-grained GitHub token, this repo only, **Actions: Read and write**. Enables the dashboards' Refresh button; stored only inside each firm's encrypted file. |
 
 e.g. `harrison-law-group` → `GHL_TOKEN_HARRISON_LAW_GROUP`, `PASSPHRASE_HARRISON_LAW_GROUP`.
 
