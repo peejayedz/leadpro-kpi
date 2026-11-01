@@ -38,14 +38,14 @@ const h = s => createHash('sha256').update(s).digest('hex').slice(0, 10);
 const results = {};   // channel -> [pass summaries]
 for (let pass = 1; pass <= PASSES; pass++) {
   for (const channel of CHANNELS) {
-    const pages = []; const ids = new Set(); let dupes = 0, cursor, syncStopPage = null, syncStopReason = null, stop = 'max pages';
+    const pages = []; const ids = new Set(); const winIds = new Set(); let dupes = 0, cursor, syncStopPage = null, syncStopReason = null, stop = 'max pages';
     for (let i = 0; i < MAX_PAGES; i++) {
       const q = new URLSearchParams({ locationId: LOC, channel, limit: '100' }); if (cursor) q.set('cursor', cursor);
       const r = await get(`/conversations/messages/export?${q}`);
       if (r.status !== 200) { pages.push({ i, status: r.status, ms: r.ms, retries: r.retries, error: r.error }); stop = `HTTP ${r.status}`; break; }
       const batch = r.body?.messages || [];
       const times = batch.map(m => Date.parse(m.dateAdded)).filter(Number.isFinite);
-      for (const m of batch) { if (ids.has(m.id)) dupes++; ids.add(m.id); }
+      for (const m of batch) { if (ids.has(m.id)) dupes++; ids.add(m.id); if (Date.parse(m.dateAdded) >= since) winIds.add(m.id); }
       const oldest = times.length ? Math.min(...times) : null, newest = times.length ? Math.max(...times) : null;
       const ordered = times.every((t, j) => j === 0 || t <= times[j - 1]);
       pages.push({ i, status: 200, ms: r.ms, retries: r.retries, n: batch.length, newest, oldest, ordered, next: !!r.body?.nextCursor, inWindow: times.filter(t => t >= since).length, rl: r.rl });
@@ -61,7 +61,7 @@ for (let pass = 1; pass <= PASSES; pass++) {
     const s = { pass, pages: pages.length, stop, unique: ids.size, dupes, inWindowAll, syncStopPage, syncStopReason, inWindowSync,
       unordered: pages.filter(p => p.ordered === false).length, short: pages.filter(p => p.status === 200 && p.n < 100 && p.next).length,
       retries: pages.reduce((n, p) => n + (p.retries || 0), 0), slowest: Math.max(...pages.map(p => p.ms)), errors: pages.filter(p => p.status !== 200).map(p => `${p.status} ${p.error || ''}`.trim()),
-      idHash: h([...ids].sort().join(',')), minRemaining: Math.min(...pages.map(p => p.rl?.remaining).filter(v => v != null && v !== '').map(Number)), pageList: pages };
+      idHash: h([...ids].sort().join(',')), winIds, minRemaining: Math.min(...pages.map(p => p.rl?.remaining).filter(v => v != null && v !== '').map(Number)), pageList: pages };
     (results[channel] ||= []).push(s);
     console.log(`pass ${pass} ${channel.padEnd(9)} pages=${s.pages} stop="${s.stop}" unique=${s.unique} dupes=${s.dupes} inWindow(all pages)=${s.inWindowAll} | sync would stop at page ${s.syncStopPage} (${s.syncStopReason}) keeping ${s.inWindowSync} | unordered pages=${s.unordered} short-but-more pages=${s.short} 429 retries=${s.retries} slowest=${s.slowest}ms minRemaining=${s.minRemaining} ids#${s.idHash}${s.errors.length ? ' errors=' + s.errors.join('|') : ''}`);
   }
@@ -72,6 +72,10 @@ for (const [ch, list] of Object.entries(results)) {
   const counts = list.map(s => s.inWindowSync);
   const consistent = counts.every(c => c === counts[0]) && list.every(s => s.idHash === list[0].idHash);
   console.log(`\n${ch}: sync-equivalent counts per pass ${JSON.stringify(counts)}; all-pages counts ${JSON.stringify(list.map(s => s.inWindowAll))}; ${consistent ? 'CONSISTENT' : 'INCONSISTENT'}`);
+  const union = new Set(list.flatMap(s => [...s.winIds]));
+  const seenBy = [...union].map(id => list.filter(s => s.winIds.has(id)).length);
+  const cumulative = list.map((_, i) => new Set(list.slice(0, i + 1).flatMap(s => [...s.winIds])).size);
+  console.log(`  in-window combined across passes: ${union.size} (after 1, 2, 3… passes: ${JSON.stringify(cumulative)}); seen by every pass: ${seenBy.filter(n => n === list.length).length}; seen by only one pass: ${seenBy.filter(n => n === 1).length}`);
   if (consistent) continue;
   for (const s of list) {
     console.log(`  pass ${s.pass}: ${s.pageList.map(p => p.status !== 200 ? `[${p.i}: HTTP ${p.status}]` : `[${p.i}: n=${p.n} ${day(p.newest)}→${day(p.oldest)}${p.next ? '' : ' END'}${p.ordered ? '' : ' UNORDERED'} ${p.ms}ms]`).join(' ')}`);
