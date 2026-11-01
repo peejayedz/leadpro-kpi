@@ -54,7 +54,7 @@ async function check(scope, path) {
   const r = await probe(path);
   results[scope] = r; bodies[scope] = r.body || null;
   const verdict = r.status >= 200 && r.status < 300 ? 'ok' : (r.status === 401 || r.status === 403) ? 'MISSING' : `unclear (${r.status || 'network'})`;
-  console.log(`  ${verdict === 'ok' ? '✓' : verdict === 'MISSING' ? '✗' : '?'} ${scope.padEnd(32)} ${verdict}`);
+  console.log(`  ${verdict === 'ok' ? '✓' : verdict === 'MISSING' ? '✗' : '?'} ${scope.padEnd(32)} ${verdict}${verdict.startsWith('unclear') && r.error ? ` (GHL: ${r.error})` : ''}`);
 }
 console.log('Checking token scopes:');
 await check('opportunities.readonly', `/opportunities/pipelines?locationId=${LOC}`);
@@ -69,7 +69,8 @@ await check('calendars.readonly', `/calendars/?locationId=${LOC}`);
   else { results['calendars/events.readonly'] = { status: -1, error: 'no calendar or user to test with' }; console.log(`  ? ${'calendars/events.readonly'.padEnd(32)} not testable (no calendars or users visible)`); }
 }
 await check('conversations.readonly', `/conversations/search?locationId=${LOC}&limit=1`);
-await check('conversations/message.readonly', `/conversations/messages/export?locationId=${LOC}&channel=SMS&limit=1`);
+// Same request the sync makes (GHL rejects smaller limits with 422).
+await check('conversations/message.readonly', `/conversations/messages/export?locationId=${LOC}&channel=SMS&limit=100`);
 
 const SCOPES = Object.keys(results);
 const isOk = r => r.status >= 200 && r.status < 300;
