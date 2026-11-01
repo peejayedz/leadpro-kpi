@@ -59,7 +59,7 @@ jobs:
           DASHBOARD_PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', matrix.firm.secretKey)] }}
           DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: node scripts/sync.mjs "$SLUG"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: firm-${{ matrix.firm.slug }}
           path: firms/${{ matrix.firm.slug }}/data/
@@ -74,7 +74,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: firm-*
           path: ${{ runner.temp }}/firms
