@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "slug": "mahdavi",
+    "secretKey": "MAHDAVI",
+    "name": "The Mahdavi Law Firm",
+    "practiceArea": "Personal Injury",
+    "locationId": "INZKoa3nu45xtcZB0Yuq",
+    "createdAt": "2026-11-02T00:00:00.000Z"
+  },
+  {
+    "slug": "lfmp",
+    "secretKey": "LFMP",
+    "name": "LeadPro",
+    "practiceArea": "Digital marketing agency",
+    "locationId": "sQ2VSMkR7cLHb46Wdemi",
+    "createdAt": "2026-11-02T00:00:00.000Z"
+  }
+]
