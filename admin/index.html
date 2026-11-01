@@ -567,8 +567,10 @@ async function renderList(flash) {
     ${flash ? `<div class="okmsg" style="margin-bottom:12px">${flash}</div>` : ''}
     <div id="firmList"></div>`;
   $('newFirmBtn').addEventListener('click', renderNewFirm);
+  const host = $('firmList');
   try { await loadFirms(); }
-  catch (e) { $('firmList').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; $('listSub').textContent = ''; return; }
+  catch (e) { if (!document.body.contains(host)) return; $('firmList').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; $('listSub').textContent = ''; return; }
+  if (!document.body.contains(host)) return;     // the user moved on while the list was loading
   $('listSub').textContent = `${firms.length} firm${firms.length === 1 ? '' : 's'} · dashboards sync from GoHighLevel every 30 minutes`;
   $('firmList').innerHTML = firms.length ? `<div class="firms">${firms.map(firmRow).join('')}</div>`
     : `<div class="empty"><p>No firms yet.</p><button class="btn primary big" type="button" onclick="document.getElementById('newFirmBtn').click()">${ICON.plus}Add the first firm</button></div>`;
@@ -995,6 +997,7 @@ async function renderEditMapping(f) {
   const status = h => { $('emStatus').innerHTML = h ? `<div class="note" style="margin-bottom:12px">${h}</div>` : ''; };
   const load = async () => {
     const [cfg, disc] = await Promise.all([getJSON(`firms/${f.slug}/config.json`), getJSON(`firms/${f.slug}/discovery.json`)]);
+    if (stop()) return;
     if (!cfg) { $('emHost').innerHTML = '<div class="errbox">config.json not found for this firm.</div>'; return; }
     if (!disc) { $('emHost').innerHTML = `<div class="warnbox">There's no snapshot of this firm's GHL pipelines yet. Press <b>Re-read GHL</b> to take one (about a minute).</div>`; return; }
     status(`Pipelines and stages as of ${esc(fmtTime(disc.generatedAt))} (${esc(ago(disc.generatedAt))}).`);
@@ -1020,11 +1023,12 @@ async function renderEditMapping(f) {
       const t0 = await dispatch('discover.yml', { slug: f.slug, secretKey: f.secretKey, locationId: cfg?.locationId || f.locationId || '' });
       await follow({ workflow: 'discover.yml', title: `Discover ${f.slug}`, t0, label: 'Reading GHL', limitMs: 3 * 60e3, stop, say: h => status(h),
         check: async () => { const d = await getJSON(`firms/${f.slug}/discovery.json`); return d && Date.parse(d.generatedAt) > t0 - 120e3 ? d : null; } });
-      await load();
+      // Redraw the panel from the fresh snapshot. load() only finishes when the mapping is saved, so don't wait for it.
+      load().catch(e => { if (!stop()) $('emHost').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; });
     } catch (e) { status(`<span class="chip bad">Couldn't read GHL</span> ${errHtml(e)}`); }
     finally { const b = $('rereadBtn'); if (b) b.disabled = false; }
   };
-  try { await load(); } catch (e) { $('emHost').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; }
+  try { await load(); } catch (e) { if (!stop()) $('emHost').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; }
 }
 
 wireEyes();
