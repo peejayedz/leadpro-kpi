@@ -11,7 +11,7 @@
   "lookbackDays": 400,
   "minSample": 5,
   "notice": {
-    "show": false,
+    "show": true,
     "autoHide": {
       "minLeadsMoved": 5,
       "window": "last90"
