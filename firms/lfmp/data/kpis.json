@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-01T17:08:01.898Z",
+  "generatedAt": "2026-11-01T18:52:40.004Z",
   "location": "LeadPro",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1793505600000,
-      "to": 1793552881898,
+      "to": 1793559160004,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -344,7 +344,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1792987200000,
-      "to": 1793552881898,
+      "to": 1793559160004,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -743,8 +743,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1792948081898,
-      "to": 1793552881898,
+      "from": 1792954360004,
+      "to": 1793559160004,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -943,8 +943,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1790960881898,
-      "to": 1793552881898,
+      "from": 1790967160004,
+      "to": 1793559160004,
       "current": {
         "totalLeads": 6,
         "contacted": 1,
@@ -1131,8 +1131,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1785776881898,
-      "to": 1793552881898,
+      "from": 1785783160004,
+      "to": 1793559160004,
       "current": {
         "totalLeads": 11,
         "contacted": 1,
@@ -1246,8 +1246,8 @@
         "speedMeasured": 0,
         "within5": 0,
         "within5Pct": null,
-        "missedCalls": 4,
-        "missedNotReturned": 4,
+        "missedCalls": 13,
+        "missedNotReturned": 13,
         "qualified": 0,
         "qualifiedPct": null,
         "turnedAway": 0,
@@ -1320,7 +1320,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1793552881898,
+      "to": 1793559160004,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1686,7 +1686,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1793552881898,
+      "to": 1793559160004,
       "current": {
         "totalLeads": 6,
         "contacted": 1,
@@ -1978,8 +1978,8 @@
         "speedMeasured": 0,
         "within5": 0,
         "within5Pct": null,
-        "missedCalls": 0,
-        "missedNotReturned": 0,
+        "missedCalls": 11,
+        "missedNotReturned": 11,
         "qualified": 0,
         "qualifiedPct": null,
         "turnedAway": 0,
