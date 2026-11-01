@@ -4,7 +4,7 @@ One repo hosting the intake KPI dashboard for every Law Firm Marketing Pros law 
 
 - Firm dashboard: `https://peejayedz.github.io/leadpro-kpi/firms/<slug>/`
 - GHL Custom Menu Link: `https://peejayedz.github.io/leadpro-kpi/firms/<slug>/#k=<passphrase>` (write `#` inside a passphrase as `%23`)
-- Admin page (adds firms, edits mappings): `https://peejayedz.github.io/leadpro-kpi/admin/` *(coming in Phase 3)*
+- Admin page (adds firms, edits mappings): `https://peejayedz.github.io/leadpro-kpi/admin/`
 
 ## Layout
 
@@ -24,7 +24,9 @@ firms/<slug>/data/          written by the sync: kpis.json (numbers only) and de
 firms/<slug>/discovery.json written by the Discover workflow (names and ids only)
 .github/workflows/sync.yml      every 30 min + Run workflow (optional slug; empty = all firms)
 .github/workflows/discover.yml  Run workflow with slug + secretKey (and the location ID for a brand-new firm)
-admin/                      admin page (Phase 3)
+admin/index.html            admin page: firm list, New firm, Edit mapping, banner, delete
+admin/lock.json             admin password verifier (written by scripts/set-admin-password.mjs; no password inside)
+scripts/set-admin-password.mjs  sets the admin password (prompts in the terminal)
 ```
 
 ## Slugs and secrets
@@ -85,3 +87,19 @@ Run **Discover a firm's GHL setup** to (re)write `firms/<slug>/discovery.json`, 
 - `targets`, `recommendedFocus`, `notice`: goals, advice and the testing banner.
 
 Commit, then run the sync for that slug.
+
+## Admin page
+
+`https://peejayedz.github.io/leadpro-kpi/admin/` is a static page that manages this repo through the GitHub API.
+
+**Password.** Run `node scripts/set-admin-password.mjs` in your own terminal. It asks for the password twice (typing hidden) and writes `admin/lock.json` = `{ salt, iterations, verifier }` (PBKDF2-SHA256, 210,000 iterations). Commit and push it. The password itself is never stored. Changing it makes every saved GitHub token unreadable, so each device asks for the token again.
+
+**GitHub token.** After unlocking, a device with no saved token asks for a fine-grained token: repository `leadpro-kpi` only, **Contents**, **Actions** and **Secrets** = Read and write. It's saved in this browser's localStorage under `leadpro-admin-gh-token`, encrypted with AES-GCM under a key derived from the admin password. "Forget token" removes it.
+
+**What it does**
+
+- **Firm list:** each firm's name, practice area, last sync and lead count, with Open dashboard, Copy GHL link (asks for the passphrase, never stores it), Re-sync, Edit mapping, Banner on/off and Delete (removes `firms/<slug>/`, the list entry and both secrets).
+- **New firm:** a form, then six steps with live progress: save the two secrets (sealed with the repo's public key, libsodium from cdnjs, pinned by SRI) → run Discover → map the stages → one commit with `config.json`, the stub and `firms/index.json` → first sync → links. A failed step can be retried; `firms/index.json` is only written in the commit step, so a failed run never leaves a half-made firm in the list. "Discard and clean up" removes whatever was created.
+- **Edit mapping:** the same mapping panel against `discovery.json` (Re-read GHL refreshes it), then commits `config.json` and re-syncs.
+
+The page finds the workflow run it started by its title (`run-name`: "Sync <slug>", "Discover <slug>") and stops waiting as soon as that run fails.

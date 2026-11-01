@@ -1,4 +1,6 @@
 name: Discover a firm's GHL setup
+# The admin page finds the run it started by this title.
+run-name: "Discover ${{ inputs.slug }}"
 
 on:
   workflow_dispatch: # admin page (New firm, Re-read GHL) or the Run workflow button

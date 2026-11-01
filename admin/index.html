@@ -1,0 +1,1034 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>LeadPro Admin</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#eef0f4; --card:#fff; --raised:#fff; --field:#f7f8fa; --ink:#1c2333; --ink-2:#4a5263; --ink-3:#7a8293;
+  --rule:#e3e6ec; --rule-strong:#1c2333; --hover:#f3f5f8;
+  --bar:#2f4a7a; --bar-soft:#a9b6cc; --track:#eef1f5; --link:#2b5aa8;
+  --ok-bg:#e3f2e6; --ok-ink:#2b6b3a; --bad-bg:#fbe4e2; --bad-ink:#a83a30; --warn-bg:#fbf0d2; --warn-ink:#7a5a12; --warn-line:#ead391;
+  --sel-bg:#e6ecf6; --sel-ink:#22406f; --sel-line:#8ea6cf;
+  --shadow:0 12px 40px rgba(20,30,50,.18);
+  --serif:"Lora",Georgia,"Times New Roman",serif; --sans:"Source Sans 3","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  color-scheme:light; box-sizing:border-box;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --page:#0f131b; --card:#171c27; --raised:#1e2431; --field:#131823; --ink:#e7eaf0; --ink-2:#b4bbc8; --ink-3:#8790a0;
+  --rule:#2a3140; --rule-strong:#c9cfda; --hover:#222939;
+  --bar:#7d9bd1; --bar-soft:#4c5c78; --track:#232a38; --link:#8fb3ef;
+  --ok-bg:#1f3a27; --ok-ink:#8fd3a0; --bad-bg:#45231f; --bad-ink:#f2a49b; --warn-bg:#3b3019; --warn-ink:#ecd08a; --warn-line:#5c4a22;
+  --sel-bg:#24314a; --sel-ink:#c9daf8; --sel-line:#4f6894;
+  --shadow:0 12px 40px rgba(0,0,0,.6); color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --page:#0f131b; --card:#171c27; --raised:#1e2431; --field:#131823; --ink:#e7eaf0; --ink-2:#b4bbc8; --ink-3:#8790a0;
+  --rule:#2a3140; --rule-strong:#c9cfda; --hover:#222939;
+  --bar:#7d9bd1; --bar-soft:#4c5c78; --track:#232a38; --link:#8fb3ef;
+  --ok-bg:#1f3a27; --ok-ink:#8fd3a0; --bad-bg:#45231f; --bad-ink:#f2a49b; --warn-bg:#3b3019; --warn-ink:#ecd08a; --warn-line:#5c4a22;
+  --sel-bg:#24314a; --sel-ink:#c9daf8; --sel-line:#4f6894;
+  --shadow:0 12px 40px rgba(0,0,0,.6); color-scheme:dark;}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none !important}
+body{margin:0;background:var(--page);color:var(--ink);font:15px/1.45 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--bar);outline-offset:2px}
+.wrap{max-width:1060px;margin:16px auto;padding:0 12px}
+.card{background:var(--card);border-radius:14px;padding:28px 30px 26px;box-shadow:0 1px 2px rgba(20,30,50,.06)}
+.muted{color:var(--ink-3)}
+.small{font-size:13px}
+
+/* top + header */
+.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:2px}
+.brandline{font-size:13px;color:var(--ink-2);margin:0} .brandline b{color:var(--ink)}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(24px,3.4vw,30px);line-height:1.15;margin:4px 0 4px;letter-spacing:-.01em}
+h2{font-family:var(--serif);font-weight:600;font-size:21px;margin:0 0 4px}
+h3{font-size:16px;margin:0}
+.sub{font-size:13px;color:var(--ink-2);margin:0}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px 20px;flex-wrap:wrap;padding-bottom:12px;border-bottom:2px solid var(--rule-strong);margin-bottom:18px}
+.head .titles{flex:1 1 320px;min-width:0}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600;font-size:12.5px;padding:6px 11px;border-radius:6px;border:1px solid var(--rule);background:var(--card);cursor:pointer;white-space:nowrap;text-decoration:none;color:var(--ink);min-height:32px}
+.btn:hover{background:var(--hover);text-decoration:none} .btn[disabled]{opacity:.55;cursor:default}
+.btn svg{width:14px;height:14px;flex:0 0 auto}
+.btn.primary{background:var(--bar);border-color:var(--bar);color:#fff} .btn.primary:hover{filter:brightness(1.08);background:var(--bar)}
+:root[data-theme="dark"] .btn.primary{color:#0f131b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{color:#0f131b}}
+.btn.danger{color:var(--bad-ink)} .btn.danger:hover{background:var(--bad-bg)}
+.btn.big{font-size:14px;padding:9px 16px;min-height:40px}
+.themebtn{border-radius:999px;padding:6px 10px} .themebtn svg{width:15px;height:15px} .themebtn .tlabel{font-size:12px}
+.linkbtn{background:none;border:0;padding:0;color:var(--link);cursor:pointer;font-weight:600;font-size:13px}
+.linkbtn:hover{text-decoration:underline}
+
+/* forms */
+label.f{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.hint{font-weight:400;color:var(--ink-3);font-size:12.5px}
+input[type=text],input[type=password],input[type=url],select{width:100%;font-size:15px;font-weight:400;background:var(--field);border:1px solid var(--rule);border-radius:8px;padding:9px 11px;min-height:40px}
+input:focus,select:focus{outline:none;border-color:var(--bar);box-shadow:0 0 0 3px var(--sel-bg)}
+input[readonly]{color:var(--ink-2)}
+.pw{position:relative;display:block}
+.pw input{padding-right:46px}
+.eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--ink-2);padding:6px 8px;border-radius:6px;cursor:pointer;display:grid;place-items:center}
+.eye:hover{background:var(--hover)} .eye svg{width:18px;height:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px}
+.full{grid-column:1/-1}
+.ferr{color:var(--bad-ink);font-size:13px;font-weight:600;min-height:1.2em}
+.note{background:var(--track);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--ink-2);overflow-wrap:anywhere}
+.note code,.mono{font:12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.okmsg{background:var(--ok-bg);color:var(--ok-ink);border-radius:8px;padding:10px 12px;font-size:13.5px}
+.errbox{background:var(--bad-bg);color:var(--bad-ink);border-radius:8px;padding:10px 12px;font-size:13.5px}
+.warnbox{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);border-radius:8px;padding:10px 12px;font-size:13.5px}
+
+/* lock + token cards */
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.gate .card{width:100%;max-width:420px;display:flex;flex-direction:column;gap:16px}
+.gate.wide .card{max-width:560px}
+.mark{width:42px;height:42px;border-radius:10px;background:var(--sel-bg);display:grid;place-items:center}
+.mark svg{width:20px;height:20px;stroke:var(--bar);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.gate h1{font-size:24px;margin:0}
+.gate ol{margin:0;padding-left:20px;font-size:13.5px;color:var(--ink-2)} .gate ol li{margin:3px 0}
+
+/* firm list */
+.firms{display:flex;flex-direction:column}
+.firm{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 20px;align-items:center;padding:14px 2px;border-bottom:1px solid var(--rule)}
+.firm .meta{font-size:13px;color:var(--ink-2);margin:3px 0 0;display:flex;flex-wrap:wrap;gap:2px 12px}
+.firm .acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.firm .fstatus{grid-column:1/-1;font-size:13px}
+.firm .fstatus:empty{display:none}
+.chip{display:inline-flex;align-items:center;padding:1px 8px;border-radius:999px;font-weight:600;font-size:11.5px;white-space:nowrap;background:var(--track);color:var(--ink-2)}
+.chip.good{background:var(--ok-bg);color:var(--ok-ink)} .chip.bad{background:var(--bad-bg);color:var(--bad-ink)} .chip.warn{background:var(--warn-bg);color:var(--warn-ink)}
+.empty{padding:36px 8px;text-align:center;color:var(--ink-2)}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap}
+
+/* progress */
+.steps{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;padding:12px 0;border-bottom:1px solid var(--rule)}
+.step:last-child{border-bottom:0}
+.step .ic{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--rule);margin-top:1px}
+.step .ic svg{width:14px;height:14px}
+.step.run .ic{border-color:var(--bar);border-right-color:transparent;animation:spin .9s linear infinite}
+.step.ok .ic{background:var(--ok-ink);border-color:var(--ok-ink);color:var(--card)}
+.step.fail .ic{background:var(--bad-ink);border-color:var(--bad-ink);color:var(--card)}
+.step.wait .ic{border-color:var(--bar);background:var(--sel-bg)}
+.step .t{font-weight:600}
+.step.pending .t{color:var(--ink-3)}
+.step .d{font-size:13px;color:var(--ink-2);grid-column:2}
+.step .e{grid-column:2;margin-top:6px}
+.step .slot{grid-column:1/-1}
+@keyframes spin{to{transform:rotate(360deg)}}
+.elapsed{font-variant-numeric:tabular-nums}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+
+/* mapping panel */
+.map{border:1px solid var(--rule);border-radius:10px;padding:16px;margin-top:12px;background:var(--card)}
+.map h4{margin:0 0 6px;font-size:14px}
+.map section{padding:12px 0;border-bottom:1px solid var(--rule)} .map section:first-child{padding-top:0} .map section:last-of-type{border-bottom:0}
+.pipes{display:flex;flex-direction:column;gap:6px}
+.check{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.check input{width:16px;height:16px;accent-color:var(--bar);margin:0}
+.mrow{display:grid;grid-template-columns:170px minmax(0,1fr);gap:6px 16px;padding:10px 0;border-top:1px dashed var(--rule)}
+.mrow:first-of-type{border-top:0}
+.mrow .lbl{font-weight:600;font-size:14px} .mrow .lbl .hint{display:block;margin-top:2px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{border:1px solid var(--rule);background:var(--field);border-radius:999px;padding:4px 11px;font-size:13px;cursor:pointer;color:var(--ink-2);line-height:1.3;text-align:left}
+.opt:hover{border-color:var(--bar-soft)}
+.opt[aria-pressed="true"]{background:var(--sel-bg);border-color:var(--sel-line);color:var(--sel-ink);font-weight:600}
+.opt[aria-pressed="true"]::before{content:"✓ "}
+.opt.stale{border-style:dashed}
+.opt.cal{font-size:12.5px}
+
+/* dialogs */
+.ovl{position:fixed;inset:0;background:rgba(10,14,22,.45);display:grid;place-items:center;padding:16px;z-index:50}
+.dlg{background:var(--raised);border-radius:12px;box-shadow:var(--shadow);width:min(440px,100%);padding:20px;display:flex;flex-direction:column;gap:14px}
+.dlg h3{font-family:var(--serif);font-size:19px;font-weight:600}
+.dlg .btnrow{justify-content:flex-end;margin-top:2px}
+
+/* success */
+.success{display:flex;flex-direction:column;gap:14px;margin-top:16px;border:1px solid var(--ok-ink);border-radius:10px;padding:18px}
+.copyrow{display:flex;gap:8px} .copyrow input{flex:1;min-width:0}
+.success ul{margin:0;padding-left:20px;font-size:14px;color:var(--ink-2)}
+
+.foot{margin:14px auto 30px;max-width:1060px;padding:0 14px;font-size:12px;color:var(--ink-3);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+@media (max-width:760px){
+  .card{padding:20px 16px 18px;border-radius:12px}
+  .wrap{margin:8px auto;padding:0 8px}
+  .grid2{grid-template-columns:1fr}
+  .firm{grid-template-columns:1fr}
+  .firm .acts{display:grid;grid-template-columns:1fr 1fr;justify-content:stretch}
+  .mrow{grid-template-columns:1fr}
+  .themebtn .tlabel{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= lock screen ================= -->
+<div class="gate" id="lockView" hidden>
+  <form class="card" id="lockForm" autocomplete="on">
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+    <div><p class="brandline"><b>LeadPro</b> admin</p><h1>Scorecard admin</h1><p class="sub">Enter the admin password to continue.</p></div>
+    <input type="text" name="username" value="leadpro-admin" autocomplete="username" hidden>
+    <label class="f" for="lockPw">Password
+      <span class="pw"><input type="password" id="lockPw" autocomplete="current-password" required><button type="button" class="eye" data-eye="lockPw" aria-label="Show password"></button></span>
+    </label>
+    <div class="ferr" id="lockErr" role="alert"></div>
+    <button type="submit" class="btn primary big" id="lockGo">Unlock</button>
+  </form>
+</div>
+
+<!-- ================= not set up ================= -->
+<div class="gate" id="setupView" hidden>
+  <div class="card">
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+    <div><p class="brandline"><b>LeadPro</b> admin</p><h1>Set an admin password first</h1></div>
+    <p class="sub">This page has no password yet. In the repo folder, run <code class="mono">node scripts/set-admin-password.mjs</code>, then commit and push <code class="mono">admin/lock.json</code>.</p>
+    <div class="ferr" id="setupErr"></div>
+  </div>
+</div>
+
+<!-- ================= GitHub token ================= -->
+<div class="gate wide" id="tokenView" hidden>
+  <form class="card" id="tokenForm" autocomplete="off">
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/></svg></div>
+    <div><p class="brandline"><b>LeadPro</b> admin</p><h1>Connect GitHub</h1><p class="sub" id="tokenWhy">This device has no GitHub token saved yet. It's stored here only, encrypted with your admin password.</p></div>
+    <ol>
+      <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → Fine-grained tokens → Generate new token</a>.</li>
+      <li>Repository access: <b>Only select repositories</b> → <b class="repoName">leadpro-kpi</b>.</li>
+      <li>Permissions: <b>Contents</b>, <b>Actions</b> and <b>Secrets</b> = Read and write.</li>
+      <li>Generate, copy and paste it below.</li>
+    </ol>
+    <label class="f" for="tokenIn">GitHub token
+      <span class="pw"><input type="password" id="tokenIn" autocomplete="off" spellcheck="false" placeholder="github_pat_…" required><button type="button" class="eye" data-eye="tokenIn" aria-label="Show token"></button></span>
+    </label>
+    <div class="ferr" id="tokenErr" role="alert"></div>
+    <div class="btnrow" style="margin-top:0"><button type="submit" class="btn primary big" id="tokenGo">Save token</button><button type="button" class="btn big" data-act="lock">Lock</button></div>
+  </form>
+</div>
+
+<!-- ================= app ================= -->
+<main class="wrap" id="appView" hidden>
+  <div class="card">
+    <div class="topline"><p class="brandline"><b>LeadPro</b> admin</p>
+      <span class="controls">
+        <button class="btn themebtn" id="themeBtn" type="button"></button>
+        <button class="btn" type="button" data-act="forget" title="Remove the saved GitHub token from this device">Forget token</button>
+        <button class="btn" type="button" data-act="lock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Lock</button>
+      </span>
+    </div>
+    <div id="screen"></div>
+  </div>
+  <footer class="foot"><span>Repo <a id="repoLink" target="_blank" rel="noopener"></a></span><span>Internal tool · changes are commits to the repo</span></footer>
+</main>
+
+<div class="ovl" id="ovl" hidden><div class="dlg" id="dlg" role="dialog" aria-modal="true"></div></div>
+
+<script type="module">
+// =====================================================================
+// LeadPro admin: a static page that manages the leadpro-kpi repo through
+// the GitHub API with a fine-grained token saved (encrypted) on this device.
+// Nothing here is sent anywhere except api.github.com and this site.
+// =====================================================================
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const enc = new TextEncoder(), dec = new TextDecoder();
+const toB64 = u8 => { let s = ''; for (const b of u8) s += String.fromCharCode(b); return btoa(s); };
+const fromB64 = b => Uint8Array.from(atob(b.replace(/\s/g, '')), c => c.charCodeAt(0));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const norm = s => String(s ?? '').trim().toLowerCase();
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} },
+};
+
+// ---------- repo ----------
+const BRANCH = 'main';
+const { OWNER, REPO } = (() => {
+  if (location.hostname.endsWith('.github.io')) return { OWNER: location.hostname.split('.')[0], REPO: location.pathname.split('/')[1] || 'leadpro-kpi' };
+  const q = new URLSearchParams(location.search).get('repo');      // local testing only
+  if (q && /^[\w.-]+\/[\w.-]+$/.test(q)) { const [o, r] = q.split('/'); return { OWNER: o, REPO: r }; }
+  return { OWNER: 'peejayedz', REPO: 'leadpro-kpi' };
+})();
+const R = `/repos/${OWNER}/${REPO}`;
+const PAGES = `https://${OWNER.toLowerCase()}.github.io/${REPO}/`;
+const dashUrl = slug => `${PAGES}firms/${slug}/`;
+const ghlLink = (slug, pass) => `${dashUrl(slug)}#k=${encodeURIComponent(pass)}`;
+$('repoLink').href = `https://github.com/${OWNER}/${REPO}`; $('repoLink').textContent = `${OWNER}/${REPO}`;
+document.querySelectorAll('.repoName').forEach(e => { e.textContent = REPO; });
+
+const TOKEN_KEY = 'leadpro-admin-gh-token';
+const SODIUM = { src: 'https://cdnjs.cloudflare.com/ajax/libs/libsodium-wrappers/0.5.4/sodium.min.js', integrity: 'sha384-wwHUJSIg+zP+JE6uHrrp1XCv4UtKW9xE4+LO+lwfrocCav+zHsDN57+5bvmKRCnu' };
+const RESERVED = ['admin', 'app', 'scripts', '_template'];
+const slugify = name => String(name || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  .replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48).replace(/-+$/, '');
+const secretKeyFor = slug => slug.toUpperCase().replace(/-/g, '_');
+
+let lock = null, aesKey = null, ghToken = null;
+
+// ---------- icons ----------
+const ICON = {
+  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+  eyeOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6A16.6 16.6 0 0 0 2 12s3.5 7 10 7a9.8 9.8 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>',
+  tick: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  cross: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M7 7l10 10M17 7 7 17"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h9"/></svg>',
+  sync: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16m0 4v-4h-4"/></svg>',
+  map: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h6"/></svg>',
+  flag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
+};
+function wireEyes(root = document) {
+  root.querySelectorAll('[data-eye]').forEach(b => {
+    if (b.dataset.wired) return; b.dataset.wired = '1';
+    const input = $(b.dataset.eye) || root.querySelector('#' + b.dataset.eye);
+    const label = (b.getAttribute('aria-label') || 'Show').replace(/^Show /, '');
+    const paint = () => { const shown = input.type === 'text'; b.innerHTML = shown ? ICON.eyeOff : ICON.eye; b.setAttribute('aria-label', `${shown ? 'Hide' : 'Show'} ${label}`); b.title = `${shown ? 'Hide' : 'Show'} ${label}`; };
+    b.addEventListener('click', () => { input.type = input.type === 'password' ? 'text' : 'password'; paint(); input.focus(); });
+    paint();
+  });
+}
+
+// ---------- theme (same control and saved choice as the dashboards) ----------
+const THEMES = [
+  ['auto', 'Auto', '<circle cx="12" cy="12" r="8"/><path d="M12 4v16" /><path d="M12 4a8 8 0 0 1 0 16" fill="currentColor" stroke="none"/>'],
+  ['light', 'Light', '<circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>'],
+  ['dark', 'Dark', '<path d="M20 13.5A8.5 8.5 0 1 1 10.5 4a7 7 0 0 0 9.5 9.5Z"/>'],
+];
+function applyTheme(mode) {
+  if (mode === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', mode);
+  const [, label, icon] = THEMES.find(t => t[0] === mode) || THEMES[0];
+  $('themeBtn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">${icon}</svg><span class="tlabel">${label}</span>`;
+  $('themeBtn').setAttribute('aria-label', `Theme: ${label}. Click to change.`);
+  store.set('lfmp-theme', mode === 'auto' ? null : mode);
+}
+applyTheme(store.get('lfmp-theme') || 'auto');
+$('themeBtn').addEventListener('click', () => { const now = document.documentElement.getAttribute('data-theme') || 'auto'; applyTheme(THEMES[(THEMES.findIndex(t => t[0] === now) + 1) % THEMES.length][0]); });
+
+// ---------- views ----------
+function show(view) { for (const v of ['lockView', 'setupView', 'tokenView', 'appView']) $(v).hidden = v !== view; }
+
+// =====================================================================
+// Lock: PBKDF2-SHA256(password, salt, iterations) -> 64 bytes.
+// bytes 0-31 = public verifier in lock.json; bytes 32-63 = AES-GCM key for the saved token.
+// =====================================================================
+async function deriveFromPassword(pw) {
+  const base = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+  const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: fromB64(lock.salt), iterations: lock.iterations }, base, 512));
+  const verifier = bits.slice(0, 32);
+  const key = await crypto.subtle.importKey('raw', bits.slice(32, 64), 'AES-GCM', false, ['encrypt', 'decrypt']);
+  bits.fill(0);
+  return { verifier, key };
+}
+function sameBytes(a, b) { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a[i] ^ b[i]; return d === 0; }
+
+async function saveToken(token) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, enc.encode(token)));
+  store.set(TOKEN_KEY, JSON.stringify({ v: 1, alg: 'AES-GCM', iv: toB64(iv), ct: toB64(ct) }));
+}
+async function loadToken() {
+  const raw = store.get(TOKEN_KEY); if (!raw) return null;
+  try { const { iv, ct } = JSON.parse(raw); return dec.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(iv) }, aesKey, fromB64(ct))); }
+  catch { return undefined; }   // saved under a different admin password
+}
+
+async function boot() {
+  if (!window.crypto?.subtle) { show('setupView'); $('setupErr').textContent = "This browser can't run the admin page. Use an up-to-date Chrome, Safari, Edge or Firefox."; return; }
+  try {
+    const r = await fetch(`./lock.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (r.status === 404) { show('setupView'); return; }
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    lock = await r.json();
+    if (!lock.salt || !lock.verifier || !(lock.iterations >= 100000)) throw new Error('lock.json is incomplete');
+  } catch (e) { show('setupView'); $('setupErr').textContent = `Couldn't read admin/lock.json (${e.message}).`; return; }
+  show('lockView'); $('lockPw').focus();
+}
+
+$('lockForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const pw = $('lockPw').value; if (!pw) return;
+  $('lockGo').disabled = true; $('lockGo').textContent = 'Checking…'; $('lockErr').textContent = '';
+  try {
+    const { verifier, key } = await deriveFromPassword(pw);
+    if (!sameBytes(verifier, fromB64(lock.verifier))) throw new Error('wrong');
+    aesKey = key; $('lockPw').value = '';
+    const t = await loadToken();
+    if (t === undefined) { store.set(TOKEN_KEY, null); return askToken('The token saved on this device was locked with a different admin password, so it was removed. Paste a token again.'); }
+    if (!t) return askToken();
+    ghToken = t; await openApp();
+  } catch (err) {
+    $('lockErr').textContent = err.message === 'wrong' ? "That password didn't work. Check caps lock and try again." : `Couldn't unlock: ${err.message}`;
+    $('lockPw').select();
+  } finally { $('lockGo').disabled = false; $('lockGo').textContent = 'Unlock'; }
+});
+
+function askToken(why) {
+  show('tokenView'); $('tokenErr').textContent = '';
+  if (why) $('tokenWhy').textContent = why;
+  $('tokenIn').value = ''; $('tokenIn').focus();
+}
+$('tokenForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const t = $('tokenIn').value.trim(); if (!t) return;
+  $('tokenGo').disabled = true; $('tokenGo').textContent = 'Checking…'; $('tokenErr').textContent = '';
+  try {
+    ghToken = t;
+    await gh('GET', R);                                         // can see the repo
+    await gh('GET', `${R}/actions/secrets/public-key`);         // has Secrets access
+    await gh('GET', `${R}/actions/workflows`);                  // has Actions access
+    await saveToken(t); $('tokenIn').value = '';
+    await openApp();
+  } catch (err) { ghToken = null; $('tokenErr').textContent = err.message; }
+  finally { $('tokenGo').disabled = false; $('tokenGo').textContent = 'Save token'; }
+});
+
+function lockNow() { aesKey = null; ghToken = null; cleanupRun(); $('screen').innerHTML = ''; closeDialog(); show('lockView'); $('lockPw').value = ''; $('lockPw').focus(); }
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-act]'); if (!a) return;
+  if (a.dataset.act === 'lock') lockNow();
+  if (a.dataset.act === 'forget') openDialog({
+    title: 'Forget token on this device?', body: '<p class="sub">The saved GitHub token is removed from this browser. You will need to paste a token again next time. The token itself stays valid on GitHub; revoke it there if this device is lost.</p>',
+    ok: 'Forget token', danger: true, onOk: () => { store.set(TOKEN_KEY, null); ghToken = null; closeDialog(); askToken('Token removed from this device. Paste a token to continue.'); },
+  });
+});
+
+// =====================================================================
+// GitHub API
+// =====================================================================
+function ghError(status, msg, path) {
+  if (status === 401) return 'GitHub rejected the token (expired, revoked or mistyped). Use "Forget token" and paste a new one.';
+  if (status === 403 && /rate limit/i.test(msg)) return 'GitHub rate limit reached. Wait a few minutes and try again.';
+  if (status === 403 || (status === 404 && path.startsWith(R))) return `The token can't do this (${msg || status}). It needs repository "${REPO}" with Contents, Actions and Secrets set to Read and write.`;
+  return `GitHub ${status}: ${msg || 'request failed'}`;
+}
+async function gh(method, path, body, { allow404 = false } = {}) {
+  const r = await fetch(`https://api.github.com${path}`, {
+    method, cache: 'no-store',
+    headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${ghToken}`, 'X-GitHub-Api-Version': '2022-11-28', ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (r.status === 404 && allow404) return null;
+  if (!r.ok) { let m = ''; try { m = (await r.json()).message; } catch {} const e = new Error(ghError(r.status, m, path)); e.status = r.status; throw e; }
+  return r.status === 204 ? {} : r.json();
+}
+async function getText(path, ref = BRANCH) {
+  const f = await gh('GET', `${R}/contents/${path.split('/').map(encodeURIComponent).join('/')}?ref=${ref}`, null, { allow404: true });
+  if (!f) return null;
+  const b64 = f.content || (await gh('GET', `${R}/git/blobs/${f.sha}`)).content;   // files over 1 MB come back without content
+  return dec.decode(fromB64(b64));
+}
+async function getJSON(path, ref) { const t = await getText(path, ref); return t === null ? null : JSON.parse(t); }
+const jsonText = o => JSON.stringify(o, null, 2) + '\n';
+
+// One commit through the Git Data API. build(headSha, treeSha) returns [{ path, content } | { path, delete: true }].
+// Retries on a race with the sync bot (ref moved), re-running build on the new head.
+async function commitFiles(message, build) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const head = (await gh('GET', `${R}/git/ref/heads/${BRANCH}`)).object.sha;
+    const base = await gh('GET', `${R}/git/commits/${head}`);
+    const changes = await build(head, base.tree.sha);
+    if (!changes.length) return null;
+    const tree = [];
+    for (const ch of changes) {
+      if (ch.delete) { tree.push({ path: ch.path, mode: '100644', type: 'blob', sha: null }); continue; }
+      const blob = await gh('POST', `${R}/git/blobs`, { content: ch.content, encoding: 'utf-8' });
+      tree.push({ path: ch.path, mode: '100644', type: 'blob', sha: blob.sha });
+    }
+    const t = await gh('POST', `${R}/git/trees`, { base_tree: base.tree.sha, tree });
+    const c = await gh('POST', `${R}/git/commits`, { message, tree: t.sha, parents: [head] });
+    try { await gh('PATCH', `${R}/git/refs/heads/${BRANCH}`, { sha: c.sha, force: false }); return c.sha; }
+    catch (e) { if (e.status === 422 && attempt < 3) { await sleep(1500); continue; } throw e; }
+  }
+}
+async function listFolder(treeSha, prefix) {
+  const t = await gh('GET', `${R}/git/trees/${treeSha}?recursive=1`);
+  return t.tree.filter(x => x.type === 'blob' && x.path.startsWith(prefix)).map(x => x.path);
+}
+
+// ---------- secrets (sealed with the repo's public key via libsodium) ----------
+let sodiumP = null;
+function loadSodium() {
+  return sodiumP ||= new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = SODIUM.src; s.integrity = SODIUM.integrity; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer';
+    s.onload = async () => { const so = window.sodium; if (!so?.crypto_box_seal) { sodiumP = null; return reject(new Error('The encryption library loaded but is not usable.')); } if (so.ready) await so.ready; resolve(so); };
+    s.onerror = () => { sodiumP = null; s.remove(); reject(new Error("Couldn't load the encryption library from cdnjs. Check your connection and retry.")); };
+    document.head.appendChild(s);
+  });
+}
+async function putSecret(name, value) {
+  const so = await loadSodium();
+  const pk = await gh('GET', `${R}/actions/secrets/public-key`);
+  const sealed = so.crypto_box_seal(so.from_string(value), so.from_base64(pk.key));
+  await gh('PUT', `${R}/actions/secrets/${name}`, { encrypted_value: so.to_base64(sealed), key_id: pk.key_id });
+}
+async function deleteSecret(name) { await gh('DELETE', `${R}/actions/secrets/${name}`, null, { allow404: true }); }
+
+// ---------- workflows ----------
+// Starts a workflow and follows the run it created (matched by its run-name title).
+async function dispatch(workflow, inputs) {
+  const t0 = Date.now();
+  await gh('POST', `${R}/actions/workflows/${workflow}/dispatches`, { ref: BRANCH, inputs });
+  return t0;
+}
+async function findRun(workflow, title, t0) {
+  const r = await gh('GET', `${R}/actions/workflows/${workflow}/runs?event=workflow_dispatch&per_page=10`);
+  return (r.workflow_runs || []).find(x => x.display_title === title && Date.parse(x.created_at) >= t0 - 20000) || null;
+}
+// Polls until check() returns a value. Fails fast if the run fails. limitMs counts from when the run starts.
+// Errors whose message is our own HTML (run links) carry .html = true; everything else is escaped.
+const htmlError = msg => Object.assign(new Error(msg), { html: true });
+const errHtml = e => (e?.html ? e.message : esc(e?.message || e));
+async function follow({ workflow, title, t0, check, limitMs, say, label, stop = () => false }) {
+  let run = null, startedAt = null;
+  const hardStop = t0 + Math.max(limitMs, 10 * 60e3);
+  for (;;) {
+    if (stop()) throw new Error('Stopped because you left this page.');
+    await sleep(4000);
+    if (!run || run.status !== 'completed') {
+      run = (await findRun(workflow, title, t0)) || run;
+      if (run) run = await gh('GET', `${R}/actions/runs/${run.id}`);
+    }
+    const link = run ? ` · <a href="${esc(run.html_url)}" target="_blank" rel="noopener">view run</a>` : '';
+    const state = !run ? 'starting' : run.status === 'completed' ? run.conclusion : run.status;
+    if (run && run.status === 'in_progress' && !startedAt) startedAt = Date.now();
+    say(`${label}: ${state === 'queued' || state === 'waiting' || state === 'pending' ? 'waiting for another sync to finish' : state}…${link}`);
+    if (run?.status === 'completed' && run.conclusion !== 'success') throw htmlError(`The ${workflow} run ended "${run.conclusion}". Open the run log for details.${run.html_url ? ` <a href="${esc(run.html_url)}" target="_blank" rel="noopener">View run</a>` : ''}`);
+    const got = await check();
+    if (got) return { value: got, run };
+    if (run?.status === 'completed' && Date.now() - Date.parse(run.updated_at) > 60e3) throw htmlError(`The run finished but the expected file did not appear. <a href="${esc(run.html_url)}" target="_blank" rel="noopener">View run</a>`);
+    const now = Date.now();
+    if ((startedAt && now - startedAt > limitMs) || (!startedAt && !run && now - t0 > 90e3) || now > hardStop)
+      throw htmlError(`Timed out after ${Math.round((now - t0) / 60e3)} min.${run ? ` <a href="${esc(run.html_url)}" target="_blank" rel="noopener">View run</a>` : ''}`);
+  }
+}
+
+// =====================================================================
+// Firm list
+// =====================================================================
+let firms = [], configs = {}, kpis = {};
+async function openApp() {
+  show('appView');
+  await renderList();
+}
+const ago = iso => {
+  if (!iso) return 'never';
+  const m = Math.round((Date.now() - Date.parse(iso)) / 60000);
+  return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 48 * 60 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`;
+};
+const fmtTime = iso => iso ? new Date(iso).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+
+async function loadFirms() {
+  firms = (await getJSON('firms/index.json')) || [];
+  await Promise.all(firms.map(async f => {
+    try { configs[f.slug] = await getJSON(`firms/${f.slug}/config.json`); } catch { configs[f.slug] = null; }
+    try { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); kpis[f.slug] = k ? { generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null } : null; } catch { kpis[f.slug] = null; }
+  }));
+}
+function firmRow(f) {
+  const cfg = configs[f.slug], k = kpis[f.slug];
+  const stale = k?.generatedAt && Date.now() - Date.parse(k.generatedAt) > 3 * 3600e3;
+  const banner = cfg?.notice?.show !== false;
+  return `<article class="firm" data-slug="${esc(f.slug)}">
+    <div>
+      <h3>${esc(f.name)}</h3>
+      <p class="meta"><span>${esc(f.practiceArea || 'No practice area')}</span><span class="mono">${esc(f.slug)}</span></p>
+      <p class="meta"><span title="${esc(fmtTime(k?.generatedAt))}">Last sync ${k ? esc(ago(k.generatedAt)) : '<span class="chip warn">no data yet</span>'}${stale ? ' <span class="chip bad">stale</span>' : ''}</span>
+        ${k?.leads90 != null ? `<span>${k.leads90} lead${k.leads90 === 1 ? '' : 's'} in the last 90 days</span>` : ''}</p>
+    </div>
+    <div class="acts">
+      <a class="btn" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener">${ICON.ext}Open dashboard</a>
+      <button class="btn" type="button" data-f="link">${ICON.copy}Copy GHL link</button>
+      <button class="btn" type="button" data-f="sync">${ICON.sync}Re-sync</button>
+      <button class="btn" type="button" data-f="map">${ICON.map}Edit mapping</button>
+      <button class="btn" type="button" data-f="banner" aria-pressed="${banner}" title="Testing-period banner on the dashboard">${ICON.flag}Banner ${banner ? 'on' : 'off'}</button>
+      <button class="btn danger" type="button" data-f="delete">${ICON.trash}Delete</button>
+    </div>
+    <div class="fstatus" aria-live="polite"></div>
+  </article>`;
+}
+async function renderList(flash) {
+  cleanupRun();
+  $('screen').innerHTML = `<header class="head"><div class="titles"><h1>Law firm scorecards</h1><p class="sub" id="listSub">Loading firms…</p></div>
+    <div class="controls"><button class="btn primary big" type="button" id="newFirmBtn">${ICON.plus}New firm</button></div></header>
+    ${flash ? `<div class="okmsg" style="margin-bottom:12px">${flash}</div>` : ''}
+    <div id="firmList"></div>`;
+  $('newFirmBtn').addEventListener('click', renderNewFirm);
+  try { await loadFirms(); }
+  catch (e) { $('firmList').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; $('listSub').textContent = ''; return; }
+  $('listSub').textContent = `${firms.length} firm${firms.length === 1 ? '' : 's'} · dashboards sync from GoHighLevel every 30 minutes`;
+  $('firmList').innerHTML = firms.length ? `<div class="firms">${firms.map(firmRow).join('')}</div>`
+    : `<div class="empty"><p>No firms yet.</p><button class="btn primary big" type="button" onclick="document.getElementById('newFirmBtn').click()">${ICON.plus}Add the first firm</button></div>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-f]'); if (!b) return;
+  const row = b.closest('.firm'); const f = firms.find(x => x.slug === row.dataset.slug); if (!f) return;
+  const status = row.querySelector('.fstatus');
+  ({ link: copyLinkDialog, sync: resyncFirm, map: renderEditMapping, banner: toggleBanner, delete: deleteDialog })[b.dataset.f](f, status, b);
+});
+
+function copyLinkDialog(f) {
+  openDialog({
+    title: 'Copy GHL menu link', okIcon: ICON.copy, ok: 'Copy link',
+    body: `<p class="sub">Type <b>${esc(f.name)}</b>'s dashboard passphrase. It's only used to build the link and isn't saved.</p>
+      <label class="f" for="dlgPass">Passphrase<span class="pw"><input type="password" id="dlgPass" autocomplete="off" spellcheck="false"><button type="button" class="eye" data-eye="dlgPass" aria-label="Show passphrase"></button></span></label>
+      <div class="ferr" id="dlgErr"></div>`,
+    onOk: async () => {
+      const p = $('dlgPass').value; if (!p) { $('dlgErr').textContent = 'Enter the passphrase.'; return; }
+      try { await navigator.clipboard.writeText(ghlLink(f.slug, p)); }
+      catch { $('dlgErr').textContent = "Couldn't reach the clipboard. Allow clipboard access and try again."; return; }
+      $('dlgPass').value = ''; closeDialog();
+      flashRow(f.slug, `<span class="chip good">Copied</span> GHL menu link for ${esc(f.name)}. Paste it into the sub-account's Custom Menu Link.`);
+    },
+  });
+}
+function flashRow(slug, html) { const s = document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"] .fstatus`); if (s) s.innerHTML = html; }
+
+async function resyncFirm(f, status, btn) {
+  btn.disabled = true;
+  const say = h => { status.innerHTML = h; };
+  try {
+    const t0 = await dispatch('sync.yml', { slug: f.slug });
+    const before = kpis[f.slug]?.generatedAt || '';
+    const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Sync', limitMs: 4 * 60e3, say, stop: () => !document.body.contains(status),
+      check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return k?.generatedAt && k.generatedAt !== before && Date.parse(k.generatedAt) > t0 - 60e3 ? k : null; } });
+    kpis[f.slug] = { generatedAt: value.generatedAt, leads90: value.periods?.last90?.current?.totalLeads ?? null };
+    const row = document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`);
+    if (row) { row.outerHTML = firmRow(f); flashRow(f.slug, `<span class="chip good">Synced</span> ${esc(fmtTime(value.generatedAt))}. The dashboard shows it within a minute.`); }
+  } catch (e) { say(`<span class="chip bad">Sync failed</span> ${errHtml(e)}`); btn.disabled = false; }
+}
+
+async function toggleBanner(f, status, btn) {
+  btn.disabled = true; status.textContent = 'Saving…';
+  try {
+    let next;
+    await commitFiles(`${configs[f.slug]?.notice?.show !== false ? 'Hide' : 'Show'} testing banner for ${f.name}`, async head => {
+      const cfg = await getJSON(`firms/${f.slug}/config.json`, head);
+      if (!cfg) throw new Error('config.json not found');
+      cfg.notice = { ...(cfg.notice || {}), show: !(cfg.notice?.show !== false) };
+      next = cfg; return [{ path: `firms/${f.slug}/config.json`, content: jsonText(cfg) }];
+    });
+    configs[f.slug] = next;
+    const row = document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`);
+    row.outerHTML = firmRow(f);
+    flashRow(f.slug, `<span class="chip good">Saved</span> Banner ${next.notice.show ? 'on' : 'off'}. The dashboard updates within a minute or two.`);
+  } catch (e) { status.innerHTML = `<span class="chip bad">Not saved</span> ${esc(e.message)}`; btn.disabled = false; }
+}
+
+// ---------- delete ----------
+function deleteDialog(f) {
+  openDialog({
+    title: `Delete ${esc(f.name)}?`, ok: 'Delete firm', danger: true,
+    body: `<p class="sub">This removes <span class="mono">firms/${esc(f.slug)}/</span> (dashboard, config and data), its entry in the firm list, and the secrets <span class="mono">GHL_TOKEN_${esc(f.secretKey)}</span> and <span class="mono">PASSPHRASE_${esc(f.secretKey)}</span>. The dashboard link stops working. This can't be undone from here.</p>
+      <label class="f" for="dlgConfirm">Type <span class="mono">${esc(f.slug)}</span> to confirm<input type="text" id="dlgConfirm" autocomplete="off" spellcheck="false"></label>
+      <div class="ferr" id="dlgErr"></div>`,
+    onOk: async () => {
+      if ($('dlgConfirm').value.trim() !== f.slug) { $('dlgErr').textContent = `Type ${f.slug} exactly.`; return; }
+      $('dlgOk').disabled = true; $('dlgOk').textContent = 'Deleting…';
+      try { await deleteFirm(f.slug, f.secretKey, f.name); closeDialog(); await renderList(`Deleted ${esc(f.name)}: folder, list entry and both secrets.`); }
+      catch (e) { $('dlgErr').innerHTML = esc(e.message); $('dlgOk').disabled = false; $('dlgOk').textContent = 'Delete firm'; }
+    },
+  });
+}
+async function deleteFirm(slug, secretKey, name) {
+  if (!slug || RESERVED.includes(slug) || slugify(slug) !== slug) throw new Error('Refusing to delete an invalid folder name.');
+  await commitFiles(`Delete ${name || slug}`, async (head, tree) => {
+    const files = await listFolder(tree, `firms/${slug}/`);
+    const index = (await getJSON('firms/index.json', head)) || [];
+    const kept = index.filter(x => x.slug !== slug);
+    const ch = files.map(path => ({ path, delete: true }));
+    if (kept.length !== index.length) ch.push({ path: 'firms/index.json', content: jsonText(kept) });
+    return ch;
+  });
+  await deleteSecret(`GHL_TOKEN_${secretKey}`);
+  await deleteSecret(`PASSPHRASE_${secretKey}`);
+}
+
+// ---------- dialog ----------
+function openDialog({ title, body, ok, okIcon = '', danger = false, onOk }) {
+  $('dlg').innerHTML = `<h3>${title}</h3>${body}<div class="btnrow"><button class="btn" type="button" id="dlgCancel">Cancel</button><button class="btn ${danger ? 'danger' : 'primary'}" type="button" id="dlgOk">${okIcon}${esc(ok)}</button></div>`;
+  $('ovl').hidden = false; wireEyes($('dlg'));
+  $('dlgCancel').onclick = closeDialog; $('dlgOk').onclick = onOk;
+  $('dlg').querySelector('input')?.focus();
+  $('dlg').onkeydown = e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); onOk(); } };
+}
+function closeDialog() { $('ovl').hidden = true; $('dlg').innerHTML = ''; }
+$('ovl').addEventListener('click', e => { if (e.target === $('ovl')) closeDialog(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('ovl').hidden) closeDialog(); });
+
+// =====================================================================
+// Mapping panel
+// =====================================================================
+const STEPS_MAP = [
+  ['contacted', 'Contacted', 'Someone reached the lead'],
+  ['qualified', 'Qualified', 'The lead fits the firm'],
+  ['consultBooked', 'Consult booked', 'A consultation is on the calendar'],
+  ['consultHeld', 'Consult held', 'The consultation happened'],
+  ['agreementSent', 'Agreement sent', 'Retainer or agreement sent'],
+  ['signed', 'Signed', 'Became a client'],
+  ['noShow', 'No-show', 'Missed the consultation'],
+  ['turnedAway', 'Turned away', 'Rejected, referred out or not a fit'],
+];
+// The ACME snapshot ("Lead Stages") stage names, as mapped for Mahdavi.
+const ACME = {
+  contacted: ['Stage 3: Lead Contacted?'], qualified: ['Stage 4: Lead Qualified?'], consultBooked: ['Stage 5: Booked Consultation'],
+  consultHeld: ['Stage 6: Consultation Showed - Agreement Sent', 'Stage 7: Consultation Showed - Lead Rejected', 'Stage 8: Consultation Showed - Lead Referred', 'Stage 9: Consultation Showed - Lead Thinking'],
+  agreementSent: ['Stage 6: Consultation Showed - Agreement Sent'], signed: ['Stage 11: Agreement Signed'], noShow: ['Stage 10: Consultation No Show'],
+  turnedAway: ['Stage 7: Consultation Showed - Lead Rejected', 'Stage 8: Consultation Showed - Lead Referred', 'Stage 12: Referred Lead Accepted?'],
+};
+const NEG = /\b(not|un|non|dis)[\s-]?(contacted|qualified|qualify)|\bno[\s-]?show/i;
+const GUESS = {
+  contacted: [/\bcontact(ed)?\b|\breached\b|initial contact|first contact/i, /attempt|\b(not|un|non)[\s-]?(contacted|reached)|no[\s-]?show/i],
+  qualified: [/qualif/i, NEG],
+  consultBooked: [/(book|schedul)\w*\W+(\w+\W+){0,2}(consult|appointment|meeting|call)|(consult|appointment|meeting)\w*\W+(\w+\W+){0,2}(book|schedul)|^scheduled$/i, /no[\s-]?show|cancel/i],
+  consultHeld: [/(show(ed)?|held|attended|completed?)\w*\W+(\w+\W+){0,2}(consult|appointment|meeting)|(consult|appointment|meeting)\w*\W+(\w+\W+){0,2}(show(ed)?|held|attended|completed?)/i, /no[\s-]?show/i],
+  agreementSent: [/(agreement|retainer|contract|proposal|engagement)\w*\W+(\w+\W+){0,2}sent|sent\W+(\w+\W+){0,2}(agreement|retainer|contract|proposal)/i, null],
+  signed: [/\bsigned\b|\bretained\b|\bhired\b|closed[\s-]?won|^won$|new client/i, /\bnot\b|\bun/i],
+  noShow: [/no[\s-]?show/i, null],
+  turnedAway: [/reject|referr|declin|disqualif|turned away|not a fit|unqualified|not qualified|\blost\b/i, null],
+};
+function guessMapping(stageNames) {
+  const out = {};
+  for (const [k] of STEPS_MAP) {
+    const acme = stageNames.filter(n => ACME[k].some(a => norm(a) === norm(n)));
+    if (acme.length) { out[k] = acme; continue; }
+    const [yes, no] = GUESS[k];
+    out[k] = stageNames.filter(n => yes.test(n) && !(no && no.test(n)));
+  }
+  return out;
+}
+
+// Renders the panel into `host`. Resolves with { pipelines, stages, turnedAway, calendarKeywords } when the user saves.
+function mappingPanel(host, { discovery, config, isNew, saveLabel }) {
+  const pipelines = discovery.pipelines || [];
+  const cfgPipes = (config?.pipelines || []).map(norm);
+  let chosenPipes;
+  if (!isNew) chosenPipes = new Set(pipelines.filter(p => !cfgPipes.length || cfgPipes.includes(norm(p.name))).map(p => p.id));
+  else {
+    const allNames = pipelines.flatMap(p => p.stages.map(s => s.name));
+    const g = guessMapping(allNames); const hit = new Set(Object.values(g).flat().map(norm));
+    const scored = pipelines.map(p => ({ id: p.id, n: p.stages.filter(s => hit.has(norm(s.name))).length }));
+    const best = Math.max(0, ...scored.map(s => s.n));
+    chosenPipes = new Set(best > 0 ? scored.filter(s => s.n === best).map(s => s.id) : pipelines.slice(0, 1).map(p => p.id));
+  }
+  const stageList = () => { const seen = new Set(), out = []; for (const p of pipelines) if (chosenPipes.has(p.id)) for (const s of p.stages) if (!seen.has(norm(s.name))) { seen.add(norm(s.name)); out.push(s.name); } return out; };
+  // selection per step: Map(normName -> displayName)
+  const sel = {};
+  const fromCfg = k => k === 'turnedAway' ? (config?.turnedAway?.stages || []) : (config?.stages?.[k] || []);
+  const initial = isNew ? guessMapping(stageList()) : Object.fromEntries(STEPS_MAP.map(([k]) => [k, fromCfg(k)]));
+  for (const [k] of STEPS_MAP) sel[k] = new Map((initial[k] || []).map(n => [norm(n), n]));
+  let keywords = [...(config?.booking?.calendarKeywords || [])];
+
+  return new Promise(resolve => {
+    const draw = () => {
+      const names = stageList(); const known = new Set(pipelines.flatMap(p => p.stages.map(s => norm(s.name))));
+      host.innerHTML = `<div class="map">
+        <section><h4>Pipelines to include</h4><p class="hint" style="margin:0 0 8px">Only leads in these pipelines are counted.</p>
+          <div class="pipes">${pipelines.map(p => `<label class="check"><input type="checkbox" data-pipe="${esc(p.id)}" ${chosenPipes.has(p.id) ? 'checked' : ''}> ${esc(p.name)} <span class="muted small">(${p.stages.length} stages)</span></label>`).join('') || '<p class="errbox">No pipelines found in this sub-account.</p>'}</div></section>
+        <section><h4>Funnel steps</h4><p class="hint" style="margin:0 0 4px">Pick the stage(s) that prove each step. A later step counts as every earlier one, so list only the stages that first prove it.</p>
+          ${STEPS_MAP.map(([k, label, hint]) => {
+            const extra = [...sel[k].entries()].filter(([n]) => !names.some(x => norm(x) === n));
+            return `<div class="mrow"><div class="lbl">${esc(label)}<span class="hint">${esc(hint)}</span></div><div class="opts">
+              ${names.map(n => `<button type="button" class="opt" data-step="${k}" data-stage="${esc(n)}" aria-pressed="${sel[k].has(norm(n))}">${esc(n)}</button>`).join('')}
+              ${extra.map(([, n]) => `<button type="button" class="opt stale" data-step="${k}" data-stage="${esc(n)}" aria-pressed="true" title="${known.has(norm(n)) ? 'In a pipeline you excluded' : 'Not found in GHL any more'}">${esc(n)} · ${known.has(norm(n)) ? 'excluded pipeline' : 'not in GHL'}</button>`).join('')}
+              ${!names.length && !extra.length ? '<span class="muted small">Choose a pipeline first.</span>' : ''}</div></div>`;
+          }).join('')}</section>
+        <section><h4>Consult calendars</h4><p class="hint" style="margin:0 0 8px">An appointment counts as a consult when its calendar name contains one of these words. Leave empty to count every calendar.</p>
+          <label class="f" for="calKw" style="max-width:520px">Keywords, comma-separated<input type="text" id="calKw" value="${esc(keywords.join(', '))}" placeholder="e.g. consult, case review"></label>
+          ${(discovery.calendars || []).length ? `<p class="hint" style="margin:8px 0 6px">Calendars in GHL (click to add one as a keyword):</p><div class="opts">${discovery.calendars.map(c => `<button type="button" class="opt cal" data-cal="${esc(c.name)}">${esc(c.name)}</button>`).join('')}</div>` : '<p class="hint" style="margin:8px 0 0">This sub-account has no calendars.</p>'}
+        </section>
+        <div id="mapWarn"></div>
+        <div class="btnrow"><button type="button" class="btn primary big" id="mapSave">${esc(saveLabel)}</button></div>
+      </div>`;
+      host.querySelectorAll('[data-pipe]').forEach(c => c.addEventListener('change', () => { c.checked ? chosenPipes.add(c.dataset.pipe) : chosenPipes.delete(c.dataset.pipe); keywords = parseKw(); draw(); }));
+      host.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
+        const m = sel[b.dataset.step], n = b.dataset.stage, on = b.getAttribute('aria-pressed') !== 'true';
+        on ? m.set(norm(n), n) : m.delete(norm(n));
+        if (b.classList.contains('stale') && !on) { keywords = parseKw(); draw(); } else b.setAttribute('aria-pressed', String(on));
+      }));
+      host.querySelectorAll('[data-cal]').forEach(b => b.addEventListener('click', () => {
+        const kw = parseKw(); if (!kw.some(k => norm(k) === norm(b.dataset.cal))) kw.push(b.dataset.cal); $('calKw').value = kw.join(', ');
+      }));
+      let warned = false;
+      $('mapSave').addEventListener('click', () => {
+        const chosen = pipelines.filter(p => chosenPipes.has(p.id)).map(p => p.name);
+        const warn = [];
+        if (!chosen.length) { $('mapWarn').innerHTML = '<div class="errbox">Pick at least one pipeline.</div>'; return; }
+        for (const [k, label] of STEPS_MAP.slice(0, 6)) if (!sel[k].size) warn.push(label);
+        if (warn.length && !warned) {
+          warned = true;
+          $('mapWarn').innerHTML = `<div class="warnbox">No stage picked for: <b>${warn.map(esc).join(', ')}</b>. Those steps will rely on tags only and may show zero. Click again to save anyway.</div>`;
+          $('mapSave').textContent = `${saveLabel} anyway`; return;
+        }
+        const pick = k => [...sel[k].values()];
+        resolve({ pipelines: chosen, stages: Object.fromEntries(STEPS_MAP.filter(([k]) => k !== 'turnedAway').map(([k]) => [k, pick(k)])), turnedAway: pick('turnedAway'), calendarKeywords: parseKw() });
+      });
+    };
+    const parseKw = () => ($('calKw')?.value ?? keywords.join(',')).split(',').map(s => s.trim()).filter(Boolean);
+    draw();
+  });
+}
+function applyMapping(cfg, m) {
+  cfg.pipelines = m.pipelines;
+  cfg.stages = { ...(cfg.stages || {}), ...m.stages };
+  const labels = cfg.turnedAway?.reasonLabels || {};
+  cfg.turnedAway = { ...(cfg.turnedAway || {}), stages: m.turnedAway, reasonLabels: Object.fromEntries(Object.entries(labels).filter(([k]) => m.turnedAway.some(s => norm(s) === norm(k)))) };
+  cfg.booking = { ...(cfg.booking || {}), calendarKeywords: m.calendarKeywords };
+  return cfg;
+}
+
+// =====================================================================
+// New firm
+// =====================================================================
+const PRACTICE = ['Personal Injury', 'Family Law', 'Criminal Defense', 'Immigration', 'Estate Planning', 'Employment', 'Bankruptcy', 'Business/Corporate', 'Other'];
+const TIMEZONES = [['America/New_York', 'Eastern (New York)'], ['America/Chicago', 'Central (Chicago)'], ['America/Denver', 'Mountain (Denver)'], ['America/Phoenix', 'Arizona (Phoenix)'], ['America/Los_Angeles', 'Pacific (Los Angeles)'], ['America/Anchorage', 'Alaska (Anchorage)'], ['Pacific/Honolulu', 'Hawaii (Honolulu)'], ['America/Puerto_Rico', 'Atlantic (Puerto Rico)']];
+const WORDS = 'acorn amber anchor apple arrow aspen autumn badge bamboo banjo barley basil beacon berry birch blossom bonfire breeze brook cactus candle canyon carbon cedar cherry cinder citrus clover cobalt comet copper coral cotton crater cricket crystal daisy delta desert dolphin dragon ember falcon fern fiddle flint forest fossil galaxy garnet ginger glacier granite harbor hazel heron hickory honey horizon indigo island ivory jasmine juniper kettle kiwi lagoon lantern lemon lilac linen lotus maple marble meadow mesa mint monarch mosaic nectar nickel nutmeg oasis ocean olive onyx orbit orchid otter paddle pebble pepper pine planet plum polar poppy prairie quartz quill raven reef ribbon river robin saffron sage salmon sapphire sequoia shadow silver sparrow spruce summit sunset thistle thunder timber topaz tulip tundra valley velvet violet walnut willow winter yarrow zephyr'.split(' ');
+function makePassphrase() {
+  const out = [];
+  while (out.length < 4) { const r = crypto.getRandomValues(new Uint32Array(1))[0]; const lim = Math.floor(2 ** 32 / WORDS.length) * WORDS.length; if (r < lim) { const w = WORDS[r % WORDS.length]; if (!out.includes(w)) out.push(w); } }
+  return out.join('-');
+}
+
+function renderNewFirm() {
+  cleanupRun();
+  $('screen').innerHTML = `<header class="head"><div class="titles"><p class="sub"><button class="linkbtn" type="button" id="backBtn">← All firms</button></p><h1>New firm</h1><p class="sub">Adds a scorecard for one GoHighLevel sub-account. Takes about 3–5 minutes.</p></div></header>
+    <form id="nfForm" class="grid2" autocomplete="off" novalidate>
+      <label class="f full" for="nfName">Firm name<input type="text" id="nfName" required placeholder="e.g. Harrison Law Group"></label>
+      <div class="full note" id="nfSlug">Slug: <span class="mono">—</span></div>
+      <label class="f" for="nfArea">Practice area<select id="nfArea">${PRACTICE.map(p => `<option>${esc(p)}</option>`).join('')}</select></label>
+      <label class="f" for="nfAreaOther" id="nfAreaOtherWrap" hidden>Practice area (other)<input type="text" id="nfAreaOther" placeholder="e.g. Medical Malpractice"></label>
+      <label class="f" for="nfTz">Time zone<select id="nfTz">${TIMEZONES.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join('')}</select></label>
+      <label class="f full" for="nfLoc">GHL location ID <span class="hint">The sub-account's ID, from its URL: …/v2/location/<b>this part</b>/…</span><input type="text" id="nfLoc" required spellcheck="false" placeholder="e.g. INZKoa3nu45xtcZB0Yuq"></label>
+      <label class="f full" for="nfTok">GHL token <span class="hint">A read-only Private Integration Token from that sub-account (Settings → Private Integrations). Scopes are listed in the repo README.</span>
+        <span class="pw"><input type="password" id="nfTok" required spellcheck="false" placeholder="pit-…"><button type="button" class="eye" data-eye="nfTok" aria-label="Show token"></button></span></label>
+      <label class="f full" for="nfPass">Dashboard passphrase <span class="hint">Unlocks names on the dashboard. Goes into the GHL menu link. Generated for you; change it if you like.</span>
+        <span class="pw"><input type="password" id="nfPass" required spellcheck="false"><button type="button" class="eye" data-eye="nfPass" aria-label="Show passphrase"></button></span>
+        <span><button type="button" class="linkbtn" id="nfRegen">Generate another</button></span></label>
+      <div class="full ferr" id="nfErr" role="alert"></div>
+      <div class="full btnrow" style="margin-top:0"><button type="submit" class="btn primary big" id="nfCreate">Create</button><button type="button" class="btn big" id="nfCancel">Cancel</button></div>
+    </form>
+    <div id="runHost"></div>`;
+  $('backBtn').onclick = $('nfCancel').onclick = () => renderList();
+  $('nfPass').value = makePassphrase();
+  $('nfRegen').onclick = () => { $('nfPass').value = makePassphrase(); };
+  $('nfArea').onchange = () => { $('nfAreaOtherWrap').hidden = $('nfArea').value !== 'Other'; };
+  wireEyes($('screen'));
+  const slugInfo = () => {
+    const slug = slugify($('nfName').value);
+    let err = '';
+    if (!slug) err = '';
+    else if (RESERVED.includes(slug)) err = `"${slug}" is reserved. Change the name.`;
+    else if (firms.some(f => f.slug === slug)) err = `A firm with slug "${slug}" already exists.`;
+    $('nfSlug').innerHTML = slug ? `Slug: <span class="mono">${esc(slug)}</span> · Dashboard: <span class="mono">${esc(dashUrl(slug))}</span> · Secrets: <span class="mono">GHL_TOKEN_${esc(secretKeyFor(slug))}</span>, <span class="mono">PASSPHRASE_${esc(secretKeyFor(slug))}</span>${err ? `<div class="ferr" style="margin-top:4px">${esc(err)}</div>` : ''}` : 'Slug: <span class="mono">—</span> (from the firm name)';
+    return { slug, err };
+  };
+  $('nfName').addEventListener('input', slugInfo); slugInfo();
+  $('nfName').focus();
+  $('nfForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const { slug, err } = slugInfo();
+    const name = $('nfName').value.trim(), loc = $('nfLoc').value.trim(), tok = $('nfTok').value.trim(), pass = $('nfPass').value;
+    const area = $('nfArea').value === 'Other' ? $('nfAreaOther').value.trim() : $('nfArea').value;
+    const problem = !name ? 'Enter the firm name.' : !slug ? 'The firm name needs at least one letter or digit.' : err ? err
+      : !area ? 'Enter the practice area.' : !/^[A-Za-z0-9]{10,40}$/.test(loc) ? 'The location ID looks wrong: letters and digits only, from the sub-account URL.'
+      : tok.length < 20 ? 'Paste the GHL Private Integration Token.' : pass.length < 12 ? 'Use a passphrase of at least 12 characters.' : '';
+    if (problem) { $('nfErr').textContent = problem; return; }
+    $('nfErr').textContent = '';
+    startRun({ name, slug, secretKey: secretKeyFor(slug), practiceArea: area, locationId: loc, timezone: $('nfTz').value, token: tok, passphrase: pass });
+  });
+}
+
+// ---------- the six-step run ----------
+const RUN_STEPS = ['Save token', "Read the firm's GHL setup", 'Map the stages', 'Create the dashboard', 'First sync', 'Done'];
+let run = null;                       // { ctx, timer, t0, stopped }
+function cleanupRun() { if (run) { run.stopped = true; clearInterval(run.timer); if (run.ctx) { run.ctx.token = null; run.ctx.passphrase = null; } run = null; } }
+
+function startRun(ctx) {
+  // Lock the form; the progress list takes over.
+  document.querySelectorAll('#nfForm input, #nfForm select, #nfForm button').forEach(el => { el.disabled = true; });
+  $('nfForm').hidden = true;
+  run = { ctx, t0: Date.now(), stopped: false };
+  $('runHost').innerHTML = `<div class="note" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span><b>${esc(ctx.name)}</b> · <span class="mono">${esc(ctx.slug)}</span> · ${esc(ctx.practiceArea)}</span><span>Elapsed <b class="elapsed" id="runElapsed">0:00</b></span></div>
+    <ol class="steps" id="runSteps">${RUN_STEPS.map((t, i) => `<li class="step pending" data-i="${i}"><span class="ic" aria-hidden="true"></span><span class="t">${i + 1}. ${esc(t)}</span><span class="d"></span><div class="e"></div><div class="slot"></div></li>`).join('')}</ol>`;
+  const tick = () => { const s = Math.floor((Date.now() - run.t0) / 1000); $('runElapsed').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+  run.timer = setInterval(tick, 1000); tick();
+  runFrom(0);
+}
+const stepEl = i => document.querySelector(`#runSteps .step[data-i="${i}"]`);
+function setStep(i, state, detail) {
+  const el = stepEl(i); if (!el) return;
+  el.className = `step ${state}`;
+  el.querySelector('.ic').innerHTML = state === 'ok' ? ICON.tick : state === 'fail' ? ICON.cross : '';
+  el.setAttribute('aria-label', `${RUN_STEPS[i]}: ${({ run: 'running', ok: 'done', fail: 'failed', wait: 'waiting for you', pending: 'not started' })[state]}`);
+  if (detail !== undefined) el.querySelector('.d').innerHTML = detail;
+  if (state !== 'fail') el.querySelector('.e').innerHTML = '';
+}
+async function runFrom(i) {
+  const myRun = run; myRun.stopped = false;
+  myRun.ctx.stop = () => run !== myRun || myRun.stopped;
+  if (!myRun.timer) { myRun.timer = setInterval(() => { const s = Math.floor((Date.now() - myRun.t0) / 1000); const el = $('runElapsed'); if (el) el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }, 1000); }
+  for (; i < RUN_STEPS.length; i++) {
+    if (run !== myRun) return;
+    setStep(i, i === 2 ? 'wait' : 'run');
+    const say = h => { if (run === myRun) stepEl(i).querySelector('.d').innerHTML = h; };
+    try { await STEP_FNS[i](myRun.ctx, say, stepEl(i).querySelector('.slot')); if (run !== myRun) return; setStep(i, 'ok'); }
+    catch (e) {
+      if (run !== myRun) return;
+      clearInterval(myRun.timer); myRun.timer = null;
+      setStep(i, 'fail');
+      const indexWritten = i >= 4;
+      stepEl(i).querySelector('.e').innerHTML = `<div class="errbox">${errHtml(e)}</div><div class="btnrow">
+        <button type="button" class="btn primary" id="retryBtn">Retry from this step</button>
+        <button type="button" class="btn danger" id="discardBtn">${indexWritten ? 'Delete this firm' : 'Discard and clean up'}</button></div>`;
+      $('retryBtn').onclick = () => { stepEl(i).querySelector('.e').innerHTML = ''; runFrom(i); };
+      $('discardBtn').onclick = async () => {
+        $('discardBtn').disabled = true; $('retryBtn').disabled = true; $('discardBtn').textContent = 'Cleaning up…';
+        try { await deleteFirm(myRun.ctx.slug, myRun.ctx.secretKey, myRun.ctx.name); await renderList(`Discarded ${esc(myRun.ctx.name)}: secrets and any files removed.`); }
+        catch (err) { stepEl(i).querySelector('.e').insertAdjacentHTML('beforeend', `<div class="errbox" style="margin-top:8px">${esc(err.message)}</div>`); $('discardBtn').disabled = false; $('discardBtn').textContent = 'Try clean-up again'; }
+      };
+      return;
+    }
+  }
+  clearInterval(myRun.timer); myRun.timer = null;
+}
+
+const STEP_FNS = [
+  // 1. Save token
+  async (ctx, say) => {
+    say('Encrypting with the repo key and saving 2 secrets…');
+    await putSecret(`GHL_TOKEN_${ctx.secretKey}`, ctx.token);
+    await putSecret(`PASSPHRASE_${ctx.secretKey}`, ctx.passphrase);
+    say(`Saved <span class="mono">GHL_TOKEN_${esc(ctx.secretKey)}</span> and <span class="mono">PASSPHRASE_${esc(ctx.secretKey)}</span>.`);
+  },
+  // 2. Read the firm's GHL setup
+  async (ctx, say) => {
+    const t0 = await dispatch('discover.yml', { slug: ctx.slug, secretKey: ctx.secretKey, locationId: ctx.locationId });
+    const { value } = await follow({ workflow: 'discover.yml', title: `Discover ${ctx.slug}`, t0, label: 'Reading GHL', limitMs: 3 * 60e3, say, stop: ctx.stop,
+      check: async () => { const d = await getJSON(`firms/${ctx.slug}/discovery.json`); return d && d.locationId === ctx.locationId && Date.parse(d.generatedAt) > t0 - 120e3 ? d : null; } });
+    if (!value.pipelines?.length) throw new Error('GHL returned no pipelines for this location. Check the location ID and that the token belongs to this sub-account.');
+    ctx.discovery = value;
+    const nStages = value.pipelines.reduce((n, p) => n + p.stages.length, 0);
+    say(`Found ${value.pipelines.length} pipeline${value.pipelines.length === 1 ? '' : 's'}, ${nStages} stages and ${value.calendars?.length || 0} calendar${value.calendars?.length === 1 ? '' : 's'}.`);
+  },
+  // 3. Map the stages (waits for the user)
+  async (ctx, say, slot) => {
+    say('Check the stages below, then press Continue. Stages matching the ACME template are already picked.');
+    const tpl = await getJSON('firms/_template/config.json');
+    if (!tpl) throw new Error('firms/_template/config.json is missing from the repo.');
+    ctx.mapping = await mappingPanel(slot, { discovery: ctx.discovery, config: ctx.mapping ? applyMapping(structuredClone(tpl), ctx.mapping) : tpl, isNew: !ctx.mapping, saveLabel: 'Continue' });
+    slot.innerHTML = '';
+    const n = Object.values(ctx.mapping.stages).flat().length + ctx.mapping.turnedAway.length;
+    say(`${ctx.mapping.pipelines.map(esc).join(', ')} · ${n} stage selection${n === 1 ? '' : 's'} · calendars: ${ctx.mapping.calendarKeywords.length ? ctx.mapping.calendarKeywords.map(esc).join(', ') : 'all'}.`);
+  },
+  // 4. Create the dashboard: config.json + stub + index.json in one commit (index.json is only ever written here)
+  async (ctx, say) => {
+    say('Writing config.json, the dashboard page and the firm list…');
+    await commitFiles(`Add ${ctx.name}`, async head => {
+      const index = (await getJSON('firms/index.json', head)) || [];
+      if (index.some(f => f.slug === ctx.slug)) throw new Error(`"${ctx.slug}" is already in the firm list.`);
+      const tpl = await getJSON('firms/_template/config.json', head);
+      const stub = await getText('firms/_template/index.html', head);
+      if (!tpl || !stub) throw new Error('The firms/_template files are missing.');
+      const cfg = applyMapping(structuredClone(tpl), ctx.mapping);
+      Object.assign(cfg, { locationName: ctx.name, practiceArea: ctx.practiceArea, locationId: ctx.locationId, title: '', timezone: ctx.timezone });
+      cfg.notice = { ...(cfg.notice || {}), show: true };
+      index.push({ slug: ctx.slug, secretKey: ctx.secretKey, name: ctx.name, practiceArea: ctx.practiceArea, locationId: ctx.locationId, createdAt: new Date().toISOString() });
+      return [
+        { path: `firms/${ctx.slug}/config.json`, content: jsonText(cfg) },
+        { path: `firms/${ctx.slug}/index.html`, content: stub },
+        { path: 'firms/index.json', content: jsonText(index) },
+      ];
+    });
+    say(`Committed "Add ${esc(ctx.name)}".`);
+  },
+  // 5. First sync
+  async (ctx, say) => {
+    const t0 = await dispatch('sync.yml', { slug: ctx.slug });
+    const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${ctx.slug}`, t0, label: 'Syncing', limitMs: 4 * 60e3, say, stop: ctx.stop,
+      check: async () => { const k = await getJSON(`firms/${ctx.slug}/data/kpis.json`); return k?.generatedAt ? k : null; } });
+    ctx.kpis = value;
+    say(`Synced at ${esc(fmtTime(value.generatedAt))}.`);
+  },
+  // 6. Done
+  async (ctx, say, slot) => {
+    const leads = ctx.kpis?.periods?.last90?.current?.totalLeads;
+    const link = ghlLink(ctx.slug, ctx.passphrase);
+    say('');
+    slot.innerHTML = `<div class="success">
+      <div><h2>${esc(ctx.name)} is live</h2><p class="sub">${leads != null ? `First sync found <b>${leads}</b> lead${leads === 1 ? '' : 's'} in the last 90 days.` : 'First sync finished.'} The dashboard may take a minute to appear while GitHub Pages publishes.</p></div>
+      <label class="f">Dashboard<span class="copyrow"><input type="text" readonly value="${esc(dashUrl(ctx.slug))}"><a class="btn" href="${esc(dashUrl(ctx.slug))}" target="_blank" rel="noopener">${ICON.ext}Open</a></span></label>
+      <label class="f" for="ghlLinkOut">GHL menu link <span class="hint">Includes the passphrase, so names unlock for the firm's team.</span><span class="copyrow"><input type="password" id="ghlLinkOut" readonly value="${esc(link)}"><button type="button" class="eye" data-eye="ghlLinkOut" aria-label="Show link" style="position:static;transform:none"></button><button type="button" class="btn primary" id="copyGhl">${ICON.copy}Copy</button></span></label>
+      <div><b class="small">Two steps left in GHL</b><ul>
+        <li>In ${esc(ctx.name)}'s sub-account: Settings → Custom Menu Links → create "KPI Dashboard" with the GHL menu link above.</li>
+        <li>Ask the firm's team to move every opportunity through the pipeline stages, so each funnel step can be measured.</li></ul></div>
+      <div class="btnrow" style="margin-top:0"><button type="button" class="btn" id="toList">Back to all firms</button></div></div>`;
+    wireEyes(slot);
+    $('copyGhl').onclick = async () => { try { await navigator.clipboard.writeText(link); $('copyGhl').innerHTML = `${ICON.tick}Copied`; } catch { $('ghlLinkOut').type = 'text'; $('ghlLinkOut').select(); } };
+    $('toList').onclick = () => renderList(`Added ${esc(ctx.name)}.`);
+    ctx.token = null;                     // the GHL token is no longer needed in memory
+  },
+];
+
+// =====================================================================
+// Edit mapping
+// =====================================================================
+async function renderEditMapping(f) {
+  cleanupRun();
+  $('screen').innerHTML = `<header class="head"><div class="titles"><p class="sub"><button class="linkbtn" type="button" id="backBtn">← All firms</button></p><h1>Edit mapping</h1><p class="sub">${esc(f.name)} · <span class="mono">${esc(f.slug)}</span></p></div>
+    <div class="controls"><button class="btn" type="button" id="rereadBtn">${ICON.sync}Re-read GHL</button></div></header>
+    <div id="emStatus" aria-live="polite"></div><div id="emHost"><p class="sub">Loading…</p></div>`;
+  $('backBtn').onclick = () => renderList();
+  const host = $('emHost'); const stop = () => !document.body.contains(host);
+  const status = h => { $('emStatus').innerHTML = h ? `<div class="note" style="margin-bottom:12px">${h}</div>` : ''; };
+  const load = async () => {
+    const [cfg, disc] = await Promise.all([getJSON(`firms/${f.slug}/config.json`), getJSON(`firms/${f.slug}/discovery.json`)]);
+    if (!cfg) { $('emHost').innerHTML = '<div class="errbox">config.json not found for this firm.</div>'; return; }
+    if (!disc) { $('emHost').innerHTML = `<div class="warnbox">There's no snapshot of this firm's GHL pipelines yet. Press <b>Re-read GHL</b> to take one (about a minute).</div>`; return; }
+    status(`Pipelines and stages as of ${esc(fmtTime(disc.generatedAt))} (${esc(ago(disc.generatedAt))}).`);
+    const m = await mappingPanel($('emHost'), { discovery: disc, config: cfg, isNew: false, saveLabel: 'Save mapping' });
+    $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = true; });
+    status('Saving config.json…');
+    try {
+      await commitFiles(`Update stage mapping for ${f.name}`, async head => {
+        const c = await getJSON(`firms/${f.slug}/config.json`, head);
+        return [{ path: `firms/${f.slug}/config.json`, content: jsonText(applyMapping(c, m)) }];
+      });
+      status('Saved. Re-syncing so the dashboard uses the new mapping…');
+      const t0 = await dispatch('sync.yml', { slug: f.slug });
+      await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Syncing', limitMs: 4 * 60e3, stop, say: h => status(`Mapping saved. ${h}`),
+        check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return k && Date.parse(k.generatedAt) > t0 - 60e3 ? k : null; } });
+      await renderList(`Saved the mapping for ${esc(f.name)} and re-synced.`);
+    } catch (e) { status(''); $('emHost').insertAdjacentHTML('afterbegin', `<div class="errbox" style="margin-bottom:12px">${errHtml(e)}</div>`); $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = false; }); }
+  };
+  $('rereadBtn').onclick = async () => {
+    $('rereadBtn').disabled = true;
+    try {
+      const cfg = await getJSON(`firms/${f.slug}/config.json`);
+      const t0 = await dispatch('discover.yml', { slug: f.slug, secretKey: f.secretKey, locationId: cfg?.locationId || f.locationId || '' });
+      await follow({ workflow: 'discover.yml', title: `Discover ${f.slug}`, t0, label: 'Reading GHL', limitMs: 3 * 60e3, stop, say: h => status(h),
+        check: async () => { const d = await getJSON(`firms/${f.slug}/discovery.json`); return d && Date.parse(d.generatedAt) > t0 - 120e3 ? d : null; } });
+      await load();
+    } catch (e) { status(`<span class="chip bad">Couldn't read GHL</span> ${errHtml(e)}`); }
+    finally { const b = $('rereadBtn'); if (b) b.disabled = false; }
+  };
+  try { await load(); } catch (e) { $('emHost').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; }
+}
+
+wireEyes();
+boot();
+</script>
+</body>
+</html>

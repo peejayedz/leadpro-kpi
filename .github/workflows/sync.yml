@@ -1,4 +1,6 @@
 name: Sync KPIs from GoHighLevel
+# The admin page finds the run it started by this title.
+run-name: "Sync ${{ inputs.slug || 'all firms' }}"
 
 on:
   schedule:
