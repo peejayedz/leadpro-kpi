@@ -18,30 +18,84 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  sync:
+  # 1. Which firms: firms/index.json, or the one slug input.
+  plan:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      count: ${{ steps.plan.outputs.count }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-
-      - name: Pull GHL and compute KPIs
-        id: sync
+      - id: plan
         env:
           SLUG: ${{ inputs.slug }}
-          # Every repo secret as JSON; sync-all.mjs picks GHL_TOKEN_<SLUG> / PASSPHRASE_<SLUG> per firm.
-          # Never echo or log this variable.
-          ALL_SECRETS: ${{ toJSON(secrets) }}
-        run: node scripts/sync-all.mjs "$SLUG"
+        run: node scripts/plan-matrix.mjs "$SLUG"
 
-      - name: Commit if changed
-        if: ${{ !cancelled() }} # commit the firms that synced even if another firm failed
+  # 2. One job per firm. Each job sees only its own firm's two secrets.
+  sync:
+    needs: plan
+    if: needs.plan.outputs.count != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false # one firm failing never stops the others
+      max-parallel: 5
+      matrix:
+        firm: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    name: sync (${{ matrix.firm.slug }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Pull GHL and compute KPIs
         env:
-          LABEL: ${{ steps.sync.outputs.label || inputs.slug || 'firms' }}
+          SLUG: ${{ matrix.firm.slug }}
+          GHL_TOKEN: ${{ secrets[format('GHL_TOKEN_{0}', matrix.firm.secretKey)] }}
+          DASHBOARD_PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', matrix.firm.secretKey)] }}
+          DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+        run: node scripts/sync.mjs "$SLUG"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firm-${{ matrix.firm.slug }}
+          path: firms/${{ matrix.firm.slug }}/data/
+          retention-days: 1
+          if-no-files-found: error
+
+  # 3. One commit with every firm that synced.
+  commit:
+    needs: [plan, sync]
+    if: ${{ !cancelled() && needs.plan.outputs.count != '0' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: firm-*
+          path: ${{ runner.temp }}/firms
+      - name: Commit if changed
+        env:
+          SLUG: ${{ inputs.slug }}
+          MATRIX: ${{ needs.plan.outputs.matrix }}
+          DL: ${{ runner.temp }}/firms
         run: |
+          synced=0
+          for slug in $(echo "$MATRIX" | jq -r '.[].slug'); do
+            if [ -d "$DL/firm-$slug" ]; then
+              rm -rf "firms/$slug/data"
+              mkdir -p "firms/$slug/data"
+              cp -R "$DL/firm-$slug/." "firms/$slug/data/"
+              synced=$((synced + 1))
+              echo "✓ $slug"
+            else
+              echo "✗ $slug (sync failed, no data)"
+            fi
+          done
           git config user.name "kpi-sync-bot"
           git config user.email "kpi-sync-bot@users.noreply.github.com"
           git add -A firms
@@ -49,9 +103,10 @@ jobs:
             echo "No changes"
             exit 0
           fi
-          git commit -m "Sync ${LABEL} $(date -u +%Y-%m-%dT%H:%MZ)"
+          if [ -n "$SLUG" ]; then label="$SLUG"; else label="$synced firm$([ "$synced" = 1 ] || echo s)"; fi
+          git commit -m "Sync $label $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3; do
-            git pull --rebase --quiet origin main && git push && exit 0
+            git pull --rebase --quiet origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
             sleep $((i * 5))
           done
           echo "Push failed after 3 tries" >&2

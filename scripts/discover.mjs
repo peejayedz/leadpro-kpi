@@ -4,24 +4,27 @@
 //
 // Usage: node scripts/discover.mjs <slug> [locationId]
 // Location ID: the argument, else firms/<slug>/config.json, else firms/index.json.
-// Token: GHL_TOKEN env, else GHL_TOKEN_<SLUG> from ALL_SECRETS (the workflow passes every
-// repo secret as JSON). Never logged.
+// Token: GHL_TOKEN env (discover.yml sets it from GHL_TOKEN_<secretKey>). Never logged.
+// SECRET_KEY env (optional, set by the workflow) must match the slug, so one firm's token
+// can never write another firm's discovery.json.
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { checkSlug, firmSecrets, readIndex, tokenName } from './firms.mjs';
+import { checkSlug, readIndex, secretKeyFor, tokenName } from './firms.mjs';
 
 const SLUG = process.argv[2];
 const slugErr = checkSlug(SLUG);
 if (slugErr) { console.error(slugErr); process.exit(1); }
 const firmDir = new URL(`../firms/${SLUG}/`, import.meta.url);
+const KEY = process.env.SECRET_KEY || secretKeyFor(SLUG);
+if (KEY !== secretKeyFor(SLUG)) { console.error(`secretKey ${KEY} does not belong to slug ${SLUG} (expected ${secretKeyFor(SLUG)})`); process.exit(1); }
 
 let LOC = (process.argv[3] || '').trim();
 if (!LOC) { try { LOC = JSON.parse(await readFile(new URL('config.json', firmDir), 'utf8')).locationId || ''; } catch {} }
 if (!LOC) LOC = (await readIndex()).find(f => f.slug === SLUG)?.locationId || '';
 if (!/^[A-Za-z0-9]{10,40}$/.test(LOC)) { console.error(`No valid GHL location ID for ${SLUG}`); process.exit(1); }
 
-const TOKEN = process.env.GHL_TOKEN || firmSecrets(SLUG).token;
-if (!TOKEN) { console.error(`Secret ${tokenName(SLUG)} is not set`); process.exit(1); }
+const TOKEN = process.env.GHL_TOKEN;
+if (!TOKEN) { console.error(`Secret ${tokenName(KEY)} is not set`); process.exit(1); }
 
 const API = process.env.GHL_API_BASE || 'https://services.leadconnectorhq.com';
 const sleep = ms => new Promise(r => setTimeout(r, ms));

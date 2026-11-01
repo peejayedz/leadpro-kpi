@@ -13,24 +13,13 @@ export function checkSlug(slug) {
   return null;
 }
 
-// GHL_TOKEN_<SLUG> / PASSPHRASE_<SLUG>, e.g. "law-group" -> GHL_TOKEN_LAW_GROUP
-export const secretSuffix = slug => slug.toUpperCase().replace(/-/g, '_');
-export const tokenName = slug => `GHL_TOKEN_${secretSuffix(slug)}`;
-export const passName = slug => `PASSPHRASE_${secretSuffix(slug)}`;
+// secretKey = slug in capitals, hyphens as underscores ("test-firm" -> "TEST_FIRM").
+// The firm's secrets are GHL_TOKEN_<secretKey> and PASSPHRASE_<secretKey>.
+export const secretKeyFor = slug => slug.toUpperCase().replace(/-/g, '_');
+export const tokenName = key => `GHL_TOKEN_${key}`;
+export const passName = key => `PASSPHRASE_${key}`;
 
-// The workflow passes every repo secret as one JSON env var (ALL_SECRETS). Parse it once.
-let allSecrets;
-export function secrets() {
-  if (allSecrets) return allSecrets;
-  try { allSecrets = JSON.parse(process.env.ALL_SECRETS || '{}') || {}; } catch { allSecrets = {}; }
-  return allSecrets;
-}
-export const firmSecrets = slug => ({
-  token: secrets()[tokenName(slug)] || '',
-  passphrase: secrets()[passName(slug)] || '',
-  dispatchToken: secrets().DISPATCH_TOKEN || '',
-});
-
+// [{ slug, secretKey, name, practiceArea, locationId, createdAt }]
 export async function readIndex() {
   try {
     const list = JSON.parse(await readFile(new URL('../firms/index.json', import.meta.url), 'utf8'));

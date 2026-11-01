@@ -12,17 +12,18 @@ One repo hosting the intake KPI dashboard for every Law Firm Marketing Pros law 
 app/dashboard.html          the shared dashboard page (reads the firm slug from the URL)
 scripts/kpi-core.mjs        the only place KPIs are calculated (used by the page and the sync)
 scripts/sync.mjs            syncs one firm: node scripts/sync.mjs <slug>
-scripts/sync-all.mjs        syncs every firm in firms/index.json (or one slug), continues on error
+scripts/sync-all.mjs        local runs only: syncs firms/index.json (or one slug) with GHL_TOKEN from your shell
+scripts/plan-matrix.mjs     builds the per-firm job list for sync.yml
 scripts/discover.mjs        reads a firm's pipelines, stages, calendars and custom fields → firms/<slug>/discovery.json
 scripts/firms.mjs           slug rules and secret names shared by the scripts
-firms/index.json            the firm list: [{ slug, name, practiceArea, locationId, createdAt }]
+firms/index.json            the firm list: [{ slug, secretKey, name, practiceArea, locationId, createdAt }]
 firms/_template/            config.json and index.html stub that every new firm starts from
 firms/<slug>/index.html     tiny stub that loads app/dashboard.html
 firms/<slug>/config.json    goals, stage mapping, ad spend, locationId, practiceArea (no secrets)
 firms/<slug>/data/          written by the sync: kpis.json (numbers only) and details.enc.json (encrypted)
 firms/<slug>/discovery.json written by the Discover workflow (names and ids only)
 .github/workflows/sync.yml      every 30 min + Run workflow (optional slug; empty = all firms)
-.github/workflows/discover.yml  Run workflow with a slug (and the location ID for a brand-new firm)
+.github/workflows/discover.yml  Run workflow with slug + secretKey (and the location ID for a brand-new firm)
 admin/                      admin page (Phase 3)
 ```
 
@@ -30,17 +31,17 @@ admin/                      admin page (Phase 3)
 
 A slug is the firm name in lowercase, letters, digits and hyphens only (`mahdavi`, `harrison-law-group`). `admin`, `app`, `scripts` and `_template` are reserved.
 
-Each firm needs two repository secrets (Settings → Secrets and variables → Actions), named from the slug in upper case with hyphens as underscores:
+Each firm has a `secretKey` in `firms/index.json`: the slug in capitals, hyphens as underscores (`test-firm` → `TEST_FIRM`). It names the firm's two repository secrets (Settings → Secrets and variables → Actions):
 
 | Secret | What it is |
 | --- | --- |
-| `GHL_TOKEN_<SLUG>` | read-only GHL Private Integration Token from that firm's sub-account (scopes below) |
-| `PASSPHRASE_<SLUG>` | the firm's team passphrase that unlocks names, custom dates and drill-downs |
+| `GHL_TOKEN_<secretKey>` | read-only GHL Private Integration Token from that firm's sub-account (scopes below) |
+| `PASSPHRASE_<secretKey>` | the firm's team passphrase that unlocks names, custom dates and drill-downs |
 | `DISPATCH_TOKEN` | optional, one for the whole repo: fine-grained GitHub token, this repo only, **Actions: Read and write**. Enables the dashboards' Refresh button; stored only inside each firm's encrypted file. |
 
 e.g. `harrison-law-group` → `GHL_TOKEN_HARRISON_LAW_GROUP`, `PASSPHRASE_HARRISON_LAW_GROUP`.
 
-The workflows hand every secret to the scripts as one JSON variable (`ALL_SECRETS`); `sync-all.mjs` runs each firm's sync in its own process with only that firm's token and passphrase. No script prints a secret.
+`sync.yml` runs in three jobs: **plan** reads `firms/index.json` (or the one slug) into a list of `{ slug, secretKey }`; **sync** runs once per firm (`fail-fast: false`) and receives only that firm's `GHL_TOKEN_<secretKey>` and `PASSPHRASE_<secretKey>`, then uploads `firms/<slug>/data` as an artifact; **commit** downloads every firm's artifact and makes one commit. A secretKey must match its slug, so one firm can never borrow another's secrets. No script prints a secret.
 
 ## GHL Private Integration scopes (all read-only)
 
@@ -68,7 +69,9 @@ GitHub Pages sites are public, so:
 
 ## Running a sync by hand
 
-Actions → **Sync KPIs from GoHighLevel** → Run workflow. Enter a slug for one firm, or leave it empty for all. The log ends with a per-firm summary; a failing firm doesn't stop the others, and the run is marked failed if any firm failed.
+Actions → **Sync KPIs from GoHighLevel** → Run workflow. Enter a slug for one firm, or leave it empty for all. Each firm shows as its own `sync (<slug>)` job; a failing firm doesn't stop the others, the commit job lists ✓/✗ per firm, and the run is marked failed if any firm failed.
+
+Locally: `GHL_TOKEN=… DASHBOARD_PASSPHRASE=… node scripts/sync-all.mjs <slug>`.
 
 ## Mapping a firm's pipeline (`firms/<slug>/config.json`)
 

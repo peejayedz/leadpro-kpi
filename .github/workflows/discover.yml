@@ -4,7 +4,10 @@ on:
   workflow_dispatch: # admin page (New firm, Re-read GHL) or the Run workflow button
     inputs:
       slug:
-        description: "Firm slug (e.g. mahdavi)"
+        description: "Firm slug (e.g. test-firm)"
+        required: true
+      secretKey:
+        description: "Secret key: the slug in capitals, hyphens as underscores (e.g. TEST_FIRM)"
         required: true
       locationId:
         description: "GHL location ID. Optional once the firm's config.json exists; needed for a brand-new firm."
@@ -32,9 +35,9 @@ jobs:
       - name: Read pipelines, stages, calendars and custom fields
         env:
           SLUG: ${{ inputs.slug }}
+          SECRET_KEY: ${{ inputs.secretKey }} # discover.mjs checks it belongs to the slug
           LOCATION_ID: ${{ inputs.locationId }}
-          # Every repo secret as JSON; discover.mjs picks GHL_TOKEN_<SLUG>. Never echo or log this variable.
-          ALL_SECRETS: ${{ toJSON(secrets) }}
+          GHL_TOKEN: ${{ secrets[format('GHL_TOKEN_{0}', inputs.secretKey)] }}
         run: node scripts/discover.mjs "$SLUG" "$LOCATION_ID"
 
       - name: Commit discovery.json
@@ -50,7 +53,7 @@ jobs:
           fi
           git commit -m "Discover ${SLUG} $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3; do
-            git pull --rebase --quiet origin main && git push && exit 0
+            git pull --rebase --quiet origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
             sleep $((i * 5))
           done
           echo "Push failed after 3 tries" >&2
