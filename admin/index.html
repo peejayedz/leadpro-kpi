@@ -151,6 +151,12 @@ input[readonly]{color:var(--ink-2)}
 .ovl{position:fixed;inset:0;background:rgba(10,14,22,.45);display:grid;place-items:center;padding:16px;z-index:50}
 .dlg{background:var(--raised);border-radius:12px;box-shadow:var(--shadow);width:min(440px,100%);padding:20px;display:flex;flex-direction:column;gap:14px}
 .dlg h3{font-family:var(--serif);font-size:19px;font-weight:600}
+.dlg.wide{width:min(760px,100%);max-height:calc(100vh - 32px);overflow:auto}
+.news h4{margin:14px 0 4px;font-size:14.5px} .news h4:first-child{margin-top:0} .news h4 .muted{font-weight:400}
+.news ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.news li{display:grid;grid-template-columns:66px minmax(0,1fr);gap:8px;font-size:13.5px;align-items:baseline}
+.news li .chip{justify-content:center}
+.news code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace}
 .dlg .btnrow{justify-content:flex-end;margin-top:2px}
 
 /* token helper */
@@ -231,6 +237,7 @@ input[readonly]{color:var(--ink-2)}
     <div class="topline"><p class="brandline"><b>LeadPro</b> admin</p>
       <span class="controls">
         <button class="btn themebtn" id="themeBtn" type="button"></button>
+        <button class="btn" type="button" data-act="news" id="newsBtn">What's new</button>
         <button class="btn" type="button" data-act="forget" title="Remove the saved GitHub token from this device">Forget token</button>
         <button class="btn" type="button" data-act="lock">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Lock</button>
@@ -238,7 +245,7 @@ input[readonly]{color:var(--ink-2)}
     </div>
     <div id="screen"></div>
   </div>
-  <footer class="foot"><span>Repo <a id="repoLink" target="_blank" rel="noopener"></a></span><span>Internal tool · changes are commits to the repo</span></footer>
+  <footer class="foot"><span>Repo <a id="repoLink" target="_blank" rel="noopener"></a></span><span>Internal tool · changes are commits to the repo · <span id="adminVersion"></span></span></footer>
 </main>
 
 <div class="ovl" id="ovl" hidden><div class="dlg" id="dlg" role="dialog" aria-modal="true"></div></div>
@@ -250,6 +257,7 @@ input[readonly]{color:var(--ink-2)}
 // Nothing here is sent anywhere except api.github.com and this site.
 // =====================================================================
 import { mergeConfig, practiceSlug } from '../scripts/config-merge.mjs';
+import { parseChangelog, latestVersion, inlineMd } from '../scripts/changelog.mjs';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -428,6 +436,7 @@ function lockNow() { aesKey = null; ghToken = null; cleanupRun(); $('screen').in
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
   if (a.dataset.act === 'lock') lockNow();
+  if (a.dataset.act === 'news') openNews();
   if (a.dataset.act === 'forget') openDialog({
     title: 'Forget token on this device?', body: '<p class="sub">The saved GitHub token is removed from this browser. You will need to paste a token again next time. The token itself stays valid on GitHub; revoke it there if this device is lost.</p>',
     ok: 'Forget token', danger: true, onOk: () => { store.set(TOKEN_KEY, null); ghToken = null; closeDialog(); askToken('Token removed from this device. Paste a token to continue.'); },
@@ -567,6 +576,7 @@ const bannerOn = (firmCfg, base) => mergeConfig(base, null, firmCfg || {}).notic
 const bases = {};
 async function openApp() {
   show('appView');
+  loadChangelog().then(v => { const x = latestVersion(v); $('adminVersion').textContent = x ? `v${x}` : ''; }).catch(() => {});
   await renderList();
 }
 const ago = iso => {
@@ -720,7 +730,26 @@ function openDialog({ title, body, ok, okIcon = '', danger = false, onOk }) {
   $('dlg').querySelector('input')?.focus();
   $('dlg').onkeydown = e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); onOk(); } };
 }
-function closeDialog() { $('ovl').hidden = true; $('dlg').innerHTML = ''; }
+function closeDialog() { $('ovl').hidden = true; $('dlg').innerHTML = ''; $('dlg').classList.remove('wide'); }
+
+// ---------- What's new: the full CHANGELOG.md, client and internal ----------
+let changelog = null;
+async function loadChangelog() {
+  if (changelog) return changelog;
+  const r = await fetch(`../CHANGELOG.md?t=${Date.now()}`, { cache: 'no-store' });
+  if (!r.ok) throw new Error(`CHANGELOG.md: HTTP ${r.status}`);
+  return (changelog = parseChangelog(await r.text()));
+}
+async function openNews() {
+  $('dlg').classList.add('wide');
+  $('dlg').innerHTML = `<div class="mhead" style="display:flex;justify-content:space-between;gap:12px"><h3>What's new</h3><button class="btn" type="button" id="dlgCancel">Close</button></div><div class="news" id="newsBody"><p class="sub">Loading…</p></div>`;
+  $('ovl').hidden = false; $('dlgCancel').onclick = closeDialog; $('dlgCancel').focus();
+  try {
+    const versions = await loadChangelog();
+    $('newsBody').innerHTML = `<p class="sub" style="margin:0 0 10px"><span class="chip good">client</span> shows on the dashboards' What's new · <span class="chip">internal</span> admin page, scripts and workflows</p>` +
+      versions.map(v => `<h4>v${esc(v.version)} <span class="muted">${esc(v.date)}</span></h4><ul>${v.entries.map(e => `<li><span class="chip ${e.tag === 'client' ? 'good' : ''}">${e.tag}</span><span>${inlineMd(e.text)}</span></li>`).join('')}</ul>`).join('');
+  } catch (e) { $('newsBody').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; }
+}
 $('ovl').addEventListener('click', e => { if (e.target === $('ovl')) closeDialog(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('ovl').hidden) closeDialog(); });
 

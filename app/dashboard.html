@@ -197,6 +197,7 @@ button.mini{cursor:pointer} button.mini:hover span:first-child{color:var(--link)
 .modal.how{width:min(760px,100%)}
 .how .hbody{margin-top:14px;display:grid;gap:18px;font-size:14px;line-height:1.55}
 .how h4{font-family:var(--serif);font-weight:600;font-size:16px;margin:0 0 6px}
+.whatsnew .wn-v{margin:10px 0 2px;font-size:13.5px} .whatsnew .wn-v:first-of-type{margin-top:0} .whatsnew ul{margin:0 0 4px}
 .how p{margin:0 0 6px;max-width:68ch} .how ul{margin:0;padding-left:18px} .how li{margin:3px 0}
 .how table{border-collapse:collapse;width:100%;font-size:13px}
 .how th,.how td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
@@ -284,7 +285,7 @@ button.mini{cursor:pointer} button.mini:hover span:first-child{color:var(--link)
   <div class="status-line" id="statusLine" aria-live="polite"></div>
   <div class="summary" id="exec"></div>
   <div id="app"></div>
-  <footer class="foot"><span id="notes"></span><span id="brandFoot">LeadPro</span></footer>
+  <footer class="foot"><span id="notes"></span><span><span id="brandFoot">LeadPro</span> <span id="appVersion" class="muted" title="Dashboard version"></span></span></footer>
 </div></main>
 
 <div class="scrim" id="scrim"><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle"></div></div>
@@ -300,6 +301,8 @@ const ROOT = location.pathname.replace(/(?:firms\/[^/]+|app)\/[^/]*$/, '');
 const FIRM = PATH_FIRM ? './' : `${ROOT}firms/${SLUG}/`;
 const { buildLists, summarize, periodRange, customRange, compareRange, hasFullPrev, tzOffsetMin, decryptJSON } = await import(`${ROOT}scripts/kpi-core.mjs`);
 const { mergeConfig, practiceSlug } = await import(`${ROOT}scripts/config-merge.mjs`);
+const { parseChangelog, latestVersion, onlyTag, inlineMd } = await import(`${ROOT}scripts/changelog.mjs`);
+let changelog = [];   // from CHANGELOG.md; the dashboard shows only [client] entries
 const PASS_KEY = `lfmp-pass-${SLUG}`;   // one saved passphrase per firm (all firms share this origin)
 
 // ---------- state ----------
@@ -342,6 +345,11 @@ async function getJSON(path) {
 // Shared files at the repo root (firms/_defaults.json etc.). Missing files come back as null.
 async function rootJSON(path) {
   try { const r = await fetch(`${ROOT}${path}?t=${Date.now()}`, { cache: 'no-store' }); return r.ok ? r.json() : null; } catch { return null; }
+}
+async function loadChangelog() {
+  try { const r = await fetch(`${ROOT}CHANGELOG.md?t=${Date.now()}`, { cache: 'no-store' }); if (r.ok) changelog = parseChangelog(await r.text()); } catch {}
+  const v = latestVersion(changelog), el = document.getElementById('appVersion');
+  if (el) el.textContent = v ? `v${v}` : '';
 }
 // Effective config: firms/_defaults.json → firms/_defaults/<practice-area>.json → this firm's config.json
 async function loadConfig() {
@@ -917,6 +925,7 @@ function openHow() {
         </ul></section>
       <section><h4>Privacy</h4>
         <p>The page only shows totals until someone unlocks it. Names, emails and phone numbers are stored encrypted and are decrypted in your browser with the team passphrase.</p></section>
+      ${(() => { const news = onlyTag(changelog, 'client'); return news.length ? `<section class="whatsnew"><h4>What's new</h4>${news.map(v => `<p class="wn-v"><b>v${esc(v.version)}</b>${v.date ? ` <span class="muted">${esc(v.date)}</span>` : ''}</p><ul>${v.entries.map(e => `<li>${inlineMd(e.text)}</li>`).join('')}</ul>`).join('')}</section>` : ''; })()}
     </div>`;
   $('scrim').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -998,6 +1007,7 @@ document.addEventListener('mousemove', e => {
 
 // ---------- start ----------
 (async () => {
+  loadChangelog();
   try {
     await loadPublic();
     // A key carried in the link (#k=…) unlocks silently, e.g. from a GHL Custom Menu Link, then is scrubbed from the address bar.

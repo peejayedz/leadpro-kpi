@@ -118,3 +118,10 @@ Commit, then run the sync for that slug.
 - **Edit mapping:** the same mapping panel against `discovery.json` (Re-read GHL refreshes it), then commits `config.json` and re-syncs.
 
 The page finds the workflow run it started by its title (`run-name`: "Sync <slug>", "Discover <slug>") and stops waiting as soon as that run fails.
+
+## Changelog
+
+`CHANGELOG.md` lists every change to the dashboard, scripts, workflows and admin page, newest first, as `## vX.Y.Z — D Mon YYYY` with lines tagged `[client]` or `[internal]` (semantic versions: MAJOR breaks existing firms, MINOR adds a feature, PATCH fixes). Add an entry in the same commit as the change. Syncs and firm add/edit actions don't get entries.
+
+- The dashboard footer shows the latest version, and "How this works" lists the `[client]` entries under What's new.
+- The admin page's **What's new** button shows everything.
