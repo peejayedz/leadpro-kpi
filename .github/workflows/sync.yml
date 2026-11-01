@@ -61,10 +61,16 @@ jobs:
           DASHBOARD_PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', matrix.firm.secretKey)] }}
           DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: node scripts/sync.mjs "$SLUG"
+      # The artifact holds <slug>/kpis.json etc., so the commit job can tell firms apart
+      # whatever folder layout download-artifact uses.
+      - name: Stage data for upload
+        env:
+          SLUG: ${{ matrix.firm.slug }}
+        run: mkdir -p "$RUNNER_TEMP/out/$SLUG" && cp -R "firms/$SLUG/data/." "$RUNNER_TEMP/out/$SLUG/"
       - uses: actions/upload-artifact@v7
         with:
           name: firm-${{ matrix.firm.slug }}
-          path: firms/${{ matrix.firm.slug }}/data/
+          path: ${{ runner.temp }}/out/
           retention-days: 1
           if-no-files-found: error
 
@@ -84,20 +90,31 @@ jobs:
         env:
           SLUG: ${{ inputs.slug }}
           MATRIX: ${{ needs.plan.outputs.matrix }}
+          SYNC_RESULT: ${{ needs.sync.result }}
           DL: ${{ runner.temp }}/firms
         run: |
-          synced=0
+          synced=0; missing=0
           for slug in $(echo "$MATRIX" | jq -r '.[].slug'); do
-            if [ -d "$DL/firm-$slug" ]; then
+            # One artifact downloads flat into $DL; several download into $DL/firm-<slug>/.
+            src=""
+            for d in "$DL/firm-$slug/$slug" "$DL/$slug"; do [ -f "$d/kpis.json" ] && { src="$d"; break; }; done
+            if [ -n "$src" ]; then
               rm -rf "firms/$slug/data"
               mkdir -p "firms/$slug/data"
-              cp -R "$DL/firm-$slug/." "firms/$slug/data/"
+              cp -R "$src/." "firms/$slug/data/"
               synced=$((synced + 1))
               echo "✓ $slug"
             else
-              echo "✗ $slug (sync failed, no data)"
+              missing=$((missing + 1))
+              echo "✗ $slug (no data: its sync job failed)"
             fi
           done
+          # Every sync job passed but data is missing: a workflow bug, never a silent success.
+          if [ "$SYNC_RESULT" = "success" ] && [ "$missing" -gt 0 ]; then
+            echo "::error::$missing firm(s) synced but their data was not found in the artifacts"
+            find "$DL" -maxdepth 3 | head -50
+            exit 1
+          fi
           git config user.name "kpi-sync-bot"
           git config user.email "kpi-sync-bot@users.noreply.github.com"
           git add -A firms
