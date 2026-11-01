@@ -1,0 +1,266 @@
+{
+  "locationName": "",
+  "practiceArea": "",
+  "locationId": "",
+  "title": "",
+  "showUnlockButton": false,
+  "brand": "LeadPro",
+  "brandFooter": "LeadPro",
+  "timezone": "America/New_York",
+  "ghlAppBase": "https://app.lawfirmmarketingpros.com",
+  "lookbackDays": 400,
+  "minSample": 5,
+  "notice": {
+    "show": true,
+    "autoHide": {
+      "minLeadsMoved": 5,
+      "window": "last90"
+    },
+    "title": "Testing period",
+    "text": "This scorecard is new and still collecting data. For the first few weeks, numbers may not reflect every lead or every step, and some sections will fill in as your team moves opportunities through the pipeline. Please treat it as a preview rather than a final report.",
+    "lowActivity": {
+      "title": "Low pipeline activity",
+      "text": "Fewer leads than usual have been moved through the pipeline recently, so the numbers below may not reflect how intake is actually performing. They will firm up as your team updates each opportunity’s stage."
+    }
+  },
+  "_pipelinesNote": "Pipeline names to include. Empty = every pipeline. firms/<slug>/discovery.json lists every pipeline and stage name.",
+  "pipelines": [],
+  "targets": {
+    "leadToSignedPct": 8,
+    "speedToLeadMin": 5,
+    "within5Pct": 80,
+    "contactRatePct": 80,
+    "bookRatePct": 70,
+    "showRatePct": 75,
+    "noShowPct": 25,
+    "sentRatePct": 50,
+    "signRatePct": 70
+  },
+  "_stagesNote": "Stage names for each funnel step; must match GHL exactly (case does not matter). A later step counts as every earlier step, so list only the stages that first prove each step. Filled in by the admin page's mapping panel.",
+  "stages": {
+    "contacted": [],
+    "qualified": [],
+    "consultBooked": [],
+    "consultHeld": [],
+    "agreementSent": [],
+    "signed": [],
+    "noShow": []
+  },
+  "tags": {
+    "contacted": [
+      "contacted"
+    ],
+    "consultBooked": [],
+    "consultHeld": [
+      "showed"
+    ],
+    "noShow": [
+      "no show",
+      "no-show",
+      "noshow"
+    ],
+    "agreementSent": [
+      "agreement sent",
+      "proposal sent",
+      "contract sent"
+    ],
+    "signed": []
+  },
+  "qualification": {
+    "contactFields": [
+      "Qualified?"
+    ],
+    "opportunityFields": [
+      "Qualified"
+    ],
+    "yesValues": [
+      "yes",
+      "qualified",
+      "true",
+      "1"
+    ],
+    "noValues": [
+      "no",
+      "not qualified",
+      "unqualified",
+      "disqualified",
+      "false",
+      "0"
+    ],
+    "tags": [
+      "qualified",
+      "qualified lead",
+      "qualified_lead"
+    ],
+    "notTags": [
+      "not qualified",
+      "unqualified",
+      "disqualified"
+    ]
+  },
+  "_turnedAwayNote": "Why leads were turned away: a tag starting with tagPrefix (e.g. 'turned away: wrong practice area'), else the GHL lost reason, else the stage name if it's listed in stages.",
+  "turnedAway": {
+    "tagPrefix": "turned away:",
+    "stages": [],
+    "reasonLabels": {}
+  },
+  "_bookingNote": "A consult = an appointment on a calendar whose name contains one of these words. Empty list = every calendar counts.",
+  "booking": {
+    "calendarKeywords": []
+  },
+  "speedToLead": {
+    "useBusinessHours": true,
+    "businessHours": {
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "start": 9,
+      "end": 18
+    },
+    "connectedCallSeconds": 60,
+    "maxDays": 7
+  },
+  "_adSpendNote": "Monthly ad spend in dollars, by YYYY-MM. Spread evenly over the month's days for any date range. Used for cost per signed case.",
+  "adSpend": {
+    "monthly": {},
+    "defaultMonthly": null
+  },
+  "fields": {
+    "speedToLead": "Speed to Lead (min)",
+    "firstContacted": "First Contacted Date",
+    "contactMethod": "Contact Method"
+  },
+  "recommendedFocus": {
+    "speedToLeadMin": "Send every new web lead to an instant call task and text, with a 2-minute escalation if nobody picks it up.",
+    "within5Pct": "Send every new web lead to an instant call task and text, with a 2-minute escalation if nobody picks it up.",
+    "contactRatePct": "Add a 5-touch follow-up (call, text, email over 3 days) for every lead nobody has reached yet.",
+    "bookRatePct": "Offer two specific consult times on the first call instead of asking when works.",
+    "showRatePct": "Confirm each consult by text the day before and 1 hour before, and call no-shows the same day to rebook.",
+    "noShowPct": "Confirm each consult by text the day before and 1 hour before, and call no-shows the same day to rebook.",
+    "sentRatePct": "Send the agreement before the consult call ends, while the prospect is still on the line.",
+    "signRatePct": "Follow up on every unsigned agreement within 24 hours and again at day 3.",
+    "leadToSignedPct": "Review the biggest drop-off in the funnel below and fix that step first.",
+    "turnedAway": "Review the leads rejected after consultation and the search terms that brought them in; add negatives or tighten targeting."
+  },
+  "_channelsNote": "Marketing channel rules, applied to each lead's FIRST-TOUCH attribution from GHL, first match wins. Add a channel by adding a rule here; no code change needed. clickIds: gclid=Google Ads, msclkid=Bing/Microsoft Ads, fbclid=Meta. paidMedium:true means utm_medium must be a paid medium (or a click ID present).",
+  "channels": {
+    "rules": [
+      {
+        "name": "Google Ads",
+        "clickIds": [
+          "gclid"
+        ],
+        "sources": [
+          "google",
+          "googleads",
+          "google ads",
+          "adwords"
+        ],
+        "paidMedium": true
+      },
+      {
+        "name": "Bing Ads",
+        "clickIds": [
+          "msclkid"
+        ],
+        "sources": [
+          "bing",
+          "msn",
+          "microsoft"
+        ],
+        "paidMedium": true
+      },
+      {
+        "name": "YouTube Ads",
+        "sources": [
+          "youtube",
+          "yt"
+        ],
+        "paidMedium": true
+      },
+      {
+        "name": "Meta Ads",
+        "clickIds": [
+          "fbclid"
+        ],
+        "sources": [
+          "facebook",
+          "instagram",
+          "meta",
+          "fb",
+          "ig"
+        ],
+        "paidMedium": true
+      },
+      {
+        "name": "AI answer engines",
+        "sources": [
+          "chatgpt",
+          "openai",
+          "perplexity",
+          "claude",
+          "copilot",
+          "gemini",
+          "bard"
+        ],
+        "referrerHosts": [
+          "chatgpt.com",
+          "chat.openai.com",
+          "openai.com",
+          "perplexity.ai",
+          "claude.ai",
+          "copilot.microsoft.com",
+          "gemini.google.com",
+          "bard.google.com",
+          "you.com"
+        ]
+      }
+    ],
+    "organic": [
+      {
+        "name": "Google Organic Search",
+        "referrerHosts": [
+          "google.com",
+          "google.co",
+          "google."
+        ],
+        "sources": [
+          "google"
+        ]
+      },
+      {
+        "name": "Bing Organic Search",
+        "referrerHosts": [
+          "bing.com"
+        ],
+        "sources": [
+          "bing"
+        ]
+      }
+    ],
+    "paidMediums": [
+      "cpc",
+      "ppc",
+      "paid",
+      "paidsearch",
+      "paid_search",
+      "paid-search",
+      "display",
+      "video",
+      "paidsocial",
+      "paid_social"
+    ],
+    "referralLabel": "Other referral",
+    "directLabel": "Direct / typed in",
+    "unknownLabel": "Unknown source",
+    "nonMarketing": [
+      "Direct / typed in",
+      "Unknown source"
+    ]
+  },
+  "attributionDisclaimer": "LeadPro's ability to identify a lead's original marketing source can be limited by privacy browsers, tracking blockers, cookie restrictions, consent settings and similar technologies. A lead can still be captured even when its source cannot be identified, so reported attribution may not reflect every lead generated by digital marketing. Referrals from AI answer engines are undercounted in particular, because many of them remove the referring link before the visitor reaches the site."
+}

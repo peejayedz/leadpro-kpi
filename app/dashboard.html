@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>LeadPro KPI Scorecard</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#eef0f4; --card:#fff; --raised:#fff; --ink:#1c2333; --ink-2:#4a5263; --ink-3:#7a8293;
+  --rule:#e3e6ec; --rule-strong:#1c2333; --hover:#f3f5f8;
+  --bar:#2f4a7a; --bar-soft:#a9b6cc; --track:#eef1f5; --link:#2b5aa8; --prev:#b5651d;
+  --ok-bg:#e3f2e6; --ok-ink:#2b6b3a; --bad-bg:#fbe4e2; --bad-ink:#a83a30; --warn-bg:#fbf0d2; --warn-ink:#7a5a12; --warn-line:#ead391;
+  --dot-good:#3c8a4f; --dot-bad:#c2483d; --dot-focus:#2f4a7a; --shadow:0 12px 40px rgba(20,30,50,.18);
+  --serif:"Lora",Georgia,"Times New Roman",serif; --sans:"Source Sans 3","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --page:#0f131b; --card:#171c27; --raised:#1e2431; --ink:#e7eaf0; --ink-2:#b4bbc8; --ink-3:#8790a0;
+  --rule:#2a3140; --rule-strong:#c9cfda; --hover:#222939;
+  --bar:#7d9bd1; --bar-soft:#4c5c78; --track:#232a38; --link:#8fb3ef; --prev:#e19a5a;
+  --ok-bg:#1f3a27; --ok-ink:#8fd3a0; --bad-bg:#45231f; --bad-ink:#f2a49b; --warn-bg:#3b3019; --warn-ink:#ecd08a; --warn-line:#5c4a22;
+  --dot-good:#6cc483; --dot-bad:#ee8076; --dot-focus:#7d9bd1; --shadow:0 12px 40px rgba(0,0,0,.6); color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --page:#0f131b; --card:#171c27; --raised:#1e2431; --ink:#e7eaf0; --ink-2:#b4bbc8; --ink-3:#8790a0;
+  --rule:#2a3140; --rule-strong:#c9cfda; --hover:#222939;
+  --bar:#7d9bd1; --bar-soft:#4c5c78; --track:#232a38; --link:#8fb3ef; --prev:#e19a5a;
+  --ok-bg:#1f3a27; --ok-ink:#8fd3a0; --bad-bg:#45231f; --bad-ink:#f2a49b; --warn-bg:#3b3019; --warn-ink:#ecd08a; --warn-line:#5c4a22;
+  --dot-good:#6cc483; --dot-bad:#ee8076; --dot-focus:#7d9bd1; --shadow:0 12px 40px rgba(0,0,0,.6); color-scheme:dark;}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none !important}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--page);color:var(--ink);font:15px/1.45 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+.wrap{max-width:1060px;margin:16px auto;padding:0 12px}
+.card{background:var(--card);border-radius:14px;padding:30px 30px 22px;box-shadow:0 1px 2px rgba(20,30,50,.06)}
+.muted{color:var(--ink-3)}
+
+/* header + controls */
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px 20px;flex-wrap:wrap;padding-bottom:12px;border-bottom:2px solid var(--rule-strong)}
+.head .titles{flex:1 1 380px;min-width:0}
+.brandline{font-size:13px;color:var(--ink-2);margin:0 0 4px} .brandline b{color:var(--ink)}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(24px,3.4vw,30px);line-height:1.15;margin:0 0 4px;letter-spacing:-.01em}
+.sub{font-size:13px;color:var(--ink-2);margin:0}
+.practice{font-size:13.5px;font-weight:600;color:var(--ink-2);margin:0 0 4px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:relative;flex:0 1 auto;max-width:100%}
+.btn{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:12.5px;padding:6px 11px;border-radius:6px;border:1px solid var(--rule);background:var(--card);cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--hover)} .btn[disabled]{opacity:.6;cursor:default}
+.btn svg{width:14px;height:14px} .btn.on{border-color:var(--bar);box-shadow:inset 0 0 0 1px var(--bar)}
+.btn.primary{background:var(--bar);border-color:var(--bar);color:#fff;justify-content:center}
+.chip-sample{font-weight:600;font-size:12.5px;padding:6px 11px;border-radius:6px;background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line)}
+:focus-visible{outline:2px solid var(--bar);outline-offset:2px}
+.spin{animation:spin 1s linear infinite} @keyframes spin{to{transform:rotate(360deg)}}
+.pop{position:absolute;top:calc(100% + 6px);right:0;z-index:20;background:var(--raised);border:1px solid var(--rule);border-radius:10px;box-shadow:var(--shadow);padding:12px;width:310px;max-width:calc(100vw - 32px);display:none}
+.pop.open{display:block}
+.presets{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.presets button{text-align:left;background:none;border:0;padding:7px 8px;border-radius:6px;cursor:pointer;font-size:13px}
+.presets button:hover:not([disabled]){background:var(--hover)} .presets button[aria-pressed="true"]{background:var(--bar);color:#fff} .presets button[disabled]{opacity:.5;cursor:default}
+.custom{border-top:1px solid var(--rule);margin-top:10px;padding-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.custom label,.cmp-dates label{font-size:12px;color:var(--ink-2);display:grid;gap:3px}
+.custom input,.cmp-dates input{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:6px;min-width:0}
+.custom .btn,.custom .hint{grid-column:1/-1}
+.hint{font-size:12px;color:var(--ink-3)}
+.cmp-pop{width:340px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;font-weight:600;margin-bottom:10px}
+.switch input{width:34px;height:18px;accent-color:var(--bar)}
+.cmp-presets{display:grid;gap:3px}
+.cmp-presets button{text-align:left;background:none;border:1px solid transparent;padding:7px 9px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:8px}
+.cmp-presets button:hover:not([disabled]){background:var(--hover)} .cmp-presets button[aria-pressed="true"]{border-color:var(--bar);font-weight:600} .cmp-presets button[disabled]{opacity:.55;cursor:default}
+.cmp-presets .lock{font-size:11px;color:var(--ink-3);font-weight:400}
+.cmp-match{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--ink-2);margin:10px 0 0}
+.cmp-dates{border-top:1px solid var(--rule);margin-top:10px;padding-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cmp-dates .per{grid-column:1/-1;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.cmp-dates .btn,.cmp-dates .hint{grid-column:1/-1}
+.sw{display:inline-block;width:14px;border-top:2px solid var(--bar);vertical-align:middle} .sw.prev{border-top:2px dashed var(--prev)}
+.cmp-line{font-size:12px;color:var(--ink-2);margin-top:4px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
+.cmp-line b{color:var(--ink)} .cmp-line .off{background:none;border:0;padding:0;color:var(--link);cursor:pointer;font-size:12px}
+.status-line{font-size:12.5px;color:var(--ink-2);min-height:18px;margin:8px 0 0}
+.notice{display:flex;gap:12px;align-items:flex-start;background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);border-radius:8px;padding:12px 14px;margin:14px 0 0;font-size:13.5px;line-height:1.45}
+.notice svg{width:18px;height:18px;flex:0 0 auto;margin-top:2px}
+.notice b{display:block;margin-bottom:2px}
+.stage h2[data-tip],.funnel h2[data-tip]{cursor:help}
+.label[data-tip]{cursor:help;text-decoration:underline dotted var(--ink-3);text-underline-offset:3px}
+.label[data-tip]:hover{color:var(--ink)}
+.tip{max-width:320px;line-height:1.45}
+
+/* executive summary */
+.summary{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--rule);border-radius:6px;margin:10px 0 22px}
+.summary section{padding:14px 18px} .summary section+section{border-left:1px solid var(--rule)}
+.summary h2{font-size:14px;font-weight:700;margin:0 0 6px;display:flex;align-items:center;gap:8px}
+.summary h2::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c)}
+.summary ul{margin:0;padding-left:16px;font-size:13px} .summary li{margin:3px 0}
+.summary .none{font-size:13px;color:var(--ink-3)}
+.lnk{color:inherit;cursor:pointer;text-align:left;font:inherit;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+.lnk:hover{color:var(--link);text-decoration-color:currentColor}
+
+/* hero + funnel */
+.hero{display:grid;grid-template-columns:220px 1fr;gap:26px;padding-bottom:22px;border-bottom:1px solid var(--rule)}
+.hero .left{padding-right:24px;border-right:1px solid var(--rule)}
+.label{font-size:13px;color:var(--ink-2);margin:0}
+.big{font-family:var(--serif);font-weight:600;font-size:clamp(48px,7vw,62px);line-height:1.05;letter-spacing:-.02em;margin:8px 0 6px}
+.strong{font-weight:700;font-size:14px;margin:0 0 6px}
+.cpc{font-size:13px;color:var(--ink-2);margin:14px 0 0} .cpc b{color:var(--ink)}
+.funnel h2,.bottom h2{font-size:14px;font-weight:700;margin:0 0 10px}
+.frow{display:grid;grid-template-columns:120px 1fr 34px 150px;align-items:center;gap:0 12px;font-size:13px;min-height:22.5px;width:100%;background:none;border:0;padding:0;text-align:left;border-radius:4px}
+button.frow{cursor:pointer} button.frow:hover .fill{filter:brightness(1.15)}
+.track{height:13px;background:var(--track);border-radius:2px;overflow:hidden}
+.fill{height:100%;background:var(--bar);border-radius:2px;transform-origin:left;animation:grow .7s cubic-bezier(.2,.7,.2,1) both}
+.fill.soft{background:var(--bar-soft)}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.num{font-family:var(--serif);font-weight:600;font-size:15px;text-align:right}
+.pct{color:var(--ink-3);font-size:12px;white-space:nowrap} .pct .pv{color:var(--prev)}
+
+/* stage columns */
+.stages{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--rule)}
+.stage{padding:20px 18px 18px} .stage:first-child{padding-left:0} .stage:last-child{padding-right:0}
+.stage+.stage{border-left:1px solid var(--rule)}
+.stage h2{font-size:14px;font-weight:700;margin:0 0 12px} .stage h2 span{font-weight:400;color:var(--ink-2);margin-right:6px}
+.metric{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--rule);padding:0 0 10px;margin:0 0 10px;border-radius:0}
+.metric:last-child{border-bottom:0;margin-bottom:0}
+button.metric{cursor:pointer} button.metric:hover .mv b{color:var(--link)}
+.mv{display:flex;align-items:baseline;gap:8px;margin:2px 0 4px;flex-wrap:wrap}
+.mv b{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.mv small{font-size:12px;color:var(--ink-2)}
+.badge{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:3px;margin-right:6px}
+.badge.ok{background:var(--ok-bg);color:var(--ok-ink)} .badge.bad{background:var(--bad-bg);color:var(--bad-ink)} .badge.few{background:var(--track);color:var(--ink-3)}
+.cmpv{display:block;font-size:12px;color:var(--ink-2);margin-top:4px}
+.chg{font-weight:600} .chg.good{color:var(--ok-ink)} .chg.bad{color:var(--bad-ink)} .chg.flat,.chg.neutral,.chg.none{color:var(--ink-3)}
+.mini{display:grid;grid-template-columns:1fr 36px 22px;gap:10px;align-items:center;font-size:12.5px;margin:7px 0;width:100%;background:none;border:0;padding:0;text-align:left}
+button.mini{cursor:pointer} button.mini:hover span:first-child{color:var(--link)}
+.mini .track{height:12px} .mini .n{text-align:right;font-weight:600}
+
+/* bottom */
+.bottom{display:grid;grid-template-columns:1.15fr .85fr;gap:36px;padding-top:20px}
+.bottom>section{min-width:0} .srcwrap{overflow-x:auto}
+.src{width:100%;border-collapse:collapse;font-size:13px;min-width:420px}
+.src th{white-space:nowrap;font-weight:600;color:var(--ink-2);text-align:left;padding:4px 6px 6px;border-bottom:1px solid var(--rule)}
+.src td{padding:7px 6px;border-bottom:1px solid var(--rule)}
+.src .r{text-align:right} .src td.barcell{width:78px;padding-right:12px}
+.sbar{height:5px;background:var(--bar-soft);border-radius:2px}
+.src tr.sep td{border-top:2px solid var(--rule);padding-top:11px}
+.src tfoot td{border-bottom:0;color:var(--ink-3);font-size:12px;padding-top:10px}
+.disc{font-size:11.5px;color:var(--ink-3);line-height:1.5;margin:10px 0 0;max-width:62ch}
+.cov{font-size:12px;color:var(--ink-2);margin:0 0 10px}
+.disc-link{color:var(--link);font-weight:600;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.disc-link:hover{text-decoration-thickness:2px}
+.src tr[data-drill]{cursor:pointer} .src tr[data-drill]:hover td{background:var(--hover)}
+.howto ul{margin:0;padding-left:16px;font-size:13px} .howto li{margin:3px 0}
+.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-3);margin-top:22px}
+.err{background:var(--bad-bg);color:var(--bad-ink);padding:12px 14px;border-radius:8px;margin-top:16px}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--card);font-size:12px;padding:6px 9px;border-radius:6px;opacity:0;transition:opacity .1s;z-index:40;max-width:280px}
+
+/* drill-down modal */
+.scrim{position:fixed;inset:0;background:rgba(10,15,25,.5);z-index:30;display:none;align-items:flex-start;justify-content:center;padding:4vh 12px;overflow:auto}
+.scrim.open{display:flex}
+.modal{background:var(--raised);border-radius:12px;box-shadow:var(--shadow);width:min(1180px,100%);padding:18px 18px 14px}
+.modal.small{width:min(420px,100%)}
+.mhead{display:flex;justify-content:space-between;gap:12px;align-items:start}
+.mhead h3{margin:0;font-family:var(--serif);font-weight:600;font-size:19px}
+.mhead .def{color:var(--ink-2);font-size:13px;margin-top:4px;max-width:760px}
+.close{background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:var(--ink-2);padding:2px 6px;border-radius:6px} .close:hover{background:var(--hover)}
+.msum{display:flex;flex-wrap:wrap;gap:8px 16px;margin:12px 0;font-size:13px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.toolbar input[type=search],.toolbar select{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:7px 10px;font-size:13px}
+.toolbar input[type=search]{min-width:220px;flex:1 1 220px}
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:8px}
+.dt{border-collapse:collapse;width:100%;font-size:13px}
+.dt th,.dt td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--rule);white-space:nowrap}
+.dt th{position:sticky;top:0;background:var(--card);font-size:12px;color:var(--ink-2);font-weight:600;cursor:pointer;user-select:none}
+.dt th .arr{opacity:.3;margin-left:4px;font-size:10px} .dt th[aria-sort] .arr{opacity:1}
+.dt td.n,.dt th.n{text-align:right;font-variant-numeric:tabular-nums}
+.dt tr:hover td{background:var(--hover)} .dt tbody tr:last-child td{border-bottom:0}
+.empty{padding:28px;text-align:center;color:var(--ink-3)}
+.pager{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;color:var(--ink-2);gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;padding:1px 7px;border-radius:3px;font-weight:600;font-size:11.5px;white-space:nowrap}
+.chip.good{background:var(--ok-bg);color:var(--ok-ink)} .chip.bad{background:var(--bad-bg);color:var(--bad-ink)} .chip.warn{background:var(--warn-bg);color:var(--warn-ink)} .chip.none{background:var(--track);color:var(--ink-2);font-weight:500}
+.pwfield{display:grid;gap:6px;margin:14px 0 8px}
+.pwfield input{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:9px 40px 9px 10px;width:100%}
+.pwwrap{position:relative;display:block}
+.pweye{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:0;padding:6px;border-radius:6px;cursor:pointer;color:var(--ink-3);line-height:0}
+.pweye:hover{color:var(--ink);background:var(--hover)}
+.pweye svg{width:18px;height:18px}
+
+/* how this works */
+.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:2px}
+.topline .brandline{margin:0}
+.howbtn{border-radius:999px}
+.themebtn{border-radius:999px;padding:6px 10px}
+.themebtn svg{width:15px;height:15px}
+.themebtn .tlabel{font-size:12px}
+.modal.how{width:min(760px,100%)}
+.how .hbody{margin-top:14px;display:grid;gap:18px;font-size:14px;line-height:1.55}
+.how h4{font-family:var(--serif);font-weight:600;font-size:16px;margin:0 0 6px}
+.how p{margin:0 0 6px;max-width:68ch} .how ul{margin:0;padding-left:18px} .how li{margin:3px 0}
+.how table{border-collapse:collapse;width:100%;font-size:13px}
+.how th,.how td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+.how th{color:var(--ink-2);font-weight:600;font-size:12px}
+.how code{font-size:12px;background:var(--track);padding:1px 5px;border-radius:3px}
+@media (max-width:860px){
+  .summary{grid-template-columns:1fr} .summary section+section{border-left:0;border-top:1px solid var(--rule)}
+  .hero{grid-template-columns:1fr} .hero .left{border-right:0;padding-right:0;border-bottom:1px solid var(--rule);padding-bottom:18px}
+  .stages{grid-template-columns:1fr 1fr}
+  .stage:nth-child(3){border-left:0;padding-left:0} .stage:nth-child(2){padding-right:0}
+  .stage:nth-child(n+3){border-top:1px solid var(--rule)}
+  .bottom{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .card{padding:20px 16px 16px}
+  .frow{grid-template-columns:96px 1fr 28px} .frow .pct{display:none}
+  .stages{grid-template-columns:1fr}
+  .stage,.stage:first-child,.stage:last-child,.stage:nth-child(3){padding-left:0;padding-right:0}
+  .stage+.stage{border-left:0;border-top:1px solid var(--rule)}
+  .pop{right:auto;left:0}
+  .controls{flex:1 1 100%}
+  #rangeLabel{max-width:190px;overflow:hidden;text-overflow:ellipsis}
+}
+@media (prefers-reduced-motion:reduce){.fill{animation:none}.spin{animation:none}}
+</style>
+</head>
+<body>
+<main class="wrap"><div class="card">
+  <div class="topline"><p class="brandline"><b id="brand">LeadPro</b> client dashboard</p>
+    <span style="display:flex;gap:8px;align-items:center">
+    <button class="btn themebtn" id="themeBtn" title="Switch between automatic, light and dark"></button>
+    <button class="btn howbtn" id="howBtn" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17.5h.01"/></svg>
+        How this works
+      </button></span></div>
+  <header class="head">
+    <div class="titles">
+      <h1 id="pageTitle">KPI Scorecard</h1>
+      <p class="practice" id="practiceArea" hidden></p>
+      <p class="sub" id="updated">Loading…</p>
+      <div class="cmp-line" id="cmpLine" hidden></div>
+    </div>
+    <div class="controls">
+      <span class="chip-sample" id="sampleChip" hidden>Sample data</span>
+      <button class="btn" id="rangeBtn" aria-haspopup="dialog" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        <span id="rangeLabel">Last 30 days</span><span aria-hidden="true">▾</span>
+      </button>
+      <button class="btn" id="cmpBtn" aria-haspopup="dialog" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>
+        <span id="cmpBtnLabel">Compare to prior</span>
+      </button>
+      <button class="btn" id="refreshBtn" title="Pull the latest numbers from GoHighLevel">
+        <svg id="refreshIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        Refresh data
+      </button>
+      <button class="btn" id="lockBtn" hidden></button>
+      <div class="pop" id="rangePop" role="dialog" aria-label="Choose dates">
+        <div class="presets" id="presets"></div>
+        <div class="custom">
+          <label>From <input type="date" id="fromDate"></label>
+          <label>To <input type="date" id="toDate"></label>
+          <button class="btn primary" id="applyCustom">Apply dates</button>
+          <div class="hint" id="customHint"></div>
+        </div>
+      </div>
+      <div class="pop cmp-pop" id="cmpPop" role="dialog" aria-label="Compare periods">
+        <label class="switch">Compare periods <input type="checkbox" id="cmpOn"></label>
+        <div class="cmp-presets" id="cmpPresets"></div>
+        <label class="cmp-match"><input type="checkbox" id="cmpMatch"> <span>Compare to the same point in the previous period (fair while a day, week, month or quarter is still in progress)</span></label>
+        <div class="cmp-dates">
+          <div class="per"><span class="sw"></span> Period A (current)</div>
+          <label>From <input type="date" id="cmpAFrom"></label>
+          <label>To <input type="date" id="cmpATo"></label>
+          <div class="per"><span class="sw prev"></span> Period B (compare to)</div>
+          <label>From <input type="date" id="cmpBFrom"></label>
+          <label>To <input type="date" id="cmpBTo"></label>
+          <button class="btn primary" id="cmpApply">Compare these dates</button>
+          <div class="hint" id="cmpHint"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div id="notice" hidden></div>
+  <div class="status-line" id="statusLine" aria-live="polite"></div>
+  <div class="summary" id="exec"></div>
+  <div id="app"></div>
+  <footer class="foot"><span id="notes"></span><span id="brandFoot">LeadPro</span></footer>
+</div></main>
+
+<div class="scrim" id="scrim"><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle"></div></div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script type="module">
+// ---------- which firm ----------
+// Served at <root>/firms/<slug>/ (via that folder's stub index.html), or directly as
+// <root>/app/dashboard.html?firm=<slug> for testing. Data always comes from <root>/firms/<slug>/.
+const PATH_FIRM = /\/firms\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(?:index\.html)?$/.exec(location.pathname);
+const SLUG = PATH_FIRM ? PATH_FIRM[1] : (new URLSearchParams(location.search).get('firm') || '').toLowerCase();
+const ROOT = location.pathname.replace(/(?:firms\/[^/]+|app)\/[^/]*$/, '');
+const FIRM = PATH_FIRM ? './' : `${ROOT}firms/${SLUG}/`;
+const { buildLists, summarize, periodRange, customRange, compareRange, hasFullPrev, tzOffsetMin, decryptJSON } = await import(`${ROOT}scripts/kpi-core.mjs`);
+const PASS_KEY = `lfmp-pass-${SLUG}`;   // one saved passphrase per firm (all firms share this origin)
+
+// ---------- state ----------
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} },
+};
+let pub = null, cfg = null, records = null;
+let sel = (() => { try { return JSON.parse(store.get('lfmp-range') || '{"key":"last30"}'); } catch { return { key: 'last30' }; } })();
+let lists = null, cur = null, prev = null, range = null, crange = null;
+let cmp = (() => { try { return { on: false, match: true, b: null, ...JSON.parse(store.get('lfmp-compare') || '{}') }; } catch { return { on: false, match: true, b: null }; } })();
+
+const PRESETS = [['today','Today'],['yesterday','Yesterday'],['thisWeek','This week'],['lastWeek','Last week'],['last7','Last 7 days'],['last30','Last 30 days'],['last90','Last 90 days'],['thisMonth','This month'],['lastMonth','Last month'],['thisQuarter','This quarter'],['lastQuarter','Last quarter']];
+const CMP_PRESETS = [['today','Today vs Yesterday'],['thisWeek','This week vs Last week'],['thisMonth','This month vs Last month'],['thisQuarter','This quarter vs Last quarter'],['custom','Custom dates vs previous period']];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const TZ = () => cfg?.timezone || 'America/New_York';
+const MIN = () => cfg?.minSample ?? 5;
+const fmt = {
+  n: v => v === null || v === undefined ? '—' : Math.round(v).toLocaleString(),
+  pct: v => v === null || v === undefined ? '—' : `${Math.round(v)}%`,
+  pct1: v => v === null || v === undefined ? '—' : `${(Math.round(v * 10) / 10).toFixed(1)}%`,
+  usd: v => v === null || v === undefined ? '—' : '$' + Math.round(v).toLocaleString(),
+  min: v => v === null || v === undefined ? '—' : `${v} min`,
+  dt: v => v ? new Date(v).toLocaleString('en-US', { timeZone: TZ(), month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—',
+  date: v => v ? new Date(v).toLocaleDateString('en-US', { timeZone: TZ(), month: 'short', day: 'numeric', year: 'numeric' }) : '—',
+};
+const userName = id => (id && records?.users?.[id]) || (id ? 'Unknown user' : 'Unassigned');
+const ghlContact = cid => cid && records ? `${records.ghlBase}/v2/location/${records.locationId}/contacts/detail/${cid}` : null;
+const cap = s => s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : '—';
+const canDrill = () => !!(records || pub?.detailsAvailable);
+
+// ---------- data ----------
+async function getJSON(path) {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(SLUG)) throw new Error('no firm in the address');
+  const r = await fetch(`${FIRM}${path}?t=${Date.now()}`, { cache: 'no-store' });
+  if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
+  return r.json();
+}
+async function loadPublic() { [pub, cfg] = await Promise.all([getJSON('data/kpis.json'), getJSON('config.json')]); }
+async function unlock(pass, remember) {
+  const env = await getJSON('data/details.enc.json');
+  records = await decryptJSON(env, pass);
+  if (remember) store.set(PASS_KEY, pass);
+}
+function lock() { records = null; store.set(PASS_KEY, null); compute(); render(); }
+
+function compute() {
+  const now = Date.parse((records || pub).generatedAt);
+  const off = tzOffsetMin(TZ(), now);
+  if (sel.key === 'custom' && !records) sel = { key: 'last30' };
+  if (!records && !pub.periods[sel.key]) sel = { key: 'last30' };
+  range = sel.key === 'custom' ? customRange(sel.from, sel.to, now, off, TZ()) : periodRange(sel.key, now, off, TZ());
+  const mode = !cmp.on ? 'prev' : cmp.b && records ? 'custom' : cmp.match ? 'prev' : 'full';
+  crange = compareRange(range, mode, now, off, cmp.b, TZ());
+  if (records) {
+    lists = buildLists(records, cfg, range.from, range.to);
+    cur = summarize(lists);
+    prev = summarize(buildLists(records, cfg, crange.from, crange.to));
+  } else {
+    lists = null;
+    cur = pub.periods[sel.key].current;
+    if (crange.mode === 'full' && pub.periods[crange.periodKey]) prev = pub.periods[crange.periodKey].current;
+    else { prev = pub.periods[sel.key].previous || null; crange = { mode: 'prev', from: range.prevFrom, to: range.prevTo }; }
+  }
+  store.set('lfmp-range', JSON.stringify(sel));
+  store.set('lfmp-compare', JSON.stringify(cmp));
+}
+
+// ---------- drill-down definitions ----------
+const col = {
+  name: { label: 'Name', key: 'name', type: 'name' },
+  company: { label: 'Firm', key: 'company' },
+  email: { label: 'Email', key: 'email', type: 'email' },
+  phone: { label: 'Phone', key: 'phone', type: 'phone' },
+  source: { label: 'Lead source', key: 'source', filter: 'source' },
+  created: { label: 'Lead created', key: 'createdAt', type: 'dt' },
+  assigned: { label: 'Assigned to', key: 'assignedTo', type: 'user', filter: 'user' },
+  stage: { label: 'Pipeline stage', key: 'stage', filter: 'stage' },
+  step: { label: 'Furthest step', key: 'step', type: 'badge', filter: 'step' },
+  consult: { label: 'Consult', key: 'nextConsult', type: 'dt' },
+};
+const leadCols = [col.name, col.company, col.email, col.phone, col.source, col.created, col.stage, col.step, col.assigned];
+const DRILLS = {
+  newLeads: { title: 'New leads', list: L => L.newLeads, def: 'Every opportunity created in the selected dates.', cols: [...leadCols, { label: 'Contact status', key: 'contactStatus', type: 'badge', filter: 'contactStatus' }] },
+  contacted: { title: 'Contacted leads', list: L => L.contacted, def: 'New leads with a two-way contact: a reply, a connected call, a booking, or a later stage.', cols: [col.name, col.company, col.phone, { label: 'Contacted at', key: 'firstContactedAt', type: 'dt' }, { label: 'Method', key: 'contactMethod', filter: 'contactMethod' }, col.assigned, col.step] },
+  contactRate: { title: 'Contact rate', list: L => L.newLeads, numerator: L => L.contacted.length, numLabel: 'contacted', def: 'All new leads with how far contact got. Filter by Contact status to see who still needs a call.', cols: [col.name, col.company, col.phone, col.created, { label: 'Contact status', key: 'contactStatus', type: 'badge', filter: 'contactStatus' }, col.assigned] },
+  speed: { title: 'Speed to first contact', list: L => L.speed, numerator: L => L.speedMeasured.length, numLabel: 'have had a first call',
+    def: 'Minutes from lead created to the first outbound call (business hours only if set in config). Slowest first; leads nobody has called yet are at the top.',
+    cols: [col.name, col.company, col.created, { label: 'First call', key: 'firstCallAt', type: 'dt' }, { label: 'Speed', key: 'stlMin', type: 'stl', num: true }, col.assigned, col.phone] },
+  missedNotReturned: { title: 'Missed calls not returned', list: L => L.missedNotReturned || [], def: 'Inbound calls in the selected dates that nobody answered and that have no outbound call back to that person since.',
+    cols: [col.name, col.phone, { label: 'Missed at', key: 'at', type: 'dt' }, col.assigned, { label: 'Lead stage', key: 'leadStage' }] },
+  qualified: { title: 'Qualified leads', list: L => L.qualified, def: 'New leads marked qualified (tag, field or stage), plus any that booked a consult or went further.', cols: leadCols },
+  turnedAway: { title: 'Turned-away leads', list: L => L.turnedAway, def: 'New leads marked lost, not qualified, or in a turned-away stage, that never signed.',
+    cols: [col.name, col.company, col.phone, col.source, col.created, { label: 'Reason', key: 'turnedAwayReason', type: 'badge', filter: 'turnedAwayReason' }, col.stage] },
+  consultBooked: { title: 'Consults booked', list: L => L.consultBooked, def: 'New leads who booked a consult (consult calendar appointment or stage), or went further.', cols: [...leadCols.slice(0, 6), col.consult, col.step] },
+  consultHeld: { title: 'Consults held', list: L => L.consultHeld, def: 'Booked consults that happened: appointment marked Showed, a "showed" tag, a held stage, or a later step.', cols: [...leadCols.slice(0, 6), col.consult, col.step] },
+  noShows: { title: 'Consult no-shows', list: L => L.noShows, def: 'Leads whose consult time has passed and who never reached Consult held.', cols: [col.name, col.company, col.phone, col.consult, { label: 'How we know', key: 'noShowBy', type: 'badge', filter: 'noShowBy' }, col.stage, col.assigned] },
+  agreementSent: { title: 'Agreements sent', list: L => L.agreementSent, def: 'New leads who were sent an agreement (stage or tag), or signed.', cols: leadCols },
+  signed: { title: 'Signed clients', list: L => L.signed, def: 'New leads who signed: opportunity marked Won, a signed stage, or a signed-client tag.', cols: [...leadCols.slice(0, 6), { label: 'Value', key: 'value', type: 'usd', num: true }, col.assigned] },
+};
+DRILLS.within5 = { ...DRILLS.speed, title: 'Contacted within 5 minutes', numerator: L => L.within5.length, numLabel: 'called within 5 min' };
+DRILLS.bookRate = { ...DRILLS.consultBooked, title: 'Qualified → consult booked', denom: L => L.qualified.length, denomLabel: 'qualified leads' };
+DRILLS.showRate = { ...DRILLS.consultHeld, title: 'Consult show rate', denom: L => L.bookedPast.length, denomLabel: 'consults that should have happened by now' };
+DRILLS.noShowRate = { ...DRILLS.noShows, title: 'Consult no-show rate', denom: L => L.bookedPast.length, denomLabel: 'consults that should have happened by now' };
+DRILLS.signRate = { ...DRILLS.signed, title: 'Agreement → signed', denom: L => L.agreementSent.length, denomLabel: 'agreements sent' };
+DRILLS.leadToSigned = { ...DRILLS.signed, title: 'Lead → signed client', denom: L => L.newLeads.length, denomLabel: 'new leads' };
+
+// ---------- comparison helpers ----------
+const LOWER_BETTER = new Set(['speedToLeadAvgMin', 'noShowPct', 'missedNotReturned', 'turnedAway', 'costPerSigned']);
+const isPct = k => /Pct$/.test(k);
+function change(k, c, p) {
+  if (c === null || c === undefined) return { state: 'none', text: 'No current data' };
+  if (p === null || p === undefined) return { state: 'none', text: 'No previous data' };
+  const d = c - p;
+  if (Math.abs(d) < 1e-9) return { state: 'flat', text: 'No change' };
+  const dir = (LOWER_BETTER.has(k) ? -1 : 1) * Math.sign(d);
+  const mag = isPct(k) ? `${Math.abs(Math.round(d * 10) / 10)} pts` : k === 'speedToLeadAvgMin' ? `${Math.abs(Math.round(d * 10) / 10)} min` : k === 'costPerSigned' ? fmt.usd(Math.abs(d)) : Math.abs(d).toLocaleString();
+  let text = `${d > 0 ? '▲ +' : '▼ −'}${mag}`;
+  if (!isPct(k) && k !== 'speedToLeadAvgMin') text += p === 0 ? ' (new)' : ` (${d > 0 ? '+' : '−'}${Math.abs(Math.round((d / Math.abs(p)) * 100))}%)`;
+  return { state: dir > 0 ? 'good' : 'bad', text };
+}
+const fmtSpan = (from, to) => {
+  const o = { timeZone: TZ(), month: 'short', day: 'numeric' };
+  const a = new Date(from).toLocaleDateString('en-US', o), b = new Date(to - 1).toLocaleDateString('en-US', o);
+  return (a === b ? a : `${a} – ${b}`) + (Math.abs(to - Date.parse((records || pub).generatedAt)) < 60000 ? ' (to now)' : '');
+};
+const B_NAMES = {
+  prev: { today: 'Yesterday, same time', yesterday: 'Day before', thisWeek: 'Last week, same point', lastWeek: 'Week before', last7: 'Previous 7 days', last30: 'Previous 30 days', last90: 'Previous 90 days', thisMonth: 'Last month, same point', lastMonth: 'Month before', thisQuarter: 'Last quarter, same point', lastQuarter: 'Quarter before', custom: 'Previous period' },
+  full: { today: 'Yesterday', thisWeek: 'Last week', thisMonth: 'Last month', thisQuarter: 'Last quarter' },
+};
+const bName = () => !crange ? '' : crange.mode === 'custom' ? 'Period B' : B_NAMES[crange.mode]?.[sel.key] || 'Previous period';
+const aName = () => cmp.on && sel.key === 'custom' ? 'Period A' : range.label;
+const bShort = () => bName().replace(/, same (point|time)$/, '');
+const isoDay = ms => new Date(ms).toLocaleDateString('en-CA', { timeZone: TZ() });
+
+// ---------- plain-language definitions (hover on any metric label) ----------
+const DEFS = {
+  leadToSigned: 'Of the leads that came in during these dates, the share that signed. The headline number for pipeline health.',
+  totalLeads: 'Opportunities created in the selected dates. Every other number is a share of this one.',
+  speedToLeadAvgMin: 'Average minutes from a lead arriving to the first outbound call, counting business hours only. Emails and texts do not stop the clock.',
+  within5Pct: 'Share of new leads called within 5 minutes. Leads never called count as not within 5 minutes.',
+  missedNotReturned: 'Inbound calls nobody answered that still have no call back. Each one is a lead that may be gone.',
+  contactRatePct: 'Share of new leads reached at all: a reply on any channel, a connected call, a booking, or a contacted stage.',
+  qualified: 'Leads confirmed as a real prospect: marked qualified, in a qualified stage, or further along.',
+  turnedAway: 'Leads the firm declined, referred out, or marked lost, grouped by the reason recorded.',
+  bookRatePct: 'Of qualified leads, the share that booked a consultation.',
+  showRatePct: 'Of consultations that should have happened by now, the share that took place.',
+  noShowPct: 'Of consultations that should have happened by now, the share where the lead did not show.',
+  agreementSent: 'Leads sent a fee agreement after their consultation.',
+  signRatePct: 'Of agreements sent, the share that came back signed.',
+  signed: 'Leads who became clients: the opportunity is marked Won or sits in a signed stage.',
+  costPerSigned: 'Monthly ad spend from settings divided by signed clients in these dates.',
+  secLeads: 'How many enquiries came in and how quickly someone picked up the phone. Speed here drives everything below.',
+  secIntake: 'Whether leads were actually reached, which ones were a real fit, and why the rest were turned away.',
+  secConsults: 'How well qualified leads convert into booked consultations, and how many of those consultations happen.',
+  secSigned: 'Whether consultations turn into fee agreements, and whether those agreements get signed.',
+  secFunnel: 'Each bar is the number of leads from these dates that reached that step. Each step is part of the one above it, so the gaps show where leads are lost.',
+};
+function renderNotice() {
+  const N = cfg.notice || {};
+  const el = $('notice');
+  const A = N.autoHide || null;
+  const moved = A ? (pub?.periods?.[A.window || 'last90']?.current?.stageMoved ?? 0) : null;
+  if (!N.show || (A && moved >= A.minLeadsMoved)) { el.hidden = true; el.innerHTML = ''; return; }
+  // After the testing period has ended once, a returning banner means activity has dropped, not that the scorecard is new.
+  const lowActivity = !!(A && pub?.notice?.graduatedAt);
+  const L = N.lowActivity || {};
+  const title = lowActivity ? (L.title || 'Low pipeline activity') : N.title;
+  const text = lowActivity ? (L.text || '') : (N.text || '');
+  const progress = !A ? ''
+    : lowActivity ? ` This notice clears once ${A.minLeadsMoved} leads from the last 90 days have moved through the pipeline again (${moved} now).`
+    : ` This notice disappears automatically once ${A.minLeadsMoved} leads from the last 90 days have moved through the pipeline (${moved} so far).`;
+  el.hidden = false;
+  el.innerHTML = `<div class="notice" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18.5A2 2 0 0 0 3.5 21.5h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><div>${title ? `<b>${esc(title)}</b>` : ''}${esc(text)}${esc(progress)}</div></div>`;
+}
+
+// ---------- building blocks ----------
+function badge(value, goal, { lower = false, denom = Infinity, suffix = '' } = {}) {
+  if (goal === undefined || goal === null) return '';
+  if (value === null || value === undefined) return denom === 0 ? '' : '<span class="badge few">Not tracked yet</span>';
+  if (denom < MIN()) return '<span class="badge few">Too few</span>';
+  const ok = lower ? value <= goal : value >= goal;
+  return `<span class="badge ${ok ? 'ok' : 'bad'}">${ok ? 'On goal' : 'Off goal'} (${goal}${suffix})</span>`;
+}
+function metric({ k, label, big, small = '', goal = '', drill, priorCount = false }) {
+  const can = canDrill() && drill;
+  const tag = can ? 'button' : 'div';
+  let extra = '';
+  if (cmp.on) {
+    const ch = change(k, cur[k], prev?.[k]);
+    const pv = prev?.[k];
+    const pvTxt = pv === null || pv === undefined ? '—' : k === 'speedToLeadAvgMin' ? `${pv} min` : isPct(k) ? fmt.pct(pv) : k === 'costPerSigned' ? fmt.usd(pv) : fmt.n(pv);
+    extra = `<span class="cmpv"><span class="sw prev"></span> ${esc(bShort())}: <b>${pvTxt}</b> · <span class="chg ${ch.state}">${esc(ch.text)}</span></span>`;
+  } else if (priorCount && prev && prev[k] !== null && prev[k] !== undefined) small = `vs ${fmt.n(prev[k])} prior`;
+  return `<${tag} class="metric" ${can ? `data-drill="${drill}" aria-label="${esc(label)}: view the list"` : ''}>
+    <p class="label" ${DEFS[k] ? `data-tip="${esc(DEFS[k])}"` : ''}>${esc(label)}</p>
+    <span class="mv"><b>${big}</b>${small ? `<small>${small}</small>` : ''}</span>${goal}${extra}</${tag}>`;
+}
+
+// ---------- render ----------
+function render() {
+  const T = pub.targets, c = cur, n = c.totalLeads;
+  $('brand').textContent = cfg.brand || 'LeadPro';
+  $('pageTitle').textContent = cfg.title || `${cfg.locationName} KPI Scorecard`;
+  document.title = cfg.title || `${cfg.locationName} KPI Scorecard`;
+  $('practiceArea').textContent = cfg.practiceArea || '';
+  $('practiceArea').hidden = !cfg.practiceArea;
+  $('brandFoot').textContent = cfg.brandFooter || '';
+  $('rangeLabel').textContent = range.label;
+  $('sampleChip').hidden = !pub.isSample;
+  $('lockBtn').hidden = cfg.showUnlockButton === false || !(pub.detailsAvailable || records);
+  $('lockBtn').textContent = records ? '🔓 Lock names' : '🔒 Unlock names';
+  $('cmpBtn').classList.toggle('on', cmp.on);
+  $('cmpBtnLabel').textContent = cmp.on ? 'Comparing' : 'Compare to prior';
+  const ts = new Date((records || pub).generatedAt);
+  $('updated').textContent = `${cfg.locationName}, ${sel.key === 'custom' ? range.label : `${range.label.toLowerCase()} (${fmtSpan(range.from, range.to)})`}. Data as of ${ts.toLocaleString('en-US', { timeZone: TZ(), dateStyle: 'medium', timeStyle: 'short' })}; syncs from GoHighLevel a few times a day.`;
+  renderCompareLine();
+  renderNotice();
+
+  const drill = canDrill();
+  const funnelRows = c.funnel.map(([label, v, key, of], i) => {
+    const before = i ? c.funnel[i - 1][1] : null;
+    const share = i === 0 ? '' : `${before ? Math.round((v / before) * 100) : 0}% ${of}`;
+    const pv = cmp.on && prev ? (prev.funnel || [])[i]?.[1] : null;
+    const tag = drill ? 'button' : 'div';
+    return `<${tag} class="frow" ${drill ? `data-drill="${key}"` : ''} data-tip="${esc(`${label}: ${v}${pv !== null && pv !== undefined ? ` · ${bShort()}: ${pv}` : ''}${drill ? ' · click for the list' : ''}`)}">
+      <span>${label}</span><span class="track"><span class="fill" style="display:block;width:${n ? (v / n) * 100 : 0}%;animation-delay:${i * 60}ms"></span></span>
+      <span class="num">${v}</span><span class="pct">${share}${pv !== null && pv !== undefined ? ` <span class="pv">· ${pv}</span>` : ''}</span></${tag}>`;
+  }).join('');
+
+  const reasons = c.turnedAwayReasons || [];
+  const rmax = Math.max(1, ...reasons.map(r => r[1]));
+  const reasonRows = reasons.length ? reasons.map(([r, v]) => {
+    const tag = drill ? 'button' : 'div';
+    return `<${tag} class="mini" ${drill ? `data-drill="reason:${esc(r)}"` : ''}><span>${esc(r)}</span><span class="track"><span class="fill soft" style="display:block;width:${(v / rmax) * 100}%"></span></span><span class="n">${v}</span></${tag}>`;
+  }).join('') : '<p class="hint">No turned-away leads in these dates.</p>';
+
+  const NM = cfg.channels?.nonMarketing || [];
+  const allCh = c.byChannel || [];
+  const chans = allCh.filter(r => !NM.includes(r[0])), other = allCh.filter(r => NM.includes(r[0]));
+  const chMax = Math.max(1, ...allCh.map(s => s[1]));
+  const chRow = ([s, l, sg], sep) => `<tr class="${sep ? 'sep' : ''}" ${drill ? `data-drill="channel:${esc(s)}"` : ''}>
+      <td class="barcell"><div class="sbar" style="width:${(l / chMax) * 100}%"></div></td><td>${esc(s)}</td>
+      <td class="r">${l}</td><td class="r">${n ? Math.round((l / n) * 100) : 0}%</td>
+      <td class="r">${sg}</td><td class="r${l < MIN() ? ' muted' : ''}">${l < MIN() ? 'Too few' : Math.round((sg / l) * 100) + '%'}</td></tr>`;
+  const srcRows = allCh.length
+    ? chans.map(r => chRow(r, false)).join('') + other.map((r, i) => chRow(r, i === 0 && chans.length > 0)).join('')
+    : '<tr><td colspan="6" class="muted">No leads in these dates.</td></tr>';
+
+  const cps = c.costPerSigned !== null && c.costPerSigned !== undefined
+    ? `<p class="cpc">Cost per signed client: <b>${fmt.usd(c.costPerSigned)}</b><br>based on ${fmt.usd(c.adSpend)} in ad spend</p>`
+    : c.adSpend ? `<p class="cpc">${fmt.usd(c.adSpend)} in ad spend, no signed clients yet</p>`
+    : '<p class="cpc">Cost per signed client: add monthly ad spend in config.json to see it.</p>';
+
+  $('app').innerHTML = `
+  <div class="hero">
+    <div class="left">
+      <p class="label" data-tip="${esc(DEFS.leadToSigned)}">Lead → signed client</p>
+      <p class="big">${fmt.pct1(c.leadToSignedPct)}</p>
+      <p class="strong">${drill ? `<a class="lnk" href="#" role="button" data-drill="leadToSigned">${c.signed} of ${n} new leads became clients</a>` : `${c.signed} of ${n} new leads became clients`}</p>
+      ${badge(c.leadToSignedPct, T.leadToSignedPct, { denom: n, suffix: '%' })}
+      ${cmp.on ? `<span class="cmpv"><span class="sw prev"></span> ${esc(bShort())}: <b>${fmt.pct1(prev?.leadToSignedPct)}</b> · <span class="chg ${change('leadToSignedPct', c.leadToSignedPct, prev?.leadToSignedPct).state}">${esc(change('leadToSignedPct', c.leadToSignedPct, prev?.leadToSignedPct).text)}</span></span>` : ''}
+      ${cps}
+    </div>
+    <div class="funnel"><h2 data-tip="${esc(DEFS.secFunnel)}">Where leads drop off</h2>${funnelRows}</div>
+  </div>
+
+  <div class="stages">
+    <section class="stage"><h2 data-tip="${esc(DEFS.secLeads)}"><span>1</span>Leads in</h2>
+      ${metric({ k: 'totalLeads', label: 'New leads', big: fmt.n(n), drill: 'newLeads', priorCount: true })}
+      ${metric({ k: 'speedToLeadAvgMin', label: 'Speed to first contact', big: fmt.min(c.speedToLeadAvgMin), drill: 'speed', goal: badge(c.speedToLeadAvgMin, T.speedToLeadMin, { lower: true, denom: c.speedMeasured, suffix: ' min' }) })}
+      ${metric({ k: 'within5Pct', label: 'Contacted within 5 min', big: fmt.pct(c.within5Pct), small: `${c.within5} of ${n}`, drill: 'within5', goal: badge(c.within5Pct, T.within5Pct, { denom: n, suffix: '%' }) })}
+      ${metric({ k: 'missedNotReturned', label: 'Missed calls not returned', big: fmt.n(c.missedNotReturned), drill: 'missedNotReturned', priorCount: true })}
+    </section>
+    <section class="stage"><h2 data-tip="${esc(DEFS.secIntake)}"><span>2</span>Intake</h2>
+      ${metric({ k: 'contactRatePct', label: 'Contact rate', big: fmt.pct(c.contactRatePct), small: `${c.contacted} of ${n}`, drill: 'contactRate', goal: badge(c.contactRatePct, T.contactRatePct, { denom: n, suffix: '%' }) })}
+      ${metric({ k: 'qualified', label: 'Qualified leads', big: fmt.n(c.qualified), small: c.qualifiedPct === null ? '' : `${fmt.pct(c.qualifiedPct)} of contacted`, drill: 'qualified' })}
+      <div class="metric"><p class="label" data-tip="${esc(DEFS.turnedAway)}">${drill ? '<a class="lnk" href="#" role="button" data-drill="turnedAway">Why leads were turned away</a>' : 'Why leads were turned away'}</p>${reasonRows}</div>
+    </section>
+    <section class="stage"><h2 data-tip="${esc(DEFS.secConsults)}"><span>3</span>Consultations</h2>
+      ${metric({ k: 'bookRatePct', label: 'Qualified → consult booked', big: fmt.pct(c.bookRatePct), small: `${c.consultBooked} of ${c.qualified}`, drill: 'bookRate', goal: badge(c.bookRatePct, T.bookRatePct, { denom: c.qualified, suffix: '%' }) })}
+      ${metric({ k: 'showRatePct', label: 'Consult show rate', big: fmt.pct(c.showRatePct), small: `${c.consultHeld} of ${c.bookedPast}`, drill: 'showRate', goal: badge(c.showRatePct, T.showRatePct, { denom: c.bookedPast, suffix: '%' }) })}
+      ${metric({ k: 'noShowPct', label: 'Consult no-show rate', big: fmt.pct(c.noShowPct), small: `${c.noShows} of ${c.bookedPast}`, drill: 'noShowRate', goal: badge(c.noShowPct, T.noShowPct, { lower: true, denom: c.bookedPast, suffix: '% or less' }) })}
+    </section>
+    <section class="stage"><h2 data-tip="${esc(DEFS.secSigned)}"><span>4</span>Signed clients</h2>
+      ${metric({ k: 'agreementSent', label: 'Agreements sent', big: fmt.n(c.agreementSent), small: c.sentRatePct === null ? '' : `${fmt.pct(c.sentRatePct)} of consults held`, drill: 'agreementSent', goal: badge(c.sentRatePct, T.sentRatePct, { denom: c.consultHeld, suffix: '%' }) })}
+      ${metric({ k: 'signRatePct', label: 'Agreement → signed', big: fmt.pct(c.signRatePct), small: `${c.signed} of ${c.agreementSent}`, drill: 'signRate', goal: badge(c.signRatePct, T.signRatePct, { denom: c.agreementSent, suffix: '%' }) })}
+      ${metric({ k: 'signed', label: 'Signed clients', big: fmt.n(c.signed), drill: 'signed', priorCount: true })}
+    </section>
+  </div>
+
+  <div class="bottom">
+    <section>
+      <h2>Where leads come from</h2>
+      <p class="cov">${c.attributedLeads ?? 0} of ${n} lead${n === 1 ? ' has' : 's have'} a marketing source we could identify${n ? ` (${c.attributionPct ?? 0}%)` : ''}.</p>
+      <div class="srcwrap"><table class="src"><thead><tr><th colspan="2">Channel</th><th class="r">Leads</th><th class="r">Share</th><th class="r">Signed</th><th class="r">Lead → signed</th></tr></thead>
+        <tbody>${srcRows}</tbody>
+        <tfoot><tr><td colspan="6">Share is of all ${n} lead${n === 1 ? '' : 's'}, including those with no identifiable source.</td></tr></tfoot></table></div>
+      <p class="disc">${esc((cfg.attributionDisclaimer || '').split('. ')[0])}. <a href="#" class="disc-link" id="discMore">Read more about attribution</a></p>
+    </section>
+    <section class="howto">
+      <h2>How to read this scorecard</h2>
+      <ul>
+        <li>Each rate shows the actual count beside it, so small numbers are never hidden behind a percentage.</li>
+        <li>The funnel follows the leads that came in during the selected dates, so each step is part of the one before.</li>
+        <li>A rate based on fewer than ${MIN()} leads shows “Too few” instead of a goal badge.</li>
+        <li>${drill ? 'Click any number, funnel step or source to see the people behind it.' : cfg.showUnlockButton === false ? 'Open this scorecard from inside your CRM to see the people behind each number.' : 'Names and custom dates are available after unlocking.'}</li>
+      </ul>
+    </section>
+  </div>`;
+  execSummary();
+  renderCmpPop();
+  renderPresets();
+  $('notes').textContent = pub.isSample ? 'Illustrative example using fictional data.' : `Speed to first contact: ${pub.dataNotes?.speedToLead || '—'}.`;
+}
+
+function renderCompareLine() {
+  const el = $('cmpLine');
+  if (!cmp.on || !crange) { el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  el.innerHTML = `<span><span class="sw"></span> <b>A · ${esc(aName())}</b> ${esc(fmtSpan(range.from, range.to))}</span>
+    <span><span class="sw prev"></span> <b>B · ${esc(bName())}</b> ${esc(fmtSpan(crange.from, crange.to))}</span>
+    <button class="off" data-cmp-off>Turn off comparison</button>`;
+}
+function renderCmpPop() {
+  $('cmpOn').checked = cmp.on;
+  $('cmpPresets').innerHTML = CMP_PRESETS.map(([k, l]) => {
+    const dis = !records && (k === 'custom' || !pub.periods[k]);
+    const pressed = cmp.on && (k === 'custom' ? sel.key === 'custom' : sel.key === k && !cmp.b);
+    return `<button type="button" data-cmp="${k}" aria-pressed="${pressed}" ${dis ? 'disabled' : ''}>${esc(l)}${dis ? '<span class="lock">🔒 unlock</span>' : ''}</button>`;
+  }).join('');
+  const canMatch = hasFullPrev(sel.key) && !cmp.b;
+  $('cmpMatch').checked = cmp.match; $('cmpMatch').disabled = !canMatch;
+  $('cmpMatch').closest('label').style.opacity = canMatch ? '' : '.55';
+  const max = isoDay(Date.parse((records || pub).generatedAt));
+  const vals = { cmpAFrom: isoDay(range.from), cmpATo: isoDay(range.to - 1), cmpBFrom: crange ? isoDay(crange.from) : '', cmpBTo: crange ? isoDay(crange.to - 1) : '' };
+  for (const [id, v] of Object.entries(vals)) { const i = $(id); if (document.activeElement !== i) i.value = v; i.max = max; i.disabled = !records; }
+  $('cmpApply').disabled = !records;
+  $('cmpHint').textContent = records ? 'Pick any two date ranges. Leave Period B empty to compare with the period just before Period A.' : 'Locked: the presets work now. Unlock names to compare custom dates.';
+}
+function renderPresets() {
+  $('presets').innerHTML = PRESETS.map(([k, l]) => { const dis = !records && !pub.periods[k]; return `<button type="button" data-preset="${k}" aria-pressed="${sel.key === k}" ${dis ? 'disabled' : ''}>${l}</button>`; }).join('');
+  const gen = Date.parse((records || pub).generatedAt);
+  const max = isoDay(gen), min = isoDay(gen - ((cfg.lookbackDays || 400) - 1) * 864e5);
+  for (const id of ['fromDate', 'toDate']) { $(id).max = max; $(id).min = min; $(id).disabled = !records; }
+  if (sel.key === 'custom') { $('fromDate').value = sel.from; $('toDate').value = sel.to; }
+  $('applyCustom').disabled = !records;
+  $('customHint').textContent = records ? `Any dates from ${fmt.date(min + 'T12:00:00Z')} to today.` : 'Unlock names to pick custom dates.';
+}
+
+// ---------- executive summary (rule-based, recomputed for the selected dates) ----------
+const GOALS = [
+  ['leadToSignedPct', 'Lead → signed', 'leadToSignedPct', false, 'leadToSigned', '%', 'totalLeads'],
+  ['speedToLeadAvgMin', 'Average wait for a first call', 'speedToLeadMin', true, 'speed', ' min', 'speedMeasured'],
+  ['within5Pct', 'Contacted within 5 minutes', 'within5Pct', false, 'within5', '%', 'totalLeads'],
+  ['contactRatePct', 'Contact rate', 'contactRatePct', false, 'contactRate', '%', 'totalLeads'],
+  ['bookRatePct', 'Qualified → consult booked', 'bookRatePct', false, 'bookRate', '%', 'qualified'],
+  ['showRatePct', 'Consult show rate', 'showRatePct', false, 'showRate', '%', 'bookedPast'],
+  ['noShowPct', 'Consult no-show rate', 'noShowPct', true, 'noShowRate', '%', 'bookedPast'],
+  ['sentRatePct', 'Agreements sent after consults', 'sentRatePct', false, 'agreementSent', '%', 'consultHeld'],
+  ['signRatePct', 'Agreement → signed', 'signRatePct', false, 'signRate', '%', 'agreementSent'],
+];
+function execSummary() {
+  const t = pub.targets, c = cur, n = c.totalLeads, F = cfg.recommendedFocus || {};
+  const link = (text, d) => canDrill() && d ? `<a class="lnk" href="#" role="button" data-drill="${esc(d)}">${text}</a>` : text;
+  const val = (k, u) => k === 'speedToLeadAvgMin' ? `${c[k]} min` : `${Math.round(c[k])}%`;
+  const scored = GOALS.filter(([k, , gk, , , , dk]) => c[k] !== null && c[k] !== undefined && t[gk] !== undefined && (c[dk] ?? 0) >= MIN())
+    .map(([k, name, gk, low, d, u]) => ({ k, name, gk, low, d, u, goal: t[gk], gap: low ? (t[gk] - c[k]) / Math.max(t[gk], 1) : (c[k] - t[gk]) / Math.max(t[gk], 1) }));
+  const good = [], bad = [];
+  if (prev && c.signed > (prev.signed ?? 0)) good.push(link(`${c.signed} new signed client${c.signed === 1 ? '' : 's'}, up from ${prev.signed} last period.`, 'signed'));
+  for (const m of scored.filter(m => m.gap >= 0).sort((a, b) => b.gap - a.gap).slice(0, 3 - good.length))
+    good.push(link(`${m.name} is ${val(m.k)}, ${m.low ? 'within' : 'above'} the ${m.goal}${m.u} goal.`, m.d));
+  const misses = scored.filter(m => m.gap < 0).sort((a, b) => a.gap - b.gap);
+  for (const m of misses.slice(0, 2)) bad.push(link(`${m.name} is ${val(m.k)} (goal ${m.low ? '' : ''}${m.goal}${m.u}).`, m.d));
+  const top = (c.turnedAwayReasons || [])[0];
+  if (top && c.turnedAway >= MIN() && top[1] / c.turnedAway >= 0.3 && top[0] !== 'No reason recorded')
+    bad.push(link(`${top[1]} of ${c.turnedAway} turned-away leads were “${esc(top[0])}”.`, `reason:${top[0]}`));
+  if (bad.length < 3 && prev && prev.totalLeads >= MIN() && n < prev.totalLeads * 0.8)
+    bad.push(link(`Lead flow is down ${Math.round((1 - n / prev.totalLeads) * 100)}% vs the prior period (${n} vs ${prev.totalLeads}).`, 'newLeads'));
+  const focus = [];
+  for (const m of misses) { const a = F[m.gk]; if (a && !focus.includes(a)) focus.push(a); if (focus.length >= 2) break; }
+  if (focus.length < 2 && top && c.turnedAway >= MIN() && F.turnedAway) focus.push(F.turnedAway);
+  if (!focus.length) focus.push(scored.length === 0
+    ? 'Not enough data yet to recommend a focus. Make sure every new lead is moved through the pipeline stages as it progresses, so each step can be measured.'
+    : 'Every measurable goal is on track. Keep the same follow-up rhythm and watch lead volume.');
+  const li = (arr, empty) => arr.length ? `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>` : `<p class="none">${empty}</p>`;
+  const scorable = scored.length, totalGoals = GOALS.filter(([, , gk]) => t[gk] !== undefined).length;
+  const coverage = scorable < totalGoals ? ` ${scorable} of ${totalGoals} metrics have enough data to score; the other ${totalGoals - scorable} are waiting on data.` : '';
+  $('exec').innerHTML = n === 0
+    ? `<section style="--c:var(--dot-focus);grid-column:1/-1"><h2>No new leads in these dates yet</h2><p class="none">Pick a wider date range to see the scorecard.</p></section>`
+    : `<section style="--c:var(--dot-good)"><h2>Going well</h2>${li(good, `No metric is above goal.${esc(coverage)}`)}</section>
+       <section style="--c:var(--dot-bad)"><h2>Needs attention</h2>${li(bad, scored.length === 0 ? 'Not enough data yet to judge any metric against its goal.' : 'Nothing below goal.')}</section>
+       <section style="--c:var(--dot-focus)"><h2>Recommended focus</h2>${li(focus.slice(0, 2).map(esc), '')}</section>`;
+}
+
+// ---------- drill-down modal ----------
+let view = null;
+const PAGE = 25;
+function openDrill(key) {
+  if (!records) { openUnlock(key); return; }
+  let def, rows;
+  if (key.startsWith('source:')) {
+    const s = key.slice(7);
+    def = { ...DRILLS.newLeads, title: `Leads from ${s}`, def: `New leads in the selected dates with source "${s}".` };
+    rows = lists.newLeads.filter(l => (l.source || 'Unknown') === s);
+  } else if (key.startsWith('channel:')) {
+    const ch = key.slice(8);
+    def = { ...DRILLS.newLeads, title: `Leads from ${ch}`, def: `New leads in the selected dates whose first-touch marketing source was classified as "${ch}".`,
+      cols: [col.name, col.company, col.email, col.phone, { label: 'Channel', key: 'channel', type: 'badge', filter: 'channel' }, { label: 'Campaign', key: 'campaign' }, { label: 'Referrer', key: 'referrer' }, col.created, col.step] };
+    rows = lists.newLeads.filter(l => (l.channel || 'Unknown source') === ch)
+      .map(l => ({ ...l, campaign: l.attribution?.campaign || null, referrer: l.attribution?.referrer || l.attribution?.utmSource || null }));
+  } else if (key.startsWith('reason:')) {
+    const r = key.slice(7);
+    def = { ...DRILLS.turnedAway, title: `Turned away: ${r}` };
+    rows = lists.turnedAway.filter(l => l.turnedAwayReason === r);
+  } else { def = DRILLS[key]; rows = def.list(lists); }
+  view = { key, def, rows, q: '', filters: {}, sortKey: null, sortDir: 1, page: 0 };
+  renderModal();
+  $('scrim').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() { $('scrim').classList.remove('open'); document.body.style.overflow = ''; view = null; }
+function cell(c, r) {
+  const v = r[c.key];
+  switch (c.type) {
+    case 'name': { const u = ghlContact(r.contactId); return u ? `<a href="${u}" target="_blank" rel="noopener" title="Open in GoHighLevel">${esc(v || 'Unnamed')} ↗</a>` : esc(v || 'Unnamed'); }
+    case 'email': return v ? `<a href="mailto:${esc(v)}">${esc(v)}</a>` : '<span class="muted">—</span>';
+    case 'phone': return v ? `<a href="tel:${esc(v)}">${esc(v)}</a>` : '<span class="muted">—</span>';
+    case 'dt': return v ? esc(fmt.dt(v)) : '<span class="muted">—</span>';
+    case 'usd': return fmt.usd(v);
+    case 'user': return esc(userName(v));
+    case 'stl': return v === null || v === undefined ? '<span class="chip warn">Not called yet</span>' : `<span class="chip ${v <= 5 ? 'good' : 'bad'}">${v} min</span>`;
+    case 'badge': {
+      const s = String(v ?? '—'), l = s.toLowerCase();
+      const cls = /success|replied|showed|signed|won/.test(l) ? 'good' : /missed|no.?show|not attempted|lost|not qualified|passed/.test(l) ? 'bad' : /attempt|sent|booked|held|qualified|contacted/.test(l) ? 'warn' : 'none';
+      return `<span class="chip ${cls}">${esc(cap(s))}</span>`;
+    }
+    default: return v === null || v === undefined || v === '' ? '<span class="muted">—</span>' : esc(v);
+  }
+}
+const sortVal = (c, r) => { const v = r[c.key]; if (c.type === 'dt') return v ? Date.parse(v) : -Infinity; if (c.type === 'usd' || c.num) return v ?? Infinity; if (c.type === 'user') return userName(v).toLowerCase(); return String(v ?? '').toLowerCase(); };
+const filterVal = (c, r) => c.type === 'user' ? userName(r[c.key]) : String(r[c.key] ?? '—');
+function filteredRows() {
+  const { def, rows, q, filters, sortKey, sortDir } = view;
+  let out = rows;
+  if (q) { const s = q.toLowerCase(); out = out.filter(r => [r.name, r.company, r.email, r.phone, r.source, r.stage].some(x => String(x ?? '').toLowerCase().includes(s))); }
+  for (const [k, val] of Object.entries(filters)) if (val) { const c = def.cols.find(c => (c.filter || c.key) === k); out = out.filter(r => filterVal(c, r) === val); }
+  if (sortKey) { const c = def.cols.find(c => c.key === sortKey); out = [...out].sort((a, b) => { const x = sortVal(c, a), y = sortVal(c, b); return (x > y ? 1 : x < y ? -1 : 0) * sortDir; }); }
+  return out;
+}
+function renderModal() {
+  const { def, rows } = view, all = rows.length, shown = filteredRows();
+  const pages = Math.max(1, Math.ceil(shown.length / PAGE));
+  view.page = Math.min(view.page, pages - 1);
+  const pageRows = shown.slice(view.page * PAGE, view.page * PAGE + PAGE);
+  let sum = `<span><b>${all}</b> ${all === 1 ? 'row' : 'rows'}</span>`;
+  if (def.numerator) sum = `<span><b>${def.numerator(lists)}</b> of <b>${all}</b> ${def.numLabel}</span>`;
+  if (def.denom) sum += `<span>out of <b>${def.denom(lists)}</b> ${def.denomLabel}</span>`;
+  const selects = def.cols.filter(c => c.filter).map(c => {
+    const opts = [...new Set(rows.map(r => filterVal(c, r)))].sort();
+    if (opts.length < 2) return '';
+    return `<select data-filter="${esc(c.filter)}" aria-label="Filter by ${esc(c.label)}"><option value="">${esc(c.label)}: all</option>${opts.map(o => `<option ${view.filters[c.filter] === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+  }).join('');
+  const head = def.cols.map(c => { const s = view.sortKey === c.key; return `<th class="${c.type === 'usd' || c.num ? 'n' : ''}" data-sort="${c.key}" ${s ? `aria-sort="${view.sortDir > 0 ? 'ascending' : 'descending'}"` : ''}>${esc(c.label)}<span class="arr">${s ? (view.sortDir > 0 ? '▲' : '▼') : '↕'}</span></th>`; }).join('');
+  const body = pageRows.length ? pageRows.map(r => `<tr>${def.cols.map(c => `<td class="${c.type === 'usd' || c.num ? 'n' : ''}">${cell(c, r)}</td>`).join('')}</tr>`).join('')
+    : `<tr><td class="empty" colspan="${def.cols.length}">${all ? 'No rows match these filters.' : 'Nothing in these dates.'}</td></tr>`;
+  $('modal').className = 'modal';
+  $('modal').innerHTML = `
+    <div class="mhead"><div><h3 id="mTitle">${esc(def.title)} · ${esc(range.label)}</h3><div class="def">${esc(def.def)}</div></div><button class="close" data-close aria-label="Close">×</button></div>
+    <div class="msum">${sum}</div>
+    <div class="toolbar"><input type="search" id="mSearch" placeholder="Search name, firm, email, phone, source…" value="${esc(view.q)}" aria-label="Search">${selects}<button class="btn" id="mCsv">Download CSV</button></div>
+    <div class="tablewrap"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>
+    <div class="pager"><span>${shown.length === all ? `${all} rows` : `${shown.length} of ${all} rows match`}</span>
+      <span>${pages > 1 ? `<button class="btn" data-page="-1" ${view.page === 0 ? 'disabled' : ''}>‹ Prev</button> Page ${view.page + 1} of ${pages} <button class="btn" data-page="1" ${view.page >= pages - 1 ? 'disabled' : ''}>Next ›</button>` : ''}</span></div>`;
+  const s = $('mSearch');
+  s.addEventListener('input', () => { if (!view) return; view.q = s.value; view.page = 0; const pos = s.selectionStart; renderModal(); const m = $('mSearch'); m.focus(); m.setSelectionRange(pos, pos); });
+}
+function csv() {
+  const { def } = view, rows = filteredRows();
+  const plain = (c, r) => { const v = r[c.key]; if (c.type === 'dt') return v ? fmt.dt(v) : ''; if (c.type === 'user') return userName(v); return v ?? ''; };
+  const lines = [def.cols.map(c => c.label), ...rows.map(r => def.cols.map(c => plain(c, r)))].map(l => l.map(x => `"${String(x).replace(/"/g, '""')}"`).join(','));
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' })), download: `${def.title.replace(/\W+/g, '-').toLowerCase()}-${range.label.replace(/\W+/g, '-').toLowerCase()}.csv` });
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ---------- unlock ----------
+let afterUnlock = null;
+function openUnlock(then) {
+  afterUnlock = then || null;
+  $('modal').className = 'modal small';
+  $('modal').innerHTML = `
+    <div class="mhead"><div><h3 id="mTitle">Unlock names and custom dates</h3>
+      <div class="def">Names, emails and phones are encrypted. Enter the team passphrase to see who's behind each number and to pick any dates.</div></div>
+      <button class="close" data-close aria-label="Close">×</button></div>
+    <form id="unlockForm">
+      <div class="pwfield"><span class="pwwrap"><input type="password" id="pw" autocomplete="current-password" placeholder="Team passphrase" required>
+        <button type="button" class="pweye" id="pwEye" aria-label="Show passphrase" aria-pressed="false" title="Show passphrase"></button></span></div>
+      <label class="hint"><input type="checkbox" id="remember" checked> Remember on this device</label>
+      <div class="status-line" id="pwMsg"></div>
+      <button class="btn primary" type="submit">Unlock</button>
+    </form>`;
+  const EYE = {
+    show: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    hide: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.6-6.5 10-6.5c2 0 3.7.6 5.1 1.5M22 12s-3.6 6.5-10 6.5c-2 0-3.7-.6-5.1-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M3 3l18 18"/></svg>',
+  };
+  const eye = $('pwEye');
+  eye.innerHTML = EYE.show;
+  eye.addEventListener('click', () => {
+    const on = $('pw').type === 'password';
+    $('pw').type = on ? 'text' : 'password';
+    eye.innerHTML = on ? EYE.hide : EYE.show;
+    eye.setAttribute('aria-pressed', String(on));
+    eye.setAttribute('aria-label', on ? 'Hide passphrase' : 'Show passphrase');
+    eye.title = on ? 'Hide passphrase' : 'Show passphrase';
+    $('pw').focus();
+  });
+  $('scrim').classList.add('open');
+  $('pw').focus();
+  $('unlockForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    $('pwMsg').textContent = 'Unlocking…';
+    try { await unlock($('pw').value, $('remember').checked); compute(); render(); if (afterUnlock) openDrill(afterUnlock); else closeModal(); }
+    catch { $('pwMsg').textContent = 'That passphrase didn’t work. Check it and try again.'; }
+  });
+}
+
+// ---------- light / dark ----------
+const THEMES = [
+  ['auto', 'Auto', '<circle cx="12" cy="12" r="8"/><path d="M12 4v16" /><path d="M12 4a8 8 0 0 1 0 16" fill="currentColor" stroke="none"/>'],
+  ['light', 'Light', '<circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>'],
+  ['dark', 'Dark', '<path d="M20 13.5A8.5 8.5 0 1 1 10.5 4a7 7 0 0 0 9.5 9.5Z"/>'],
+];
+function applyTheme(mode) {
+  if (mode === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', mode);
+  const [, label, icon] = THEMES.find(t => t[0] === mode) || THEMES[0];
+  const b = $('themeBtn');
+  b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">${icon}</svg><span class="tlabel">${label}</span>`;
+  b.setAttribute('aria-label', `Theme: ${label}. Click to change.`);
+  store.set('lfmp-theme', mode === 'auto' ? null : mode);
+}
+applyTheme(store.get('lfmp-theme') || 'auto');
+$('themeBtn').addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme') || 'auto';
+  applyTheme(THEMES[(THEMES.findIndex(t => t[0] === now) + 1) % THEMES.length][0]);
+});
+
+// ---------- how this works ----------
+function openHow() {
+  const S = cfg.stages || {}, T = cfg.tags || {}, G = pub?.targets || cfg.targets || {};
+  const list = a => (a || []).length ? a.map(x => `<code>${esc(x)}</code>`).join(' ') : '<span class="muted">—</span>';
+  const ts = pub ? new Date((records || pub).generatedAt).toLocaleString('en-US', { timeZone: TZ(), dateStyle: 'medium', timeStyle: 'short' }) : '—';
+  const steps = [
+    ['Contacted', 'contacted', 'A two-way contact: a reply, a connected call, a booking, or one of these stages.'],
+    ['Qualified', 'qualified', 'Marked qualified (tag or field), or one of these stages.'],
+    ['Consult booked', 'consultBooked', `An appointment on a calendar whose name contains ${list(cfg.booking?.calendarKeywords)}, or one of these stages.`],
+    ['Consult held', 'consultHeld', 'The consult appointment is marked Showed, or one of these stages.'],
+    ['Agreement sent', 'agreementSent', 'One of these stages.'],
+    ['Signed', 'signed', 'The opportunity is marked <b>Won</b>, or one of these stages.'],
+  ];
+  $('modal').className = 'modal how';
+  $('modal').innerHTML = `
+    <div class="mhead"><div><h3 id="mTitle">How this scorecard works</h3>
+      <div class="def">What each number means, where it comes from, and how to use the controls.</div></div>
+      <button class="close" data-close aria-label="Close">×</button></div>
+    <div class="hbody">
+      <section><h4>What it shows</h4>
+        <p>How new leads move from first contact to signed client, and where they drop off. The top boxes summarise what's on track, what needs attention and what to fix first. The funnel shows how many leads reached each step, and the four columns below break each step down against its goal.</p></section>
+      <section><h4>Where the numbers come from</h4>
+        <ul>
+          <li>Pulled from GoHighLevel automatically a few times a day. Last sync: <b>${esc(ts)}</b>. Press <b>Refresh data</b> any time you need the newest numbers.</li>
+          <li>Pipeline: ${list(cfg.pipelines?.length ? cfg.pipelines : ['All pipelines'])}. Each opportunity created in the selected dates counts as one new lead.</li>
+          <li>Consults come from the GHL calendar, and speed to first contact and missed calls come from the GHL call log.</li>
+        </ul></section>
+      <section><h4>Using the dashboard</h4>
+        <ul>
+          <li><b>Date selector:</b> pick a preset like Last 30 days or This month, or choose any From and To dates.</li>
+          <li><b>Compare to prior:</b> shows each number next to the previous period, with the change in green (better) or red (worse). You can also compare any two date ranges.</li>
+          <li><b>Refresh data:</b> starts a fresh pull from GoHighLevel. New numbers appear in 1–2 minutes.</li>
+          <li><b>Unlock names:</b> enter the team passphrase once to use custom dates and to click any number, funnel step or source and see the people behind it.</li>
+        </ul></section>
+      <section><h4>How each step is counted</h4>
+        <p>The funnel follows the leads that came in during the selected dates. A lead that reached a later step also counts for every earlier step, so each bar is part of the one above it.</p>
+        <div class="srcwrap"><table><thead><tr><th>Step</th><th>Counts when</th><th>GHL stages</th></tr></thead><tbody>
+          ${steps.map(([n, k, d]) => `<tr><td><b>${n}</b></td><td>${d}${T[k]?.length ? ` Tags: ${list(T[k])}.` : ''}</td><td>${list(S[k])}</td></tr>`).join('')}
+          <tr><td><b>Turned away</b></td><td>Marked Lost or not qualified, or in a turned-away stage, and never signed. The reason comes from a tag starting with <code>${esc(cfg.turnedAway?.tagPrefix || '')}</code>.</td><td>${list(cfg.turnedAway?.stages)}</td></tr>
+        </tbody></table></div></section>
+      <section><h4>Speed to first contact</h4>
+        <p>Minutes from the lead being created to the <b>first outbound call</b> from the team to that person, answered or not. Emails and texts don't stop the clock, so this measures how fast somebody picks up the phone.</p>
+        <p>It counts business hours only (${esc((cfg.speedToLead?.businessHours?.days || []).length === 5 ? 'Mon\u2013Fri' : 'set days')} ${cfg.speedToLead?.businessHours?.start ?? 9}:00\u2013${cfg.speedToLead?.businessHours?.end ?? 18}:00, ${esc(TZ())}), so a lead arriving at 8pm isn't penalised for the overnight wait. <b>Contacted</b> is broader than this: it counts a reply from the lead on any channel, a connected call of a minute or more, or a booked appointment.</p>
+        <p>Calls must be logged in GoHighLevel to be counted. Calls made outside GHL leave no record for the dashboard to time, and the tile will show a dash.</p></section>
+      <section><h4>Where leads come from</h4>
+        <p>Each lead is placed in one channel using its <b>first-touch</b> attribution, which is what GoHighLevel recorded the first time that person reached the site: the referring site, the campaign tags on the link (utm_source, utm_medium) and the advertising click IDs (gclid for Google Ads, msclkid for Bing Ads, fbclid for Meta). The first matching rule wins, so a paid click is never counted as organic.</p>
+        <p><b>${esc(cfg.channels?.directLabel || 'Direct')}</b> means the person arrived with no referrer and no campaign tags, usually by typing the address or using a bookmark. <b>${esc(cfg.channels?.unknownLabel || 'Unknown')}</b> means no attribution was recorded at all, which is normal for leads that came by phone, by personal referral or by manual entry. Both sit below the line in the table because neither is a marketing channel.</p>
+        <p>${esc(cfg.attributionDisclaimer || '')}</p></section>
+      <section><h4>Goals and badges</h4>
+        <ul>
+          <li>Lead → signed: ${G.leadToSignedPct ?? '—'}% or more. Speed to first contact: ${G.speedToLeadMin ?? '—'} minutes or less. Contacted within 5 min: ${G.within5Pct ?? '—'}%.</li>
+          <li>Contact rate: ${G.contactRatePct ?? '—'}%. Qualified → consult booked: ${G.bookRatePct ?? '—'}%. Show rate: ${G.showRatePct ?? '—'}%. No-show rate: ${G.noShowPct ?? '—'}% or less.</li>
+          <li>Agreements sent after consults: ${G.sentRatePct ?? '—'}%. Agreement → signed: ${G.signRatePct ?? '—'}%.</li>
+          <li>A rate based on fewer than ${MIN()} leads shows <b>Too few</b> instead of a badge, so one or two leads can't swing it.</li>
+          <li>Cost per signed client uses the monthly ad spend entered in the settings.</li>
+        </ul></section>
+      <section><h4>Privacy</h4>
+        <p>The page only shows totals until someone unlocks it. Names, emails and phone numbers are stored encrypted and are decrypted in your browser with the team passphrase.</p></section>
+    </div>`;
+  $('scrim').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  $('modal').querySelector('.close').focus();
+}
+
+// ---------- date range + compare ----------
+function setRange(next) { sel = next; cmp.b = null; compute(); render(); $('rangePop').classList.remove('open'); $('rangeBtn').setAttribute('aria-expanded', 'false'); }
+function closeCmp() { $('cmpPop').classList.remove('open'); $('cmpBtn').setAttribute('aria-expanded', 'false'); }
+function applyCompare(next) { Object.assign(cmp, next); compute(); render(); }
+
+// ---------- refresh: starts a sync, then waits for the new data ----------
+async function refresh() {
+  const btn = $('refreshBtn'), icon = $('refreshIcon');
+  btn.disabled = true; icon.classList.add('spin');
+  const before = (records || pub).generatedAt;
+  const say = t => { $('statusLine').textContent = t; };
+  try {
+    const r = records?.refresh;
+    if (r?.token) {
+      const res = await fetch(`https://api.github.com/repos/${r.repo}/actions/workflows/${r.workflow}/dispatches`, {
+        method: 'POST', headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${r.token}` }, body: JSON.stringify({ ref: 'main', inputs: { slug: r.slug || SLUG } }) });
+      if (res.status !== 204) throw new Error(`GitHub said ${res.status}`);
+      say('Pulling fresh data from GoHighLevel… this usually takes 1–2 minutes. You can keep using the dashboard.');
+      for (let i = 0; i < 24; i++) {
+        await new Promise(s => setTimeout(s, 10000));
+        const p = await getJSON('data/kpis.json');
+        if (p.generatedAt !== before) { await reloadAll(); say('Updated with the latest GoHighLevel data.'); return; }
+      }
+      say('Still running. The page will pick up the new data on its own when it lands.');
+    } else {
+      await reloadAll();
+      const newer = (records || pub).generatedAt !== before;
+      say(!records ? (newer ? 'Loaded newer data.' : 'Reloaded the latest published data. Open the scorecard from inside your CRM to start a sync on demand.')
+        : newer ? 'Loaded newer data.' : 'You already have the newest data. It syncs a few times a day.');
+    }
+  } catch (e) { say(`Refresh failed: ${e.message}`); }
+  finally { btn.disabled = false; icon.classList.remove('spin'); }
+}
+async function reloadAll() {
+  await loadPublic();
+  const pass = store.get(PASS_KEY);
+  if (records && pass) { try { await unlock(pass, true); } catch {} }
+  compute(); render();
+  if (view) openDrill(view.key);
+}
+
+// ---------- events ----------
+document.addEventListener('click', e => {
+  const t = e.target;
+  const d = t.closest('[data-drill]'); if (d) { e.preventDefault(); openDrill(d.dataset.drill); return; }
+  if (t.closest('[data-close]') || t === $('scrim')) { closeModal(); return; }
+  const th = t.closest('th[data-sort]'); if (th && view) { const k = th.dataset.sort; view.sortDir = view.sortKey === k ? -view.sortDir : (/(At|at|value|Min)$/.test(k) ? -1 : 1); view.sortKey = k; renderModal(); return; }
+  const pg = t.closest('[data-page]'); if (pg && view) { view.page += Number(pg.dataset.page); renderModal(); return; }
+  if (t.closest('#mCsv')) { csv(); return; }
+  const pr = t.closest('[data-preset]'); if (pr) { if (!pr.disabled) setRange({ key: pr.dataset.preset }); return; }
+  if (t.closest('[data-cmp-off]')) { applyCompare({ on: false, b: null }); return; }
+  const cp = t.closest('[data-cmp]');
+  if (cp) { if (cp.disabled) return; const k = cp.dataset.cmp; sel = k === 'custom' ? { key: 'custom', from: isoDay(range.from), to: isoDay(range.to - 1) } : { key: k }; applyCompare({ on: true, b: null }); closeCmp(); return; }
+  if (t.closest('#cmpBtn')) { $('rangePop').classList.remove('open'); const o = $('cmpPop').classList.toggle('open'); $('cmpBtn').setAttribute('aria-expanded', String(o)); return; }
+  if (!t.closest('#cmpPop')) closeCmp();
+  if (t.closest('#rangeBtn')) { closeCmp(); const o = $('rangePop').classList.toggle('open'); $('rangeBtn').setAttribute('aria-expanded', String(o)); return; }
+  if (!t.closest('#rangePop')) { $('rangePop').classList.remove('open'); $('rangeBtn').setAttribute('aria-expanded', 'false'); }
+});
+document.addEventListener('change', e => { const s = e.target.closest('select[data-filter]'); if (s && view) { view.filters[s.dataset.filter] = s.value; view.page = 0; renderModal(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); $('rangePop').classList.remove('open'); closeCmp(); } });
+$('cmpOn').addEventListener('change', e => applyCompare({ on: e.target.checked }));
+$('cmpMatch').addEventListener('change', e => applyCompare({ match: e.target.checked }));
+$('cmpApply').addEventListener('click', () => {
+  const a = [$('cmpAFrom').value, $('cmpATo').value], b = [$('cmpBFrom').value, $('cmpBTo').value];
+  if (!a[0] || !a[1]) { $('cmpHint').textContent = 'Pick both dates for Period A.'; return; }
+  if ((b[0] && !b[1]) || (!b[0] && b[1])) { $('cmpHint').textContent = 'Pick both dates for Period B, or leave both empty.'; return; }
+  a.sort(); b.sort();
+  sel = { key: 'custom', from: a[0], to: a[1] };
+  applyCompare({ on: true, b: b[0] ? { from: b[0], to: b[1] } : null }); closeCmp();
+});
+$('applyCustom').addEventListener('click', () => {
+  const f = $('fromDate').value, t = $('toDate').value;
+  if (!f || !t) { $('customHint').textContent = 'Pick both a From and a To date.'; return; }
+  setRange(f <= t ? { key: 'custom', from: f, to: t } : { key: 'custom', from: t, to: f });
+});
+$('refreshBtn').addEventListener('click', refresh);
+$('howBtn').addEventListener('click', () => { if (cfg) openHow(); });
+document.addEventListener('click', e => { if (e.target.closest('#discMore') && cfg) { e.preventDefault(); openHow(); setTimeout(() => { const h = [...$('modal').querySelectorAll('.how h4')].find(x => x.textContent.includes('Where leads come from')); h?.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); } });
+$('lockBtn').addEventListener('click', () => (records ? lock() : openUnlock(null)));
+const tip = $('tip');
+document.addEventListener('mousemove', e => {
+  const el = e.target.closest('[data-tip]');
+  if (!el) { tip.style.opacity = 0; return; }
+  tip.textContent = el.dataset.tip;
+  tip.style.left = Math.min(e.clientX + 14, innerWidth - 290) + 'px';
+  tip.style.top = e.clientY + 14 + 'px';
+  tip.style.opacity = 1;
+});
+
+// ---------- start ----------
+(async () => {
+  try {
+    await loadPublic();
+    // A key carried in the link (#k=…) unlocks silently, e.g. from a GHL Custom Menu Link, then is scrubbed from the address bar.
+    const m = /(?:^|[#&])k=([^&]+)/.exec(location.hash || '');
+    if (m) { store.set(PASS_KEY, decodeURIComponent(m[1])); history.replaceState(null, '', location.pathname + location.search); }
+    const pass = store.get(PASS_KEY);
+    if (pass && pub.detailsAvailable) { try { await unlock(pass, true); } catch { store.set(PASS_KEY, null); } }
+    compute(); render();
+  } catch (e) {
+    $('app').innerHTML = `<div class="err">Couldn't load the dashboard data (${esc(e.message)}). If this firm was just added, its first sync may still be running; try again in a few minutes.</div>`;
+    $('updated').textContent = '';
+  }
+  setInterval(async () => { try { const p = await getJSON('data/kpis.json'); if (pub && p.generatedAt !== pub.generatedAt) await reloadAll(); } catch {} }, 5 * 60 * 1000);
+})();
+</script>
+</body>
+</html>

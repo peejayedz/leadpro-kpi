@@ -1,0 +1,57 @@
+name: Discover a firm's GHL setup
+
+on:
+  workflow_dispatch: # admin page (New firm, Re-read GHL) or the Run workflow button
+    inputs:
+      slug:
+        description: "Firm slug (e.g. mahdavi)"
+        required: true
+      locationId:
+        description: "GHL location ID. Optional once the firm's config.json exists; needed for a brand-new firm."
+        required: false
+        default: ""
+
+permissions:
+  contents: write # commits firms/<slug>/discovery.json
+
+concurrency:
+  group: discover-${{ inputs.slug }}
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Read pipelines, stages, calendars and custom fields
+        env:
+          SLUG: ${{ inputs.slug }}
+          LOCATION_ID: ${{ inputs.locationId }}
+          # Every repo secret as JSON; discover.mjs picks GHL_TOKEN_<SLUG>. Never echo or log this variable.
+          ALL_SECRETS: ${{ toJSON(secrets) }}
+        run: node scripts/discover.mjs "$SLUG" "$LOCATION_ID"
+
+      - name: Commit discovery.json
+        env:
+          SLUG: ${{ inputs.slug }}
+        run: |
+          git config user.name "kpi-sync-bot"
+          git config user.email "kpi-sync-bot@users.noreply.github.com"
+          git add "firms/$SLUG/discovery.json"
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Discover ${SLUG} $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin main && git push && exit 0
+            sleep $((i * 5))
+          done
+          echo "Push failed after 3 tries" >&2
+          exit 1

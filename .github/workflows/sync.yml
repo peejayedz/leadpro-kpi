@@ -1,0 +1,58 @@
+name: Sync KPIs from GoHighLevel
+
+on:
+  schedule:
+    - cron: "7,37 * * * *" # every 30 minutes (UTC)
+  workflow_dispatch: # Run workflow button, the dashboards' Refresh button and the admin page
+    inputs:
+      slug:
+        description: "Firm slug (e.g. mahdavi). Leave empty to sync every firm."
+        required: false
+        default: ""
+
+permissions:
+  contents: write # lets the built-in GITHUB_TOKEN commit the data files
+
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Pull GHL and compute KPIs
+        id: sync
+        env:
+          SLUG: ${{ inputs.slug }}
+          # Every repo secret as JSON; sync-all.mjs picks GHL_TOKEN_<SLUG> / PASSPHRASE_<SLUG> per firm.
+          # Never echo or log this variable.
+          ALL_SECRETS: ${{ toJSON(secrets) }}
+        run: node scripts/sync-all.mjs "$SLUG"
+
+      - name: Commit if changed
+        if: ${{ !cancelled() }} # commit the firms that synced even if another firm failed
+        env:
+          LABEL: ${{ steps.sync.outputs.label || inputs.slug || 'firms' }}
+        run: |
+          git config user.name "kpi-sync-bot"
+          git config user.email "kpi-sync-bot@users.noreply.github.com"
+          git add -A firms
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Sync ${LABEL} $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin main && git push && exit 0
+            sleep $((i * 5))
+          done
+          echo "Push failed after 3 tries" >&2
+          exit 1
