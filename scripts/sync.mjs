@@ -10,7 +10,7 @@
 
 import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 import { computeAll, encryptJSON, tzOffsetMin } from './kpi-core.mjs';
-import { checkSlug } from './firms.mjs';
+import { checkSlug, loadFirmConfig } from './firms.mjs';
 
 const SLUG = process.argv[2];
 const slugErr = checkSlug(SLUG);
@@ -18,7 +18,7 @@ if (slugErr) { console.error(slugErr); process.exit(1); }
 const firmDir = new URL(`../firms/${SLUG}/`, import.meta.url);
 
 const API = process.env.GHL_API_BASE || 'https://services.leadconnectorhq.com';
-const cfg = JSON.parse(await readFile(new URL('config.json', firmDir), 'utf8'));
+const cfg = await loadFirmConfig(SLUG);   // _defaults.json → practice-area defaults → firm config.json
 const TOKEN = process.env.GHL_TOKEN;
 const LOC = cfg.locationId || process.env.GHL_LOCATION_ID;
 const PASS = process.env.DASHBOARD_PASSPHRASE || '';

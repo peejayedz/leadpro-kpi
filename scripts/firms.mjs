@@ -2,8 +2,9 @@
 // Never logs a secret value.
 
 import { readFile } from 'node:fs/promises';
+import { mergeConfig, practiceSlug } from './config-merge.mjs';
 
-export const RESERVED = ['admin', 'app', 'scripts', '_template'];
+export const RESERVED = ['admin', 'app', 'scripts', '_template', '_defaults'];
 
 // Returns an error message, or null when the slug is valid.
 export function checkSlug(slug) {
@@ -18,6 +19,22 @@ export function checkSlug(slug) {
 export const secretKeyFor = slug => slug.toUpperCase().replace(/-/g, '_');
 export const tokenName = key => `GHL_TOKEN_${key}`;
 export const passName = key => `PASSPHRASE_${key}`;
+
+const readJSON = async (rel, fallback) => {
+  try { return JSON.parse(await readFile(new URL(rel, import.meta.url), 'utf8')); }
+  catch (e) { if (e.code === 'ENOENT') return fallback; throw e; }
+};
+
+// Effective config: firms/_defaults.json → firms/_defaults/<practice-area>.json → firms/<slug>/config.json
+export async function loadFirmConfig(slug) {
+  const firm = await readJSON(`../firms/${slug}/config.json`, null);
+  if (!firm) throw new Error(`No firms/${slug}/config.json`);
+  const defaults = await readJSON('../firms/_defaults.json', {});
+  const available = await readJSON('../firms/_defaults/index.json', []);
+  const area = practiceSlug(firm.practiceArea);
+  const practice = area && available.includes(area) ? await readJSON(`../firms/_defaults/${area}.json`, null) : null;
+  return mergeConfig(defaults, practice, firm);
+}
 
 // [{ slug, secretKey, name, practiceArea, locationId, createdAt }]
 export async function readIndex() {

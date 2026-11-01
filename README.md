@@ -17,7 +17,9 @@ scripts/plan-matrix.mjs     builds the per-firm job list for sync.yml
 scripts/discover.mjs        reads a firm's pipelines, stages, calendars and custom fields → firms/<slug>/discovery.json
 scripts/firms.mjs           slug rules and secret names shared by the scripts
 firms/index.json            the firm list: [{ slug, secretKey, name, practiceArea, locationId, createdAt }]
-firms/_template/            config.json and index.html stub that every new firm starts from
+firms/_defaults.json        shared settings for every firm (targets, notice, recommendedFocus, channels, attributionDisclaimer, qualification, speedToLead)
+firms/_defaults/            optional practice-area defaults: <practice-area>.json, listed in index.json
+firms/_template/            firm-specific config.json and index.html stub that every new firm starts from
 firms/<slug>/index.html     tiny stub that loads app/dashboard.html
 firms/<slug>/config.json    goals, stage mapping, ad spend, locationId, practiceArea (no secrets)
 firms/<slug>/data/          written by the sync: kpis.json (numbers only) and details.enc.json (encrypted)
@@ -28,6 +30,16 @@ admin/index.html            admin page: firm list, New firm, Edit mapping, banne
 admin/lock.json             admin password verifier (written by scripts/set-admin-password.mjs; no password inside)
 scripts/set-admin-password.mjs  sets the admin password (prompts in the terminal)
 ```
+
+## Shared defaults
+
+Each firm's effective config is built in three layers, by the sync and by the dashboard alike (`scripts/config-merge.mjs`):
+
+1. `firms/_defaults.json`: settings every firm shares.
+2. `firms/_defaults/<practice-area>.json`: optional, for one practice area (e.g. `personal-injury.json`). Only used when its name is listed in `firms/_defaults/index.json`.
+3. `firms/<slug>/config.json`: the firm's own values (name, location, stages, pipelines, time zone…) and any overrides.
+
+Objects merge key by key; arrays and plain values replace; `null` switches a default off (LFMP uses `"notice": { "show": false, "autoHide": null, "lowActivity": null }`). Change a target or a channel rule once in `_defaults.json` and every firm picks it up on its next sync.
 
 ## Slugs and secrets
 

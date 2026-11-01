@@ -299,6 +299,7 @@ const SLUG = PATH_FIRM ? PATH_FIRM[1] : (new URLSearchParams(location.search).ge
 const ROOT = location.pathname.replace(/(?:firms\/[^/]+|app)\/[^/]*$/, '');
 const FIRM = PATH_FIRM ? './' : `${ROOT}firms/${SLUG}/`;
 const { buildLists, summarize, periodRange, customRange, compareRange, hasFullPrev, tzOffsetMin, decryptJSON } = await import(`${ROOT}scripts/kpi-core.mjs`);
+const { mergeConfig, practiceSlug } = await import(`${ROOT}scripts/config-merge.mjs`);
 const PASS_KEY = `lfmp-pass-${SLUG}`;   // one saved passphrase per firm (all firms share this origin)
 
 // ---------- state ----------
@@ -338,7 +339,18 @@ async function getJSON(path) {
   if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
   return r.json();
 }
-async function loadPublic() { [pub, cfg] = await Promise.all([getJSON('data/kpis.json'), getJSON('config.json')]); }
+// Shared files at the repo root (firms/_defaults.json etc.). Missing files come back as null.
+async function rootJSON(path) {
+  try { const r = await fetch(`${ROOT}${path}?t=${Date.now()}`, { cache: 'no-store' }); return r.ok ? r.json() : null; } catch { return null; }
+}
+// Effective config: firms/_defaults.json → firms/_defaults/<practice-area>.json → this firm's config.json
+async function loadConfig() {
+  const [firm, defaults, available] = await Promise.all([getJSON('config.json'), rootJSON('firms/_defaults.json'), rootJSON('firms/_defaults/index.json')]);
+  const area = practiceSlug(firm.practiceArea);
+  const practice = area && (available || []).includes(area) ? await rootJSON(`firms/_defaults/${area}.json`) : null;
+  return mergeConfig(defaults, practice, firm);
+}
+async function loadPublic() { [pub, cfg] = await Promise.all([getJSON('data/kpis.json'), loadConfig()]); }
 async function unlock(pass, remember) {
   const env = await getJSON('data/details.enc.json');
   records = await decryptJSON(env, pass);

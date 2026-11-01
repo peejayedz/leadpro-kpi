@@ -249,6 +249,7 @@ input[readonly]{color:var(--ink-2)}
 // the GitHub API with a fine-grained token saved (encrypted) on this device.
 // Nothing here is sent anywhere except api.github.com and this site.
 // =====================================================================
+import { mergeConfig, practiceSlug } from '../scripts/config-merge.mjs';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -278,7 +279,7 @@ document.querySelectorAll('.repoName').forEach(e => { e.textContent = REPO; });
 
 const TOKEN_KEY = 'leadpro-admin-gh-token';
 const SODIUM = { src: 'https://cdnjs.cloudflare.com/ajax/libs/libsodium-wrappers/0.5.4/sodium.min.js', integrity: 'sha384-wwHUJSIg+zP+JE6uHrrp1XCv4UtKW9xE4+LO+lwfrocCav+zHsDN57+5bvmKRCnu' };
-const RESERVED = ['admin', 'app', 'scripts', '_template'];
+const RESERVED = ['admin', 'app', 'scripts', '_template', '_defaults'];
 const GHL_APP = 'https://app.lawfirmmarketingpros.com';
 const INTEGRATION_NAME = 'LeadPro KPI Scorecard';
 const piUrl = loc => `${GHL_APP}/v2/location/${encodeURIComponent(loc)}/settings/private-integrations`;
@@ -549,6 +550,21 @@ async function follow({ workflow, title, t0, check, limitMs, say, label, stop = 
 // Firm list
 // =====================================================================
 let firms = [], configs = {}, kpis = {};
+// Shared layers: firms/_defaults.json and the optional practice-area files listed in firms/_defaults/index.json.
+// configs[slug] holds each firm's own config.json; effective() layers it over the shared files.
+const shared = { defaults: {}, available: [], practice: {} };
+async function loadShared(ref) {
+  shared.defaults = (await getJSON('firms/_defaults.json', ref)) || {};
+  shared.available = (await getJSON('firms/_defaults/index.json', ref)) || [];
+  shared.practice = {};
+}
+async function baseFor(firmCfg, ref) {
+  const area = practiceSlug(firmCfg?.practiceArea);
+  const practice = area && shared.available.includes(area) ? (shared.practice[area] ??= await getJSON(`firms/_defaults/${area}.json`, ref)) : null;
+  return mergeConfig(shared.defaults, practice, {});
+}
+const bannerOn = (firmCfg, base) => mergeConfig(base, null, firmCfg || {}).notice?.show !== false;
+const bases = {};
 async function openApp() {
   show('appView');
   await renderList();
@@ -562,15 +578,16 @@ const fmtTime = iso => iso ? new Date(iso).toLocaleString('en-US', { dateStyle: 
 
 async function loadFirms() {
   firms = (await getJSON('firms/index.json')) || [];
+  await loadShared();
   await Promise.all(firms.map(async f => {
-    try { configs[f.slug] = await getJSON(`firms/${f.slug}/config.json`); } catch { configs[f.slug] = null; }
+    try { configs[f.slug] = await getJSON(`firms/${f.slug}/config.json`); bases[f.slug] = await baseFor(configs[f.slug]); } catch { configs[f.slug] = null; }
     try { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); kpis[f.slug] = k ? { generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null } : null; } catch { kpis[f.slug] = null; }
   }));
 }
 function firmRow(f) {
   const cfg = configs[f.slug], k = kpis[f.slug];
   const stale = k?.generatedAt && Date.now() - Date.parse(k.generatedAt) > 3 * 3600e3;
-  const banner = cfg?.notice?.show !== false;
+  const banner = cfg ? bannerOn(cfg, bases[f.slug] || shared.defaults) : true;
   return `<article class="firm" data-slug="${esc(f.slug)}">
     <div>
       <h3>${esc(f.name)}</h3>
@@ -645,17 +662,24 @@ async function resyncFirm(f, status, btn) {
 async function toggleBanner(f, status, btn) {
   btn.disabled = true; status.textContent = 'Saving…';
   try {
-    let next;
-    await commitFiles(`${configs[f.slug]?.notice?.show !== false ? 'Hide' : 'Show'} testing banner for ${f.name}`, async head => {
+    let next, nowOn;
+    await commitFiles(`${bannerOn(configs[f.slug], bases[f.slug] || shared.defaults) ? 'Hide' : 'Show'} testing banner for ${f.name}`, async head => {
       const cfg = await getJSON(`firms/${f.slug}/config.json`, head);
       if (!cfg) throw new Error('config.json not found');
-      cfg.notice = { ...(cfg.notice || {}), show: !(cfg.notice?.show !== false) };
-      next = cfg; return [{ path: `firms/${f.slug}/config.json`, content: jsonText(cfg) }];
+      await loadShared(head);
+      const base = await baseFor(cfg, head);
+      nowOn = !bannerOn(cfg, base);
+      // Only the firm's own override is written; it's dropped again when it matches the default.
+      cfg.notice = { ...(cfg.notice || {}), show: nowOn };
+      if (nowOn === (base.notice?.show !== false)) delete cfg.notice.show;
+      if (!Object.keys(cfg.notice).length) delete cfg.notice;
+      bases[f.slug] = base; next = cfg;
+      return [{ path: `firms/${f.slug}/config.json`, content: jsonText(cfg) }];
     });
     configs[f.slug] = next;
     const row = document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`);
     row.outerHTML = firmRow(f);
-    flashRow(f.slug, `<span class="chip good">Saved</span> Banner ${next.notice.show ? 'on' : 'off'}. The dashboard updates within a minute or two.`);
+    flashRow(f.slug, `<span class="chip good">Saved</span> Banner ${nowOn ? 'on' : 'off'}. The dashboard updates within a minute or two.`);
   } catch (e) { status.innerHTML = `<span class="chip bad">Not saved</span> ${esc(e.message)}`; btn.disabled = false; }
 }
 
@@ -1015,8 +1039,8 @@ const STEP_FNS = [
       const stub = await getText('firms/_template/index.html', head);
       if (!tpl || !stub) throw new Error('The firms/_template files are missing.');
       const cfg = applyMapping(structuredClone(tpl), ctx.mapping);
+      // Firm-specific values only; targets, notice, channels etc. come from firms/_defaults.json.
       Object.assign(cfg, { locationName: ctx.name, practiceArea: ctx.practiceArea, locationId: ctx.locationId, title: '', timezone: ctx.timezone });
-      cfg.notice = { ...(cfg.notice || {}), show: true };
       index.push({ slug: ctx.slug, secretKey: ctx.secretKey, name: ctx.name, practiceArea: ctx.practiceArea, locationId: ctx.locationId, createdAt: new Date().toISOString() });
       return [
         { path: `firms/${ctx.slug}/config.json`, content: jsonText(cfg) },
