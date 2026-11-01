@@ -1,0 +1,45 @@
+name: Diagnose message export (read-only)
+run-name: "Diag export ${{ inputs.slug }}"
+
+# Pulls GHL's conversation-message export several times in a row and logs, per page, what
+# came back (counts, dates, timings, rate-limit headers). Prints no message content or contact
+# data and commits nothing.
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Firm slug"
+        required: true
+      secretKey:
+        description: "Secret key (slug in capitals, hyphens as underscores)"
+        required: true
+      passes:
+        description: "How many pulls in a row (1-6)"
+        required: false
+        default: "3"
+
+permissions:
+  contents: read
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Check the secret key belongs to the slug
+        env:
+          SLUG: ${{ inputs.slug }}
+          KEY: ${{ inputs.secretKey }}
+        run: |
+          expected=$(echo "$SLUG" | tr 'a-z-' 'A-Z_')
+          [ "$KEY" = "$expected" ] || { echo "secretKey $KEY does not belong to $SLUG"; exit 1; }
+      - name: Pull the export repeatedly
+        env:
+          SLUG: ${{ inputs.slug }}
+          PASSES: ${{ inputs.passes }}
+          GHL_TOKEN: ${{ secrets[format('GHL_TOKEN_{0}', inputs.secretKey)] }}
+        run: node scripts/diag-export.mjs "$SLUG" "$PASSES"
