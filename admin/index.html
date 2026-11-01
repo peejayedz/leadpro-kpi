@@ -852,7 +852,7 @@ function renderNewFirm() {
         </div>
         <ol>
           <li>Create a new integration named <b>${esc(INTEGRATION_NAME)}</b>.</li>
-          <li>Tick these nine scopes. All are read-only “View” scopes:</li>
+          <li>Press Next, then tick these nine scopes. All are read-only “View” scopes. GHL lists 180, so type each key below into its “Select scopes” box to find it:</li>
         </ol>
         <ul class="scopelist">${SCOPES.map(([k, n]) => `<li><label class="check"><input type="checkbox"><span>${esc(n)}<span class="mono">${esc(k)}</span></span></label></li>`).join('')}</ul>
         <ol start="3"><li>Create it, then copy the token.</li></ol>
