@@ -1,0 +1,4173 @@
+{
+  "generatedAt": "2026-11-01T19:51:08.071Z",
+  "slug": "lfmp",
+  "locationId": "sQ2VSMkR7cLHb46Wdemi",
+  "scopes": {
+    "checkedAt": "2026-11-01T19:51:08.071Z",
+    "ok": [
+      "opportunities.readonly",
+      "contacts.readonly",
+      "users.readonly",
+      "locations.readonly",
+      "locations/customFields.readonly",
+      "calendars.readonly",
+      "calendars/events.readonly",
+      "conversations.readonly",
+      "conversations/message.readonly"
+    ],
+    "missing": [],
+    "unchecked": [],
+    "tokenRejected": false
+  },
+  "pipelines": [
+    {
+      "id": "Oh3kbvKQCDkjbXNSsHk4",
+      "name": "01. Sales Pipeline",
+      "stages": [
+        {
+          "id": "ff106094-1999-4c14-98e0-5cbd9eb855ef",
+          "name": "New Leads",
+          "position": 0
+        },
+        {
+          "id": "12fd7dfa-7642-4694-9d1a-054e7d295219",
+          "name": "Initial Contact",
+          "position": 1
+        },
+        {
+          "id": "cf87cd30-2284-4a1a-96b7-88eb519a3856",
+          "name": "Right Fit Call",
+          "position": 2
+        },
+        {
+          "id": "ee110173-be84-4ebd-9b8e-2ffc40304e4e",
+          "name": "Discovery Call",
+          "position": 3
+        },
+        {
+          "id": "1f326984-3c3a-408e-b438-ef460bc7de38",
+          "name": "Strategy Session",
+          "position": 4
+        },
+        {
+          "id": "cd746947-2213-4332-9d7f-aaab22cf71bb",
+          "name": "Price Negotiation",
+          "position": 5
+        },
+        {
+          "id": "ca088124-b961-4e59-8e82-eb86601f4568",
+          "name": "Contract",
+          "position": 6
+        },
+        {
+          "id": "fbf8a37d-bdb0-482d-9411-2a690594ad81",
+          "name": "Archived",
+          "position": 7
+        }
+      ]
+    },
+    {
+      "id": "ZhrsMbOwlXxNZMSQAxQF",
+      "name": "02. OPS Onboarding Pipeline",
+      "stages": [
+        {
+          "id": "59c1ef52-4508-48f4-b4bb-3affc4eec013",
+          "name": "Stage 1 – Status Changed to Won, Then Welcome Email",
+          "position": 0
+        },
+        {
+          "id": "a4a37771-4c5c-4096-b9bb-a38a73b35359",
+          "name": "Stage 2 - Intake Form Submitted",
+          "position": 1
+        },
+        {
+          "id": "3701627e-6475-47ee-998c-81d14c1c5539",
+          "name": "Stage 3 - CSM Assigned & Welcome Orders",
+          "position": 2
+        },
+        {
+          "id": "6602a2e9-6f05-4d66-84e4-42c1d7236d35",
+          "name": "Stage 4 - Onboarding Form Submitted, Then 100 Day Kick Off",
+          "position": 3
+        },
+        {
+          "id": "735b5f93-a52e-40c7-adc3-d6c6e7040ec4",
+          "name": "Stage 5 - 90 -day Service Fulfillment Audit",
+          "position": 4
+        },
+        {
+          "id": "7c5f10e1-2922-425e-8c0e-3598ddbebc84",
+          "name": "Enhancement",
+          "position": 5
+        },
+        {
+          "id": "6d9614c1-3774-4fea-aed5-1e246c552daf",
+          "name": "PPC Only",
+          "position": 6
+        },
+        {
+          "id": "8484de83-8cb0-46e5-b947-4d63f7e68b7b",
+          "name": "DLF Only",
+          "position": 7
+        }
+      ]
+    },
+    {
+      "id": "GC6w26o7wYy47FXiGY2f",
+      "name": "03. [AGM] PI Summit",
+      "stages": [
+        {
+          "id": "b9afa6b0-ebd4-4dfe-b141-7026d4634c87",
+          "name": "New Leads",
+          "position": 0
+        },
+        {
+          "id": "c955f8e6-a7f0-4b86-b244-ca4f2d84b1e1",
+          "name": "[Active] PI Summit Follow Up Seq",
+          "position": 1
+        },
+        {
+          "id": "a822e268-249b-4dc6-896e-a561945a8d4e",
+          "name": "Scheduled",
+          "position": 2
+        },
+        {
+          "id": "e39b6ccd-4330-4a6e-995d-48d2fec385a6",
+          "name": "Did Not Schedule",
+          "position": 3
+        }
+      ]
+    },
+    {
+      "id": "s7hhfK2CUIDV4IoAfUSs",
+      "name": "04. [AGM] Podcast - Confirmed Guest",
+      "stages": [
+        {
+          "id": "6ba61994-4f51-4f97-8124-4e0799a3cf89",
+          "name": "New Leads/Guest",
+          "position": 0
+        },
+        {
+          "id": "6e394fea-1f5d-45da-90a8-acd7b54b1379",
+          "name": "Stage 1: Enroll To Podcast Event Sequence",
+          "position": 1
+        },
+        {
+          "id": "ac2a7136-16e2-4357-85c1-16e870b9baa8",
+          "name": "Stage 2: Scheduled for Recording",
+          "position": 2
+        },
+        {
+          "id": "0792e9d6-56ff-4e48-b801-9ddd0cfcadff",
+          "name": "Stage 2.1: Sent For Approval [5D Before]",
+          "position": 3
+        },
+        {
+          "id": "286d9d45-18b2-4c26-a178-de5db4809633",
+          "name": "Stage 2.2: Checklist Sent [2D Before]",
+          "position": 4
+        },
+        {
+          "id": "b1a0ff2b-4dc0-49f8-abae-bc71ce8335b5",
+          "name": "Stage 3 - Post Recording",
+          "position": 5
+        },
+        {
+          "id": "0aae23b9-e321-4481-87f5-334cdacb39e6",
+          "name": "Stage 4 - Live Episode",
+          "position": 6
+        },
+        {
+          "id": "6746721b-e3ea-4f31-9857-0533d1f6af0c",
+          "name": "Did Not Schedule Podcast",
+          "position": 7
+        },
+        {
+          "id": "625ff05d-5a4d-4344-b789-638e0fc9aa25",
+          "name": "Scheduled But Did Not Submit Form",
+          "position": 8
+        },
+        {
+          "id": "45147454-fdf7-4bb0-a759-d5b1ce7254d3",
+          "name": "Interview Questions Sent - No Response",
+          "position": 9
+        },
+        {
+          "id": "739e1e18-1a3a-4b65-a807-84b5a0baafd0",
+          "name": "Rescheduled",
+          "position": 10
+        },
+        {
+          "id": "e263b355-f718-4cd3-a8ee-cd3c180ee05f",
+          "name": "Did Not Attend",
+          "position": 11
+        }
+      ]
+    },
+    {
+      "id": "FCPGZwmk3bMjiwbrlBEx",
+      "name": "AGM Workshop Attendees",
+      "stages": [
+        {
+          "id": "fcda2b2f-4fee-4eaf-843d-ecb903b43458",
+          "name": "Prospect",
+          "position": 0
+        },
+        {
+          "id": "f2739b6b-de4e-4cab-840f-28d7b42fce61",
+          "name": "Registered",
+          "position": 1
+        },
+        {
+          "id": "d364d1dd-f3ec-4cf1-8ae7-2b6914ee4152",
+          "name": "Post Workshop",
+          "position": 2
+        }
+      ]
+    },
+    {
+      "id": "SK5TpKJ23vfRy2IAGE8b",
+      "name": "DM Position Report & Gap Analysis",
+      "stages": [
+        {
+          "id": "e7f32ea8-9b26-4c27-a479-4d30046536dd",
+          "name": "New Lead",
+          "position": 0
+        },
+        {
+          "id": "10524e4f-32c7-4e79-983c-fca4110b46e9",
+          "name": "Contacted",
+          "position": 1
+        },
+        {
+          "id": "04f47517-40f6-4ff3-900a-37d7b7a4b918",
+          "name": "Proposal Sent",
+          "position": 2
+        },
+        {
+          "id": "c0ab3639-a18a-420f-9a6e-50ab0159e944",
+          "name": "Closed",
+          "position": 3
+        },
+        {
+          "id": "063d6c9d-ec2b-4e9b-9681-d6d3d7721929",
+          "name": "Scheduled",
+          "position": 4
+        },
+        {
+          "id": "02854357-03aa-4779-9396-3ee7e24ad8e7",
+          "name": "Did Not Scheduled",
+          "position": 5
+        }
+      ]
+    },
+    {
+      "id": "9pITuyWVliIzxAr6Yk2e",
+      "name": "Florida Attorney Cold Outreach (Qualified)",
+      "stages": [
+        {
+          "id": "ee8878e7-aaa8-4e21-a2e9-ed249eec5380",
+          "name": "New Lead",
+          "position": 0
+        },
+        {
+          "id": "2f43bc7d-c20b-4419-b350-81701fe08a46",
+          "name": "Contacted",
+          "position": 1
+        },
+        {
+          "id": "fe374391-daf0-4dba-bb45-777584e294a5",
+          "name": "Scheduled",
+          "position": 2
+        },
+        {
+          "id": "e25d3fe1-408e-42bb-8cff-50e04f57d7d1",
+          "name": "Proposal Sent",
+          "position": 3
+        },
+        {
+          "id": "46fff6a9-98f4-42a2-8d67-88fda0d0687b",
+          "name": "Won",
+          "position": 4
+        },
+        {
+          "id": "2f853c30-844b-429e-94dd-6f2ecaf81cbf",
+          "name": "Lost",
+          "position": 5
+        }
+      ]
+    },
+    {
+      "id": "lO05yxMs0R7sVnoIjIp0",
+      "name": "GHL Build Out Stages (Amirv2)",
+      "stages": [
+        {
+          "id": "a57ee4b4-9675-4df5-afab-d966ca98e4bc",
+          "name": "Stage 1: Web Lead",
+          "position": 0
+        },
+        {
+          "id": "e8e7f639-4b32-42f1-87fb-30a5b833cf5d",
+          "name": "Stage 2: Phone lead",
+          "position": 1
+        },
+        {
+          "id": "0f06dd53-f353-4e8a-b0e8-28b4c92d7a87",
+          "name": "Stage 3: Lead Contacted?",
+          "position": 2
+        },
+        {
+          "id": "e03e284c-885c-4f4c-9197-3087f0234850",
+          "name": "Stage 4: Lead Qualified?",
+          "position": 3
+        },
+        {
+          "id": "270f483a-070e-4290-92e2-bde8c49651a0",
+          "name": "Stage 5: Booked Consultation",
+          "position": 4
+        },
+        {
+          "id": "c105f655-f167-4d1b-ad6c-38bd61d966de",
+          "name": "Stage 6: Consultation Showed - Agreement Sent",
+          "position": 5
+        },
+        {
+          "id": "a668ece5-4e53-4e7d-9dc5-52d5a4267b81",
+          "name": "Stage 7: Consultation Showed - Lead Rejected",
+          "position": 6
+        },
+        {
+          "id": "d80925df-5f15-40d6-b046-809cda0c2cb6",
+          "name": "Stage 8: Consultation Showed - Lead Referred",
+          "position": 7
+        },
+        {
+          "id": "54d13ef0-ca1c-44c4-bc62-d3ac3d52fd94",
+          "name": "Stage 9: Consultation Showed - Lead Thinking",
+          "position": 8
+        },
+        {
+          "id": "e3ea3de8-88bf-46ca-8aae-e1681a93ff56",
+          "name": "Stage 10: Consultation No Show",
+          "position": 9
+        },
+        {
+          "id": "b244d1fa-2b0d-4026-b3a2-ac67b84b0e74",
+          "name": "Stage 11: Agreement Signed",
+          "position": 10
+        },
+        {
+          "id": "0badbf5c-9494-44b0-b6bf-fd3423a735a2",
+          "name": "Stage 12: Referred Lead Accepted?",
+          "position": 11
+        }
+      ]
+    },
+    {
+      "id": "RqVtndoVKpWCqSblzIyQ",
+      "name": "Podcast",
+      "stages": [
+        {
+          "id": "fb9dea3c-ad59-40ab-92d5-ad7ea8c201f3",
+          "name": "Invitation",
+          "position": 0
+        },
+        {
+          "id": "a429c1da-1542-4214-9985-80d985557b34",
+          "name": "Scheduled",
+          "position": 1
+        },
+        {
+          "id": "5fa35a18-b3d9-40f6-a3f1-3cce02cba04f",
+          "name": "Media KIt",
+          "position": 2
+        },
+        {
+          "id": "8e37b3de-c020-4120-aec7-2fffdb8129cb",
+          "name": "Completed",
+          "position": 3
+        },
+        {
+          "id": "3626ea1d-e298-4358-a669-6dcfadb4a704",
+          "name": "Lost",
+          "position": 4
+        }
+      ]
+    },
+    {
+      "id": "pjmtVNjDOUu1IXdjCuBZ",
+      "name": "99. Onboarding (amir v1)",
+      "stages": [
+        {
+          "id": "9153cf91-820a-4d09-aba9-99d4ccc058cb",
+          "name": "Intake Received",
+          "position": 0
+        },
+        {
+          "id": "3f195066-4ca2-4b65-87e9-652f69e314c4",
+          "name": "Welcome Kit",
+          "position": 1
+        },
+        {
+          "id": "f729f119-b626-40c8-a2c1-e97d0ca2e2e2",
+          "name": "Onboarding Main",
+          "position": 2
+        },
+        {
+          "id": "40b4b6ca-5ddc-4cc0-ae16-b0f01c80c0d2",
+          "name": "Onboarding: Branding & Content",
+          "position": 3
+        },
+        {
+          "id": "0cdf9312-96b9-4c46-9edc-d9d22d1bbabd",
+          "name": "Onboarding: PPC",
+          "position": 4
+        },
+        {
+          "id": "29f764ec-33eb-458f-9237-53c2979a0314",
+          "name": "Onboarding: WebDev",
+          "position": 5
+        }
+      ]
+    },
+    {
+      "id": "TIWBjudFl2W51uwDUyrB",
+      "name": "Off-boarded Clients",
+      "stages": [
+        {
+          "id": "57344c1a-8321-4505-a476-f7f381a51a68",
+          "name": "Cancellation Email Received",
+          "position": 0
+        },
+        {
+          "id": "ccc8c6d9-b4b8-4224-8277-850167220474",
+          "name": "Final Payment Received",
+          "position": 1
+        },
+        {
+          "id": "7b2c2153-08fb-4071-85b0-1c353e50e5ae",
+          "name": "Offboarding Started",
+          "position": 2
+        },
+        {
+          "id": "36ecbb57-4654-4159-b30c-3d15ee292496",
+          "name": "Pending Final Tasks",
+          "position": 3
+        },
+        {
+          "id": "73391237-b976-47e0-92b4-8bb3d7cc1afe",
+          "name": "Offboarded",
+          "position": 4
+        }
+      ]
+    },
+    {
+      "id": "SFBTKt59RKwKhibl44Ba",
+      "name": "PPC-Only Onboarding",
+      "stages": [
+        {
+          "id": "dc963756-f90c-4212-a077-6099b3f5de78",
+          "name": "New Lead",
+          "position": 0
+        },
+        {
+          "id": "e62b22c4-7527-4ee2-a1d5-925d29f11cb4",
+          "name": "Contacted",
+          "position": 1
+        },
+        {
+          "id": "17171b97-7326-432b-aecf-51758807495b",
+          "name": "Proposal Sent",
+          "position": 2
+        },
+        {
+          "id": "17c7211a-5999-4836-8870-2ee6704b7007",
+          "name": "Closed",
+          "position": 3
+        }
+      ]
+    },
+    {
+      "id": "DWxLI6AFKiOzb2e0P0R0",
+      "name": "Web Development",
+      "stages": [
+        {
+          "id": "15438755-08af-4352-8b36-7b039aeb82d2",
+          "name": "Kick-off Scheduled",
+          "position": 0
+        },
+        {
+          "id": "897e76d2-ead6-433d-8925-c2c1d58206c6",
+          "name": "Staging Rollover (wks 1–4)",
+          "position": 1
+        },
+        {
+          "id": "7277cfb6-9149-4781-99e4-05a0205387ae",
+          "name": "Staging Review – Path Decision",
+          "position": 2
+        },
+        {
+          "id": "27462ff3-32f8-4250-b5f7-a3449e9488b3",
+          "name": "New Implementation",
+          "position": 3
+        },
+        {
+          "id": "8d2b4d6f-1eea-4312-bf28-21116c44d9e3",
+          "name": "Launch-Ready / Redesign Review",
+          "position": 4
+        },
+        {
+          "id": "f7864317-f03c-42fe-85e1-32cb1fabf575",
+          "name": "Final Edits, SEO & QC",
+          "position": 5
+        },
+        {
+          "id": "a091f9a2-1afc-4c45-ab74-677dad74ff5d",
+          "name": "Awaiting Approval",
+          "position": 6
+        },
+        {
+          "id": "22f425a5-439d-4497-912f-de87e38ba1a1",
+          "name": "Launch Prep & Weekend Launch",
+          "position": 7
+        },
+        {
+          "id": "d8b5decd-6f8e-4521-99aa-5c2652e00dbd",
+          "name": "Post-Launch QC",
+          "position": 8
+        },
+        {
+          "id": "d3c0edbb-952c-40e0-834f-fce66b0bd78d",
+          "name": "Complete – Hosting & Maintenance",
+          "position": 9
+        }
+      ]
+    },
+    {
+      "id": "H4CU3I3sAQnDDA6aqCoE",
+      "name": "Claude Test Pipeline",
+      "stages": [
+        {
+          "id": "0122206c-1caa-4b68-bb08-93051b353f20",
+          "name": "Stage 1",
+          "position": 0
+        },
+        {
+          "id": "e5cd876b-b08c-46e6-adb8-1c5a1d546ec4",
+          "name": "Stage 2",
+          "position": 1
+        },
+        {
+          "id": "1e15dcda-b23c-40b8-a6ee-ba3c1e663451",
+          "name": "Stage 3",
+          "position": 2
+        }
+      ]
+    }
+  ],
+  "calendars": [
+    {
+      "id": "3h0QRSkk6WkZgjU3vgfR",
+      "name": "Law Firm Marketing General Calendar",
+      "active": true
+    },
+    {
+      "id": "Hc0apnNi7kuv38Boguvy",
+      "name": "Intake/Onboarding Call",
+      "active": true
+    },
+    {
+      "id": "HcIhue8oS8BeZy7WKwON",
+      "name": "Anya Fowler's Personal Calendar",
+      "active": true
+    },
+    {
+      "id": "MaAxXSALg3c6hkZcOoFq",
+      "name": "Ada Louisa Fuentecilla's Personal Calendar",
+      "active": true
+    },
+    {
+      "id": "NRqxtWjTdU7lbgyjBah8",
+      "name": "Test Booking",
+      "active": true
+    },
+    {
+      "id": "OrhtVaZjVPRzLiyDHLtT",
+      "name": "Dani Malki's Personal Calendar",
+      "active": false
+    },
+    {
+      "id": "Qnqr5anFJRPhtp0cyBvA",
+      "name": "E2M Solutions's Personal Calendar",
+      "active": true
+    },
+    {
+      "id": "Si6lqWydNfxws3L2s19e",
+      "name": "Booking",
+      "active": true
+    },
+    {
+      "id": "TyGCR531cc9xduE6iT78",
+      "name": "Digital Marketing Strategy Session",
+      "active": true
+    },
+    {
+      "id": "Uqew2zFOs3TOgUxiQmXH",
+      "name": "PJ Calendar",
+      "active": true
+    },
+    {
+      "id": "W0ndgdhV0Puz6zEsYEMW",
+      "name": "Client Accelerator Meeting",
+      "active": true
+    },
+    {
+      "id": "WVK7HZWy7Na7ymp7zx6s",
+      "name": "Booking Request",
+      "active": true
+    },
+    {
+      "id": "m7gYNyp33rb29lfOAWI5",
+      "name": "Andy (Speedy Meeting 25 mins)",
+      "active": true
+    },
+    {
+      "id": "sdYjWjWBZ9jcXtV0S4FG",
+      "name": "Jaqueline Bobadilla Estrada's Personal Calendar",
+      "active": true
+    },
+    {
+      "id": "uH5Lllibn3JAr6MtRWeL",
+      "name": "Team Member - 15 Min Quick Meeting",
+      "active": true
+    }
+  ],
+  "customFields": {
+    "contact": [
+      {
+        "id": "01jhWJaM1XhzUxRvairt",
+        "name": "Domain Auto-Renewal",
+        "fieldKey": "contact.domain_autorenewal",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "05K6tAk6xjLBKdsr1KmM",
+        "name": "Twitter/X Account Link",
+        "fieldKey": "contact.twitterx_account_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "0HPWtWZC5nzXUPPhbr3Y",
+        "name": "Multi Loc Address 2",
+        "fieldKey": "contact.multi_loc_address_2",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "0SN7EcCJNUqDNpYalcQQ",
+        "name": "Blog Content Approval - Email",
+        "fieldKey": "contact.blog_content_approval__email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "0V0k7zKNnM74HzchZSb9",
+        "name": "Type of guest",
+        "fieldKey": "contact.type_of_guest",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "0VS0LIZGXO6x1b7lsh39",
+        "name": "CRM Username",
+        "fieldKey": "contact.crm_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "0VhLyMfLgkoxe5QMd7CA",
+        "name": "Location 5 Details",
+        "fieldKey": "contact.location_5_details",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "0dKtDfz3TnJzAOk9N9qL",
+        "name": "Answering Service Details",
+        "fieldKey": "contact.answering_service_detail",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "12YFxUxkxG6vNtXHmyV4",
+        "name": "MCC Linked? ***Other - No account",
+        "fieldKey": "contact.mcc_linked_other__no_account",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "17rmRTPCvBQiUdHdpyZ3",
+        "name": "Live Chat Provider ",
+        "fieldKey": "contact.live_chat_provider",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "1A8KehQ1zzb8RMKTGOol",
+        "name": "Database Received Date",
+        "fieldKey": "contact.database_received_date",
+        "dataType": "DATE"
+      },
+      {
+        "id": "1Db6GlDsB6zJPXFK80o6",
+        "name": "Facebook Username",
+        "fieldKey": "contact.facebook_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "1JFDZvYhmtlH8ssOZrwF",
+        "name": "Alias Email 1",
+        "fieldKey": "contact.alias_email_1",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "1Jxr4Wihv3unNvpcUbGo",
+        "name": "Review Incentive Active",
+        "fieldKey": "contact.review_incentive_active",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "1NzwWFzAilLdGZYvkpUF",
+        "name": "If yes, please add our email as a manager - CallTracking@lawfirmmarketingpros.com",
+        "fieldKey": "contact.if_yes_please_add_our_email_as_a_manager_call_tracking_lawfirmmarketingpros_com",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "1P9DqTQdGZREkNEAYY18",
+        "name": "Traffic Value Gap",
+        "fieldKey": "contact.traffic_value_gap",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "1TN2z5N1AYsT7WXS1hvK",
+        "name": "If yes, who is the vendor. (If no skip)",
+        "fieldKey": "contact.if_yes_who_is_the_vendor_if_no_skip",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "1Vkgtxy06lnNadfsTkiF",
+        "name": "Lead Capture Form Link",
+        "fieldKey": "contact.lead_capture_form_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "1WFgZTwTQEje6Ts7Xwlv",
+        "name": "If yes, do you credit this charge to the retainer?",
+        "fieldKey": "contact.if_yes_do_you_credit_this_charge_to_the_retainer",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "1dHg7YfsSPPRarcLQV6M",
+        "name": "CallRail Login URL (URL field - https://app.callrail.com/users/sign_in )",
+        "fieldKey": "contact.callrail_login_url_url_field__httpsappcallrailcomuserssign_in_",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "1xXccweqRmbVDY5PHOjD",
+        "name": "LP - Leads & intake",
+        "fieldKey": "contact.lp_sum_leads",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "1zmKR3bFYy0msOFlYIsh",
+        "name": "Access - LinkedIn - Status",
+        "fieldKey": "contact.access__linkedin__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "26b7YygG6MgBKMzeRiep",
+        "name": "Domain Registrar Password",
+        "fieldKey": "contact.contactdomain_registrar_username_bij_copy",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "2TuwvE87c4dZp5qUkUAe",
+        "name": "Review Request Status",
+        "fieldKey": "contact.review_request_status",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "2UaMByjhugwNtDyqvAwT",
+        "name": "Lead Pro",
+        "fieldKey": "contact.lead_pro",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "2lxPg5Vor1JGgCDWeJpL",
+        "name": "Press Release Received",
+        "fieldKey": "contact.press_release_received",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "2o0lVXhsDVikwv6Iyu0t",
+        "name": "X Recovery Email/Phone",
+        "fieldKey": "contact.x_recovery_emailphone",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "2o8NN2zNZnmjBNxFHyca",
+        "name": "Newsletter Status",
+        "fieldKey": "contact.newsletter_status",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "2rzrycIPZYJnd3DR4r4i",
+        "name": "What does your sales pipeline look like",
+        "fieldKey": "contact.what_does_your_sales_pipeline_look_like",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "2xpCKpt97uiK0Dggpv9O",
+        "name": "Target Audience",
+        "fieldKey": "contact.contacttarget_audience",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "2yfOvIIa7WS9TZtXf8BG",
+        "name": "Report Created By",
+        "fieldKey": "contact.report_created_by",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "36A9BR2MJFQI092UdhSF",
+        "name": "Hosting Password",
+        "fieldKey": "contact.hosting_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "36JvkoSdIDiA5ISt7CsW",
+        "name": "Gate - Has Instagram",
+        "fieldKey": "contact.gate__has_instagram",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "3Bdrz7ohuxz6Ao5k6a4d",
+        "name": "Key Contacts & Partner Responsibilities",
+        "fieldKey": "contact.key_contacts_partner_responsibilities",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "3E0sLBXIYeZDPTHaklKT",
+        "name": "TRLF",
+        "fieldKey": "contact.trlf",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "3IjAHM7lg6vYCvSsOxNE",
+        "name": "Preferred Shirt Size",
+        "fieldKey": "contact.contactpodcast_preferred_shirt_size",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "3Mr2EH4aj36IzMDFFc7o",
+        "name": "Newsletter Frequency",
+        "fieldKey": "contact.newsletter_frequency",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "3QPNdnDnwFRcayh6BDSi",
+        "name": "Client Master Sheet",
+        "fieldKey": "contact.client_master_sheet",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "3SCnt4kWXe62dqotKsNa",
+        "name": "Number of Employees",
+        "fieldKey": "contact.number_of_employees",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "3fhRm3MzJeQYsJkIaKTE",
+        "name": "3rd Contact Phone Number",
+        "fieldKey": "contact.3rd_contact_phone_number",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "3ixNcfub3UAJvx5hQdqJ",
+        "name": "AIC - Topics & sources",
+        "fieldKey": "contact.aic_sum_sources",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "3liLiOBEKHVhP43UZJSI",
+        "name": "AIC - Business information",
+        "fieldKey": "contact.aic_sum_business",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "3yKth7HFr1jrmj72JzgH",
+        "name": "Monthly PPC Budget",
+        "fieldKey": "contact.monthly_ppc_budget",
+        "dataType": "MONETORY"
+      },
+      {
+        "id": "43NWKcBfMy4vS6wA8XQF",
+        "name": "AIC - HIPAA ready",
+        "fieldKey": "contact.aic_hipaa_ready",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "43lQOmwBu3HopdkFWCtu",
+        "name": "Active Services",
+        "fieldKey": "contact.active_services",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "493ULqVNcyTZNkN2Dwq2",
+        "name": "Access - Cloudflare - Delegated Email",
+        "fieldKey": "contact.access__cloudflare__delegated_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "4MOSfHcMG8pzztMadvTR",
+        "name": "User Removal Completed",
+        "fieldKey": "contact.user_removal_completed",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "4O3IfTHwTnxaCIhQlBR7",
+        "name": "Location 4 Details",
+        "fieldKey": "contact.location_4_details",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "4ZDpPL3RBp8WSfD5itv1",
+        "name": "Facebook Ads Access Status",
+        "fieldKey": "contact.facebook_ads_access_status",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "4iAiGPMl4FSy0kUfxhbQ",
+        "name": "utm_content",
+        "fieldKey": "contact.utm_content",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "4kR5MudHhFsNM5OsrnhR",
+        "name": "Additional Information",
+        "fieldKey": "contact.additional_information",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "4lwM5M2XFhg0lGePYfWS",
+        "name": "Birth Date (Some Verticals Ask For This. Due to online security this date of birth does not have to be exact.)",
+        "fieldKey": "contact.birth_date_some_verticals_ask_for_this_due_to_online_security_this_date_of_birth_does_not_have_to_be_exact",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "5ApATab9ZgscDRkW41fS",
+        "name": "Email Marketing Platform",
+        "fieldKey": "contact.email_marketing_platform",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "5PEqL5me22oomTlSOFfs",
+        "name": "Logo Files Location",
+        "fieldKey": "contact.logo_files_location",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "5V4Fvr4yexyYTbC4sDzp",
+        "name": "PPC Landing Page A",
+        "fieldKey": "contact.ppc_landing_page_a",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "5uYgOg5gdjYeBoqSTCA7",
+        "name": "Google Ads recovery phone # and/or recovery email",
+        "fieldKey": "contact.google_ads_recovery_phone__andor_recovery_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "5xB6BeZHi40aZIDlE70E",
+        "name": "utm_source",
+        "fieldKey": "contact.utm_source",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "62TOztZeJ6fnPR9xCe0i",
+        "name": "YouTube Channel Link",
+        "fieldKey": "contact.youtube_channel_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "62hLegQsshXUyyAhJUHW",
+        "name": "Type of Law Notes",
+        "fieldKey": "contact.type_of_law_notes",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "6R5CaQUCUDD982ow4kfj",
+        "name": "How many LSA's do you have?",
+        "fieldKey": "contact.how_many_ls_as_do_you_have",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "6XrxSk3sTIShIqK5gpjL",
+        "name": "Competitor Traffic Multiple",
+        "fieldKey": "contact.competitor_traffic_multiple",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "6fihmJZFOpn08DHO8Ejx",
+        "name": "Previous Agency Removed Date",
+        "fieldKey": "contact.previous_agency_removed_date",
+        "dataType": "DATE"
+      },
+      {
+        "id": "6g1o12ij8KCWhNbSnNGB",
+        "name": "Website (onb)",
+        "fieldKey": "contact.website_onb",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "6teZGEfGul0C7zp7JlSD",
+        "name": "Total Monthly Investment",
+        "fieldKey": "contact.total_monthly_investment",
+        "dataType": "NUMERICAL"
+      },
+      {
+        "id": "6xobk6QrA7opQX6CXlU4",
+        "name": "Access - LinkedIn - Notes",
+        "fieldKey": "contact.access__linkedin__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "6y5Wwq2KRyRfRFJmTHS4",
+        "name": "Tagline or Personal Brand",
+        "fieldKey": "contact.contactfeatured_tagline",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "7BZe7Kr9OslslnoMdjtE",
+        "name": "Current Average Number of Cases per Month?",
+        "fieldKey": "contact.current_average_number_of_cases_per_month",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "7IGEUIAPTFReIshKyTTO",
+        "name": "Is there a chatbot on your website?",
+        "fieldKey": "contact.is_there_a_chatbot_on_your_website",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "7alScRfBs3tlErcQfs8p",
+        "name": "Primary Best Time to Contact",
+        "fieldKey": "contact.primary_best_time_to_contact",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "7at7piwbqUPjSd7ln2U8",
+        "name": "Standard Onboarding Fee",
+        "fieldKey": "contact.standard_onboarding_fee",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "7d0GInyt08bHQNw8pBpZ",
+        "name": "LinkedIn Email",
+        "fieldKey": "contact.linkedin_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "7v1946zMr2v7j6q2aJX7",
+        "name": "AIC - Setup & channels",
+        "fieldKey": "contact.aic_sum_setup",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "82EMau2rbTSzRpVo95WM",
+        "name": "Existing integrations or automations",
+        "fieldKey": "contact.existing_integrations_or_automations",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "8H7kGDqFWeX2p6wU0wBA",
+        "name": "Database Notes",
+        "fieldKey": "contact.database_notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "8JX763qDSqvImgqagR3I",
+        "name": "Any other agencies managing Google Ads, LSA, YouTube, Display, or other online campaigns for your business?",
+        "fieldKey": "contact.any_other_agencies_managing_google_ads_lsa_youtube_display_or_other_online_campaigns_for_your_business",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "8Lpvj1IV4k46wotRemyO",
+        "name": "Chat Platform",
+        "fieldKey": "contact.chat_platform",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "8LrUyzRvfkdv4mAXESC9",
+        "name": "3rd Contact Email",
+        "fieldKey": "contact.3rd_contact_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "8M2FDkKTDMupkBJoBj2g",
+        "name": "Multiple Welcome Boxes?",
+        "fieldKey": "contact.multiple_welcome_boxes",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "8UVtzGpdb0dw80B1gjwo",
+        "name": "Retargeting",
+        "fieldKey": "contact.retargeting",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "8aAEmv0WHCAIo7wt4ysE",
+        "name": "Contact Information",
+        "fieldKey": "contact.contact_information",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "8c3Jzdn5FdQyAmnZ1PCv",
+        "name": "Database Last Updated",
+        "fieldKey": "contact.database_last_updated",
+        "dataType": "DATE"
+      },
+      {
+        "id": "8sLNElXzFdmU7NNoFzGY",
+        "name": "Branding Guideline/Spec Sheets (Website/logo colour codes, etc).",
+        "fieldKey": "contact.branding_guidelinespec_sheets",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "8ul1n6i9xiFEn9aMSP5j",
+        "name": "With Local Services Ads?",
+        "fieldKey": "contact.with_local_services_ads",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "92Ar9PAWYPvScDbfp2Bl",
+        "name": "Google Drive Sales Folder",
+        "fieldKey": "contact.google_drive_sales_folder",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "92Bp6ien24HC7VQVSIkJ",
+        "name": "Email *",
+        "fieldKey": "contact.email_",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "95s1UXhDvRg8d3lIxDqy",
+        "name": "LP - Messaging, compliance & sign-off",
+        "fieldKey": "contact.lp_sum_messaging",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "989kAJmOeADTZOHZ1reN",
+        "name": "2nd Contact Title",
+        "fieldKey": "contact.2nd_contact_title",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "9ESfKIrzA29zvFjZgyk1",
+        "name": "Address line 2",
+        "fieldKey": "contact.address_line_2",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "9G6EQ1WBbVwpO5fw767B",
+        "name": "Google Ads location extensions phone for GMB",
+        "fieldKey": "contact.google_ads_location_extensions_phone_for_gmb",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "9MJcOTQmDAGWllB29RYt",
+        "name": "AIC - AI voice agent",
+        "fieldKey": "contact.aic_sum_voice",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "9OkL7B95ImG5yeW1aVhy",
+        "name": "Loom Video",
+        "fieldKey": "contact.loom_video",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "9QwQPd4cZ6BNTA8rE8NI",
+        "name": "Proposed Meeting Times",
+        "fieldKey": "contact.proposed_meeting_times",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "9SMAmwAhMGeExuvxDH4i",
+        "name": "Is your CRM connected to Google Ads?",
+        "fieldKey": "contact.is_your_crm_connected_to_google_ads",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "9UqqraWFWvoix362XGLe",
+        "name": "With 24/7 live answer?",
+        "fieldKey": "contact.with_247_live_answer",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "9UzaWV8wRqYW8ysIrh8t",
+        "name": "Final Payment Received",
+        "fieldKey": "contact.final_payment_received",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "9dqNmG6ROP05ynNouVjy",
+        "name": "Website lead notification",
+        "fieldKey": "contact.website_lead_notification",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "9m4ciiuJd9RUlz2oMni0",
+        "name": "Public Email Used For Your Business (such as Info@...)",
+        "fieldKey": "contact.public_email_used_for_your_business_such_as_info",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "9m7Fd8qrqgmufcx6fRW5",
+        "name": "Location 3 Swap Target",
+        "fieldKey": "contact.location_3_swap_target",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "9xUHf4CGaCvUfNO2g0dm",
+        "name": "Website Audit Report Link",
+        "fieldKey": "contact.website_audit_report_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "9zDw6Eq7cKNQruZxlgnZ",
+        "name": "Priority Case Types",
+        "fieldKey": "contact.priority_case_types",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "9ze2XV07xeTrLiLKVRAc",
+        "name": "Campaign Name",
+        "fieldKey": "contact.campaign_name",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "A0oJSrr8glxwhd0YL8wx",
+        "name": "Operation Hours",
+        "fieldKey": "contact.operation_hours",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "A3tN8TAbx45VcwtbP2wK",
+        "name": "Intake Video Link",
+        "fieldKey": "contact.intake_video_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "AKElb0VFbKMFRzM3jTrc",
+        "name": "Report Created Date",
+        "fieldKey": "contact.report_created_date",
+        "dataType": "DATE"
+      },
+      {
+        "id": "AMLkZ2ELnRP1NV6VBLyr",
+        "name": "Youtube Channel Or Video Link",
+        "fieldKey": "contact.youtube_channel_or_video_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "ARhLrJJPn8vWQdcOxYck",
+        "name": "Position Report & Gap Analysis",
+        "fieldKey": "contact.position_report__gap_analysis",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "ASKnTaP7LTAr2v3T8RiM",
+        "name": "Instagram Recovery Email/Phone",
+        "fieldKey": "contact.instagram_recovery_emailphone",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "AYM1pE0LCEj7uZI5K5Qb",
+        "name": "Hosting Disconnection Date",
+        "fieldKey": "contact.hosting_disconnection_date",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "AjgQKFRr1QtmizyBWfMN",
+        "name": "Adroll Link",
+        "fieldKey": "contact.adroll_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "BB658hAFYm33Uy0NysEm",
+        "name": "Incentive Type (choose one of the following by checking off the box)",
+        "fieldKey": "contact.incentive_type_choose_one_of_the_following_by_checking_off_the_box",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "BCRgTpCRU1zhKu1gdTkT",
+        "name": "Avg Case Value",
+        "fieldKey": "contact.avg_case_value",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "BD7LUtgPBNpTW0nYJsnn",
+        "name": "Gate - Has LinkedIn",
+        "fieldKey": "contact.gate__has_linkedin",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "BF2a0iCNFiB7ZLSUOdz5",
+        "name": "Who manages your LSA(s)?",
+        "fieldKey": "contact.who_manages_your_lsa_s",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "BFUdBpytZcRi1PDMHEYK",
+        "name": "Multi Loc Address 4",
+        "fieldKey": "contact.multi_loc_address_4",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "BLjinW8I7g8UTuaBuXod",
+        "name": "Discuss area codes for CallRail website number pools",
+        "fieldKey": "contact.discuss_area_codes_for_callrail_website_number_pools",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "BNrP7M7b2UHAjVQNKtYd",
+        "name": "Google Search Console Access Status",
+        "fieldKey": "contact.google_search_console_access_status",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "BUJzGprk4gXd1RpWudEn",
+        "name": "Chat Representative Phone",
+        "fieldKey": "contact.chat_representative_phone",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "BZRkNsdPMuDRZIjsG13c",
+        "name": "Intake Sheet",
+        "fieldKey": "contact.intake_sheet",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Bca0Hr5dAGOpxZjxG2KB",
+        "name": "What would you like your primary call-to-action to be at the end of the episode?",
+        "fieldKey": "contact.what_would_you_like_your_primary_calltoaction_to_be_at_the_end_of_the_episode",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "BgdyKxaXoSawGLtUZhAK",
+        "name": "If PPC, Monthly Budget",
+        "fieldKey": "contact.if_ppc_monthly_budget",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Bv7Kt8joYbbSfAmPx7M3",
+        "name": "Main / Office Phone Number",
+        "fieldKey": "contact.main__office_phone_number",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "ByUZoKbdF3KzKKMSgS6s",
+        "name": "Click Budget",
+        "fieldKey": "contact.click_budget",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "C35o1ScD0jBNSOt5s4zQ",
+        "name": "Location 5 Swap Target",
+        "fieldKey": "contact.location_5_swap_target",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "CCNF8S6t6TUdsNmE0Snt",
+        "name": "2nd Contact Last Name",
+        "fieldKey": "contact.2nd_contact_last_name",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "CNZaURFHbo6HEQznOaUd",
+        "name": "Monthly Meeting Notes Link",
+        "fieldKey": "contact.monthly_meeting_notes_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "CRDXE8aRIXMm27SPz7sO",
+        "name": "utm_term",
+        "fieldKey": "contact.utm_term",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "CW01ybhgCfXNCI92Q9BY",
+        "name": "Misc Tool 3 Name",
+        "fieldKey": "contact.misc_tool_3_name",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "CdGQgFiNYbmjPLF4pfSb",
+        "name": "Why Choose?  (What sets you above other law firms in your area - why should someone choose you?)",
+        "fieldKey": "contact.why_choose_what_sets_you_above_other_law_firms_in_your_area__why_should_someone_choose_you",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "CdnMAdivIOxS7XMgIetV",
+        "name": "Amazon Music",
+        "fieldKey": "contact.amazon_music",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Ck0mzYI0571SZF4EDYfJ",
+        "name": "Live Chat Provider Password",
+        "fieldKey": "contact.live_chat_provider_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "CpMLXleybpXVqz2xUmrw",
+        "name": "Lead Data Date Range (e.g., \"Jan 2024 - Dec 2025\")",
+        "fieldKey": "contact.lead_data_date_range_eg_jan_2024__dec_2025",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "CvUaLkmz3BT4qKKj0C6V",
+        "name": "utm_medium",
+        "fieldKey": "contact.utm_medium",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "DAQFMGqC5ghTI5SUKHke",
+        "name": "LinkedIn",
+        "fieldKey": "contact.contactfeatured_linkedin",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "DR6XL51baaMDziovh2hS",
+        "name": "Image Folder Link",
+        "fieldKey": "contact.image_folder_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Dbh2AUhOeteX4sHwJTgA",
+        "name": "Billing & contracts",
+        "fieldKey": "contact.billing__contracts",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "DjiLqj7wA3sgAgMfabph",
+        "name": "X Link",
+        "fieldKey": "contact.x_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "E3gs1LewfSK4VhPnLN93",
+        "name": "Platform Password",
+        "fieldKey": "contact.platform_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "EDBA3HBXpT88lNqOI9C9",
+        "name": "Gate - Has X",
+        "fieldKey": "contact.gate__has_x",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "EKcKILElIakwMWXgYpCB",
+        "name": "Nickname",
+        "fieldKey": "contact.contactnickname",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "EMQ46TjIUOA52FFi4oz3",
+        "name": "Misc Tool 1 Name",
+        "fieldKey": "contact.misc_tool_1_name",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "ETkJ9yjDmERIkwzgBphm",
+        "name": "Website CMS Password",
+        "fieldKey": "contact.website_cms_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "EWiwyO21K2knwJZivbxZ",
+        "name": "Other Google properties linked? (GMB, GA, YT, Search Console, CallRail) *** Other - indicate the properties linked",
+        "fieldKey": "contact.other_google_properties_linked_gmb_ga_yt_search_console_callrail__other__indicate_the_properties_linked",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "EmopQSd5D4RvQpgEGJdL",
+        "name": "Enhancement Details 1",
+        "fieldKey": "contact.enhancement_details",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "EuLPZGe1NsrBSOVK2xKr",
+        "name": "Google Local Service Ads Status",
+        "fieldKey": "contact.google_local_service_ads_status",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "EwBryy8CGmozMbGOgIty",
+        "name": "Slack ID",
+        "fieldKey": "contact.slack_id",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "EwLqV3BsH2PyB1qdffME",
+        "name": "Multi Loc Address 3",
+        "fieldKey": "contact.multi_loc_address_3",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "EwmehLbqvFwe5DnGIeJv",
+        "name": "Do you experience any Seasonal Trends Impacting Your Business? ",
+        "fieldKey": "contact.do_you_experience_any_seasonal_trends_impacting_your_business",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "EwyObpbq7bJKR0DRpMTl",
+        "name": "Number of Cities Targeted",
+        "fieldKey": "contact.number_of_cities_targeted",
+        "dataType": "NUMERICAL"
+      },
+      {
+        "id": "F0bcabIfz21opCU5HLdA",
+        "name": "LinkedIn Access Status",
+        "fieldKey": "contact.linkedin_access_status",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "F2vpf9GS79nuxafW2ybM",
+        "name": "Budget pacing",
+        "fieldKey": "contact.budget_pacing",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "F8Ntt1uXy6qNCRwXl9eq",
+        "name": "Secondary Font",
+        "fieldKey": "contact.secondary_font",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "FCy9X3Ntf3nMK5U7r5BV",
+        "name": "Access - YouTube - Status",
+        "fieldKey": "contact.access__youtube__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "FG4XDRnq6AuCyDn4A2kw",
+        "name": "Instagram - Username/Email",
+        "fieldKey": "contact.instagram__usernameemail",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "FHQrET0LIM8tSCs5cOXQ",
+        "name": "Persons Email",
+        "fieldKey": "contact.persons_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "FOUeN8IfQi5tUw2echBE",
+        "name": "Tiktok",
+        "fieldKey": "contact.tiktok",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Fi2YTVJPWkpaA9ZsdN0c",
+        "name": "Gate - Has Website CMS",
+        "fieldKey": "contact.gate__has_website_cms",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "Fo0gYQNsxc5IM1qy0M2F",
+        "name": "Location 2 Details",
+        "fieldKey": "contact.location_2_details",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "FqRuU0LTzmLlbt5DTE1W",
+        "name": "Google Business Profile (GBP) Link",
+        "fieldKey": "contact.google_business_profile_gbp_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "FxB3Hi3P1xLAOaI5tetL",
+        "name": "Can your intake team handle Spanish Leads?",
+        "fieldKey": "contact.can_your_intake_team_handle_spanish_leads",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "FykcaV3PcxKwPRM0Lwws",
+        "name": "iHeartRadio",
+        "fieldKey": "contact.iheartradio",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "GF26rIM6R2Yc9rIOy0XU",
+        "name": "Do you have a calendar link for your intake team? ",
+        "fieldKey": "contact.do_you_have_a_calendar_link_for_your_intake_team",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "GMUFICXbENbO7m95EI8q",
+        "name": "Website Passowrd",
+        "fieldKey": "contact.website_passowrd",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "GOnJsvVGTkZEezTkpJTF",
+        "name": "Misc Tool 1 Username",
+        "fieldKey": "contact.misc_tool_1_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "GPOY9f4bWEQlFjkFHlkX",
+        "name": "Describe your automations",
+        "fieldKey": "contact.describe_your_automations",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "GQUsF8xk97COM4WZ8nT8",
+        "name": "Website Platform",
+        "fieldKey": "contact.website_platform",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "GaHah2UyiCAWWL8TFNtb",
+        "name": "Date Closed ",
+        "fieldKey": "contact.date_closed",
+        "dataType": "DATE"
+      },
+      {
+        "id": "Gb6NfdBd1bAAQ0T2YlSu",
+        "name": "Live Chat Provider Username/Email",
+        "fieldKey": "contact.live_chat_provider_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "GgsLrtNcOTfsM9Zmjrhr",
+        "name": "Enhancement Date 1",
+        "fieldKey": "contact.enhancement_date_1",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "GhqasC8NYdyFrNNmY3IT",
+        "name": "Secondary NAP For Google Local Service",
+        "fieldKey": "contact.secondary_nap_for_google_local_service",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "GqIqH5jh5uCukEYPAwQ4",
+        "name": "Office Phone Number",
+        "fieldKey": "contact.office_phone_number",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "H23s0YGBVnRKsvg8WaCn",
+        "name": "Instagram Passwords",
+        "fieldKey": "contact.instagram_passwords",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "H26lj7ZuJYfwaPTuTR57",
+        "name": "Are there any specific questions you'd like Josh to ask?",
+        "fieldKey": "contact.are_there_any_specific_questions_youd_like_josh_to_ask",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "HAeZ0Py0ZuGTgG0ndCQG",
+        "name": "Google Review Link",
+        "fieldKey": "contact.google_review_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "HF2yEypunmPbD5ws49VJ",
+        "name": "Blog Content Approval - Name",
+        "fieldKey": "contact.blog_content_approval__name",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "HHYuTlZc5JBelwGR2Uls",
+        "name": "Services Notes",
+        "fieldKey": "contact.services_notes",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "HJ0Ld45B5LpAB6oHhrns",
+        "name": "Intake Phone Number",
+        "fieldKey": "contact.intake_phone_number",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "HKPpN3tIpb8ZRirNUjOJ",
+        "name": "Domain Username",
+        "fieldKey": "contact.domain_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "HTIGcr8frzfThNgJBBzk",
+        "name": "Access - X - Status",
+        "fieldKey": "contact.access__x__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "HiiBO3AkTMcfsoH2S7EO",
+        "name": "Misc Tool 1 Password",
+        "fieldKey": "contact.misc_tool_1_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "HmM90RUW7u5p47awW2sJ",
+        "name": "Instagram Password",
+        "fieldKey": "contact.instagram_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "HssEBS9IRyslbUN59Lvj",
+        "name": "Offboarding Ticket",
+        "fieldKey": "contact.offboarding_ticket",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "HuIDZt7jU0YAzGQiJpD6",
+        "name": "Adroll Username",
+        "fieldKey": "contact.adroll_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "I8V7BFf2XJ4EFcdanoXl",
+        "name": "Incentive Type",
+        "fieldKey": "contact.incentive_type",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "IddIagaVA5YcFFb45X4a",
+        "name": "cPanel Access URL",
+        "fieldKey": "contact.cpanel_access_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "IibxpY0xFj8C0Zl6uAsS",
+        "name": "Do you have Local Service Ads (LSA)?",
+        "fieldKey": "contact.do_you_have_local_service_ads_lsa",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "IkU5dEwTMvgnffNTlv6Q",
+        "name": "Access - Instagram - Notes",
+        "fieldKey": "contact.access__instagram__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "IkvMQp9oaEKAqoKZuJjl",
+        "name": "Google Analytics access granted?",
+        "fieldKey": "contact.google_analytics_access_granted",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "J6pgiHDv7NXWE6OlAxF1",
+        "name": "2nd Contact Email",
+        "fieldKey": "contact.2nd_contact_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "JJ235HRCYtbYAehwShPT",
+        "name": "Answering Service 24/7",
+        "fieldKey": "contact.answering_service_247",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "JOxPm2wZRg5deZUhyyBB",
+        "name": "Other Social Platform Link",
+        "fieldKey": "contact.other_social_platform_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "JWtzDzZkomyptD1kfVkZ",
+        "name": "Onboarding Dates",
+        "fieldKey": "contact.onboarding_dates",
+        "dataType": "DATE"
+      },
+      {
+        "id": "JX5wIaUT5y4JxasVrKTe",
+        "name": "X Password",
+        "fieldKey": "contact.x_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "K0hyo6auTYfyoMPl4w2s",
+        "name": "Law Firm Website",
+        "fieldKey": "contact.law_firm_website",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "K8iL9AXMlUycOLoYTgDA",
+        "name": "Access - YouTube - Notes",
+        "fieldKey": "contact.access__youtube__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "KKYFvnbEYJWu3kJOqHDi",
+        "name": "Exhibit B - Software as Service (Saas)",
+        "fieldKey": "contact.exhibit_b__software_as_service_saas",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "KV8C3gxyuCoR4W90JqMt",
+        "name": "Cancelation Date",
+        "fieldKey": "contact.cancelation_date",
+        "dataType": "DATE"
+      },
+      {
+        "id": "KYgTDD5HhrH9TAxCE23e",
+        "name": "Client Database for Reviews Link",
+        "fieldKey": "contact.client_database_for_reviews_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "L1fLsXENoEW7l0NLDAEs",
+        "name": "External Forms",
+        "fieldKey": "contact.external_forms",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "L2Rxrku6lm7A3MKuM57Y",
+        "name": "Google Account Recovery Phone",
+        "fieldKey": "contact.google_account_recovery_phone",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "L4Dl6OhHp3GPfhRL6woi",
+        "name": "Pre-Recording BOOK status",
+        "fieldKey": "contact.prerecording_book_status",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "LFO4dHYVtc2AkI0F0Jkz",
+        "name": "Do you have a personal or alternate email address that you use besides your corporate email?",
+        "fieldKey": "contact.do_you_have_a_personal_or_alternate_email_address_that_you_use_besides_your_corporate_email",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "LFmlG5GQDTQlYIoyoSwt",
+        "name": "Scope of Deliverables",
+        "fieldKey": "contact.scope_of_deliverables",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "LOFbv7l27fo1jnwmQ7rI",
+        "name": "Apple Podcasts",
+        "fieldKey": "contact.apple_podcasts",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "LV26ejitK2D4Qdc4q0Ga",
+        "name": "Google Drive Master Folder",
+        "fieldKey": "contact.google_drive_master_folder",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "LsIwWP5sdqevmK0eQTkH",
+        "name": "Access - Call Tracking - Notes",
+        "fieldKey": "contact.access__call_tracking__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "LtP1op3jzWzQdtkFZrhz",
+        "name": "X (Twitter)",
+        "fieldKey": "contact.contactfeatured_x",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "LujAZqFmYCOtIRFOMyyf",
+        "name": "GBP Tracking Number",
+        "fieldKey": "contact.gmb_tracking_number",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "M66yNkxXQZqhNJC3xGKL",
+        "name": "Average Monthly Case Volume Over the Past 12 Months",
+        "fieldKey": "contact.average_monthly_case_volume_over_the_past_12_months",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "MF1RU33QmHWpAOPNyCmT",
+        "name": "What are your \"high value \"Case types/practice areas?",
+        "fieldKey": "what_are_your_high_value_service_products_procedures",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "MLnZAW64KPMPKGKy9XNx",
+        "name": "Chat Representative Name",
+        "fieldKey": "contact.chat_representative_name",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "MSlIAEZQUSZYsU85is1B",
+        "name": "Entity Type",
+        "fieldKey": "contact.entity_type",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "MY8pydZDSopO3X7n2E8p",
+        "name": "LP - Calendar, pipeline & CRM",
+        "fieldKey": "contact.lp_sum_calendar_crm",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "MhSP1ufSRVO8zbReHwCD",
+        "name": "Payment method updated?",
+        "fieldKey": "contact.payment_method_updated",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "Mmvy78khdHe5Yt5TC8Ob",
+        "name": "LinkedIn Link ",
+        "fieldKey": "contact.linkedin_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "MpPke8mpRbvU2lE5HYge",
+        "name": "PPC Annual Revenue",
+        "fieldKey": "contact.ppc_annual_revenue",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "My1Odl36jmDRUlJxbTl6",
+        "name": "Brand Color Palette",
+        "fieldKey": "contact.brand_color_palette",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "N0KJKHO4Gq0B999qHwD9",
+        "name": "Exhibit B - Date Signed",
+        "fieldKey": "contact.exhibit_b__date_signed",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "NRmhi1otfCPsnjdkhpaQ",
+        "name": "Reputation Platform Username",
+        "fieldKey": "contact.reputation_platform_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "NRsKh6GRJhWnu2a4Y32w",
+        "name": "Bright Local Username",
+        "fieldKey": "contact.bright_local_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "NVHs5msUg0f5LRmNNW1H",
+        "name": "Primary CallRail Swap Target ",
+        "fieldKey": "contact.primary_callrail_swap_target",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "Ne3TfYtuRImfOSPSpWlx",
+        "name": "Connect website / funnel / campaign data to your CRM?",
+        "fieldKey": "contact.connect_website__funnel__campaign_data_to_your_crm",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "O0ihNuScmrOP90TeaCtv",
+        "name": "Access - X - Notes",
+        "fieldKey": "contact.access__x__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "O51yrjE7MG4r7vvYBR9U",
+        "name": "Service Package",
+        "fieldKey": "contact.service_package",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "OBoQKPn92fh4nFYunY8W",
+        "name": "Ad Schedule",
+        "fieldKey": "contact.ad_schedule",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "OFVoBfYv1Hg9fI8lPVmL",
+        "name": "LinkedIn Business Page Link",
+        "fieldKey": "contact.linkedin_business_page_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "OHNlNCxK7dwwtbKurNnC",
+        "name": "Primary Keyword (primary practice area)",
+        "fieldKey": "primary_keyword_primary_service_products_procedures",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "OaVfdlvcFrqZTYIuvsEk",
+        "name": "Instagram Access Status",
+        "fieldKey": "contact.instagram_access_status",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "OeQVNVjTmDeXrmP5hGiw",
+        "name": "Onboarding Date",
+        "fieldKey": "contact.onboarding_date",
+        "dataType": "DATE"
+      },
+      {
+        "id": "OhIQQWBy5VlvVQQUHnMS",
+        "name": "Appointment Test",
+        "fieldKey": "contact.appointment_test",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "OmCLsJdT1h0YO5EuYi2n",
+        "name": "YouTube Recovery Email/Phone",
+        "fieldKey": "contact.youtube_recovery_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "OnNC6HjyHcnEO0oSJJsy",
+        "name": "Instagram Link",
+        "fieldKey": "contact.instagram_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Ot2I9tTfxlioOoj5jVsC",
+        "name": "Domain Registrar Login Link",
+        "fieldKey": "contact.domain_registrar_login_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "P6A9iofMnjjwok9Jsfpz",
+        "name": "Webmail Access URL",
+        "fieldKey": "contact.webmail_access_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "PGYE0FvJ64AZ9KS8Wug2",
+        "name": "How & when is the retainer payment processed?",
+        "fieldKey": "contact.how__when_is_the_retainer_payment_processed",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "PKmIY2UUHsYMDKvHFKNO",
+        "name": "Lead Capture Email",
+        "fieldKey": "contact.lead_capture_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "PM57lMzSxZwdxvjMj9nE",
+        "name": "Primary Lead Source",
+        "fieldKey": "contact.primary_lead_source",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "PeC59coDdGw3ulsTEx92",
+        "name": "Unsubscribe Reason(s)",
+        "fieldKey": "contact.unsubscribe_reasons",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "PfkIhi1hcGtRYuPX1q59",
+        "name": "Chat Representative Email",
+        "fieldKey": "contact.chat_representative_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "PhPgfeOAnNfz8f0zRLgd",
+        "name": "Plan",
+        "fieldKey": "contact.plan",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Phi9Vt9FdoUHyvwYczl0",
+        "name": "Recording Attendance Confirmed",
+        "fieldKey": "contact.recording_attendance_confirmed",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "PtHDR1LyIGhduGeJz3jk",
+        "name": "Cases Per Month",
+        "fieldKey": "contact.cases_per_month",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "PtXNacLKgsESXmoDoxWT",
+        "name": "Perfect Audience Username",
+        "fieldKey": "contact.perfect_audience_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "PuZ7sH56qU02bk0F0OBx",
+        "name": "Preferred Style of Communication",
+        "fieldKey": "contact.preferred_style_of_communication",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "Q4WxBuxQ0pTc8dPcIRYC",
+        "name": "Hosting Login URL",
+        "fieldKey": "contact.hosting_login_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Q8GgbqdkqhsfKyHIBrpV",
+        "name": "Facebook Ads Manager Link",
+        "fieldKey": "contact.facebook_ads_manager_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "QOAnYQMWHXGnf8Qt1M6b",
+        "name": "Names of Partners to Receive Welcome Boxes",
+        "fieldKey": "contact.names_of_partners_to_receive_welcome_boxes",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "QQtFw1Gho8qDce9RxiJk",
+        "name": "Lead From?",
+        "fieldKey": "contact.lead_from",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Qq74Oksmi7s7IGf8Neej",
+        "name": "Name of Person",
+        "fieldKey": "contact.name_of_person",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Qv7Yl2IWmW7tIZulEDTY",
+        "name": "Target Cities (or surrounding cities you market in) Note: available on intake. Add sheet here",
+        "fieldKey": "contact.target_cities_or_surrounding_cities_you_market_in",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "R8kZduRFGktGnBszRk1L",
+        "name": "LFMP obtains an Admin login to all existing Google Ads account(s).",
+        "fieldKey": "contact.lfmp_obtains_an_admin_login_to_all_existing_google_ads_accounts",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "RVqqvJYU2c0W5Yl29r2V",
+        "name": "LSA Email",
+        "fieldKey": "contact.lsa_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "RWidv54tf2GGY0TgiuAU",
+        "name": "Is there anything else you'd like Josh to know before the interview?",
+        "fieldKey": "contact.is_there_anything_else_youd_like_josh_to_know_before_the_interview",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "RlXHBTB2NoOTYAL94FNT",
+        "name": "FTP Access Details",
+        "fieldKey": "contact.ftp_access_details",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Rpz2tFLdSaXH9yvkmfyV",
+        "name": "Professional Headshot",
+        "fieldKey": "contact.professional_headshot",
+        "dataType": "FILE_UPLOAD"
+      },
+      {
+        "id": "RzB3taWAATkFdOEwYr32",
+        "name": "MER Lead Spreadsheet",
+        "fieldKey": "contact.mer_lead_spreadsheet",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "S1E9D15fxeOGYSN1A9ia",
+        "name": "AIC - Handoff & urgent",
+        "fieldKey": "contact.aic_sum_handoff",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "SjWXlsmEcofEfqXYT1hY",
+        "name": "Can you grant CRM access to info@webteam.ai?",
+        "fieldKey": "contact.can_you_grant_crm_access_to_infowebteamai",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "Sx8MdWsqaYVNTV2FXxPs",
+        "name": "Google Ads Password",
+        "fieldKey": "contact.google_ads_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Sx8saYOqKIr9S4isn9cM",
+        "name": "Company Logo",
+        "fieldKey": "contact.company_logo",
+        "dataType": "FILE_UPLOAD"
+      },
+      {
+        "id": "T0DD4xFA0FFbbmhDtZgr",
+        "name": "If LSA will run, try to include the Google LSA budget within the overall Google PPC budget.",
+        "fieldKey": "contact.if_lsa_will_run_try_to_include_the_google_lsa_budget_within_the_overall_google_ppc_budget",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "T0aXhzezqkWNmduAjKfZ",
+        "name": "Unsubscribe Reason Other",
+        "fieldKey": "contact.unsubscribe_reason_other",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "T3ZjaXQl4wfwDkaZ9jBM",
+        "name": "Website CMS Login Link",
+        "fieldKey": "contact.website_cms_login_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "T4QD54JBkgQcl7XOrUnq",
+        "name": "Google Workspace Email",
+        "fieldKey": "contact.google_workspace_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "THisDfcD1DJaUpB6TxhV",
+        "name": "Live Youtube Podcast Link",
+        "fieldKey": "contact.youtube_podcast_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "TIjkU63f02MqBVtEQFIo",
+        "name": "Best Time(s) to Reach You",
+        "fieldKey": "contact.best_times_to_reach_you",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "TNSVe4z3higOWXRTyZO4",
+        "name": "Live Chat Provider Password",
+        "fieldKey": "contact.contactlive_chat_provider_username_rps_copy",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "TST4DB5neesl63eN685U",
+        "name": "LP - Status",
+        "fieldKey": "contact.lp_status",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "TVBju3JWex90JCoAVciB",
+        "name": "Exhibit A Google Ads & PPC Services Acknowledgment",
+        "fieldKey": "contact.exhibit_a_google_ads__ppc_services_acknowledgment",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Tkgp7A0IOJMTzRezgdiw",
+        "name": "Google Search Console Link - https://search.google.com/search-console/about",
+        "fieldKey": "contact.google_search_console_link__httpssearchgooglecomsearchconsoleabout",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "TnT3zhsHxNRhVCklVgCI",
+        "name": "AIC - Submitted on",
+        "fieldKey": "contact.aic_submitted_on",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "U521hoxg3V2BP571XyrW",
+        "name": "Bar Number (Some Verticals Require This Info) ",
+        "fieldKey": "contact.bar_number_some_verticals_require_this_info",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "UHZcTDVdWaDOR8GvpXjz",
+        "name": "NON Case type (low priority)",
+        "fieldKey": "contact.non_case_type_low_priority",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "UNJpR9nYQ9NlNjQahYAA",
+        "name": "Calendar Link",
+        "fieldKey": "contact.contactpodcast_featured_calendar",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "UUllY1cHW3QJIZExQeH6",
+        "name": "PPC Email Address",
+        "fieldKey": "contact.ppc_email_address",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "UY3mTm6GJAMW7Po1cdq1",
+        "name": "Reputation Platform Login URL (https://my.nr4.me/Login.aspx )",
+        "fieldKey": "contact.reputation_platform_login_url_httpsmynr4meloginaspx_",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Uhdv8j6JKTQuOdPUmiLm",
+        "name": "Enhancements",
+        "fieldKey": "contact.enhancements",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "UhyOJlXZiWj6nN5jYonc",
+        "name": "Spotify",
+        "fieldKey": "contact.spotify",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "V11r7yOyH6wJqNTNZPo1",
+        "name": "Notes",
+        "fieldKey": "contact.notes",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "VQv5R2BSWE0uDBdrP80N",
+        "name": "Any other Google Ads and/or Google LSA account(s)? List all CID",
+        "fieldKey": "contact.any_other_google_ads_andor_google_lsa_accounts_list_all_cid",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "VRjTAnJaKJSsJcD2Ylgf",
+        "name": "Email Database Link",
+        "fieldKey": "contact.email_database_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "VU0nO6Wxnano33oYZn8S",
+        "name": "YouTube",
+        "fieldKey": "contact.contactfeatured_youtube",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "VUp4cZH9wnWtY2cHjGBZ",
+        "name": "Target location - Counties/Cities/GeoFencing",
+        "fieldKey": "contact.target_location__countiescitiesgeofencing",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "VVR4Blpk35pYjQKINIa1",
+        "name": "Keywords or practice areas you'd like to avoid",
+        "fieldKey": "keywords_or_service_products_procedures_youd_like_to_avoid",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "VWyOz5Kku2DX7wARetTa",
+        "name": "Lead's Gdrive Folder Link",
+        "fieldKey": "contact.leads_gdrive_folder_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "VeMpB6Z4UTJwSohnl2Nt",
+        "name": "Attended Podcast",
+        "fieldKey": "contact.attended_podcast",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "VmMHeuLioTKxQhq1oFSR",
+        "name": "Domain Registrar",
+        "fieldKey": "contact.domain_registrar",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "VpUYB4Ue1JuGns4mU1Rq",
+        "name": "Gate - Uses Live Chat",
+        "fieldKey": "contact.gate__uses_live_chat",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "VuqiNXyV1QDIfK7Emkyy",
+        "name": "Short Professional Bio",
+        "fieldKey": "contact.contactfeatured_short_bio",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "VxXJ3TdhwUnhYLpMRXy5",
+        "name": "Public Email",
+        "fieldKey": "contact.public_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "W2GOezCj2ThzxcGTTdWO",
+        "name": "Final Payment Received Date",
+        "fieldKey": "contact.final_payment_received_date",
+        "dataType": "DATE"
+      },
+      {
+        "id": "W49Kn5fOsjYlpu7sdJXn",
+        "name": "Podcast Featured URL",
+        "fieldKey": "contact.contactpodcast_featured_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "WGvnHeY4Y7hqjiq3AkLI",
+        "name": "Ad Schedule if business hours *** indicate time",
+        "fieldKey": "contact.ad_schedule_if_business_hours__indicate_time",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "WKl0pNCOAcX9cj624u68",
+        "name": "Biggest frustration with your current system",
+        "fieldKey": "contact.biggest_frustration_with_your_current_system",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "WTYEkuRBsm4Cvnb7VorN",
+        "name": "Access - Google Business Profile - Notes",
+        "fieldKey": "contact.access__google_business_profile__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "WUrTyknbo7y9sUGNoNZq",
+        "name": "Podcast Scheduled Release Date",
+        "fieldKey": "contact.postcast_scheduled_release_date",
+        "dataType": "DATE"
+      },
+      {
+        "id": "WWEmm7eEqzfVtnI68ZIf",
+        "name": "Account Manager/Coach",
+        "fieldKey": "contact.account_managercoach",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "WrZYIQiS1pkwH26hrkJr",
+        "name": "Perfect Audience Link",
+        "fieldKey": "contact.perfect_audience_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "WvqERRySPa5HBgNqNHNY",
+        "name": "Location 4 Swap Target",
+        "fieldKey": "contact.location_4_swap_target",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "XAJDAq5H7AW3TrBuNpGT",
+        "name": "Existing Google Ads and/or Google LSA account(s)? List all CIDs",
+        "fieldKey": "contact.existing_google_ads_andor_google_lsa_accounts_list_all_cids",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "XGFctkT3jjghr0um3aB2",
+        "name": "Access - CRM - Notes",
+        "fieldKey": "contact.access__crm__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "XUCWrTn6iB36V3Txxfet",
+        "name": "Telephone Number",
+        "fieldKey": "contact.telephone_number",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "XWLiiJXa7IZMLYzOybj7",
+        "name": "Incentive - do you choose to offer an incentive?",
+        "fieldKey": "contact.incentive__do_you_choose_to_offer_an_incentive",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "XYmU5wZ1ynExv4FtxfPa",
+        "name": "Podcast Call Schedule Calendly",
+        "fieldKey": "contact.podcast_call_schedule",
+        "dataType": "DATE"
+      },
+      {
+        "id": "Xg2XrOJ8PCATji2wdA2s",
+        "name": "Target number of cases",
+        "fieldKey": "contact.target_number_of_cases",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Xg4QCjemn1hQuVHOmYhH",
+        "name": "Gate - Uses Mailchimp",
+        "fieldKey": "contact.gate__uses_mailchimp",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "XgAYSuzqH1bIJV3ZAH9Y",
+        "name": "Alias Email 2",
+        "fieldKey": "contact.alias_email_2",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "XpRCCD3g3PR4t2IVgchX",
+        "name": "Who manages leads internally",
+        "fieldKey": "contact.who_manages_leads_internally",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "XxJUyuFmJfxDDXzFCtnJ",
+        "name": "X Email",
+        "fieldKey": "contact.x_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "XxOsresoXPRmbT724Sn0",
+        "name": "What videos are available, such as on YouTube?",
+        "fieldKey": "contact.what_videos_are_available_such_as_on_youtube",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Y0GIvBnndShfz6xSj3ik",
+        "name": "Access - Mailchimp - Status",
+        "fieldKey": "contact.access__mailchimp__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "Y1ZFgSv8Nec8twd1QKij",
+        "name": "Chat Username",
+        "fieldKey": "contact.chat_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Y7GaJn52t3ngSnkPtFd6",
+        "name": " Close Ratio Percentage",
+        "fieldKey": "contact.close_ratio_percentage",
+        "dataType": "NUMERICAL"
+      },
+      {
+        "id": "YI4Y8KF27VzqhJPoxTBa",
+        "name": "Reputation Marketing Location",
+        "fieldKey": "contact.reputation_marketing_location",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "YIvjsHEfcvKlYljSxSPO",
+        "name": "Reputation Platform (e.g., NiceJob, Birdeye, Podium)",
+        "fieldKey": "contact.reputation_platform_eg_nicejob_birdeye_podium",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "YIxgUAtCFrHyVn56Qze9",
+        "name": "Interview Document Link",
+        "fieldKey": "contact.interview_document_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "YTEk7cWSs3MVzPO3oGYt",
+        "name": "LFMP Sales Person Email Here (Person who completes form)",
+        "fieldKey": "wpp_sales_person_email_here_person_who_completes_form",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "YWCFRI9PVR7jWHtnUoWW",
+        "name": "Who has access to your Google Ads and/or Google LSA account(s) (let's look at users and managers in the account(s) now.)",
+        "fieldKey": "contact.who_has_access_to_your_google_ads_andor_google_lsa_accounts_lets_look_at_users_and_managers_in_the_accounts_now",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "YbhZItMdSAGCShKPsS2O",
+        "name": "Name of Agency",
+        "fieldKey": "contact.name_of_agency",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "YdyEvKYNN6Cif21WCVQV",
+        "name": "CRM Login URL",
+        "fieldKey": "contact.crm_login_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Ynicr2VpHq8BvDYFnKbd",
+        "name": "Who is your point of contact for CRM",
+        "fieldKey": "contact.who_is_your_point_of_contact_for_cr",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "YoMfHjJkggmVuDQk0xEW",
+        "name": "Projected Revenue Forecast Budget",
+        "fieldKey": "contact.projected_revenue_forecast_budget",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "YuHkJ3aOsQa3OQtiYhDE",
+        "name": "Master Email Password",
+        "fieldKey": "contact.master_email_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "YwGn8LCKfGknmB8D7znD",
+        "name": "Projected Revenue and Forecast Budget",
+        "fieldKey": "contact.projected_revenue_and_forecast_budget",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Z5yzMyxL7NUR3ZuSniuU",
+        "name": "Facebook Access Status",
+        "fieldKey": "contact.facebook_access_status",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "ZGnBYj1vRiYj3EJ1mCoS",
+        "name": "Do you have a social media person?",
+        "fieldKey": "contact.do_you_have_a_social_media_person",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "ZRY6pYmO0xym43Ds8A3j",
+        "name": "AIC - Common questions",
+        "fieldKey": "contact.aic_sum_faqs",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "ZZwuKZmcNQMo8evFc8TC",
+        "name": "Who Should Be Included in Communications?",
+        "fieldKey": "contact.who_should_be_included_in_communications",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "ZelrjaxCJAhTO3OcWHmH",
+        "name": "Email Recovery Phone",
+        "fieldKey": "contact.email_recovery_phone",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "Zn5fMG7vNJJeRfWstmal",
+        "name": "Law Firm Size",
+        "fieldKey": "contact.law_firm_size",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "ZoPSsrIstX6drTU5KBb3",
+        "name": "Keywords (list here, KW1, KW2, etc)",
+        "fieldKey": "contact.keywords_list_here_kw1_kw2_etc",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "ZtKWiOZHPlZsp9n8aUvy",
+        "name": "Email Recovery Email",
+        "fieldKey": "contact.email_recovery_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "a1sD26ocijt92BzaBFFv",
+        "name": "Twitter Access Status",
+        "fieldKey": "contact.twitter_access_status",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "a7J8y9P1JrXjGzqas1iQ",
+        "name": "Location 6 Swap Target",
+        "fieldKey": "contact.location_6_swap_target",
+        "dataType": "NUMERICAL"
+      },
+      {
+        "id": "aFH2N1ESRI9pukMLihHe",
+        "name": "Operating Hours",
+        "fieldKey": "contact.operating_hours",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "aFO3duvZQXF6an0rH1aV",
+        "name": "Teamwork Client Project",
+        "fieldKey": "contact.teamwork_client_project",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "arIutUYmVdfHPGXl4CiB",
+        "name": "Lead Test Completed",
+        "fieldKey": "contact.lead_test_completed",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "b20mLkXUNxbd0ZdXwlRU",
+        "name": "Does your intake team have the ability to handle Spanish speaking leads?",
+        "fieldKey": "contact.does_your_intake_team_have_the_ability_to_handle_spanish_speaking_leads",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "bA5z8AeJMVzqNkQiHql7",
+        "name": "Submitted Podcast Form",
+        "fieldKey": "contact.submitted_podcast_guest_questionaire",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "bLvSMNYMUWOQU364yDBA",
+        "name": "Misc Tool 1 Login URL",
+        "fieldKey": "contact.misc_tool_1_login_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "bMwWeBVz9ZRA4QAcjmBd",
+        "name": "Package Type",
+        "fieldKey": "contact.package_type",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "bRKqspjHUhZghJW7C653",
+        "name": "Service Package Notes",
+        "fieldKey": "contact.service_package_notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "bSUt9vqbETap1wmSJraA",
+        "name": "facebook Agency Request",
+        "fieldKey": "contact.facebook_agency_request",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "bUhK9ZTeinaDh3rXgq53",
+        "name": "Primary Font",
+        "fieldKey": "contact.primary_font",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "bVfZBzsfgDKhlzjEB8wm",
+        "name": "Website Username",
+        "fieldKey": "contact.website_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "bZ9T7IaeevFtvgmIfcbI",
+        "name": "Lead Notification Email",
+        "fieldKey": "contact.lead_notification_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "bZiEUeTFl22mIODJoAaj",
+        "name": "AIC - Services",
+        "fieldKey": "contact.aic_sum_services",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "bcPt8CfwrvIEU8LXbDMM",
+        "name": "Keyword List Upload ",
+        "fieldKey": "contact.keyword_list_upload",
+        "dataType": "FILE_UPLOAD"
+      },
+      {
+        "id": "blP7DvcF0sX3YveBEUmK",
+        "name": "Referrals",
+        "fieldKey": "contact.referrals",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "blQzrphZDQoQh5qlbdfU",
+        "name": "Previous Agency Login Tracker",
+        "fieldKey": "contact.previous_agency_login_tracker",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "bmajupB2qRnu9ia9VLXx",
+        "name": "Onboarding Total",
+        "fieldKey": "contact.onboarding_total",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "bnr2xjt7kUWw7mNdLs4T",
+        "name": "Examine CallRail setup and any call flows and call rollover. Make sure voicemail does not interrupt the call flow process, such as calls being prevented from being routed to the answering service",
+        "fieldKey": "contact.examine_callrail_setup_and_any_call_flows_and_call_rollover_make_sure_voicemail_does_not_interrupt_the_call_flow_process_such_as_calls_being_prevented_from_being_routed_to_the_answering_service",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "boHycQvYSzOFfrLx2IRj",
+        "name": "Client Success Manager (CSM)",
+        "fieldKey": "contact.client_success_manager_csm",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "bqLZEQd1mhhoO3zM4g8R",
+        "name": "Facebook Password",
+        "fieldKey": "contact.facebook_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "c56NdsoYVqfTcNDTH2Jl",
+        "name": "Projected ROI",
+        "fieldKey": "contact.projected_roi",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "c5OUMpVGFnvhHhGCjBt5",
+        "name": "Direct Sales Number/Clients Intake Phone/CTA #",
+        "fieldKey": "contact.direct_sales_numberclients_intake_phonecta_",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "c9eHJLSDGR8yu8BjBm8x",
+        "name": "Access - Call Tracking - Delegated Email",
+        "fieldKey": "contact.access__call_tracking__delegated_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "cD2MaqmOjLDW7ZKU05j4",
+        "name": "LP - Firm, website & users",
+        "fieldKey": "contact.lp_sum_firm",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "cDc1r4w4VfpC5QKgPmW0",
+        "name": "Google Ads average cost per lead (which includes first-time calls over 60 seconds and unique lead forms) is often around $700/lead for personal injury (higher for MVA only) and around $200/lead for other practice areas.",
+        "fieldKey": "contact.google_ads_average_cost_per_lead_which_includes_firsttime_calls_over_60_seconds_and_unique_lead_forms_is_often_around_700lead_for_personal_injury_higher_for_mva_only_and_around_200lead_for_other_practice_areas",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "cKhd7iaWH5GuRpBocVWV",
+        "name": "Number of GMB Locations",
+        "fieldKey": "contact.number_of_gmb_locations",
+        "dataType": "NUMERICAL"
+      },
+      {
+        "id": "cOLqLNMUe0ZJOUfoeVYV",
+        "name": "Bright Local Password",
+        "fieldKey": "contact.bright_local_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "cRmRH990bEigjan5njLz",
+        "name": "Monthly Client Hire Goal",
+        "fieldKey": "contact.monthly_client_hire_goal",
+        "dataType": "NUMERICAL"
+      },
+      {
+        "id": "cW5Wy5xzWq6XK7gCN0jV",
+        "name": "Exhibit A - Date Signed",
+        "fieldKey": "contact.exhibit_a__date_signed",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "chmGXljTpekaMnW3B2E8",
+        "name": "Gate - Has YouTube",
+        "fieldKey": "contact.gate__has_youtube",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "choVtXcrrAYOSNFTGMzz",
+        "name": "CallRail Credit Card - for new account set ups?",
+        "fieldKey": "contact.callrail_credit_card__for_new_account_set_ups",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "cnunLLfxxbjmsSmb7FNH",
+        "name": "Other Social Platform ",
+        "fieldKey": "contact.other_social_platform",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "cpfIrh3DrVj0wTWrFuJF",
+        "name": "Paid user",
+        "fieldKey": "contact.paid_user",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "cvG8i2TWkvg6OwJct9Zp",
+        "name": "To Which Email address will the Form Leads be routed?",
+        "fieldKey": "contact.to_which_email_address_will_the_form_leads_be_routed",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "d20arIQ11YR9uVxeQYij",
+        "name": "Monthly Lead Goal",
+        "fieldKey": "contact.monthly_lead_goal",
+        "dataType": "NUMERICAL"
+      },
+      {
+        "id": "d68VLQmI7adrACDgrUIs",
+        "name": "Access - Instagram - Status",
+        "fieldKey": "contact.access__instagram__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "dFlD0A6HgOml7Dlgsu6B",
+        "name": "Google Analytics Link (URL field - https://analytics.google.com/analytics/web/",
+        "fieldKey": "contact.google_analytics_link_url_field__httpsanalyticsgooglecomanalyticsweb",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "dLW2fqglBqV47egUxHks",
+        "name": "Featured Landing Page",
+        "fieldKey": "contact.featured_landing_page",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "dM9stu12JyKI0ANUxLJG",
+        "name": "Domain Login URL",
+        "fieldKey": "contact.domain_login_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "dST3PZXAzTxkP4ry1yf0",
+        "name": "Access - Cloudflare - Status",
+        "fieldKey": "contact.access__cloudflare__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "dWFxGwMcJp1H7oEOZO74",
+        "name": "Free consultation?",
+        "fieldKey": "contact.free_consultation",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "dxkaV2CPZbyAzXWZI2mX",
+        "name": "CSM Assigned",
+        "fieldKey": "contact.csm_assigned",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "eBEa29UzmhgFFtF85LZT",
+        "name": "Call Tracking Login Link",
+        "fieldKey": "contact.call_tracking_login_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "eInOqXXPOejeOJpu0Tow",
+        "name": "Recent Accomplishments",
+        "fieldKey": "contact.recent_accomplishments",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "eRkCbarUg4ZiNvhWcKo5",
+        "name": "Multiple Locations?",
+        "fieldKey": "contact.multiple_locations",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "eUMzshgKlXPZeHNVSDZ3",
+        "name": "3rd Contact Last Name",
+        "fieldKey": "contact.3rd_contact_last_name",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "eb781viIybaCj6QWSQTi",
+        "name": "Contract",
+        "fieldKey": "contact.contract",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "eeGp4x23oxEA5wHqKp44",
+        "name": "Hosting Provider",
+        "fieldKey": "contact.hosting_provider",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "f8WyWzYB1BGZIXomDQ1H",
+        "name": "Access - Google Business Profile - Status",
+        "fieldKey": "contact.access__google_business_profile__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "fAn71Ma9Wp7GBRDNxcHT",
+        "name": "AIC - Practice type",
+        "fieldKey": "contact.aic_client_type",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "fTtsYsW3C3KU3YdUgAhI",
+        "name": "Industry",
+        "fieldKey": "contact.industry",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "fc7XQfeAk45Qf9yfwbRF",
+        "name": "Platform Login URL",
+        "fieldKey": "contact.platform_login_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "fdn4DBZQyzhe24fvT8i3",
+        "name": "Primary Contact Preferred Communication Method",
+        "fieldKey": "contact.primary_contact_preferred_communication_method",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "fh0vyfyQOEMkGsNmie9t",
+        "name": "Your Title",
+        "fieldKey": "contact.your_title",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "fpHLHtq9WOXAA1E8Kkv1",
+        "name": "Platform Username",
+        "fieldKey": "contact.platform_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "fzwUxNTJcsfOcpBirOVu",
+        "name": "Last Day of Service",
+        "fieldKey": "contact.last_day_of_service",
+        "dataType": "DATE"
+      },
+      {
+        "id": "g6NvbiAejCZpNvYUheJU",
+        "name": "these three social media shorts",
+        "fieldKey": "contact.these_three_social_media_shorts",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "g79I2IXqs7yYnN01K0Tm",
+        "name": "Do you have historical lead data for the past 12 months? If so, how would you like to provide this data (e.g., as a spreadsheet, through access to your CRM, or another method)?",
+        "fieldKey": "contact.description_do_you_have_historical_lead_data_for_the_past_12_months_if_so_how_would_you_like_to_provide_this_data_eg_as_a_spreadsheet_through_access_to_your_crm_or_another_method",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "gDNPlTkcLyrQxZvfswFv",
+        "name": "Saas Review Acknowledged",
+        "fieldKey": "contact.saas_review_acknowledged",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "gN3GUZuZOJPpHZEjiStE",
+        "name": "Payment Types Accepted",
+        "fieldKey": "contact.payment_types_accepted",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "gQtc8esc3Cq7GgxXrKVA",
+        "name": "Authorship",
+        "fieldKey": "contact.authorship",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "gZJ68hlziimVifRghnDq",
+        "name": "Contact Name (IT person) or Message",
+        "fieldKey": "contact.contact_name_it_person_or_message",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "gbLJxiDsDxUFD8ZGQJNQ",
+        "name": "Gate - Multiple Locations",
+        "fieldKey": "contact.gate__multiple_locations",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "gkF6DLf2fyytmd1XbvvG",
+        "name": "Access - CRM - Status",
+        "fieldKey": "contact.access__crm__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "gtJVgvS0rzXKYs4QQkoF",
+        "name": "Mailing Address",
+        "fieldKey": "contact.contactpodcast_mailing_address_for_postpodcast_thankyou_gift",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "guX94IB82IHjg79RJcVi",
+        "name": "All Digital Annual Revenue",
+        "fieldKey": "contact.all_digital_annual_revenue",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "hNm3hD9zte3NwwT2znvY",
+        "name": "Misc Tool 2 Name",
+        "fieldKey": "contact.misc_tool_2_name",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "hUpMmWWB2VR574egBV4R",
+        "name": "Local Search Supremacy Sheet Link",
+        "fieldKey": "contact.local_search_supremacy_sheet_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "hffBWDXpLkmPdKNxJsHF",
+        "name": "Acknowledged",
+        "fieldKey": "contact.acknowledged",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "hhRq9WROXus17gIFJV0l",
+        "name": "Other email",
+        "fieldKey": "contact.other_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "hk0L618DSgLaI8rskMWJ",
+        "name": "Date/Time Created",
+        "fieldKey": "contact.datetime_created",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "hrZxELh07gMQjeRuupgo",
+        "name": "Website Notification Status",
+        "fieldKey": "contact.website_notification_status",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "iMLSxLH59RcbVpc7i71A",
+        "name": "What CRM are you currently using",
+        "fieldKey": "contact.what_crm_are_you_currently_using",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "iUHP0klODMlhWCIXvmtn",
+        "name": "Name of your CRM",
+        "fieldKey": "contact.name_of_your_crm",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "iYoDrBlEWbxDdyJWBj50",
+        "name": "Case Types You'd Like To Add To Your Primary Practice Areas - are there practice areas that are not listed on your site that you'd like to add?",
+        "fieldKey": "contact.case_types_youd_like_to_add_to_your_primary_practice_areas",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "io2YB61qiO05RWktErO1",
+        "name": "Is there anything you're currently promoting?",
+        "fieldKey": "contact.is_there_anything_youre_currently_promoting",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "iqDCuKqgf1nMKPZtamO9",
+        "name": "What topics would you most like to discuss on the podcast?",
+        "fieldKey": "contact.what_topics_would_you_most_like_to_discuss_on_the_podcast",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "iw4RiufIixdgkHcSID3P",
+        "name": "Branding Document Link",
+        "fieldKey": "contact.branding_document_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "j2QMOGpL5bqrrJe6vSME",
+        "name": "Misc Tool 2 Login URL",
+        "fieldKey": "contact.misc_tool_2_login_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "j3kcyjAduSmS469fTEUT",
+        "name": "Keywords & City Selection",
+        "fieldKey": "contact.keywords__city_selection",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "jFrckPE33vh8614YNHI4",
+        "name": "These are automated prompts aimed at increasing ad spend, not improving performance.",
+        "fieldKey": "contact.these_are_automated_prompts_aimed_at_increasing_ad_spend_not_improving_performance",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "jMePtdieFOEbgx0YXHAW",
+        "name": "Call Tracking User Name/Email",
+        "fieldKey": "contact.call_tracking_user_name",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "jPv0ZwE9YL5jsXJ8SUQ3",
+        "name": "Chat Access Status",
+        "fieldKey": "contact.chat_access_status",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "jY1rl3CPzZkSIA8duODZ",
+        "name": "Facebook",
+        "fieldKey": "contact.contactfeatured_facebook",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "jZ7b9HEYnUOPNmppjdYC",
+        "name": "PPC Landing Page B",
+        "fieldKey": "contact.ppc_landing_page_b",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "jauC8aBiBCNbvCZ9P8UG",
+        "name": "Are there any topics or questions you'd prefer we avoid?",
+        "fieldKey": "contact.are_there_any_topics_or_questions_youd_prefer_we_avoid",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "jbr5jUsNnPPvnaDnWvQa",
+        "name": "Access - Google Tag Manager - Notes",
+        "fieldKey": "contact.access__google_tag_manager__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "jn8LEa73SJ4y2BWx5ErM",
+        "name": "Episode Link in Youtube",
+        "fieldKey": "contact.episode_link_in_youtube",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "jnZTdnsQCKtKbhsob67K",
+        "name": "Branding Received",
+        "fieldKey": "contact.branding_received",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "jnaicmOYVEeZTGBbOtoS",
+        "name": "Access - Google Analytics - Notes",
+        "fieldKey": "contact.access__google_analytics__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "jsRV5wqZB9GQ9WHStaYy",
+        "name": "Episode Release Date",
+        "fieldKey": "contact.episode_release_date",
+        "dataType": "DATE"
+      },
+      {
+        "id": "jyJUVEvVjgLfFu8MDU3g",
+        "name": "Years Attended (Some Verticals Require This Info) *",
+        "fieldKey": "contact.years_attended_some_verticals_require_this_info_",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "k19Prvoo3bHLSBE0cnGN",
+        "name": "Cloudflare Username/Email",
+        "fieldKey": "contact.cloudflare_username_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "k7ca39ANMb4KSh4uNDpD",
+        "name": "We communicate every month with much more knowledgeable higher level Google reps who are based in the U.S. So it would be a waste of everyone's time to communicate with lower level contractors and other low level Google Ads employees.",
+        "fieldKey": "contact.we_communicate_every_month_with_much_more_knowledgeable_higher_level_google_reps_who_are_based_in_the_us_so_it_would_be_a_waste_of_everyones_time_to_communicate_with_lower_level_contractors_and_other_low_level_google_ads_employees",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "kDzIfAJ8WY1FDQq7YvD0",
+        "name": "LSS",
+        "fieldKey": "contact.lss",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "kELkg3dTv21I2GB54Ukr",
+        "name": "Location 6 Details",
+        "fieldKey": "contact.location_6_details",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "kN7gE4HBcQeA1FU48E1k",
+        "name": "AIC - Guardrails",
+        "fieldKey": "contact.aic_sum_guardrails",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "kOZHgCblU5PfBlXjeFxA",
+        "name": "Location 2 Swap Target",
+        "fieldKey": "contact.location_2_swap_target",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "kRMJp9XBledVOhg67YuC",
+        "name": "Do you use a VoIP? (Voice over Internet Protocol)",
+        "fieldKey": "contact.do_you_use_a_voip_voice_over_internet_protocol",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "klxEqYBYfmHxPrIYE3UM",
+        "name": "CRM Password",
+        "fieldKey": "contact.crm_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "kmLe9EvXDx2EhqqPz19w",
+        "name": "Slack Invite Email",
+        "fieldKey": "contact.slack_invite_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "kvJmodIzbxhiQPKoWXAS",
+        "name": "Mailchimp password",
+        "fieldKey": "contact.mailchimp_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "l0LfJP1Cw3m4bBAriTME",
+        "name": "Google Ads PPC budget",
+        "fieldKey": "contact.google_ads_ppc_budget",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "l54XoBeMIzy9K2qzHUGv",
+        "name": "Access - Domain Registrar - Notes",
+        "fieldKey": "contact.access__domain_registrar__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "l9qCokmrNJDgkCVl9MdB",
+        "name": "Website CMS Username/Email",
+        "fieldKey": "contact.website_cms_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "lFboEcmSHVdjHw2BkXOc",
+        "name": "Stirs",
+        "fieldKey": "contact.stirs",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "lHOgNWXqP4EdxrvR9p1Q",
+        "name": "Reputation Platform Password",
+        "fieldKey": "contact.reputation_platform_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "lHwLzPseXRaSV32sHS1j",
+        "name": "Location 3 Details",
+        "fieldKey": "contact.location_3_details",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "lPHIRDQhuFp7O3VzTKXS",
+        "name": "Google Shared Drive Folder",
+        "fieldKey": "contact.google_shared_drive_folder",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "lXgWKvY6ahho8g3P0SLS",
+        "name": "LinkedIn Password",
+        "fieldKey": "contact.linkedin_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "ljLbWFWUnmGoV1iNGkwL",
+        "name": "Access - Mailchimp - Notes",
+        "fieldKey": "contact.access__mailchimp__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "m8rpKnbdftHibvo7CZWD",
+        "name": "To Which Phone Number will the CallRail Tracking Number Be Routed?",
+        "fieldKey": "contact.to_which_phone_number_will_the_callrail_tracking_number_be_routed",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "mTnyy0IYvyUjMnCuPjvp",
+        "name": "Professional Photos Link",
+        "fieldKey": "contact.professional_photos_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "mX3ByToIf2aWi2LXXeLS",
+        "name": "Primary Tracking Number",
+        "fieldKey": "contact.primary_tracking_numbe",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "mn9cWuZpXQyOD2wy3lTY",
+        "name": "Keywords Not Ranking",
+        "fieldKey": "contact.keywords_not_ranking",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "moev992wKR5sG0Cw05hS",
+        "name": "Adroll Password",
+        "fieldKey": "contact.adroll_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "mqmoAzyEwhPksIBYb5X2",
+        "name": "Access - Website CMS - Status",
+        "fieldKey": "contact.access__website_cms__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "mtqGrXalO9CBnUvlQtlQ",
+        "name": "Select Number Type",
+        "fieldKey": "contact.select_number_type",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "nDccmp7qtSibijiIAHmQ",
+        "name": "Google Review Confirmed [Josh]",
+        "fieldKey": "contact.google_review_confirmed_josh",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "nDodZPiBzoIZnTpTyEfO",
+        "name": "YouTube Channel Agency Access",
+        "fieldKey": "contact.youtube_channel_agency_access",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "nErzIpVCvEIYfGXLZ21T",
+        "name": "Intake Email (Website Lead Forms, DLF, General Campaigns, Etc)",
+        "fieldKey": "contact.intake_email_website_lead_forms_dlf_general_campaigns_etc",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "nR4jUgPJeK0NydP2GWDE",
+        "name": "Client Level",
+        "fieldKey": "contact.client_level",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "nafryzBBfu96dNZrB460",
+        "name": "X Username",
+        "fieldKey": "contact.x_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "ndNaQm0NjUSZoZ39Em3u",
+        "name": "AIC - Status",
+        "fieldKey": "contact.aic_status",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "nmQw2cRZBdKqHYlh7YCs",
+        "name": "YouTube Access Status",
+        "fieldKey": "contact.youtube_access_status",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "nyLl9Gm5FDDrWgBNfOra",
+        "name": "Do you use Google Tag Manager?",
+        "fieldKey": "contact.do_you_use_google_tag_manager",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "o0jRe6GZW8b0iwId0vqd",
+        "name": "Package Enhancements",
+        "fieldKey": "contact.package_enhancements",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "oLtzaa85ttRGoYQEDhA6",
+        "name": "Chatbot login information",
+        "fieldKey": "contact.chatbot_login_information",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "oLwSd66za2zAoZcs7Jbg",
+        "name": "AIC - Review & sign-off",
+        "fieldKey": "contact.aic_sum_signoff",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "oQjKScww9JxbjMqjfB73",
+        "name": "CallRail Username",
+        "fieldKey": "contact.callrail_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "oUH4LSj1feCZ84KLkpVr",
+        "name": "Website Hosting Disconnection",
+        "fieldKey": "contact.website_hosting_disconnection_please_provide_the_date_of_the_website_hosting_disconnection_with_the_previous_agency_",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "oemmynajM3VDOIl5L8bE",
+        "name": "CRM - Username/Email",
+        "fieldKey": "contact.crm__usernameemail",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "ooSfdHya6P3Rzlw7FYOm",
+        "name": "Business credit reports that state your Organization name from Experian, Equifax, TransUnion or Dun & Bradstreet.",
+        "fieldKey": "contact.business_credit_reports_that_state_your_organization_name_from_experian_equifax_transunion_or_dun__bradstreet",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "op4d3UzCPW93TTuwOAof",
+        "name": "Intake Checklist Link",
+        "fieldKey": "contact.intake_checklist_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "ouPXroJMpAwJTLJr6dP8",
+        "name": "Twitter/X Username",
+        "fieldKey": "contact.twitterx_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "owWhP0dmrusLAuPLaBso",
+        "name": "Episode Live",
+        "fieldKey": "contact.episode_live",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "p6jPe6dxUZzDsoaFoe5d",
+        "name": "Do you currently use a call tracking software?",
+        "fieldKey": "contact.do_you_currently_use_a_call_tracking_software",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "p8tR2J8bA98kiUAH7Lae",
+        "name": "Client Has Website Access",
+        "fieldKey": "contact.client_has_website_access",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "pG5Ui7bU71VFo3VjqHN4",
+        "name": "Primary Location",
+        "fieldKey": "contact.primary_location",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "pHEzmjP5G5bID2ruqPbG",
+        "name": "Instagram Business Account Link (URL field)",
+        "fieldKey": "contact.instagram_business_account_link_url_field",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "pKdULRXbkgEj6xHqGbKh",
+        "name": "Access - Live Chat - Notes",
+        "fieldKey": "contact.access__live_chat__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "pPhbA41cbK5OxY73pgSM",
+        "name": "AIC - Consultations & booking",
+        "fieldKey": "contact.aic_sum_booking",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "pU6C99h7XsDeXL5z0KlP",
+        "name": "Services Included",
+        "fieldKey": "contact.services_included",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "pXNi0nHVwCe3BGWSzqHj",
+        "name": "Which types of cases do you prefer to handle? This may include both high-value cases and lower-value matters that your team is particularly skilled in managing or can handle efficiently.",
+        "fieldKey": "contact.which_types_of_cases_do_you_prefer_to_handle_this_may_include_both_high_value_cases_and_lower_value_matters_that_your_team_is_particularly_skilled_in_managing_or_can_handle_efficiently",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "pYMxLWOVvdYlTx4QK9pZ",
+        "name": "2nd Contact Phone Number",
+        "fieldKey": "contact.2nd_contact_phone_number",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "pdNg0vxPiXxuQJVlR9EZ",
+        "name": "Email Forwarding Settings",
+        "fieldKey": "contact.email_forwarding_settings",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "pikhWuPqTU28puLRL7Ek",
+        "name": "Number of Keyword Bundles",
+        "fieldKey": "contact.number_of_keyword_bundles",
+        "dataType": "NUMERICAL"
+      },
+      {
+        "id": "pn1CT7dau1oJdkkHKkPa",
+        "name": "Episode Title",
+        "fieldKey": "contact.episode_title",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "ppX0P1UNkL254OLvzQKS",
+        "name": "CRM - Password",
+        "fieldKey": "contact.crm__password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "pq4HgIl7xZysl3ebcnb0",
+        "name": "Gift selection Price range $50-$75",
+        "fieldKey": "contact.gift_selection_price_range_5075",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "pw9Udd8L8owq4oDiHtbL",
+        "name": "Automated follow-ups currently running",
+        "fieldKey": "contact.automated_followups_currently_running",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "q7Nzsvhl1Q5gPhDM3KHj",
+        "name": "Usually, we are able to start the Google Ads and Google LSA campaigns about 30 days from today.",
+        "fieldKey": "contact.usually_we_are_able_to_start_the_google_ads_and_google_lsa_campaigns_about_30_days_from_today",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "qFwwvhZymyEtGcYWZbDU",
+        "name": "utm_campaign",
+        "fieldKey": "contact.utm_campaign",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "qM5Fz9IuTXFKxUADn2q7",
+        "name": "2nd Contact First Name",
+        "fieldKey": "contact.2nd_contact_name",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "qRUXeKIc8GYbmM2SMJ16",
+        "name": "3rd Contact First Name",
+        "fieldKey": "contact.3rd_contact_name",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "qbQnCWM1DGaLghrINGR7",
+        "name": "Additional Info:",
+        "fieldKey": "contact.additional_info",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "qdWDvlCGXMLunfvKkqwZ",
+        "name": "Newsletter Tracking Number",
+        "fieldKey": "contact.newsletter_tracking_number",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "qlInG08nCNeodwNMX8yd",
+        "name": "Video Content Link",
+        "fieldKey": "contact.video_content_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "qxUKjQ7g41z5J0NDWLDm",
+        "name": "Access - Live Chat - Status",
+        "fieldKey": "contact.access__live_chat__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "r2Pwi22RxlQc1tQpPdZQ",
+        "name": "Is your CRM connected to Facebook / Meta?",
+        "fieldKey": "contact.is_your_crm_connected_to_facebook__meta",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "rB5NasmaiGFv6zC4LtK4",
+        "name": "MVA",
+        "fieldKey": "contact.mva",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "rE2Bmkno47a2gqDjmKmR",
+        "name": "Agency Analytics Dashboard",
+        "fieldKey": "contact.agency_analytics_dashboard",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "rIcZu46jJWCBxmiEekfT",
+        "name": "Call Tracking Password",
+        "fieldKey": "contact.call_tracking_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "rQFsSaUO3CBHpkwHj9jm",
+        "name": "Backlink Gap",
+        "fieldKey": "contact.backlink_gap",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "rRhXGtuCGHTxYEq8qQ7L",
+        "name": "Status of episode",
+        "fieldKey": "contact.status_of_episode",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "re1vDCXotSTHSiYXQ2Ce",
+        "name": "Gift status",
+        "fieldKey": "contact.gift_status",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "rhtcDPod9ZrSDCaC1cdf",
+        "name": "Demographics",
+        "fieldKey": "contact.demographics",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "rjPv6eqc86Ws2lfxzm2U",
+        "name": "Average case value",
+        "fieldKey": "contact.average_case_value",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "rkTXKWHJL884X9E0Tyvk",
+        "name": "Master Email Address",
+        "fieldKey": "contact.master_email_address",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "rlwBDnmdzqAtpTnMNVUV",
+        "name": "CallRail Password",
+        "fieldKey": "contact.callrail_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "rqPi6p6D0thjSaABvqRQ",
+        "name": "Google Account Email",
+        "fieldKey": "contact.google_account_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "rrYYOjaLoO6lbf2vvZ5l",
+        "name": "Additional notes or suggestions for communication not addressed above:?",
+        "fieldKey": "contact.additional_notes_or_suggestions_for_communication_not_addressed_above",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "rxXhY6qDVF1CBjgGUYaq",
+        "name": "Instagram",
+        "fieldKey": "contact.contactfeatured_instagram",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "ry9jmZBYLsXylXefgtNI",
+        "name": "Name of the telephone service",
+        "fieldKey": "contact.name_of_the_telephone_service",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "sK8i7jMehcbegVkYcVpQ",
+        "name": "Bright Local Login URL",
+        "fieldKey": "contact.bright_local_login_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "savFOIxyLyPqxzgmitQP",
+        "name": "Exhibit C - Out of Scope Services / Scope Creep",
+        "fieldKey": "contact.exhibit_c__out_of_scope_services__scope_creep",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "sh5MiKB70PfuKDJLsRjt",
+        "name": "Access - Cloudflare - Notes",
+        "fieldKey": "contact.access__cloudflare__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "so6hGY0xIN6cqKc0jRA0",
+        "name": "Mobile Number",
+        "fieldKey": "contact.mobile_number",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "svfRZIRx24ykQHBDQTyt",
+        "name": "Access - Google Tag Manager - Status",
+        "fieldKey": "contact.access__google_tag_manager__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "svjk1MaqKyMNmbOPRhiu",
+        "name": "Access - Website CMS - Delegated Email",
+        "fieldKey": "contact.access__website_cms__delegated_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "sw8NQqgo1LYbnRDmiqfI",
+        "name": "Website Login URL",
+        "fieldKey": "contact.website_login_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "tB7P7HvXMvI1Tkqw0nDq",
+        "name": "Provided Database?",
+        "fieldKey": "contact.provided_database",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "tbmXFwKLLjys2otVpafR",
+        "name": "CRM Platform",
+        "fieldKey": "contact.crm_platform",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "tkPpYfNQhirKhvqzCpxW",
+        "name": "Making Changes to CallRail - Review and Accept",
+        "fieldKey": "contact.making_changes_to_callrail__review_and_accept",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "ttHtYZ1kRY1nHJF5xc8x",
+        "name": "LinkedIn Passwords",
+        "fieldKey": "contact.linkedin_passwords",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "tx6nwrHWQ9TufeG04FD4",
+        "name": "Chat Login URL",
+        "fieldKey": "contact.chat_login_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "uHv5GT5wqFlMPqnD40me",
+        "name": "Law Schools Attended (some verticals ask for this)",
+        "fieldKey": "contact.law_schools_attended_some_verticals_ask_for_this",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "uXQZ0uuNToBQ8kvLGcPL",
+        "name": "Access - Website CMS - Notes",
+        "fieldKey": "contact.access__website_cms__notes",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "uyJC0X2sNuHmoa8fKPcB",
+        "name": "Perfect Audience Password",
+        "fieldKey": "contact.perfect_audience_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "v2fPkCKvAW8wHIkFpC2q",
+        "name": "3rd Contact Title",
+        "fieldKey": "contact.3rd_contact_title",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "v33OMtIxrf2gyu6m9ICR",
+        "name": "Questionnaire Approved",
+        "fieldKey": "contact.questionnaire_approved",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "v3EHVbxnBHXnPcsIrAIR",
+        "name": "Live Chat Provider Login Link",
+        "fieldKey": "contact.live_chat_provider_login_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "vBulcNfQkbWYqSmdnDh9",
+        "name": "Google Ads Username/Email  ",
+        "fieldKey": "contact.google_ads_usernameemail",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "vGD2WnsfftBymZO0LqFr",
+        "name": "Business Description",
+        "fieldKey": "contact.contactfeatured_business_description",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "vKBlIGEwiohTUrM9Yyn5",
+        "name": "PPC Google Email",
+        "fieldKey": "contact.ppc_google_email",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "vM4dEpF5Sr6mfsOi942R",
+        "name": "LinkedIn Username",
+        "fieldKey": "contact.linkedin_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "vTW1e1AO8JHrXXjLqSrG",
+        "name": "Primary Type of Law",
+        "fieldKey": "contact.primary_type_of_law",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "vUP8EcPKL2JvTWubGm25",
+        "name": "Checkbox 27672",
+        "fieldKey": "contact.checkbox_27672",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "vfTwredckuilNfFyGsfV",
+        "name": "Social Media CTA Number",
+        "fieldKey": "contact.social_media_cta_number",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "vj39NcznX2SDeJEbNO8r",
+        "name": "Cancellation Notice",
+        "fieldKey": "contact.cancellation_notice",
+        "dataType": "FILE_UPLOAD"
+      },
+      {
+        "id": "vmJ5dSJSzQuOBAqx8l5d",
+        "name": "Call recording?",
+        "fieldKey": "contact.call_recording",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "vqY6mBwyvUZOBEYzA8MT",
+        "name": "GBP Access Status",
+        "fieldKey": "contact.gbp_access_status",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "vsGbhBrpqBvfUEswV6xT",
+        "name": "Year Founded (Some Verticals Require This Info)",
+        "fieldKey": "contact.year_founded",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "vxLK9BJiPcUyjgCAk1HL",
+        "name": "Podcast Promotion",
+        "fieldKey": "contact.podcast_promotion",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "w2fA2jXHcoRTULAcUq6t",
+        "name": "Select Telephone Number Type *",
+        "fieldKey": "contact.select_telephone_number_type_",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "wEHmDQoxqa7veSyLWrfT",
+        "name": "Historical Lead Data Link",
+        "fieldKey": "contact.historical_lead_data_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "wbtjvqcNwZCLcuERksrp",
+        "name": "LSA Password",
+        "fieldKey": "contact.lsa_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "wob4qpWB54icAxB40dM2",
+        "name": "Client Desk Profile",
+        "fieldKey": "contact.client_desk_profile",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "wviKMDJyi8UwjyDfYBQA",
+        "name": "Exhibit C - Date Signed",
+        "fieldKey": "contact.exhibit_c__date_signed",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "x5fNaRPXLETWygZ9rJSt",
+        "name": "Hosting Username",
+        "fieldKey": "contact.hosting_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "xFzDQxJfVes3lwvpvhTD",
+        "name": "City Selections",
+        "fieldKey": "contact.city_selections",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "xGTrNSq3cnyxEF7gLYta",
+        "name": "Press Release Link",
+        "fieldKey": "contact.press_release_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "xJY7FAwxCwbgsmsKMCx3",
+        "name": "Review Incentive Notes & Additional Information",
+        "fieldKey": "contact.review_incentive_notes__additional_information",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "xRXXcGNgsDkEWZBpWaSV",
+        "name": "Primary Forwarding Number",
+        "fieldKey": "contact.primary_forwarding_number",
+        "dataType": "PHONE"
+      },
+      {
+        "id": "xXIKVacUVSr6j7hx23V3",
+        "name": "Domain Password",
+        "fieldKey": "contact.domain_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "xXqT8knvGxXsSaTRnqnk",
+        "name": "Proposal Accepted Date",
+        "fieldKey": "contact.proposal_accepted_date",
+        "dataType": "DATE"
+      },
+      {
+        "id": "xZhQbDXM7arq9A4pIBDu",
+        "name": "LP - Submitted on",
+        "fieldKey": "contact.lp_submitted_on",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "xllifgNC4IdIah9koZWG",
+        "name": "Client Brief",
+        "fieldKey": "contact.client_brief",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "xopV65WukKam7S7DlJnI",
+        "name": "Access - Domain Registrar - Status",
+        "fieldKey": "contact.access__domain_registrar__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "xpCPAtM2a6uWBl9oI8yq",
+        "name": "Marketing Assets Folder",
+        "fieldKey": "contact.marketing_assets_folder",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "xqtS8SqBWVTyxdzNwFaP",
+        "name": "Misc Tool 3 Login URL",
+        "fieldKey": "contact.misc_tool_3_login_url",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "xrQZSSMFq3A7Eb9IYng5",
+        "name": "Gate - Uses Cloudflare",
+        "fieldKey": "contact.gate__uses_cloudflare",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "xy2Ng5JuvtXQnJtzNyXZ",
+        "name": "Slack Channel Link",
+        "fieldKey": "contact.slack_channel_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "y12RJswcbsnSKjSDHv3I",
+        "name": "Title ",
+        "fieldKey": "contact.title",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "yD6HmlRhdwLG7UJKXVNd",
+        "name": "AIC - Approved date",
+        "fieldKey": "contact.aic_approved_date",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "yTgTRYw8uQAPKaMoreQt",
+        "name": "Twitter/X Password",
+        "fieldKey": "contact.twitterx_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "yaYRTJuSYHJG1AJBmBUz",
+        "name": "Average case value [OB]",
+        "fieldKey": "contact.average_case_value_ob",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "yoh84ahmZBbXmcFTWnnJ",
+        "name": "Podcast Record Date",
+        "fieldKey": "contact.podcast_record_date",
+        "dataType": "DATE"
+      },
+      {
+        "id": "yyI8o0Zy2Nsab0LLz9cG",
+        "name": "Back up Payment Method?",
+        "fieldKey": "contact.back_up_payment_method",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "z6WHY3wZmTZTZI8wqna0",
+        "name": "Enable Call Recording For Quality Assurance?",
+        "fieldKey": "contact.enable_call_recording_for_quality_assurance",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "zD9skUg6WuqulAQ2yrsx",
+        "name": "Chat Password",
+        "fieldKey": "contact.chat_password",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "zG4EadDCJMPjAFcC9I5U",
+        "name": "AIC - Approved by",
+        "fieldKey": "contact.aic_approved_by",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "zNiKNRXQILpy4fmpAI1m",
+        "name": "Additional Team Contacts (CC)",
+        "fieldKey": "contact.additional_team_contacts_cc",
+        "dataType": "LARGE_TEXT"
+      },
+      {
+        "id": "zO6nxbk1ZBlPfGFkaH3Z",
+        "name": "Access - Google Analytics - Status",
+        "fieldKey": "contact.access__google_analytics__status",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "zP2oFmxKOYvr0cMMJtcz",
+        "name": "Name of Answering Service Provider",
+        "fieldKey": "contact.name_of_answering_service_provider",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "zP87iqTjuAsQRPNGj6Bh",
+        "name": "Mailchimp Username ",
+        "fieldKey": "contact.mailchimp_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "zTmSjerNhRbNlKsaQusE",
+        "name": "Misleading Alerts when searching on Google:",
+        "fieldKey": "contact.misleading_alerts_when_searching_on_google",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "zVmZ8F7cSwXjq1c6BNmV",
+        "name": "Services Canceled",
+        "fieldKey": "contact.services_canceled",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "zZuzmPzfbVuahIayXuaz",
+        "name": "Do you offer free consultations? ",
+        "fieldKey": "contact.do_you_offer_free_consultations",
+        "dataType": "CHECKBOX"
+      },
+      {
+        "id": "zaixoK4egyfLwyID8voa",
+        "name": "Removed previous agency? ***Other - No - remaining days under contract",
+        "fieldKey": "contact.removed_previous_agency_other__no__remaining_days_under_contract",
+        "dataType": "RADIO"
+      },
+      {
+        "id": "zbyT0f64ocWUkS5nXPSu",
+        "name": "Do you have a process from intake to completion that you can define for us?",
+        "fieldKey": "contact.do_you_have_a_process_from_intake_to_completion_that_you_can_define_for_us",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "zgvzDkPlbJYQijLraG4O",
+        "name": "Facebook Business Manager Link",
+        "fieldKey": "contact.facebook_business_manager_link",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "zkEJbyGeortrCpgXBS1J",
+        "name": "Domain Registrar Username/Email",
+        "fieldKey": "contact.domain_registrar_username",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "zwonMddU0FDiTio9gLBU",
+        "name": "Instagram Username",
+        "fieldKey": "contact.instagram_business_account_link",
+        "dataType": "TEXT"
+      }
+    ],
+    "opportunity": [
+      {
+        "id": "8QNfLrylBqPLm83O9Itu",
+        "name": "Last Updated Date",
+        "fieldKey": "opportunity.last_updated_date",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "8wH12eNwl8necA0OrHh3",
+        "name": "Service Package",
+        "fieldKey": "opportunity.service_package",
+        "dataType": "SINGLE_OPTIONS"
+      },
+      {
+        "id": "CyEWuL0D43YhVPcPRS38",
+        "name": "New or Enhance?",
+        "fieldKey": "opportunity.new_or_enhance",
+        "dataType": "MULTIPLE_OPTIONS"
+      },
+      {
+        "id": "Et0PshjafNbIcTvFv64T",
+        "name": "Opportunity Amount",
+        "fieldKey": "opportunity.opportunity_amount",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "HWJcQWxC1rO8dumBrqnE",
+        "name": "Opportunity Probability",
+        "fieldKey": "opportunity.opportunity_probability",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "SfG3S9fxWGla3flSowpy",
+        "name": "Expected Value",
+        "fieldKey": "opportunity.expected_value",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "WZQay2bWj37sAanmYNwh",
+        "name": "Primary Lead",
+        "fieldKey": "opportunity.primary_lead",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "av7iBHvdey5fi9tHnnuj",
+        "name": "Created",
+        "fieldKey": "opportunity.created",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "gZ5lfWgDamNDFtOtLmS6",
+        "name": "Opportunity Close Date",
+        "fieldKey": "opportunity.opportunity_close_date",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "j76eGZZHUKoc4jaiM7nD",
+        "name": "Primary Campaign",
+        "fieldKey": "opportunity.primary_campaign",
+        "dataType": "TEXT"
+      }
+    ]
+  }
+}
