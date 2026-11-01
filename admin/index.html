@@ -153,6 +153,15 @@ input[readonly]{color:var(--ink-2)}
 .dlg h3{font-family:var(--serif);font-size:19px;font-weight:600}
 .dlg .btnrow{justify-content:flex-end;margin-top:2px}
 
+/* token helper */
+.tokhelp{border:1px solid var(--rule);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--card)}
+.tokhelp h3{font-size:15px}
+.tokhelp ol{margin:0;padding-left:20px;font-size:13.5px;color:var(--ink-2)} .tokhelp ol li{margin:2px 0}
+.scopelist{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:6px 18px;margin:0;padding:0;list-style:none}
+.scopelist .check{font-size:13.5px;align-items:flex-start} .scopelist .check input{margin-top:2px}
+.scopelist .mono{display:block;color:var(--ink-3);font-size:11.5px}
+.misslist{margin:6px 0 0;padding-left:20px} .misslist li{margin:2px 0}
+
 /* success */
 .success{display:flex;flex-direction:column;gap:14px;margin-top:16px;border:1px solid var(--ok-ink);border-radius:10px;padding:18px}
 .copyrow{display:flex;gap:8px} .copyrow input{flex:1;min-width:0}
@@ -270,6 +279,25 @@ document.querySelectorAll('.repoName').forEach(e => { e.textContent = REPO; });
 const TOKEN_KEY = 'leadpro-admin-gh-token';
 const SODIUM = { src: 'https://cdnjs.cloudflare.com/ajax/libs/libsodium-wrappers/0.5.4/sodium.min.js', integrity: 'sha384-wwHUJSIg+zP+JE6uHrrp1XCv4UtKW9xE4+LO+lwfrocCav+zHsDN57+5bvmKRCnu' };
 const RESERVED = ['admin', 'app', 'scripts', '_template'];
+const GHL_APP = 'https://app.lawfirmmarketingpros.com';
+const INTEGRATION_NAME = 'LeadPro KPI Scorecard';
+const piUrl = loc => `${GHL_APP}/v2/location/${encodeURIComponent(loc)}/settings/private-integrations`;
+const validLoc = loc => /^[A-Za-z0-9]{10,40}$/.test(loc || '');
+// The nine read-only scopes: [scope key, GHL's on-screen name]. discover.mjs tests each one.
+const SCOPES = [
+  ['opportunities.readonly', 'View Opportunities'], ['contacts.readonly', 'View Contacts'], ['users.readonly', 'View Users'],
+  ['locations.readonly', 'View Locations'], ['locations/customFields.readonly', 'View Custom Fields'], ['calendars.readonly', 'View Calendars'],
+  ['calendars/events.readonly', 'View Calendar Events'], ['conversations.readonly', 'View Conversations'], ['conversations/message.readonly', 'View Conversation Messages'],
+];
+const scopeName = key => (SCOPES.find(s => s[0] === key) || [key, key])[1];
+const missingList = keys => `<ul class="misslist">${keys.map(k => `<li><b>${esc(scopeName(k))}</b> <span class="mono">${esc(k)}</span></li>`).join('')}</ul>`;
+// Turns a discovery.json scope report into a blocking error (or null when the token is fine).
+function scopeProblem(sc, loc) {
+  if (!sc) return null;
+  if (sc.tokenRejected) return Object.assign(new Error(`<b>GHL refused this token for every check</b>${sc.ghlMessage ? ` (GHL said: “${esc(sc.ghlMessage)}”)` : ''}. It may be mistyped, revoked, or from a different sub-account than location <span class="mono">${esc(loc)}</span>. Create a token in that sub-account and paste it below.`), { html: true, kind: 'scopes', newToken: true });
+  if (sc.missing?.length) return Object.assign(new Error(`<b>The token is missing ${sc.missing.length} scope${sc.missing.length === 1 ? '' : 's'}:</b>${missingList(sc.missing)}<p style="margin:8px 0 0">Edit the integration in GHL and tick ${sc.missing.length === 1 ? 'this' : 'these'}; the token stays the same. Then press Re-check.</p>`), { html: true, kind: 'scopes' });
+  return null;
+}
 const slugify = name => String(name || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
   .replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48).replace(/-+$/, '');
 const secretKeyFor = slug => slug.toUpperCase().replace(/-/g, '_');
@@ -422,7 +450,8 @@ async function gh(method, path, body, { allow404 = false } = {}) {
   });
   if (r.status === 404 && allow404) return null;
   if (!r.ok) { let m = ''; try { m = (await r.json()).message; } catch {} const e = new Error(ghError(r.status, m, path)); e.status = r.status; throw e; }
-  return r.status === 204 ? {} : r.json();
+  const text = r.status === 204 ? '' : await r.text();     // some successes (e.g. secret created) have an empty body
+  return text ? JSON.parse(text) : {};
 }
 async function getText(path, ref = BRANCH) {
   const f = await gh('GET', `${R}/contents/${path.split('/').map(encodeURIComponent).join('/')}?ref=${ref}`, null, { allow404: true });
@@ -505,7 +534,7 @@ async function follow({ workflow, title, t0, check, limitMs, say, label, stop = 
     const link = run ? ` · <a href="${esc(run.html_url)}" target="_blank" rel="noopener">view run</a>` : '';
     const state = !run ? 'starting' : run.status === 'completed' ? run.conclusion : run.status;
     if (run && run.status === 'in_progress' && !startedAt) startedAt = Date.now();
-    say(`${label}: ${state === 'queued' || state === 'waiting' || state === 'pending' ? 'waiting for another sync to finish' : state}…${link}`);
+    say(`${label}: ${state === 'queued' || state === 'waiting' || state === 'pending' ? 'waiting for another sync to finish…' : run?.status === 'completed' ? `run ${state}` : `${state}…`}${link}`);
     if (run?.status === 'completed' && run.conclusion !== 'success') throw htmlError(`The ${workflow} run ended "${run.conclusion}". Open the run log for details.${run.html_url ? ` <a href="${esc(run.html_url)}" target="_blank" rel="noopener">View run</a>` : ''}`);
     const got = await check();
     if (got) return { value: got, run };
@@ -814,7 +843,22 @@ function renderNewFirm() {
       <label class="f" for="nfAreaOther" id="nfAreaOtherWrap" hidden>Practice area (other)<input type="text" id="nfAreaOther" placeholder="e.g. Medical Malpractice"></label>
       <label class="f" for="nfTz">Time zone<select id="nfTz">${TIMEZONES.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join('')}</select></label>
       <label class="f full" for="nfLoc">GHL location ID <span class="hint">The sub-account's ID, from its URL: …/v2/location/<b>this part</b>/…</span><input type="text" id="nfLoc" required spellcheck="false" placeholder="e.g. INZKoa3nu45xtcZB0Yuq"></label>
-      <label class="f full" for="nfTok">GHL token <span class="hint">A read-only Private Integration Token from that sub-account (Settings → Private Integrations). Scopes are listed in the repo README.</span>
+      <section class="full tokhelp" aria-labelledby="nfHelpTitle">
+        <h3 id="nfHelpTitle">Create the GHL token</h3>
+        <p class="hint" id="nfHelpNeedLoc" style="margin:0">Enter the location ID above to get a direct link to this sub-account's Private Integrations page.</p>
+        <div class="btnrow" id="nfHelpBtns" style="margin:0" hidden>
+          <a class="btn" id="nfPiLink" target="_blank" rel="noopener">${ICON.ext}Open Private Integrations</a>
+          <button type="button" class="btn" id="nfCopyName">${ICON.copy}Copy name “${esc(INTEGRATION_NAME)}”</button>
+        </div>
+        <ol>
+          <li>Create a new integration named <b>${esc(INTEGRATION_NAME)}</b>.</li>
+          <li>Tick these nine scopes. All are read-only “View” scopes:</li>
+        </ol>
+        <ul class="scopelist">${SCOPES.map(([k, n]) => `<li><label class="check"><input type="checkbox"><span>${esc(n)}<span class="mono">${esc(k)}</span></span></label></li>`).join('')}</ul>
+        <ol start="3"><li>Create it, then copy the token.</li></ol>
+        <div class="warnbox">GHL shows the token once. Copy it straight into the field below.</div>
+      </section>
+      <label class="f full" for="nfTok">GHL token <span class="hint">The Private Integration token you just created (starts with “pit-”). It's tested scope by scope in step 2.</span>
         <span class="pw"><input type="password" id="nfTok" required spellcheck="false" placeholder="pit-…"><button type="button" class="eye" data-eye="nfTok" aria-label="Show token"></button></span></label>
       <label class="f full" for="nfPass">Dashboard passphrase <span class="hint">Unlocks names on the dashboard. Goes into the GHL menu link. Generated for you; change it if you like.</span>
         <span class="pw"><input type="password" id="nfPass" required spellcheck="false"><button type="button" class="eye" data-eye="nfPass" aria-label="Show passphrase"></button></span>
@@ -838,6 +882,16 @@ function renderNewFirm() {
     return { slug, err };
   };
   $('nfName').addEventListener('input', slugInfo); slugInfo();
+  const helpInfo = () => {
+    const loc = $('nfLoc').value.trim(), ok = validLoc(loc);
+    $('nfHelpBtns').hidden = !ok; $('nfHelpNeedLoc').hidden = ok;
+    if (ok) $('nfPiLink').href = piUrl(loc);
+  };
+  $('nfLoc').addEventListener('input', helpInfo); helpInfo();
+  $('nfCopyName').onclick = async () => {
+    try { await navigator.clipboard.writeText(INTEGRATION_NAME); $('nfCopyName').innerHTML = `${ICON.tick}Copied`; setTimeout(() => { const b = $('nfCopyName'); if (b) b.innerHTML = `${ICON.copy}Copy name “${esc(INTEGRATION_NAME)}”`; }, 2000); }
+    catch { $('nfCopyName').textContent = INTEGRATION_NAME; }
+  };
   $('nfName').focus();
   $('nfForm').addEventListener('submit', e => {
     e.preventDefault();
@@ -845,7 +899,7 @@ function renderNewFirm() {
     const name = $('nfName').value.trim(), loc = $('nfLoc').value.trim(), tok = $('nfTok').value.trim(), pass = $('nfPass').value;
     const area = $('nfArea').value === 'Other' ? $('nfAreaOther').value.trim() : $('nfArea').value;
     const problem = !name ? 'Enter the firm name.' : !slug ? 'The firm name needs at least one letter or digit.' : err ? err
-      : !area ? 'Enter the practice area.' : !/^[A-Za-z0-9]{10,40}$/.test(loc) ? 'The location ID looks wrong: letters and digits only, from the sub-account URL.'
+      : !area ? 'Enter the practice area.' : !validLoc(loc) ? 'The location ID looks wrong: letters and digits only, from the sub-account URL.'
       : tok.length < 20 ? 'Paste the GHL Private Integration Token.' : pass.length < 12 ? 'Use a passphrase of at least 12 characters.' : '';
     if (problem) { $('nfErr').textContent = problem; return; }
     $('nfErr').textContent = '';
@@ -891,11 +945,24 @@ async function runFrom(i) {
       if (run !== myRun) return;
       clearInterval(myRun.timer); myRun.timer = null;
       setStep(i, 'fail');
-      const indexWritten = i >= 4;
-      stepEl(i).querySelector('.e').innerHTML = `<div class="errbox">${errHtml(e)}</div><div class="btnrow">
-        <button type="button" class="btn primary" id="retryBtn">Retry from this step</button>
+      const indexWritten = i >= 4, scopeUi = e.kind === 'scopes';
+      stepEl(i).querySelector('.e').innerHTML = `<div class="${scopeUi ? 'warnbox' : 'errbox'}">${errHtml(e)}</div>
+        ${e.newToken ? `<label class="f" for="reTok" style="margin-top:10px">New GHL token<span class="pw"><input type="password" id="reTok" autocomplete="off" spellcheck="false" placeholder="pit-…"><button type="button" class="eye" data-eye="reTok" aria-label="Show token"></button></span></label><div class="ferr" id="reTokErr"></div>` : ''}
+        <div class="btnrow">
+        <button type="button" class="btn primary" id="retryBtn">${scopeUi ? (e.newToken ? 'Save token and re-check' : 'Re-check') : 'Retry from this step'}</button>
+        ${scopeUi ? `<a class="btn" href="${esc(piUrl(myRun.ctx.locationId))}" target="_blank" rel="noopener">${ICON.ext}Open Private Integrations</a>` : ''}
         <button type="button" class="btn danger" id="discardBtn">${indexWritten ? 'Delete this firm' : 'Discard and clean up'}</button></div>`;
-      $('retryBtn').onclick = () => { stepEl(i).querySelector('.e').innerHTML = ''; runFrom(i); };
+      wireEyes(stepEl(i));
+      $('retryBtn').onclick = () => {
+        if (e.newToken) {
+          const t = $('reTok').value.trim();
+          if (t.length < 20) { $('reTokErr').textContent = 'Paste the new GHL token.'; return; }
+          myRun.ctx.token = t; $('reTok').value = '';
+          for (let k = 0; k <= i; k++) setStep(k, 'pending', '');
+          return runFrom(0);           // save the new token, then re-check
+        }
+        stepEl(i).querySelector('.e').innerHTML = ''; runFrom(i);
+      };
       $('discardBtn').onclick = async () => {
         $('discardBtn').disabled = true; $('retryBtn').disabled = true; $('discardBtn').textContent = 'Cleaning up…';
         try { await deleteFirm(myRun.ctx.slug, myRun.ctx.secretKey, myRun.ctx.name); await renderList(`Discarded ${esc(myRun.ctx.name)}: secrets and any files removed.`); }
@@ -920,10 +987,13 @@ const STEP_FNS = [
     const t0 = await dispatch('discover.yml', { slug: ctx.slug, secretKey: ctx.secretKey, locationId: ctx.locationId });
     const { value } = await follow({ workflow: 'discover.yml', title: `Discover ${ctx.slug}`, t0, label: 'Reading GHL', limitMs: 3 * 60e3, say, stop: ctx.stop,
       check: async () => { const d = await getJSON(`firms/${ctx.slug}/discovery.json`); return d && d.locationId === ctx.locationId && Date.parse(d.generatedAt) > t0 - 120e3 ? d : null; } });
+    const problem = scopeProblem(value.scopes, ctx.locationId);
+    if (problem) throw problem;
     if (!value.pipelines?.length) throw new Error('GHL returned no pipelines for this location. Check the location ID and that the token belongs to this sub-account.');
     ctx.discovery = value;
     const nStages = value.pipelines.reduce((n, p) => n + p.stages.length, 0);
-    say(`Found ${value.pipelines.length} pipeline${value.pipelines.length === 1 ? '' : 's'}, ${nStages} stages and ${value.calendars?.length || 0} calendar${value.calendars?.length === 1 ? '' : 's'}.`);
+    const unchecked = value.scopes?.unchecked || [];
+    say(`All ${value.scopes ? value.scopes.ok.length : ''} scopes OK. Found ${value.pipelines.length} pipeline${value.pipelines.length === 1 ? '' : 's'}, ${nStages} stage${nStages === 1 ? '' : 's'} and ${value.calendars?.length || 0} calendar${value.calendars?.length === 1 ? '' : 's'}.${unchecked.length ? ` Couldn't test ${unchecked.map(k => esc(scopeName(k))).join(', ')} (nothing to read yet).` : ''}`);
   },
   // 3. Map the stages (waits for the user)
   async (ctx, say, slot) => {
@@ -1001,6 +1071,13 @@ async function renderEditMapping(f) {
     if (!cfg) { $('emHost').innerHTML = '<div class="errbox">config.json not found for this firm.</div>'; return; }
     if (!disc) { $('emHost').innerHTML = `<div class="warnbox">There's no snapshot of this firm's GHL pipelines yet. Press <b>Re-read GHL</b> to take one (about a minute).</div>`; return; }
     status(`Pipelines and stages as of ${esc(fmtTime(disc.generatedAt))} (${esc(ago(disc.generatedAt))}).`);
+    const problem = scopeProblem(disc.scopes, cfg.locationId || f.locationId);
+    if (problem) {
+      $('emStatus').insertAdjacentHTML('beforeend', `<div class="warnbox" style="margin-bottom:12px">${problem.message.replace(/Then press Re-check\.|Create a token in that sub-account and paste it below\./, '')}
+        ${problem.newToken ? `The firm's token is stored as <span class="mono">GHL_TOKEN_${esc(f.secretKey)}</span>; delete and re-add the firm, or replace that secret in GitHub.` : ''}
+        <div class="btnrow"><button type="button" class="btn primary" id="recheckBtn">${ICON.sync}Re-check</button><a class="btn" href="${esc(piUrl(cfg.locationId || f.locationId))}" target="_blank" rel="noopener">${ICON.ext}Open Private Integrations</a></div></div>`);
+      $('recheckBtn').onclick = () => $('rereadBtn').click();
+    }
     const m = await mappingPanel($('emHost'), { discovery: disc, config: cfg, isNew: false, saveLabel: 'Save mapping' });
     $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = true; });
     status('Saving config.json…');

@@ -99,6 +99,8 @@ Commit, then run the sync for that slug.
 **What it does**
 
 - **Firm list:** each firm's name, practice area, last sync and lead count, with Open dashboard, Copy GHL link (asks for the passphrase, never stores it), Re-sync, Edit mapping, Banner on/off and Delete (removes `firms/<slug>/`, the list entry and both secrets).
+- **Create the GHL token helper** (in the New firm form): once the location ID is valid, a button opens that sub-account's Private Integrations page and another copies the integration name "LeadPro KPI Scorecard"; a checklist shows the nine scopes with GHL's names and keys.
+- **Scope check:** `discover.mjs` makes one lightweight read per scope and records `scopes: { ok, missing, unchecked, tokenRejected }` in `discovery.json` (scope names only, no data). If any are missing, step 2 lists them by name with "Edit the integration in GHL and tick these; the token stays the same" and a **Re-check** button. If GHL refuses every check, it asks for a new token. Edit mapping shows the same warning.
 - **New firm:** a form, then six steps with live progress: save the two secrets (sealed with the repo's public key, libsodium from cdnjs, pinned by SRI) → run Discover → map the stages → one commit with `config.json`, the stub and `firms/index.json` → first sync → links. A failed step can be retried; `firms/index.json` is only written in the commit step, so a failed run never leaves a half-made firm in the list. "Discard and clean up" removes whatever was created.
 - **Edit mapping:** the same mapping panel against `discovery.json` (Re-read GHL refreshes it), then commits `config.json` and re-syncs.
 
