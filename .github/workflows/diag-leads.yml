@@ -1,0 +1,40 @@
+name: Diagnose missing leads (read-only)
+run-name: "Diag leads ${{ inputs.slug }}"
+
+# Checks whether real leads are missing from "New leads": opportunities by pipeline, new contacts
+# with no opportunity (by source, type, attribution, tag), and inbound calls/messages from them.
+# Prints counts only (no names, phones, emails, ids or message content) and commits nothing.
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Firm slug"
+        required: true
+      secretKey:
+        description: "Secret key (slug in capitals, hyphens as underscores)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Check the secret key belongs to the slug
+        env:
+          SLUG: ${{ inputs.slug }}
+          KEY: ${{ inputs.secretKey }}
+        run: |
+          expected=$(echo "$SLUG" | tr 'a-z-' 'A-Z_')
+          [ "$KEY" = "$expected" ] || { echo "secretKey $KEY does not belong to $SLUG"; exit 1; }
+      - name: Count leads, contacts and inbound (counts only)
+        env:
+          SLUG: ${{ inputs.slug }}
+          GHL_TOKEN: ${{ secrets[format('GHL_TOKEN_{0}', inputs.secretKey)] }}
+        run: node scripts/diag-leads.mjs "$SLUG"

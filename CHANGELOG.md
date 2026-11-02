@@ -5,6 +5,9 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.6.1 — 3 Nov 2026
+- [internal] Read-only diagnostic "Diagnose missing leads" (`diag-leads.yml`, `scripts/diag-leads.mjs`): opportunities by pipeline, new contacts with no opportunity (by source, type, attribution and tag), and inbound calls and messages from them. Counts only; writes and commits nothing.
+
 ## v1.6.0 — 2 Nov 2026
 - [internal] Sync issues on the admin page: a bell with a count of new issues (also in the tab title) and a panel listing open issues newest first. Each one shows the firm, GHL sub-account and location ID (or System), what happened, first and last seen, how many syncs in a row, numbered steps, and Fix in GHL / Update token / Re-sync / View run on GitHub / Go to firm buttons. Issues clear when the next sync succeeds; Mark as seen removes one from the count. Recently resolved shows the last 20. Re-checks every 5 minutes. `SYNC_CHAIN` is read live (falls back to the value the last sync recorded).
 - [internal] Issues covered: GHL token rejected or not set, token missing a scope (named), GHL server/network error, firm config error, unknown error, "may be incomplete" note, no successful sync in 45+ minutes (per firm and system-wide), `SYNC_CHAIN` off, sync chain stopped.
