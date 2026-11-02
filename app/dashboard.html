@@ -500,7 +500,7 @@ function renderNotice() {
 // Shown when the last sync had to publish call and message numbers that look short (see scripts/sync.mjs, "Hold").
 const DATA_NOTE = {
   title: 'Call and message numbers may be incomplete',
-  text: "GoHighLevel didn't return all call and message records in the last update, so missed calls, speed to first contact and contact rate may read low. Other numbers aren't affected. This note clears on its own at the next update.",
+  text: "LeadPro didn't return all call and message records in the latest update, so missed calls, speed to first contact, contacted within 5 minutes and contact rate may read low. Other numbers aren't affected. This note clears once a complete update comes through.",
 };
 function renderDataNote() {
   const el = $('dataNote');
