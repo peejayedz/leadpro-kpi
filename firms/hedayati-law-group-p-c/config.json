@@ -72,5 +72,8 @@
     "speedToLead": "Speed to Lead (min)",
     "firstContacted": "First Contacted Date",
     "contactMethod": "Contact Method"
+  },
+  "notice": {
+    "show": false
   }
 }
