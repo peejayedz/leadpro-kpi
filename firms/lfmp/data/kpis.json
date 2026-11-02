@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T17:07:33.732Z",
+  "generatedAt": "2026-11-02T17:37:30.661Z",
   "location": "LeadPro",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1793595600000,
-      "to": 1793639253732,
+      "to": 1793641050661,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -344,7 +344,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1793595600000,
-      "to": 1793639253732,
+      "to": 1793641050661,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -704,8 +704,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1793034453732,
-      "to": 1793639253732,
+      "from": 1793036250661,
+      "to": 1793641050661,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -797,9 +797,9 @@
         ]
       },
       "previous": {
-        "totalLeads": 3,
+        "totalLeads": 2,
         "contacted": 1,
-        "contactRatePct": 33.3,
+        "contactRatePct": 50,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -834,11 +834,6 @@
             "[IN USE] V2 - LFMP Client Intake Form",
             1,
             0
-          ],
-          [
-            "Calendly",
-            1,
-            0
           ]
         ],
         "byChannel": [
@@ -846,20 +841,15 @@
             "CRM UI",
             2,
             0
-          ],
-          [
-            "Unknown source",
-            1,
-            0
           ]
         ],
         "attributedLeads": 2,
         "stageMoved": 0,
-        "attributionPct": 66.7,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            3,
+            2,
             "newLeads",
             null
           ],
@@ -904,8 +894,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1791047253732,
-      "to": 1793639253732,
+      "from": 1791049050661,
+      "to": 1793641050661,
       "current": {
         "totalLeads": 6,
         "contacted": 1,
@@ -1092,8 +1082,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1785863253732,
-      "to": 1793639253732,
+      "from": 1785865050661,
+      "to": 1793641050661,
       "current": {
         "totalLeads": 11,
         "contacted": 1,
@@ -1281,7 +1271,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1793639253732,
+      "to": 1793641050661,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1647,7 +1637,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1793639253732,
+      "to": 1793641050661,
       "current": {
         "totalLeads": 6,
         "contacted": 1,
@@ -2015,7 +2005,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-02T17:07:33.732Z",
+    "checkedAt": "2026-11-02T17:37:30.661Z",
     "counts": {
       "Call": 63,
       "SMS": 1,
