@@ -1,31 +1,87 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-02T18:40:09.250Z",
+  "updatedAt": "2026-11-02T18:54:41.627Z",
   "lastRun": {
-    "at": "2026-11-02T18:40:09.250Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41502274638",
+    "at": "2026-11-02T18:54:41.627Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41504504746",
     "event": "workflow_dispatch",
-    "chained": true
+    "chained": false
   },
   "syncChain": {
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-02T18:40:09.250Z",
+  "lastAnySuccessAt": "2026-11-02T18:54:41.627Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-02T18:40:09.250Z",
-      "lastSuccessAt": "2026-11-02T18:40:09.250Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41502274638",
-      "failStreak": 0
+      "lastAttemptAt": "2026-11-02T18:54:41.627Z",
+      "lastSuccessAt": "2026-11-02T18:54:41.627Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41504504746",
+      "failStreak": 0,
+      "notInPipeline": {
+        "last30": {
+          "form": 0,
+          "survey": 0,
+          "chat": 2,
+          "booking": 0,
+          "call": 0,
+          "sms": 0,
+          "email": 0,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 0,
+          "noInboundSignal": 0
+        },
+        "last90": {
+          "form": 0,
+          "survey": 0,
+          "chat": 7,
+          "booking": 0,
+          "call": 0,
+          "sms": 0,
+          "email": 0,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 0,
+          "noInboundSignal": 0
+        }
+      }
     },
     "lfmp": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-02T18:40:09.250Z",
-      "lastSuccessAt": "2026-11-02T18:40:09.250Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41502274638",
-      "failStreak": 0
+      "lastAttemptAt": "2026-11-02T18:54:41.627Z",
+      "lastSuccessAt": "2026-11-02T18:54:41.627Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41504504746",
+      "failStreak": 0,
+      "notInPipeline": {
+        "last30": {
+          "form": 1,
+          "survey": 0,
+          "chat": 0,
+          "booking": 0,
+          "call": 2,
+          "sms": 0,
+          "email": 1,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 1,
+          "noInboundSignal": 5
+        },
+        "last90": {
+          "form": 1,
+          "survey": 0,
+          "chat": 0,
+          "booking": 0,
+          "call": 21,
+          "sms": 0,
+          "email": 1,
+          "other": 0,
+          "bulk": 9,
+          "notLeadType": 14,
+          "noInboundSignal": 38
+        }
+      }
     }
   },
   "open": [],
