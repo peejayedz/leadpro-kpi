@@ -600,18 +600,18 @@ const kpiSummary = k => ({ generatedAt: k.generatedAt, leads90: k.periods?.last9
 function syncFlag(k) {
   const s = k?.sync; if (!s) return '';
   if (s.holds > 0) return `<p class="meta syncflag"><span><span class="chip warn">Holding previous numbers</span> GHL returned fewer calls or messages than last sync (${esc(s.reason || '')}). Hold ${s.holds} of 3 since ${esc(ago(s.heldSince))}; the dashboard keeps showing the last good numbers and publishes anyway after 3 holds.</span></p>`;
-  if (s.incomplete) return `<p class="meta syncflag"><span><span class="chip warn">Calls/messages may be incomplete</span> Published after 3 holds (${esc(s.reason || '')}). The dashboard shows a note until the next sync.</span></p>`;
+  if (s.incomplete) return `<p class="meta syncflag"><span><span class="chip warn">Calls/messages may be incomplete</span> Published after 3 holds (${esc(s.reason || '')}). The dashboard shows a note until the counts recover, for 24 hours at most.</span></p>`;
   return '';
 }
 function firmRow(f) {
   const cfg = configs[f.slug], k = kpis[f.slug];
-  const stale = k?.generatedAt && Date.now() - Date.parse(k.generatedAt) > 3 * 3600e3;
+  const stale = k?.generatedAt && Date.now() - Date.parse(k.generatedAt) > 2 * 3600e3;   // syncs run every 30 minutes
   const banner = cfg ? bannerOn(cfg, bases[f.slug] || shared.defaults) : true;
   return `<article class="firm" data-slug="${esc(f.slug)}">
     <div>
       <h3>${esc(f.name)}</h3>
       <p class="meta"><span>${esc(f.practiceArea || 'No practice area')}</span><span class="mono">${esc(f.slug)}</span></p>
-      <p class="meta"><span title="${esc(fmtTime(k?.generatedAt))}">Last sync ${k ? esc(ago(k.generatedAt)) : '<span class="chip warn">no data yet</span>'}${stale ? ' <span class="chip bad">stale</span>' : ''}</span>
+      <p class="meta"><span title="${esc(fmtTime(k?.generatedAt))}">Last updated ${k ? `${esc(ago(k.generatedAt))} (${esc(fmtTime(k.generatedAt))})` : '<span class="chip warn">no data yet</span>'}${stale ? ' <span class="chip bad" title="Syncs should run every 30 minutes. Check Actions for skipped or failed runs.">over 2 hours old</span>' : ''}</span>
         ${k?.leads90 != null ? `<span>${k.leads90} lead${k.leads90 === 1 ? '' : 's'} in the last 90 days</span>` : ''}</p>
       ${syncFlag(k)}
     </div>

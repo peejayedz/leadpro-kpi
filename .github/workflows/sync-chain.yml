@@ -1,0 +1,37 @@
+name: Sync chain
+run-name: "Sync chain: wait for the next :07 or :37"
+
+# Keeps syncs running every 30 minutes when GitHub skips scheduled runs. A scheduled or chained
+# sync starts this when it ends; it waits for the next :07 or :37 (UTC) and starts
+# "Sync all firms (chain)", unless a scheduled or chained sync already started for that slot.
+# Admin Re-syncs and manual "Run workflow" syncs don't start it.
+#
+# One chain only: a newer waiting run cancels an older one (cancel-in-progress below).
+# Stop it: set the repo variable SYNC_CHAIN to off (the cron in sync.yml carries on alone).
+# Restart it: set SYNC_CHAIN to on; the next scheduled sync restarts it, or run this workflow.
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write   # to start sync.yml
+  contents: read
+
+concurrency:
+  group: sync-chain
+  cancel-in-progress: true
+
+jobs:
+  wait:
+    if: vars.SYNC_CHAIN != 'off'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Wait for the next slot, then start the sync
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SYNC_CHAIN: ${{ vars.SYNC_CHAIN }}
+        run: node scripts/sync-chain.mjs

@@ -172,6 +172,29 @@ test('Hold: a short pull with nothing to carry keeps the previous numbers, then 
   eq([back.kpis.sync.incomplete, back.kpis.sync.counts.Call], [false, 30], 'clears at the next full sync');
 });
 
+test('The "may be incomplete" note stays while counts are short, then clears when they recover', async tmp => {
+  const w = world();
+  await sync(tmp, exporter(w));
+  for (let i = 1; i <= 4; i++) await sync(tmp, exporter(w, shortOf(10)));     // 3 holds, then published as incomplete
+  const still = await sync(tmp, exporter(w, shortOf(12)));                     // still short of the pre-hold 30
+  eq([still.kpis.sync.incomplete, still.kpis.sync.holds, still.kpis.sync.baseline?.Call], [true, 0, 30], 'note stays, no new hold');
+  ok(/note stays up/.test(still.out), 'logged');
+  const near = await sync(tmp, exporter(w, shortOf(28)));                      // within 10% of 30
+  eq([near.kpis.sync.incomplete, near.kpis.sync.baseline], [false, null], 'cleared once back near the pre-hold count');
+});
+
+test('The note clears after 24 hours even if counts stay short', async tmp => {
+  const w = world();
+  await sync(tmp, exporter(w));
+  for (let i = 1; i <= 4; i++) await sync(tmp, exporter(w, shortOf(10)));
+  const f = join(tmp, 'firms/fx/data/kpis.json'), k = await readJSON(f);
+  k.sync.incompleteSince = new Date(Date.now() - 25 * 36e5).toISOString();
+  await writeFile(f, JSON.stringify(k));
+  const r = await sync(tmp, exporter(w, shortOf(10)));
+  eq([r.kpis.sync.incomplete, r.kpis.sync.holds], [false, 0], 'cleared, not held');
+  ok(/cleared after 24 hours/.test(r.out), 'logged');
+});
+
 test('A small real drop is published, not held', async tmp => {
   const w = world();
   await sync(tmp, exporter(w));

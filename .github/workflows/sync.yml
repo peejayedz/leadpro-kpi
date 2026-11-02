@@ -1,14 +1,19 @@
 name: Sync KPIs from GoHighLevel
 # The admin page finds the run it started by this title.
-run-name: "Sync ${{ inputs.slug || 'all firms' }}"
+# Chained runs (see sync-chain.yml) end in " (chain)".
+run-name: "Sync ${{ inputs.slug || 'all firms' }}${{ inputs.chain == 'yes' && ' (chain)' || '' }}"
 
 on:
   schedule:
-    - cron: "7,37 * * * *" # every 30 minutes (UTC)
-  workflow_dispatch: # Run workflow button, the dashboards' Refresh button and the admin page
+    - cron: "7,37 * * * *" # every 30 minutes (UTC); GitHub skips some, so sync-chain.yml backs it up
+  workflow_dispatch: # Run workflow button, the admin page's Re-sync, and the sync chain
     inputs:
       slug:
         description: "Firm slug (e.g. mahdavi). Leave empty to sync every firm."
+        required: false
+        default: ""
+      chain:
+        description: "Leave empty. Set to yes only by the sync chain."
         required: false
         default: ""
 
@@ -129,3 +134,19 @@ jobs:
           done
           echo "Push failed after 3 tries" >&2
           exit 1
+
+  # 4. Scheduled and chained runs start the next link of the sync chain (sync-chain.yml), which
+  #    waits for the next :07/:37 slot in its own concurrency group, so this run ends now and
+  #    never blocks an admin Re-sync. Admin and manual runs don't chain. SYNC_CHAIN=off stops it.
+  chain:
+    needs: commit
+    if: ${{ !cancelled() && (github.event_name == 'schedule' || inputs.chain == 'yes') && vars.SYNC_CHAIN != 'off' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Start the sync chain
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run sync-chain.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME"

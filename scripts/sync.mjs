@@ -210,7 +210,7 @@ if (appointments) {
 const CHANNELS = [['Call', 'Call'], ['SMS', 'SMS reply'], ['Email', 'Email reply'], ['FB', 'Facebook reply'], ['IG', 'Instagram reply'], ['GMB', 'Google message reply'], ['Live_Chat', 'Chat reply'], ['WhatsApp', 'WhatsApp reply']];
 const REPLY_LABEL = Object.fromEntries(CHANNELS);
 const MAX_PAGES = 100;
-const HOLD = { dropPct: 10, minDrop: 5, maxHolds: 3 };
+const HOLD = { dropPct: 10, minDrop: 5, maxHolds: 3, noteHours: 24 };
 const OPT_OUT = /^\s*(stop|stopall|unsubscribe|cancel|end|quit)\s*[.!]?\s*$/i;
 const diag = {};
 
@@ -314,15 +314,17 @@ console.log('Calls and replies kept per channel:', JSON.stringify(counts), `(${f
 // Hold: a channel more than HOLD.dropPct % (and at least HOLD.minDrop) below last sync is far more
 // likely a short answer from GHL than a real drop, so the previous numbers stay up. After
 // HOLD.maxHolds holds in a row the new numbers publish anyway, flagged as possibly incomplete,
-// so a real drop can't stay hidden.
+// so a real drop can't stay hidden. The flag (the dashboard's "may be incomplete" note) stays on
+// until every channel is back near its pre-hold count, or for HOLD.noteHours at most.
 const checkedAt = new Date(now).toISOString();
 const prevSync = prevPub?.sync || null;
-const drops = [];
-for (const [ch, before] of Object.entries(prevSync?.counts || {})) {
-  if (typeof before !== 'number' || !(ch in counts)) continue;
+// Channels clearly below the given counts, as "Call 64 → 40".
+const shortAgainst = base => Object.entries(base || {}).filter(([ch, before]) => {
+  if (typeof before !== 'number' || !(ch in counts)) return false;
   const after = counts[ch] ?? 0;
-  if (before - after >= HOLD.minDrop && after < before * (1 - HOLD.dropPct / 100)) drops.push(`${ch} ${before} → ${after}`);
-}
+  return before - after >= HOLD.minDrop && after < before * (1 - HOLD.dropPct / 100);
+}).map(([ch, before]) => `${ch} ${before} → ${counts[ch] ?? 0}`);
+const drops = shortAgainst(prevSync?.counts);
 const holdsSoFar = prevSync?.holds || 0;
 if (drops.length && holdsSoFar < HOLD.maxHolds && prevPub?.periods) {
   prevPub.sync = { ...prevSync, checkedAt, holds: holdsSoFar + 1, heldSince: prevSync.heldSince || checkedAt, reason: drops.join(', ') };
@@ -331,8 +333,20 @@ if (drops.length && holdsSoFar < HOLD.maxHolds && prevPub?.periods) {
   console.log('Message export diagnostics:', JSON.stringify(diag));
   process.exit(0);
 }
-if (drops.length) warn(`${SLUG}: still lower after ${HOLD.maxHolds} holds (${drops.join(', ')}); publishing, marked as possibly incomplete.`);
-const syncInfo = { checkedAt, counts, channels: chState, holds: 0, heldSince: null, incomplete: drops.length > 0, reason: drops.length ? drops.join(', ') : null };
+let incomplete = null;   // { since, baseline, reason }
+if (drops.length) {
+  incomplete = { since: checkedAt, baseline: prevSync.counts, reason: drops.join(', ') };
+  warn(`${SLUG}: still lower after ${HOLD.maxHolds} holds (${drops.join(', ')}); publishing, marked as possibly incomplete.`);
+} else if (prevSync?.incomplete && prevSync.baseline && prevSync.incompleteSince) {
+  const still = shortAgainst(prevSync.baseline);
+  const hours = (now - Date.parse(prevSync.incompleteSince)) / 36e5;
+  if (still.length && hours < HOLD.noteHours) {
+    incomplete = { since: prevSync.incompleteSince, baseline: prevSync.baseline, reason: still.join(', ') };
+    warn(`${SLUG}: still below the pre-hold counts (${still.join(', ')}); the "may be incomplete" note stays up.`);
+  } else console.log(still.length ? `"May be incomplete" note cleared after ${HOLD.noteHours} hours (${still.join(', ')}).` : 'Counts are back near their pre-hold level; "may be incomplete" note cleared.');
+}
+const syncInfo = { checkedAt, counts, channels: chState, holds: 0, heldSince: null, incomplete: !!incomplete,
+  incompleteSince: incomplete?.since || null, baseline: incomplete?.baseline || null, reason: incomplete?.reason || null };
 
 const byTimeDesc = (a, b) => Date.parse(b.at) - Date.parse(a.at);
 const messageLog = { items: [...log.values()].sort(byTimeDesc) };

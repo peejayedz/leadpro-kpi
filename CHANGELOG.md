@@ -5,6 +5,12 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.5.0 — 2 Nov 2026
+- [client] The "Call and message numbers may be incomplete" note stays up until the counts are back near where they were, and clears after 24 hours at most.
+- [internal] Sync chain: each scheduled or chained sync starts the next one at the following :07 or :37 (`sync-chain.yml`, `scripts/sync-chain.mjs`), because GitHub skips many scheduled runs. Admin Re-sync and manual runs don't chain; one chain at most; the 7,37 cron stays as backup. Repo variable `SYNC_CHAIN=off` stops it.
+- [internal] Admin firm list: "Last updated" with date and time, and an "over 2 hours old" warning.
+- [internal] Sync chain tests: `node tests/chain/run.mjs`.
+
 ## v1.4.0 — 2 Nov 2026
 - [client] Missed calls, speed to first contact and contact rate no longer dip between updates when GoHighLevel returns only part of the call and message history. If an update still looks short after 90 minutes, the dashboard shows a "Call and message numbers may be incomplete" note.
 - [internal] The sync pulls each message channel twice (three times if they disagree), combines the pulls, and carries earlier syncs' calls and replies forward in a message log inside `details.enc.json` (ids, channel, direction, status, duration and time only). An unreadable previous file starts fresh with a warning.
