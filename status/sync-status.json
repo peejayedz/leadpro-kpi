@@ -1,30 +1,30 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-02T18:31:44.974Z",
+  "updatedAt": "2026-11-02T18:40:09.250Z",
   "lastRun": {
-    "at": "2026-11-02T18:31:44.974Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41500777887",
+    "at": "2026-11-02T18:40:09.250Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41502274638",
     "event": "workflow_dispatch",
-    "chained": false
+    "chained": true
   },
   "syncChain": {
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-02T18:31:44.974Z",
+  "lastAnySuccessAt": "2026-11-02T18:40:09.250Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-02T18:31:44.974Z",
-      "lastSuccessAt": "2026-11-02T18:31:44.974Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41500777887",
+      "lastAttemptAt": "2026-11-02T18:40:09.250Z",
+      "lastSuccessAt": "2026-11-02T18:40:09.250Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41502274638",
       "failStreak": 0
     },
     "lfmp": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-02T18:31:44.974Z",
-      "lastSuccessAt": "2026-11-02T18:31:44.974Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41500777887",
+      "lastAttemptAt": "2026-11-02T18:40:09.250Z",
+      "lastSuccessAt": "2026-11-02T18:40:09.250Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41502274638",
       "failStreak": 0
     }
   },
