@@ -1,17 +1,17 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-02T19:10:57.942Z",
+  "updatedAt": "2026-11-02T19:20:44.848Z",
   "lastRun": {
-    "at": "2026-11-02T19:10:57.942Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41506914143",
+    "at": "2026-11-02T19:20:44.848Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41508912126",
     "event": "workflow_dispatch",
-    "chained": true
+    "chained": false
   },
   "syncChain": {
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-02T19:10:57.942Z",
+  "lastAnySuccessAt": "2026-11-02T19:20:44.848Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
@@ -80,6 +80,41 @@
           "bulk": 9,
           "notLeadType": 14,
           "noInboundSignal": 38
+        }
+      }
+    },
+    "hedayati-law-group-p-c": {
+      "status": "ok",
+      "lastAttemptAt": "2026-11-02T19:20:44.848Z",
+      "lastSuccessAt": "2026-11-02T19:20:44.848Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41508912126",
+      "failStreak": 0,
+      "notInPipeline": {
+        "last30": {
+          "form": 0,
+          "survey": 0,
+          "chat": 0,
+          "booking": 0,
+          "call": 0,
+          "sms": 0,
+          "email": 0,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 0,
+          "noInboundSignal": 16
+        },
+        "last90": {
+          "form": 0,
+          "survey": 0,
+          "chat": 0,
+          "booking": 0,
+          "call": 0,
+          "sms": 0,
+          "email": 0,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 0,
+          "noInboundSignal": 16
         }
       }
     }
