@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T07:37:46.085Z",
+  "generatedAt": "2026-11-02T08:07:22.494Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1793599200000,
-      "to": 1793605066085,
+      "to": 1793606842494,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -344,7 +344,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1793599200000,
-      "to": 1793605066085,
+      "to": 1793606842494,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -665,8 +665,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1793000266085,
-      "to": 1793605066085,
+      "from": 1793002042494,
+      "to": 1793606842494,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -826,8 +826,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1791013066085,
-      "to": 1793605066085,
+      "from": 1791014842494,
+      "to": 1793606842494,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -1011,8 +1011,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1785829066085,
-      "to": 1793605066085,
+      "from": 1785830842494,
+      "to": 1793606842494,
       "current": {
         "totalLeads": 7,
         "contacted": 1,
@@ -1212,7 +1212,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1793605066085,
+      "to": 1793606842494,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1563,7 +1563,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1793605066085,
+      "to": 1793606842494,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -1955,7 +1955,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-02T07:37:46.085Z",
+    "checkedAt": "2026-11-02T08:07:22.494Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
@@ -1979,6 +1979,8 @@
     "holds": 0,
     "heldSince": null,
     "incomplete": false,
+    "incompleteSince": null,
+    "baseline": null,
     "reason": null
   }
 }
