@@ -1,0 +1,104 @@
+{
+  "generatedAt": "2026-11-02T19:11:20.675Z",
+  "slug": "hedayati-law-group-p-c",
+  "locationId": "pBNZKHAEHetHe3AVJ7GH",
+  "locationName": "Hedayati Law Group, P.C.",
+  "scopes": {
+    "checkedAt": "2026-11-02T19:11:19.601Z",
+    "ok": [
+      "opportunities.readonly",
+      "contacts.readonly",
+      "users.readonly",
+      "locations.readonly",
+      "locations/customFields.readonly",
+      "calendars.readonly",
+      "calendars/events.readonly",
+      "conversations.readonly",
+      "conversations/message.readonly"
+    ],
+    "missing": [],
+    "unchecked": [],
+    "tokenRejected": false
+  },
+  "pipelines": [
+    {
+      "id": "xYDK3IL8kmN7xW547vrM",
+      "name": "Marketing Pipeline",
+      "stages": [
+        {
+          "id": "678c449e-407d-4c92-ba95-e23b8ff7dd47",
+          "name": "New Lead",
+          "position": 0
+        },
+        {
+          "id": "e6ebefea-66ae-4645-ba42-c3fee4483585",
+          "name": "Phone Lead",
+          "position": 1
+        },
+        {
+          "id": "66df0727-ddae-410b-b4fd-0eb0b7ce5224",
+          "name": "Hot Lead",
+          "position": 2
+        },
+        {
+          "id": "006686ee-f273-4968-b6f1-3720f89c0af2",
+          "name": "New Booking",
+          "position": 3
+        },
+        {
+          "id": "73e18c1c-d808-4070-9a36-8a350816aaeb",
+          "name": "Visit Attended",
+          "position": 4
+        },
+        {
+          "id": "352b548c-739b-4707-a25a-50f305fef76b",
+          "name": "Sale",
+          "position": 5
+        },
+        {
+          "id": "e7957bc3-417f-4a17-b7d1-2cd3e7528ca7",
+          "name": "Left a Review",
+          "position": 6
+        }
+      ]
+    }
+  ],
+  "calendars": [
+    {
+      "id": "5OWVb5yGdbwM8XdORtqw",
+      "name": "Divorce & Separation",
+      "active": false
+    },
+    {
+      "id": "hOIZD98H4KWwJr5k7PoR",
+      "name": "Child Custody & Visitation",
+      "active": false
+    },
+    {
+      "id": "vPttVsrpe9SNaDUDuXOf",
+      "name": "Schedule an Appointment",
+      "active": true
+    },
+    {
+      "id": "wQRVOYgzGpbs2Bg0ArH7",
+      "name": "Family Mediation",
+      "active": false
+    },
+    {
+      "id": "wT4eAil0EtSjOdkdxYNU",
+      "name": "Adoption & Guardianship",
+      "active": false
+    }
+  ],
+  "customFields": {
+    "contact": [
+      {
+        "id": "pPuoOriqHPSi8qXPc299",
+        "name": "Background",
+        "fieldKey": "contact.background",
+        "dataType": "LARGE_TEXT"
+      }
+    ],
+    "opportunity": []
+  }
+}
