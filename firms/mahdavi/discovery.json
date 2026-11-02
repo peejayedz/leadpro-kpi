@@ -1,9 +1,10 @@
 {
-  "generatedAt": "2026-11-01T19:17:01.876Z",
+  "generatedAt": "2026-11-02T11:12:09.352Z",
   "slug": "mahdavi",
   "locationId": "INZKoa3nu45xtcZB0Yuq",
+  "locationName": "The Mahdavi Law Firm",
   "scopes": {
-    "checkedAt": "2026-11-01T19:17:01.876Z",
+    "checkedAt": "2026-11-02T11:12:07.405Z",
     "ok": [
       "opportunities.readonly",
       "contacts.readonly",
