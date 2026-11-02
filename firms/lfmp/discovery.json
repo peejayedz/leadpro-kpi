@@ -1,9 +1,10 @@
 {
-  "generatedAt": "2026-11-01T19:51:08.071Z",
+  "generatedAt": "2026-11-02T11:12:12.491Z",
   "slug": "lfmp",
   "locationId": "sQ2VSMkR7cLHb46Wdemi",
+  "locationName": "[AGCY] Law Firm Marketing Pros",
   "scopes": {
-    "checkedAt": "2026-11-01T19:51:08.071Z",
+    "checkedAt": "2026-11-02T11:12:09.043Z",
     "ok": [
       "opportunities.readonly",
       "contacts.readonly",
