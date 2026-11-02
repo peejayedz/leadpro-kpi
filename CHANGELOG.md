@@ -5,6 +5,15 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.6.0 — 2 Nov 2026
+- [internal] Sync issues on the admin page: a bell with a count of new issues (also in the tab title) and a panel listing open issues newest first. Each one shows the firm, GHL sub-account and location ID (or System), what happened, first and last seen, how many syncs in a row, numbered steps, and Fix in GHL / Update token / Re-sync / View run on GitHub / Go to firm buttons. Issues clear when the next sync succeeds; Mark as seen removes one from the count. Recently resolved shows the last 20. Re-checks every 5 minutes. `SYNC_CHAIN` is read live (falls back to the value the last sync recorded).
+- [internal] Issues covered: GHL token rejected or not set, token missing a scope (named), GHL server/network error, firm config error, unknown error, "may be incomplete" note, no successful sync in 45+ minutes (per firm and system-wide), `SYNC_CHAIN` off, sync chain stopped.
+- [internal] Holding previous numbers shows as an amber notice in the panel and doesn't count in the badge or tab title; it counts once it becomes the published "may be incomplete" note.
+- [internal] Update token checks the pasted token against GHL (all 9 scopes, for that firm's location) and replaces `GHL_TOKEN_<KEY>` only if every scope passes, then re-syncs. The token is masked and never logged or stored on the page.
+- [internal] Firm rows show OK / Held / Failed and the GHL sub-account name (`discovery.json` now records `locationName`).
+- [internal] The sync writes a result per firm and the commit job keeps `status/sync-status.json` (slugs, categories, scope names, timestamps, counts and run links only). A GHL 401/403 anywhere, even in an optional part, now stops the sync before publishing and names the missing scope. Per-firm jobs are named "Sync · <firm name>".
+- [internal] Sync status tests: `node tests/status/run.mjs`. The chain tests also check that a failed sync still commits the other firms and starts the next link.
+
 ## v1.5.0 — 2 Nov 2026
 - [client] The "Call and message numbers may be incomplete" note stays up until the counts are back near where they were, and clears after 24 hours at most.
 - [internal] Sync chain: each scheduled or chained sync starts the next one at the following :07 or :37 (`sync-chain.yml`, `scripts/sync-chain.mjs`), because GitHub skips many scheduled runs. Admin Re-sync and manual runs don't chain; one chain at most; the 7,37 cron stays as backup. Repo variable `SYNC_CHAIN=off` stops it.

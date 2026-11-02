@@ -32,6 +32,7 @@ jobs:
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
       count: ${{ steps.plan.outputs.count }}
+      problems: ${{ steps.plan.outputs.problems }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -42,7 +43,9 @@ jobs:
           SLUG: ${{ inputs.slug }}
         run: node scripts/plan-matrix.mjs "$SLUG"
 
-  # 2. One job per firm. Each job sees only its own firm's two secrets.
+  # 2. One job per firm. Each job sees only its own firm's two secrets. A failing firm never
+  #    stops the others; its job writes a result file (category only, no error text) that the
+  #    commit job turns into status/sync-status.json for the admin page's notifications.
   sync:
     needs: plan
     if: needs.plan.outputs.count != '0'
@@ -53,7 +56,8 @@ jobs:
       max-parallel: 5
       matrix:
         firm: ${{ fromJSON(needs.plan.outputs.matrix) }}
-    name: sync (${{ matrix.firm.slug }})
+    # The firm's name in the job title, so GitHub's failure emails and run pages say which firm.
+    name: "Sync · ${{ matrix.firm.name || matrix.firm.slug }}"
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -62,6 +66,7 @@ jobs:
       - name: Pull GHL and compute KPIs
         env:
           SLUG: ${{ matrix.firm.slug }}
+          SYNC_RESULT_FILE: ${{ runner.temp }}/result/${{ matrix.firm.slug }}.json
           GHL_TOKEN: ${{ secrets[format('GHL_TOKEN_{0}', matrix.firm.secretKey)] }}
           DASHBOARD_PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', matrix.firm.secretKey)] }}
         run: node scripts/sync.mjs "$SLUG"
@@ -77,27 +82,45 @@ jobs:
           path: ${{ runner.temp }}/out/
           retention-days: 1
           if-no-files-found: error
+      # Always, so a failed firm still reports why (the category only; see scripts/sync-status.mjs).
+      - name: Upload sync result
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: result-${{ matrix.firm.slug }}
+          path: ${{ runner.temp }}/result/
+          retention-days: 1
+          if-no-files-found: warn
 
-  # 3. One commit with every firm that synced.
+  # 3. One commit with every firm that synced, plus the updated status/sync-status.json.
   commit:
     needs: [plan, sync]
-    if: ${{ !cancelled() && needs.plan.outputs.count != '0' }}
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.count != '0' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
       - uses: actions/download-artifact@v8
         with:
           pattern: firm-*
           path: ${{ runner.temp }}/firms
-      - name: Commit if changed
+      - name: Download sync results
+        continue-on-error: true # a run where every firm job crashed leaves none
+        uses: actions/download-artifact@v8
+        with:
+          pattern: result-*
+          path: ${{ runner.temp }}/results
+          merge-multiple: true
+      - name: Copy firm data
         env:
-          SLUG: ${{ inputs.slug }}
           MATRIX: ${{ needs.plan.outputs.matrix }}
           SYNC_RESULT: ${{ needs.sync.result }}
           DL: ${{ runner.temp }}/firms
         run: |
-          synced=0; missing=0
+          missing=0
           for slug in $(echo "$MATRIX" | jq -r '.[].slug'); do
             # One artifact downloads flat into $DL; several download into $DL/firm-<slug>/.
             src=""
@@ -106,7 +129,6 @@ jobs:
               rm -rf "firms/$slug/data"
               mkdir -p "firms/$slug/data"
               cp -R "$src/." "firms/$slug/data/"
-              synced=$((synced + 1))
               echo "✓ $slug"
             else
               missing=$((missing + 1))
@@ -119,13 +141,29 @@ jobs:
             find "$DL" -maxdepth 3 | head -50
             exit 1
           fi
+      - name: Update sync status
+        env:
+          MATRIX: ${{ needs.plan.outputs.matrix }}
+          PLAN_PROBLEMS: ${{ needs.plan.outputs.problems }}
+          RESULTS_DIR: ${{ runner.temp }}/results
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EVENT: ${{ github.event_name }}
+          CHAINED: ${{ inputs.chain }}
+          SYNC_CHAIN: ${{ vars.SYNC_CHAIN }}
+        run: node scripts/update-status.mjs
+      - name: Commit if changed
+        env:
+          SLUG: ${{ inputs.slug }}
+          MATRIX: ${{ needs.plan.outputs.matrix }}
+        run: |
           git config user.name "kpi-sync-bot"
           git config user.email "kpi-sync-bot@users.noreply.github.com"
-          git add -A firms
+          git add -A firms status
           if git diff --cached --quiet; then
             echo "No changes"
             exit 0
           fi
+          synced=$(git diff --cached --name-only -- 'firms/*/data/kpis.json' | wc -l | tr -d ' ')
           if [ -n "$SLUG" ]; then label="$SLUG"; else label="$synced firm$([ "$synced" = 1 ] || echo s)"; fi
           git commit -m "Sync $label $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3; do

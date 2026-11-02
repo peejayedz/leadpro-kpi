@@ -16,6 +16,10 @@ scripts/sync-all.mjs        local runs only: syncs firms/index.json (or one slug
 scripts/plan-matrix.mjs     builds the per-firm job list for sync.yml
 scripts/discover.mjs        reads a firm's pipelines, stages, calendars and custom fields → firms/<slug>/discovery.json
 scripts/firms.mjs           slug rules and secret names shared by the scripts
+scripts/scope-check.mjs     the nine GHL scopes and the one-read-per-scope check (discover and sync)
+scripts/sync-status.mjs     sync issue rules and wording, shared by the workflow and the admin page
+scripts/update-status.mjs   after each sync run: updates status/sync-status.json
+status/sync-status.json     written by the sync: per-firm OK / Held / Failed and open + resolved issues (no secrets or contact data)
 firms/index.json            the firm list: [{ slug, secretKey, name, practiceArea, locationId, createdAt }]
 firms/_defaults.json        shared settings for every firm (targets, notice, recommendedFocus, channels, attributionDisclaimer, qualification, speedToLead)
 firms/_defaults/            optional practice-area defaults: <practice-area>.json, listed in index.json
@@ -105,9 +109,42 @@ Syncs are meant to run every 30 minutes, at :07 and :37 UTC. GitHub skips many s
 
 ## Running a sync by hand
 
-Actions → **Sync KPIs from GoHighLevel** → Run workflow. Enter a slug for one firm, or leave it empty for all. Each firm shows as its own `sync (<slug>)` job; a failing firm doesn't stop the others, the commit job lists ✓/✗ per firm, and the run is marked failed if any firm failed.
+Actions → **Sync KPIs from GoHighLevel** → Run workflow. Enter a slug for one firm, or leave it empty for all. Each firm shows as its own `Sync · <firm name>` job (so GitHub's failure emails name the firm); a failing firm doesn't stop the others, the commit job lists ✓/✗ per firm, and the run is marked failed if any firm failed.
 
 Locally: `GHL_TOKEN=… DASHBOARD_PASSPHRASE=… node scripts/sync-all.mjs <slug>`.
+
+## Sync issues: reading and fixing them
+
+The admin page's **bell** (top right) shows sync problems without opening GitHub. A red badge counts open issues you haven't marked as seen, and the tab title shows the same count, e.g. "(2) LeadPro Admin". No badge means nothing new. The page checks again every 5 minutes while it's open, and when you come back to the tab.
+
+**What counts as an issue**
+
+| Issue | When | What to do |
+|---|---|---|
+| GHL token rejected | GHL refused the firm's token on every check (deleted, regenerated, revoked, or from another sub-account) | **Fix in GHL** → create or regenerate the "LeadPro KPI Scorecard" token → **Update token** (checks all 9 scopes first; replaces `GHL_TOKEN_<KEY>` only if they all pass, then re-syncs) |
+| GHL token not set | The secret `GHL_TOKEN_<KEY>` is empty | Same as above |
+| Token missing a scope | GHL refused part of the sync; the issue names the scope, e.g. View Calendars | **Fix in GHL** → edit the integration and tick that scope (the token stays the same) → **Re-sync** |
+| GHL server or network error | GHL kept failing (5xx, rate limit, unreachable, unreadable) after 3 retries | Usually clears by itself. If it lasts over an hour, **Re-sync** and **View run on GitHub** |
+| Firm config error | `config.json` missing or invalid, no location ID, or a wrong secret name in `firms/index.json` | Fix the file (Edit mapping rewrites `config.json`), then **Re-sync** |
+| Sync failed (unknown error) | Anything else, e.g. a bug, or a job that was cancelled or timed out | **View run on GitHub**, **Re-sync** once; if it repeats, send the run link to whoever maintains the scorecards |
+| Holding previous numbers (notice) | GHL returned clearly fewer calls/messages; hold n of 3. Shown as an amber notice in the panel, **not** counted in the badge or tab title | Nothing; it usually clears on the next sync |
+| Dashboard shows the "may be incomplete" note | Published after 3 holds | Nothing; clears when counts recover, 24 hours at most |
+| No successful sync in 45+ min (a firm) | The firm's last good sync is over 45 minutes old and it isn't already listed as failing | **Re-sync**; check the system issues |
+| Sync chain is off | Repo variable `SYNC_CHAIN` is `off` | **Open variables** → set it to `on` → **Restart chain** |
+| Sync chain has stopped | Chain on, but no link waiting and no chained sync running | **Restart chain** |
+| No firm has synced in 45+ min | No firm's sync succeeded for 45 minutes (shown once, not per firm) | Fix chain issues first, then **Sync all firms now** |
+
+**Reading an issue.** Click it to expand. It shows the firm, its GHL sub-account and location ID (or "System"), what happened in plain English, when it was first and last seen, how many syncs in a row it has happened, and numbered steps. The buttons are **Fix in GHL** (opens that sub-account's Private Integrations page), **Update token**, **Re-sync** (progress shows on the firm's row), **View run on GitHub** and **Go to firm** (scrolls to the firm's row and highlights it). Each firm's row also shows **OK**, **Held** or **Failed**, and a failing or stale firm has a **Details and fix** link.
+
+**Clearing.** Issues clear by themselves when the firm's next sync succeeds; there's nothing to dismiss. **Mark as seen** (or **Mark all as seen**) removes an issue from the badge count. It stays listed until it's fixed, and comes back as new if the problem happens again later. "Seen" is remembered in that browser only. **Recently resolved** lists the last 20 resolved issues with when they were resolved and how long they lasted.
+
+**How it works.** Every firm job writes a small result file: ok, or the failure's category. A failure that stops a sync never publishes partial numbers; the dashboard keeps its last good data. A 401/403 anywhere in the sync, even in an optional part, runs the nine-scope check to tell a rejected token from a missing scope and name it. The commit job turns the results and each firm's hold/incomplete flags into `status/sync-status.json`. One firm failing never stops the others from syncing and publishing, and the chain still starts the next link after a failed sync (unless `SYNC_CHAIN` is off). The admin page reads that file plus each firm's `kpis.json`, the `SYNC_CHAIN` variable (live; the admin GitHub token needs **Variables: Read-only**) and the chain's runs. If the variable can't be read, it falls back to the value the last sync recorded.
+
+**Update token** sends the pasted token only to GHL's API (one read per scope for that firm's location, the same check as Discover) and, if all 9 scopes pass, to GitHub's Secrets API sealed with the repo's public key. It's typed into a masked field and is never logged, saved in the browser or shown again.
+
+**Privacy.** `status/sync-status.json` is public, like the rest of the repo. It holds only firm slugs, statuses, categories and short codes from fixed lists (e.g. `token`/`rejected`, `ghl`/`server`, area `calendars`), GHL scope names, timestamps, counts, hold reasons in the form "Call 63 → 16", and GitHub run links. Everything is copied field by field from an allow-list (`cleanResult`/`updateStatus` in `scripts/sync-status.mjs`), so error text, tokens, passphrases, names, phone numbers, emails and message content can't reach it. `tests/status/run.mjs` checks this. Firm names and location IDs come from `firms/index.json`, and the sub-account name from `discovery.json` (`locationName`), both already public.
+
+Client dashboards don't show any of this. They keep only the "may be incomplete" note.
 
 ## Mapping a firm's pipeline (`firms/<slug>/config.json`)
 
@@ -128,14 +165,15 @@ Commit, then run the sync for that slug.
 
 **Password.** Run `node scripts/set-admin-password.mjs` in your own terminal. It asks for the password twice (typing hidden) and writes `admin/lock.json` = `{ salt, iterations, verifier }` (PBKDF2-SHA256, 210,000 iterations). Commit and push it. The password itself is never stored. Changing it makes every saved GitHub token unreadable, so each device asks for the token again.
 
-**GitHub token.** After unlocking, a device with no saved token asks for a fine-grained token: repository `leadpro-kpi` only, **Contents**, **Actions** and **Secrets** = Read and write. It's saved in this browser's localStorage under `leadpro-admin-gh-token`, encrypted with AES-GCM under a key derived from the admin password. "Forget token" removes it.
+**GitHub token.** After unlocking, a device with no saved token asks for a fine-grained token: repository `leadpro-kpi` only, **Contents**, **Actions** and **Secrets** = Read and write, and **Variables** = Read-only (for the sync-issue bell's `SYNC_CHAIN` check). It's saved in this browser's localStorage under `leadpro-admin-gh-token`, encrypted with AES-GCM under a key derived from the admin password. "Forget token" removes it.
 
 **What it does**
 
-- **Firm list:** each firm's name, practice area, last sync and lead count, with Open dashboard, Copy GHL link (asks for the passphrase, never stores it), Re-sync, Edit mapping, Banner on/off and Delete (removes `firms/<slug>/`, the list entry and both secrets).
+- **Firm list:** each firm's name, OK / Held / Failed, practice area, GHL sub-account, last sync and lead count, with Open dashboard, Copy GHL link (asks for the passphrase, never stores it), Re-sync, Edit mapping, Banner on/off and Delete (removes `firms/<slug>/`, the list entry and both secrets).
 - **Create the GHL token helper** (in the New firm form): once the location ID is valid, a button opens that sub-account's Private Integrations page and another copies the integration name "LeadPro KPI Scorecard"; a checklist shows the nine scopes with GHL's names and keys.
 - **Scope check:** `discover.mjs` makes one lightweight read per scope and records `scopes: { ok, missing, unchecked, tokenRejected }` in `discovery.json` (scope names only, no data). If any are missing, step 2 lists them by name with "Edit the integration in GHL and tick these; the token stays the same" and a **Re-check** button. If GHL refuses every check, it asks for a new token. Edit mapping shows the same warning.
 - **New firm:** a form, then six steps with live progress: save the two secrets (sealed with the repo's public key, libsodium from cdnjs, pinned by SRI) → run Discover → map the stages → one commit with `config.json`, the stub and `firms/index.json` → first sync → links. A failed step can be retried; `firms/index.json` is only written in the commit step, so a failed run never leaves a half-made firm in the list. "Discard and clean up" removes whatever was created.
+- **Sync issues bell:** see "Sync issues: reading and fixing them" above.
 - **Edit mapping:** the same mapping panel against `discovery.json` (Re-read GHL refreshes it), then commits `config.json` and re-syncs.
 
 The page finds the workflow run it started by its title (`run-name`: "Sync <slug>", "Discover <slug>") and stops waiting as soon as that run fails.
@@ -157,6 +195,8 @@ The page finds the workflow run it started by its title (`run-name`: "Sync <slug
 
 `node tests/messages/run.mjs` runs the real sync against a mock GHL whose message export misbehaves the way the real one does (short pulls, 500s and 429s, a missing channel, duplicate ids, unordered pages) and checks that numbers don't dip, that holds keep the previous numbers and then publish, what the message log stores, and that an unreadable previous file starts fresh.
 
-`node tests/chain/run.mjs` checks the sync chain: slot timing, when a slot counts as already covered, the script against a mock GitHub API, and that the workflows keep their guardrails (who chains, concurrency, `SYNC_CHAIN`, the backup cron).
+`node tests/chain/run.mjs` checks the sync chain: slot timing, when a slot counts as already covered, the script against a mock GitHub API, and that the workflows keep their guardrails (who chains, concurrency, `SYNC_CHAIN`, the backup cron, and that a failed sync still commits the other firms and starts the next link).
+
+`node tests/status/run.mjs` runs the real sync against a mock GHL that fails in every way the bell reports (token rejected, missing scopes, server error, rate limit, unreachable, config errors, missing token secret, a crash) and checks the category, that nothing is published, and that the result file holds no secrets or contact data. It also checks how runs open and resolve issues, the system-wide states (chain off, chain stopped, no sync at all, stale firms), the wording and buttons for each issue type, and that nothing outside the allow-list reaches `status/sync-status.json`.
 
 All three print their results and exit 1 on any failure. Run it after any change to the mapping panel, `kpi-core.mjs`, the sync or a firm's mapping (update that firm's fixture when its mapping changes on purpose). Add a fixture for any new pipeline style that should be recognised.

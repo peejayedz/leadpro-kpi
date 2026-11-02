@@ -85,6 +85,23 @@ test('Workflows keep the guardrails', async () => {
   ok(!/schedule:/.test(chain) && /workflow_dispatch:/.test(chain), 'chain workflow only starts on dispatch');
 });
 
+// GitHub skips a job whose needs failed unless its `if` uses a status function. !cancelled()
+// runs it after a failure; success() (the default) would not. So a failed firm (or a failed
+// commit) must still reach the commit job and the chain job.
+test('A failed sync still commits the other firms, updates the status and starts the next link', async () => {
+  const sync = await readFile(join(ROOT, '.github/workflows/sync.yml'), 'utf8');
+  const job = name => sync.split(`\n  ${name}:`)[1]?.split(/\n  [a-z]+:\n/)[0] || '';
+  const ifOf = name => job(name).match(/\n    if: (.*)/)?.[1] || '';
+  ok(/fail-fast: false/.test(job('sync')), 'matrix: one firm failing never cancels the others');
+  ok(/!cancelled\(\)/.test(ifOf('commit')) && !/success\(\)|needs\.sync\.result/.test(ifOf('commit')), 'commit runs after a failed firm job');
+  ok(/!cancelled\(\)/.test(ifOf('chain')) && !/success\(\)|needs\.commit\.result|needs\.sync\.result/.test(ifOf('chain')), 'chain runs after a failed sync or commit');
+  ok(/needs: commit/.test(job('chain')), 'chain waits for the commit');
+  ok(/name: Upload sync result\s*\n\s*if: \$\{\{ !cancelled\(\) \}\}/.test(job('sync')), 'a failed firm still uploads its result');
+  ok(/node scripts\/update-status\.mjs/.test(job('commit')), 'commit job updates status/sync-status.json');
+  ok(/git add -A firms status/.test(job('commit')), 'status file is committed');
+  ok(/name: "Sync · \$\{\{ matrix\.firm\.name/.test(job('sync')), 'per-firm jobs are named "Sync · <firm name>"');
+});
+
 const results = [];
 for (const t of tests) { try { await t.fn(); results.push({ name: t.name, pass: true }); } catch (e) { results.push({ name: t.name, pass: false, error: e.message }); } }
 console.log('\nSync chain tests\n');

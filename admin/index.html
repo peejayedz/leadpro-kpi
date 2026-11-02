@@ -173,6 +173,57 @@ input[readonly]{color:var(--ink-2)}
 .copyrow{display:flex;gap:8px} .copyrow input{flex:1;min-width:0}
 .success ul{margin:0;padding-left:20px;font-size:14px;color:var(--ink-2)}
 
+/* sync issues: bell + panel */
+.topline{position:relative} /* the issue panel lines up with the card's right edge */
+.bellwrap{display:inline-flex}
+.bellbtn{position:relative;padding:6px 9px} .bellbtn svg{width:17px;height:17px}
+.bellbtn[aria-expanded="true"]{background:var(--sel-bg);border-color:var(--sel-line);color:var(--sel-ink)}
+.badge{position:absolute;top:-7px;right:-7px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#d23a2e;color:#fff;font-size:11px;font-weight:700;line-height:19px;text-align:center;box-shadow:0 0 0 2px var(--card);font-variant-numeric:tabular-nums}
+.npanel{position:absolute;right:0;top:calc(100% + 8px);width:min(540px,calc(100vw - 32px));max-height:min(80vh,760px);overflow:auto;overscroll-behavior:contain;background:var(--raised);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);z-index:40;text-align:left;font-size:14px}
+.nhead{position:sticky;top:0;background:var(--raised);padding:14px 16px 12px;border-bottom:1px solid var(--rule);z-index:1;display:flex;flex-direction:column;gap:4px}
+.nhead .nrow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nhead h3{font-family:var(--serif);font-size:18px;font-weight:600}
+.nhead .nsub{font-size:12.5px;color:var(--ink-2);margin:0;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
+.xbtn{border:0;background:none;color:var(--ink-2);width:30px;height:30px;border-radius:6px;cursor:pointer;display:grid;place-items:center} .xbtn:hover{background:var(--hover)} .xbtn svg{width:16px;height:16px}
+.issue{border-bottom:1px solid var(--rule)} .issue:last-child{border-bottom:0}
+.ihead{display:grid;grid-template-columns:10px minmax(0,1fr) 16px;gap:12px;align-items:start;width:100%;text-align:left;background:none;border:0;padding:12px 16px;cursor:pointer;color:var(--ink)}
+.ihead:hover{background:var(--hover)}
+.sev{width:10px;height:10px;border-radius:50%;margin-top:6px;background:var(--warn-ink)} .sev.bad{background:var(--bad-ink)}
+.ititle{display:block;font-weight:600;font-size:14px;line-height:1.35}
+.imeta{display:block;font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.newtag{display:inline-block;background:#d23a2e;color:#fff;border-radius:999px;font-size:10.5px;font-weight:700;padding:0 6px;line-height:16px;vertical-align:1px}
+.chev{width:16px;height:16px;margin-top:3px;color:var(--ink-3);transition:transform .15s} .ihead[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.ibody{padding:0 16px 16px 38px;display:flex;flex-direction:column;gap:10px}
+.ibody h4{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3)}
+.facts{display:grid;grid-template-columns:118px minmax(0,1fr);gap:3px 12px;font-size:13px;margin:0;background:var(--track);border-radius:8px;padding:10px 12px}
+.facts dt{color:var(--ink-3)} .facts dd{margin:0;overflow-wrap:anywhere}
+.iwhat{font-size:13.5px;margin:-4px 0 0;color:var(--ink)}
+.isteps{margin:-4px 0 0;padding-left:20px;font-size:13.5px;display:flex;flex-direction:column;gap:3px}
+.iacts{display:flex;flex-wrap:wrap;gap:6px}
+.istatus{font-size:13px} .istatus:empty{display:none}
+.ifoot{display:flex;justify-content:flex-end;font-size:12.5px}
+.nnotices{padding:12px 16px 0;display:flex;flex-direction:column;gap:8px}
+.nnotice{font-size:13px;line-height:1.45} .nnotice b{font-weight:700}
+.scoperes{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 14px;font-size:13px}
+.scoperes .ok{color:var(--ok-ink)} .scoperes .no{color:var(--bad-ink);font-weight:600} .scoperes .unk{color:var(--warn-ink)}
+.nempty{padding:30px 20px;text-align:center;color:var(--ink-2);display:flex;flex-direction:column;align-items:center;gap:6px}
+.nempty .okic{width:40px;height:40px;border-radius:50%;background:var(--ok-bg);color:var(--ok-ink);display:grid;place-items:center} .nempty .okic svg{width:20px;height:20px}
+.nempty b{color:var(--ink);font-size:15px} .nempty p{margin:0;font-size:13px;max-width:340px}
+.nresolved{border-top:1px solid var(--rule);padding:10px 16px 14px}
+.nresolved summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--ink-2)}
+.nresolved ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column}
+.nresolved li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:7px 0;border-top:1px dashed var(--rule);font-size:13px}
+.nresolved li:first-child{border-top:0} .nresolved .rwho{color:var(--ink-2);font-size:12.5px} .nresolved time{color:var(--ink-3);font-size:12.5px;white-space:nowrap}
+.fname{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.issueline{align-items:center}
+.firm.flash{animation:flash 2.6s ease-out}
+@keyframes flash{0%,45%{background:var(--sel-bg);box-shadow:-12px 0 0 var(--sel-bg),12px 0 0 var(--sel-bg),-15px 0 0 var(--bar)}100%{background:transparent;box-shadow:-12px 0 0 transparent,12px 0 0 transparent,-15px 0 0 transparent}}
+@media (max-width:760px){
+  .npanel{position:fixed;left:8px;right:8px;top:58px;width:auto;max-height:calc(100dvh - 70px)}
+  .ibody{padding-left:16px}
+  .facts{grid-template-columns:1fr} .facts dt{margin-top:4px}
+}
+
 .foot{margin:14px auto 30px;max-width:1060px;padding:0 14px;font-size:12px;color:var(--ink-3);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 
 @media (max-width:760px){
@@ -220,7 +271,7 @@ input[readonly]{color:var(--ink-2)}
     <ol>
       <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → Fine-grained tokens → Generate new token</a>.</li>
       <li>Repository access: <b>Only select repositories</b> → <b class="repoName">leadpro-kpi</b>.</li>
-      <li>Permissions: <b>Contents</b>, <b>Actions</b> and <b>Secrets</b> = Read and write.</li>
+      <li>Permissions: <b>Contents</b>, <b>Actions</b> and <b>Secrets</b> = Read and write; <b>Variables</b> = Read-only.</li>
       <li>Generate, copy and paste it below.</li>
     </ol>
     <label class="f" for="tokenIn">GitHub token
@@ -236,6 +287,11 @@ input[readonly]{color:var(--ink-2)}
   <div class="card">
     <div class="topline"><p class="brandline"><b>LeadPro</b> admin</p>
       <span class="controls">
+        <span class="bellwrap" id="bellWrap">
+          <button class="btn bellbtn" type="button" id="bellBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="nPanel" aria-label="Sync issues" title="Sync issues">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="badge" id="bellBadge" hidden></span></button>
+          <div class="npanel" id="nPanel" role="dialog" aria-label="Sync issues" hidden></div>
+        </span>
         <button class="btn themebtn" id="themeBtn" type="button"></button>
         <button class="btn" type="button" data-act="news" id="newsBtn">What's new</button>
         <button class="btn" type="button" data-act="forget" title="Remove the saved GitHub token from this device">Forget token</button>
@@ -254,11 +310,14 @@ input[readonly]{color:var(--ink-2)}
 // =====================================================================
 // LeadPro admin: a static page that manages the leadpro-kpi repo through
 // the GitHub API with a fine-grained token saved (encrypted) on this device.
-// Nothing here is sent anywhere except api.github.com and this site.
+// Nothing here is sent anywhere except api.github.com and this site, plus GHL's API
+// (services.leadconnectorhq.com) when Update token checks a pasted token's scopes.
 // =====================================================================
 import { mergeConfig, practiceSlug } from '../scripts/config-merge.mjs';
 import { parseChangelog, latestVersion, inlineMd } from '../scripts/changelog.mjs';
 import { STEPS_MAP, initialState, stageList as stagesOf, buildMapping, applyMapping } from './mapping.mjs';
+import { openIssues, firmState, describeIssue, seenKey, inBadge, STALE_MIN } from '../scripts/sync-status.mjs';
+import { checkScopes } from '../scripts/scope-check.mjs';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -326,6 +385,9 @@ const ICON = {
   sync: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16m0 4v-4h-4"/></svg>',
   map: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h6"/></svg>',
   flag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>',
+  key: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/></svg>',
+  target: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>',
+  chev: '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
 };
 function wireEyes(root = document) {
@@ -433,7 +495,7 @@ $('tokenForm').addEventListener('submit', async e => {
   finally { $('tokenGo').disabled = false; $('tokenGo').textContent = 'Save token'; }
 });
 
-function lockNow() { aesKey = null; ghToken = null; cleanupRun(); $('screen').innerHTML = ''; closeDialog(); show('lockView'); $('lockPw').value = ''; $('lockPw').focus(); }
+function lockNow() { aesKey = null; ghToken = null; cleanupRun(); stopIssues(); $('screen').innerHTML = ''; closeDialog(); show('lockView'); $('lockPw').value = ''; $('lockPw').focus(); }
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
   if (a.dataset.act === 'lock') lockNow();
@@ -578,6 +640,7 @@ const bases = {};
 async function openApp() {
   show('appView');
   loadChangelog().then(v => { const x = latestVersion(v); $('adminVersion').textContent = x ? `v${x}` : ''; }).catch(() => {});
+  clearInterval(checkTimer); checkTimer = setInterval(() => refreshIssues({ reloadKpis: true }), CHECK_MS);   // re-check every 5 minutes while open
   await renderList();
 }
 const ago = iso => {
@@ -593,6 +656,7 @@ async function loadFirms() {
   await Promise.all(firms.map(async f => {
     try { configs[f.slug] = await getJSON(`firms/${f.slug}/config.json`); bases[f.slug] = await baseFor(configs[f.slug]); } catch { configs[f.slug] = null; }
     try { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); kpis[f.slug] = k ? kpiSummary(k) : null; } catch { kpis[f.slug] = null; }
+    try { subNames[f.slug] = (await getJSON(`firms/${f.slug}/discovery.json`))?.locationName || null; } catch { subNames[f.slug] = null; }   // the GHL sub-account's name
   }));
 }
 const kpiSummary = k => ({ generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null, sync: k.sync || null });
@@ -607,10 +671,14 @@ function firmRow(f) {
   const cfg = configs[f.slug], k = kpis[f.slug];
   const stale = k?.generatedAt && Date.now() - Date.parse(k.generatedAt) > 2 * 3600e3;   // syncs run every 30 minutes
   const banner = cfg ? bannerOn(cfg, bases[f.slug] || shared.defaults) : true;
+  const state = firmState(issues, f.slug);
+  const stateChip = { ok: ['good', 'OK', 'Last sync succeeded'], held: ['warn', 'Held', 'Holding the previous numbers; see the bell for details'], failed: ['bad', 'Failed', 'The last sync failed; see the bell for details'] }[state];
+  const fi = issues.find(i => i.slug === f.slug && (i.kind === 'failed' || i.kind === 'stale'));
   return `<article class="firm" data-slug="${esc(f.slug)}">
     <div>
-      <h3>${esc(f.name)}</h3>
-      <p class="meta"><span>${esc(f.practiceArea || 'No practice area')}</span><span class="mono">${esc(f.slug)}</span></p>
+      <div class="fname"><h3>${esc(f.name)}</h3><span class="chip ${stateChip[0]}" title="${esc(stateChip[2])}">${stateChip[1]}</span></div>
+      ${fi ? `<p class="meta issueline"><span><span class="chip ${fi.kind === 'failed' ? 'bad' : 'warn'}">${esc(issueText(fi).title)}</span> since ${esc(ago(fi.firstSeen))}</span><button class="linkbtn" type="button" data-open-issue="${esc(fi.id)}">Details and fix</button></p>` : ''}
+      <p class="meta"><span>${esc(f.practiceArea || 'No practice area')}</span><span class="mono">${esc(f.slug)}</span>${subNames[f.slug] ? `<span>GHL: ${esc(subNames[f.slug])}</span>` : ''}</p>
       <p class="meta"><span title="${esc(fmtTime(k?.generatedAt))}">Last updated ${k ? `${esc(ago(k.generatedAt))} (${esc(fmtTime(k.generatedAt))})` : '<span class="chip warn">no data yet</span>'}${stale ? ' <span class="chip bad" title="Syncs should run every 30 minutes. Check Actions for skipped or failed runs.">over 2 hours old</span>' : ''}</span>
         ${k?.leads90 != null ? `<span>${k.leads90} lead${k.leads90 === 1 ? '' : 's'} in the last 90 days</span>` : ''}</p>
       ${syncFlag(k)}
@@ -640,6 +708,7 @@ async function renderList(flash) {
   $('listSub').textContent = `${firms.length} firm${firms.length === 1 ? '' : 's'} · dashboards sync from GoHighLevel every 30 minutes`;
   $('firmList').innerHTML = firms.length ? `<div class="firms">${firms.map(firmRow).join('')}</div>`
     : `<div class="empty"><p>No firms yet.</p><button class="btn primary big" type="button" onclick="document.getElementById('newFirmBtn').click()">${ICON.plus}Add the first firm</button></div>`;
+  refreshIssues();
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-f]'); if (!b) return;
@@ -732,6 +801,245 @@ async function deleteFirm(slug, secretKey, name) {
   });
   await deleteSecret(`GHL_TOKEN_${secretKey}`);
   await deleteSecret(`PASSPHRASE_${secretKey}`);
+}
+
+// =====================================================================
+// Sync issues: the notification bell
+// Reads status/sync-status.json (written by the sync workflow, see scripts/sync-status.mjs),
+// the firms' kpis.json, the SYNC_CHAIN variable and the chain's runs; re-checks every 5 minutes.
+// "Mark as seen" and the chain-stopped history are kept in this browser only.
+// =====================================================================
+const CHECK_MS = 5 * 60e3;
+const BASE_TITLE = document.title;
+const SEEN_KEY = 'leadpro-admin-seen', LIVE_KEY = 'leadpro-admin-live', LOCAL_RESOLVED = 'leadpro-admin-resolved';
+let syncStatus = null, issues = [], chainInfo = {}, lastCheck = 0, checkErr = null, checkTimer = null, checking = null;
+const subNames = {}, expanded = new Set(), issueMsg = {};
+const readStore = (k, d) => { try { return JSON.parse(store.get(k)) ?? d; } catch { return d; } };
+const seenSet = () => new Set(readStore(SEEN_KEY, []));
+function markSeen(list) { const s = seenSet(); for (const i of list) s.add(seenKey(i)); store.set(SEEN_KEY, JSON.stringify([...s].slice(-300))); }
+const listed = () => issues.filter(inBadge);   // holds are notices: shown, never counted
+const unseen = () => { const s = seenSet(); return listed().filter(i => !s.has(seenKey(i))); };
+const when = iso => (iso ? `${fmtTime(iso)} (${ago(iso)})` : 'unknown');
+const firmOf = slug => firms.find(f => f.slug === slug);
+const locOf = f => configs[f.slug]?.locationId || f.locationId || '';
+const issueText = i => { const f = i.slug ? firmOf(i.slug) : null; return describeIssue(i, { now: Date.now(), subAccount: f ? subNames[f.slug] : null, secretKey: f?.secretKey, lastGood: f ? kpis[f.slug]?.generatedAt : null, when }); };
+
+// SYNC_CHAIN and whether a link of the chain is waiting (or a chained sync is running).
+async function chainState() {
+  const out = { value: 'on', source: 'variable', waiting: null, lastLinkAt: null, lastLinkUrl: null };
+  try { const v = await gh('GET', `${R}/actions/variables/SYNC_CHAIN`, null, { allow404: true }); out.value = norm(v?.value) === 'off' ? 'off' : 'on'; }
+  catch { out.value = syncStatus?.syncChain?.value === 'off' ? 'off' : 'on'; out.source = 'status'; }   // token can't read variables: use what the last sync saw
+  try {
+    const [links, syncs] = await Promise.all([gh('GET', `${R}/actions/workflows/sync-chain.yml/runs?per_page=5`), gh('GET', `${R}/actions/workflows/sync.yml/runs?per_page=10`)]);
+    const L = links.workflow_runs || [], S = syncs.workflow_runs || [], last = L[0];
+    out.lastLinkAt = last?.status === 'completed' ? last.updated_at : null; out.lastLinkUrl = last?.html_url || null;
+    const waitingLink = L.some(r => r.status !== 'completed');
+    const chainedSync = S.some(r => r.status !== 'completed' && (r.event === 'schedule' || / \(chain\)$/.test(r.display_title || '')));
+    const justEnded = last?.status === 'completed' && Date.now() - Date.parse(last.updated_at) < 5 * 60e3;   // between a link ending and its sync showing up
+    out.waiting = waitingLink || chainedSync || justEnded;
+  } catch { out.waiting = null; }
+  return out;
+}
+async function refreshIssues({ reloadKpis = false } = {}) {
+  if (checking) return checking;
+  checking = (async () => {
+    try {
+      if (reloadKpis) await Promise.all(firms.map(async f => { try { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); kpis[f.slug] = k ? kpiSummary(k) : null; } catch {} }));
+      syncStatus = await getJSON('status/sync-status.json').catch(() => null);
+      chainInfo = await chainState();
+      issues = openIssues(syncStatus, { now: Date.now(), firms, kpis, chain: chainInfo });
+      trackLive(); lastCheck = Date.now(); checkErr = null;
+    } catch (e) { checkErr = e.message; }
+    finally { checking = null; }
+    if (!ghToken) return;
+    paintBell(); paintRows(); if (!$('nPanel').hidden) paintPanel();
+  })();
+  return checking;
+}
+// "Chain stopped" is only seen live, so this browser keeps its history for "Recently resolved".
+function trackLive() {
+  const was = readStore(LIVE_KEY, []), now = issues.filter(i => i.kind === 'no-link').map(i => ({ id: i.id, slug: null, kind: i.kind, firstSeen: i.firstSeen, lastSeen: i.lastSeen, count: 0 }));
+  const gone = was.filter(w => !now.some(n => n.id === w.id));
+  if (gone.length) store.set(LOCAL_RESOLVED, JSON.stringify([...gone.map(g => ({ ...g, resolvedAt: new Date().toISOString() })), ...readStore(LOCAL_RESOLVED, [])].slice(0, 20)));
+  store.set(LIVE_KEY, JSON.stringify(now));
+}
+function paintBell() {
+  const n = unseen().length;
+  $('bellBadge').hidden = !n; $('bellBadge').textContent = n > 99 ? '99+' : String(n);
+  const label = listed().length ? `Sync issues: ${listed().length} open${n ? `, ${n} new` : ''}` : 'Sync issues: none';
+  $('bellBtn').setAttribute('aria-label', label); $('bellBtn').title = label;
+  document.title = n ? `(${n}) ${BASE_TITLE}` : BASE_TITLE;
+}
+// Redraw firm rows with the latest status, except rows busy with an action.
+function paintRows() {
+  for (const f of firms) {
+    const row = document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`);
+    if (!row || row.querySelector('.fstatus')?.innerHTML.trim() || row.querySelector('button[disabled]')) continue;
+    row.outerHTML = firmRow(f);
+  }
+}
+function stopIssues() {
+  clearInterval(checkTimer); checkTimer = null; issues = []; syncStatus = null; closePanel();
+  $('bellBadge').hidden = true; document.title = BASE_TITLE;
+}
+
+const COUNT = {
+  failed: i => ['In a row', `${i.count} sync${i.count === 1 ? '' : 's'}`],
+  held: i => ['Holds', `${i.count} of 3`],
+  incomplete: i => ['Syncs with the note', String(i.count)],
+  stale: i => ['Missed syncs', `about ${i.count}`],
+  'no-sync': i => ['Missed syncs', `about ${i.count}`],
+};
+function issueHtml(i, seen) {
+  const f = i.slug ? firmOf(i.slug) : null, d = issueText(i);
+  const open = expanded.has(i.id), isNew = !seen.has(seenKey(i));
+  const sev = ['held', 'incomplete', 'stale'].includes(i.kind) ? 'warn' : 'bad';
+  const loc = f ? locOf(f) : '';
+  const count = COUNT[i.kind]?.(i);
+  const btn = (code, html, primary) => code === 'ghl' ? (validLoc(loc) ? `<a class="btn${primary ? ' primary' : ''}" href="${esc(piUrl(loc))}" target="_blank" rel="noopener">${ICON.ext}Fix in GHL</a>` : '')
+    : code === 'run' ? (i.runUrl ? `<a class="btn${primary ? ' primary' : ''}" href="${esc(i.runUrl)}" target="_blank" rel="noopener">${ICON.ext}View run on GitHub</a>` : '')
+    : code === 'variables' ? `<a class="btn${primary ? ' primary' : ''}" href="https://github.com/${esc(OWNER)}/${esc(REPO)}/settings/variables/actions" target="_blank" rel="noopener">${ICON.ext}Open variables</a>`
+    : `<button class="btn${primary ? ' primary' : ''}" type="button" data-n="${code}">${html}</button>`;
+  const LABEL = { token: `${ICON.key}Update token`, resync: `${ICON.sync}Re-sync`, firm: `${ICON.target}Go to firm`, restart: `${ICON.sync}Restart chain`, 'sync-all': `${ICON.sync}Sync all firms now` };
+  const strong = !['held', 'incomplete'].includes(i.kind);
+  return `<article class="issue" data-issue="${esc(i.id)}">
+    <button class="ihead" type="button" aria-expanded="${open}" data-n="toggle"><span class="sev ${sev}" aria-hidden="true"></span>
+      <span><span class="ititle">${esc(d.title)}</span><span class="imeta">${f ? esc(f.name) : 'System'} · since ${esc(ago(i.firstSeen))}${isNew ? ' · <span class="newtag">New</span>' : ''}</span></span>${ICON.chev}</button>
+    <div class="ibody"${open ? '' : ' hidden'}>
+      <dl class="facts">
+        <dt>Firm</dt><dd>${f ? esc(f.name) : 'System (all firms)'}</dd>
+        ${f ? `<dt>GHL sub-account</dt><dd>${esc(subNames[f.slug] || 'not recorded yet (re-read GHL in Edit mapping)')}</dd><dt>Location ID</dt><dd class="mono">${esc(loc || '—')}</dd>` : ''}
+        <dt>First seen</dt><dd>${esc(when(i.firstSeen))}</dd>
+        <dt>Last seen</dt><dd>${esc(when(i.lastSeen))}</dd>
+        ${count ? `<dt>${count[0]}</dt><dd>${esc(count[1])}</dd>` : ''}
+      </dl>
+      <h4>What happened</h4><p class="iwhat">${d.what}</p>
+      <h4>What to do</h4><ol class="isteps">${d.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+      <div class="iacts">${d.actions.map((a, n) => btn(a, LABEL[a], strong && n === 0)).join('')}</div>
+      <div class="istatus" aria-live="polite">${issueMsg[i.id] || ''}</div>
+      <div class="ifoot">${isNew ? '<button class="linkbtn" type="button" data-n="seen">Mark as seen</button>' : '<span class="muted">Seen · stays listed until it\'s fixed</span>'}</div>
+    </div></article>`;
+}
+function paintPanel() {
+  const seen = seenSet(), open = listed(), notices = issues.filter(i => !inBadge(i)), n = open.filter(i => !seen.has(seenKey(i))).length;
+  const resolved = [...(syncStatus?.resolved || []), ...readStore(LOCAL_RESOLVED, [])]
+    .filter(r => (!r.slug || firmOf(r.slug)) && inBadge(r)).sort((a, b) => Date.parse(b.resolvedAt) - Date.parse(a.resolvedAt)).slice(0, 20);
+  const lasted = r => { const m = Math.round((Date.parse(r.resolvedAt) - Date.parse(r.firstSeen)) / 60e3); return m >= 0 ? (m < 120 ? `${m} min` : m < 2880 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} days`) : ''; };
+  $('nPanel').innerHTML = `<div class="nhead">
+      <div class="nrow"><h3>Sync issues</h3><button class="xbtn" type="button" data-n="close" aria-label="Close">${ICON.cross}</button></div>
+      <p class="nsub"><span>${open.length ? `<b>${open.length} open</b>${n ? ` · ${n} new` : ''}` : 'All clear'}</span><span>Checked ${lastCheck ? esc(ago(new Date(lastCheck).toISOString())) : '…'} · every 5 min</span>
+        <button class="linkbtn" type="button" data-n="check">Check now</button>${n ? '<button class="linkbtn" type="button" data-n="seen-all">Mark all as seen</button>' : ''}</p>
+      ${checkErr ? `<div class="errbox small">Couldn't check everything: ${esc(checkErr)}</div>` : ''}
+    </div>
+    ${notices.length ? `<div class="nnotices">${notices.map(i => { const f = firmOf(i.slug); return `<div class="warnbox nnotice"><b>Holding previous numbers</b> · ${esc(f?.name || i.slug)} · hold ${i.count} of 3, since ${esc(ago(i.firstSeen))}<br>GHL returned fewer calls or messages than the last sync${i.reason ? ` (${esc(i.reason)})` : ''}, so the dashboard keeps the previous numbers. Nothing to do: it usually clears on the next sync. After 3 holds it publishes with a "may be incomplete" note, which shows here as an issue. <button class="linkbtn" type="button" data-n="firm" data-slug="${esc(i.slug)}">Go to firm</button></div>`; }).join('')}</div>` : ''}
+    ${open.length ? open.map(i => issueHtml(i, seen)).join('')
+      : `<div class="nempty"><span class="okic">${ICON.tick}</span><b>No open issues</b><p>Every firm synced in the last ${STALE_MIN} minutes and the sync chain is running.</p></div>`}
+    <details class="nresolved"${resolved.length ? '' : ' hidden'}><summary>Recently resolved (${resolved.length})</summary><ul>${resolved.map(r => {
+      const f = r.slug ? firmOf(r.slug) : null;
+      return `<li><span>${esc(resolvedTitle(r))}<span class="rwho"> · ${f ? esc(f.name) : 'System'}${lasted(r) ? ` · lasted ${lasted(r)}` : ''}</span></span><time datetime="${esc(r.resolvedAt)}" title="${esc(fmtTime(r.resolvedAt))}">Resolved ${esc(ago(r.resolvedAt))}</time></li>`;
+    }).join('')}</ul></details>`;
+}
+const resolvedTitle = r => (r.kind === 'stale' ? `No successful sync for ${STALE_MIN}+ min` : r.kind === 'no-sync' ? `No firm synced for ${STALE_MIN}+ min` : issueText(r).title);
+function openPanel(focusId) {
+  if (focusId) expanded.add(focusId);
+  $('nPanel').hidden = false; $('bellBtn').setAttribute('aria-expanded', 'true'); paintPanel();
+  if (focusId) $('nPanel').querySelector(`[data-issue="${CSS.escape(focusId)}"]`)?.scrollIntoView({ block: 'nearest' });
+  if (Date.now() - lastCheck > 60e3) refreshIssues();
+}
+function closePanel() { $('nPanel').hidden = true; $('bellBtn').setAttribute('aria-expanded', 'false'); }
+function goToFirm(slug) {
+  closePanel();
+  const row = document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"]`); if (!row) return;
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash');
+}
+$('bellBtn').addEventListener('click', () => ($('nPanel').hidden ? openPanel() : closePanel()));
+document.addEventListener('click', e => {
+  const o = e.target.closest('[data-open-issue]'); if (o) { e.stopPropagation(); return openPanel(o.dataset.openIssue); }
+  // composedPath: the panel may have redrawn (and dropped) the clicked element by now
+  const path = e.composedPath();
+  if (!$('nPanel').hidden && !path.includes($('bellWrap')) && !path.includes($('ovl'))) closePanel();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('nPanel').hidden && $('ovl').hidden) { closePanel(); $('bellBtn').focus(); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && ghToken && Date.now() - lastCheck > CHECK_MS) refreshIssues({ reloadKpis: true }); });
+$('nPanel').addEventListener('click', async e => {
+  const b = e.target.closest('[data-n]'); if (!b) return;
+  const art = b.closest('.issue'), id = art?.dataset.issue, i = issues.find(x => x.id === id), f = i?.slug ? firmOf(i.slug) : null;
+  const say = html => { if (id) issueMsg[id] = html; const s = art?.querySelector('.istatus'); if (s) s.innerHTML = html; };
+  switch (b.dataset.n) {
+    case 'close': closePanel(); $('bellBtn').focus(); break;
+    case 'check': b.textContent = 'Checking…'; await refreshIssues({ reloadKpis: true }); paintPanel(); break;
+    case 'seen-all': markSeen(listed()); paintBell(); paintPanel(); break;
+    case 'seen': markSeen([i]); paintBell(); paintPanel(); break;
+    case 'toggle': {
+      const open = b.getAttribute('aria-expanded') !== 'true';
+      open ? expanded.add(id) : expanded.delete(id);
+      b.setAttribute('aria-expanded', String(open)); art.querySelector('.ibody').hidden = !open; break;
+    }
+    case 'firm': goToFirm(i?.slug || b.dataset.slug); break;
+    case 'resync': if (f) startResync(f, say); break;
+    case 'token': if (f) tokenDialog(f, say); break;
+    case 'restart':
+      b.disabled = true;
+      try { await dispatch('sync-chain.yml', {}); say('<span class="chip good">Restarted</span> A new link is waiting for the next :07 or :37. This issue clears on the next check.'); setTimeout(() => refreshIssues(), 15e3); }
+      catch (err) { say(`<span class="chip bad">Couldn't restart</span> ${esc(err.message)}`); b.disabled = false; }
+      break;
+    case 'sync-all':
+      b.disabled = true;
+      try { await dispatch('sync.yml', {}); say('<span class="chip good">Started</span> Every firm is syncing now (about 3 minutes). This list updates on the next check.'); setTimeout(() => refreshIssues({ reloadKpis: true }), 4 * 60e3); }
+      catch (err) { say(`<span class="chip bad">Couldn't start</span> ${esc(err.message)}`); b.disabled = false; }
+      break;
+  }
+});
+// Runs the firm row's Re-sync (progress shows on the row), then re-checks.
+function startResync(f, say) {
+  const row = document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`);
+  const btn = row?.querySelector('[data-f="sync"]'), status = row?.querySelector('.fstatus');
+  if (!btn || btn.disabled) { say('A Re-sync is already running for this firm. Progress shows on its row.'); return; }
+  say(`<span class="chip">Re-syncing</span> Progress shows on the firm's row. <button class="linkbtn" type="button" data-n="firm">Go to firm</button>`);
+  resyncFirm(f, status, btn).finally(() => refreshIssues({ reloadKpis: true }));
+}
+// Checks a pasted token: one read per scope against GHL, for this firm's location. Never logged or stored.
+async function checkPastedToken(token, loc) {
+  const probe = async path => {
+    try {
+      const r = await fetch(`https://services.leadconnectorhq.com${path}`, { cache: 'no-store', referrerPolicy: 'no-referrer', headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, Version: '2021-07-28' } });
+      if (r.ok) return { status: r.status, body: await r.json().catch(() => ({})) };
+      let error = ''; try { const j = await r.json(); error = String(j.message || j.error || '').slice(0, 160); } catch {}
+      return { status: r.status, error };
+    } catch { return { status: 0, error: "couldn't reach GHL" }; }
+  };
+  return (await checkScopes(probe, loc)).scopes;
+}
+const scopeResult = sc => `<ul class="scopelist scoperes">${SCOPES.map(([k, name]) => `<li class="${sc.ok.includes(k) ? 'ok' : sc.missing.includes(k) ? 'no' : 'unk'}">${sc.ok.includes(k) ? '✓' : sc.missing.includes(k) ? '✗' : '?'} ${esc(name)}</li>`).join('')}</ul>`;
+// Replaces GHL_TOKEN_<KEY> only if the pasted token passes all 9 scope checks (sealed in the browser,
+// sent only to GitHub's Secrets API), then re-syncs.
+function tokenDialog(f, say) {
+  openDialog({
+    title: `Update GHL token for ${esc(f.name)}`, ok: 'Save token and re-sync', okIcon: ICON.key,
+    body: `<p class="sub">Paste the private integration token from <b>${esc(subNames[f.slug] || f.name)}</b> (location <span class="mono">${esc(locOf(f))}</span>). It's checked against GHL first; only if all 9 scopes pass does it replace the secret <span class="mono">GHL_TOKEN_${esc(f.secretKey)}</span> on GitHub. It isn't kept on this page.</p>
+      <label class="f" for="dlgTok">GHL token<span class="pw"><input type="password" id="dlgTok" autocomplete="off" spellcheck="false" placeholder="pit-…"><button type="button" class="eye" data-eye="dlgTok" aria-label="Show token"></button></span></label>
+      <div class="ferr" id="dlgErr"></div>`,
+    onOk: async () => {
+      const v = $('dlgTok').value.trim(); if (v.length < 20) { $('dlgErr').textContent = 'Paste the whole token.'; return; }
+      const loc = locOf(f), reset = () => { $('dlgOk').disabled = false; $('dlgOk').textContent = 'Save token and re-sync'; };
+      if (!validLoc(loc)) { $('dlgErr').textContent = 'This firm has no valid location ID, so the token can\'t be checked.'; return; }
+      $('dlgOk').disabled = true; $('dlgOk').textContent = 'Checking scopes…'; $('dlgErr').textContent = '';
+      let sc;
+      try { sc = await checkPastedToken(v, loc); } catch (err) { $('dlgErr').textContent = `Couldn't check the token: ${err.message}`; reset(); return; }
+      if (sc.tokenRejected) { $('dlgErr').innerHTML = `<b>GHL refused this token for every check</b>${sc.ghlMessage ? ` (GHL said: “${esc(sc.ghlMessage)}”)` : ''}. It may be mistyped, revoked, or from a different sub-account than location <span class="mono">${esc(loc)}</span>. Nothing was saved.`; reset(); return; }
+      if (sc.missing.length || sc.unchecked.length) {
+        $('dlgErr').innerHTML = `<b>Not saved: ${sc.missing.length ? `the token is missing ${sc.missing.length} scope${sc.missing.length === 1 ? '' : 's'}` : ''}${sc.missing.length && sc.unchecked.length ? ' and ' : ''}${sc.unchecked.length ? `${sc.unchecked.length} couldn't be checked` : ''}.</b>${scopeResult(sc)}<p style="margin:8px 0 0;font-weight:400">${sc.missing.length ? 'Tick the ✗ scopes on the integration in GHL (the token stays the same), then press the button again.' : 'Press the button again to retry the check.'}</p>`;
+        reset(); return;
+      }
+      $('dlgOk').textContent = 'All 9 scopes pass. Saving…';
+      try { await putSecret(`GHL_TOKEN_${f.secretKey}`, v); }
+      catch (err) { $('dlgErr').textContent = err.message; reset(); return; }
+      $('dlgTok').value = ''; closeDialog();
+      say('<span class="chip good">Token saved</span> All 9 scopes passed. Re-syncing now.');
+      startResync(f, say);
+    },
+  });
 }
 
 // ---------- dialog ----------

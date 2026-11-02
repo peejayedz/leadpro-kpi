@@ -6,24 +6,58 @@
 //
 // Env: GHL_TOKEN (read-only Private Integration Token for this firm's sub-account),
 //      GHL_LOCATION_ID (optional; config.json locationId wins),
-//      DASHBOARD_PASSPHRASE (team passphrase that unlocks names, custom dates and drill-downs)
+//      DASHBOARD_PASSPHRASE (team passphrase that unlocks names, custom dates and drill-downs),
+//      SYNC_RESULT_FILE (optional; sync.yml sets it): where to write this sync's result for the
+//      admin page's notifications. Success, or the failure's category from scripts/sync-status.mjs
+//      (token / scope / ghl / config / unknown). No error text, tokens or contact data go in it.
 
 import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { computeAll, encryptJSON, decryptJSON, tzOffsetMin } from './kpi-core.mjs';
 import { checkSlug, loadFirmConfig } from './firms.mjs';
+import { checkScopes, scopeForPath } from './scope-check.mjs';
+import { areaForPath } from './sync-status.mjs';
 
 const SLUG = process.argv[2];
+
+// ---------- result for the admin page's notifications ----------
+// Any error that stops the sync lands in the handler below, which sorts it into a category,
+// writes SYNC_RESULT_FILE and exits 1. A finished sync (published or held) writes ok: true.
+const RESULT_FILE = process.env.SYNC_RESULT_FILE || '';
+let resultWritten = false;
+function writeResult(r) {
+  if (!RESULT_FILE || resultWritten) return;
+  resultWritten = true;
+  mkdirSync(dirname(RESULT_FILE), { recursive: true });
+  writeFileSync(RESULT_FILE, JSON.stringify({ slug: SLUG, at: new Date().toISOString(), ...r }) + '\n');
+}
+const failure = (category, detail, msg, extra = {}) => Object.assign(new Error(msg), { category, detail, ...extra });
+process.on('exit', code => { if (code === 0) writeResult({ ok: true }); });
+process.on('uncaughtException', e => {
+  classify(e).catch(() => ({ category: 'unknown', detail: 'crash' })).then(c => {
+    console.error(`Sync failed (${c.category}${c.detail ? `: ${c.detail}` : ''}${c.scopes?.length ? `: ${c.scopes.join(', ')}` : ''}): ${e.message}`);
+    if (process.env.GITHUB_ACTIONS) console.log(`::error::${SLUG}: sync failed (${c.category}${c.scopes?.length ? `, missing ${c.scopes.join(', ')}` : ''}). See the admin page's notifications for what to do.`);
+    if (c.category === 'unknown') console.error(e.stack);
+    writeResult({ ok: false, ...c });
+    process.exit(1);
+  });
+});
+
 const slugErr = checkSlug(SLUG);
-if (slugErr) { console.error(slugErr); process.exit(1); }
+if (slugErr) throw failure('config', 'bad-slug', slugErr);
 const firmDir = new URL(`../firms/${SLUG}/`, import.meta.url);
 const dataDir = new URL('data/', firmDir);
 
 const API = process.env.GHL_API_BASE || 'https://services.leadconnectorhq.com';
-const cfg = await loadFirmConfig(SLUG);   // _defaults.json → practice-area defaults → firm config.json
+let cfg;   // _defaults.json → practice-area defaults → firm config.json
+try { cfg = await loadFirmConfig(SLUG); }
+catch (e) { throw failure('config', /^No firms\//.test(e.message) ? 'no-config' : 'bad-config', `Firm config: ${e.message}`); }
 const TOKEN = process.env.GHL_TOKEN;
 const LOC = cfg.locationId || process.env.GHL_LOCATION_ID;
 const PASS = process.env.DASHBOARD_PASSPHRASE || '';
-if (!TOKEN || !LOC) { console.error(`Missing ${!TOKEN ? 'GHL token' : 'location ID'} for ${SLUG}`); process.exit(1); }
+if (!TOKEN) throw failure('token', 'missing-secret', `Missing GHL token for ${SLUG}`);
+if (!LOC) throw failure('config', 'no-location', `Missing location ID for ${SLUG}`);
 
 const QUAL = cfg.qualification || {};
 const DAY = 864e5;
@@ -40,7 +74,7 @@ const warn = msg => console.log(process.env.GITHUB_ACTIONS ? `::warning::${msg}`
 // to 3 times with a growing pause; anything else fails at once. Errors carry the HTTP status.
 const BACKOFF = Number(process.env.GHL_BACKOFF_MS ?? 2000);   // tests shorten this
 async function ghl(path, { version = '2021-07-28' } = {}) {
-  const where = path.split('?')[0], fail = (status, msg) => Object.assign(new Error(msg), { status });
+  const where = path.split('?')[0], fail = (status, msg) => Object.assign(new Error(msg), { status, area: areaForPath(where) });
   let last;
   for (let attempt = 0; attempt < 4; attempt++) {
     if (attempt) await sleep(BACKOFF * attempt);
@@ -49,13 +83,48 @@ async function ghl(path, { version = '2021-07-28' } = {}) {
     catch (e) { last = fail(0, `GHL network error on ${where}: ${e.message}`); continue; }
     if (res.status === 429) { last = fail(429, `GHL rate limit on ${where}`); continue; }
     if (res.status >= 500) { last = fail(res.status, `GHL ${res.status} on ${where}: ${(await res.text().catch(() => '')).slice(0, 200)}`); continue; }
-    if (res.status === 401 || res.status === 403) throw fail(res.status, `GHL ${res.status} on ${where}: token invalid or missing a scope`);
+    if (res.status === 401 || res.status === 403) { authDenied.add(where); throw fail(res.status, `GHL ${res.status} on ${where}: token invalid or missing a scope`); }
     if (!res.ok) throw fail(res.status, `GHL ${res.status} on ${where}: ${(await res.text()).slice(0, 300)}`);
     try { return await res.json(); }
     catch (e) { last = fail(0, `GHL sent unreadable JSON on ${where}`); }
   }
   throw last;
 }
+// GHL refused these paths with 401/403. Optional parts of the sync carry on without them, but
+// the sync then stops before publishing (stopOnAuthFailures) so no numbers go out with gaps.
+const authDenied = new Set();
+
+// Sorts an error that stopped the sync into a category for the admin page.
+async function classify(e) {
+  if (e.category) return { category: e.category, detail: e.detail, ...(e.area ? { area: e.area } : {}), ...(e.scopes ? { scopes: e.scopes } : {}) };
+  const area = e.area ? { area: e.area } : {};
+  if (e.status === 401 || e.status === 403) return authCategory([...authDenied]);
+  if (e.status === 429) return { category: 'ghl', detail: 'rate-limit', ...area };
+  if (e.status >= 500) return { category: 'ghl', detail: 'server', ...area };
+  if (e.status === 0) return { category: 'ghl', detail: /unreadable/.test(e.message) ? 'bad-response' : 'network', ...area };
+  if (e.status >= 400) return { category: 'ghl', detail: 'request-refused', ...area };
+  return { category: 'unknown', detail: 'crash' };
+}
+// A refused request is either a token GHL won't accept at all, or a token without some scope.
+// One quick read per scope tells them apart and names the missing ones.
+async function authCategory(paths) {
+  const probe = async path => {
+    try {
+      const res = await fetch(API + path, { headers: { Accept: 'application/json', Authorization: `Bearer ${TOKEN}`, Version: '2021-07-28' } });
+      return { status: res.status, body: res.ok ? await res.json().catch(() => ({})) : null };
+    } catch { return { status: 0 }; }
+  };
+  const { scopes } = await checkScopes(probe, LOC);
+  if (scopes.tokenRejected) return { category: 'token', detail: 'rejected' };
+  const missing = [...new Set([...scopes.missing, ...paths.map(scopeForPath).filter(Boolean)])];
+  return missing.length ? { category: 'scope', detail: 'missing', scopes: missing } : { category: 'token', detail: 'rejected' };
+}
+async function stopOnAuthFailures() {
+  if (!authDenied.size) return;
+  const c = await authCategory([...authDenied]);
+  throw failure(c.category, c.detail, `GHL refused ${[...authDenied].join(', ')} (401/403)`, c.scopes ? { scopes: c.scopes } : {});
+}
+
 async function optional(label, fn) {
   try { return await fn(); } catch (e) { console.warn(`${label} skipped: ${e.message}`); return null; }
 }
@@ -326,6 +395,7 @@ const shortAgainst = base => Object.entries(base || {}).filter(([ch, before]) =>
 }).map(([ch, before]) => `${ch} ${before} → ${counts[ch] ?? 0}`);
 const drops = shortAgainst(prevSync?.counts);
 const holdsSoFar = prevSync?.holds || 0;
+await stopOnAuthFailures();
 if (drops.length && holdsSoFar < HOLD.maxHolds && prevPub?.periods) {
   prevPub.sync = { ...prevSync, checkedAt, holds: holdsSoFar + 1, heldSince: prevSync.heldSince || checkedAt, reason: drops.join(', ') };
   await writeFile(new URL('kpis.json', dataDir), JSON.stringify(prevPub, null, 2) + '\n');
@@ -442,6 +512,7 @@ const out = {
 }
 
 out.sync = syncInfo;
+await stopOnAuthFailures();
 
 await mkdir(dataDir, { recursive: true });
 await writeFile(new URL('kpis.json', dataDir), JSON.stringify(out, null, 2) + '\n');

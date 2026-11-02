@@ -2,6 +2,8 @@
 // in every stage of every pipeline (created 3 days ago), with no calls, messages or calendars.
 // Everything else the sync asks for comes back empty, unless opts.exportHandler is given: it gets
 // the export request's query ({ channel, cursor, … }) and returns { status?, body? }.
+// opts.intercept(path, query) runs first for every request; returning { status?, body? } answers
+// it instead (tests use it for refused tokens, missing scopes and server errors).
 //
 //   import { startMockGhl } from './mock-ghl.mjs';
 //   const mock = await startMockGhl({ pipelines: [{ id, name, stages: [{ id, name }] }] }, 0);
@@ -21,11 +23,13 @@ export function leadsFor(fixture, now = Date.now()) {
   return leads;
 }
 
-export function startMockGhl(fixture, port = 0, { exportHandler } = {}) {
+export function startMockGhl(fixture, port = 0, { exportHandler, intercept } = {}) {
   const leads = leadsFor(fixture);
   const json = (res, body, status = 200) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(body)); };
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://x'), path = url.pathname;
+    const hit = intercept?.(path, Object.fromEntries(url.searchParams));
+    if (hit) return json(res, hit.body ?? {}, hit.status ?? 200);
     if (path === '/opportunities/pipelines') return json(res, { pipelines: fixture.pipelines || [] });
     if (path === '/opportunities/search') return json(res, { opportunities: url.searchParams.get('page') && url.searchParams.get('page') !== '1' ? [] : leads.map(({ _pipeline, _stage, ...o }) => o), meta: {} });
     if (path.startsWith('/contacts/')) { const id = path.split('/')[2]; return json(res, { contact: { id, firstName: 'Lead', lastName: id, tags: [], source: 'Web form' } }); }
