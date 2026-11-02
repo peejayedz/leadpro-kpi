@@ -64,7 +64,7 @@ async function sync(tmp, intercept = () => null, { env = {}, slug = 'fx', api } 
   const kpisText = await readFile(join(tmp, `firms/${slug}/data/kpis.json`), 'utf8').catch(() => null);
   return { code, out, result: resultText && JSON.parse(resultText), resultText, kpisText, hits };
 }
-const ALLOWED_RESULT_KEYS = ['slug', 'at', 'ok', 'category', 'detail', 'area', 'scopes'];
+const ALLOWED_RESULT_KEYS = ['slug', 'at', 'ok', 'category', 'detail', 'area', 'scopes', 'notInPipeline'];
 function privateCheck(r) {
   ok(r.resultText, 'a result file was written');
   for (const k of Object.keys(r.result)) ok(ALLOWED_RESULT_KEYS.includes(k), `unexpected key "${k}" in the result file`);

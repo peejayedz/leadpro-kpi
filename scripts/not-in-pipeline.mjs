@@ -31,7 +31,9 @@ const contactName = c => c.contactName || [c.firstName, c.lastName].filter(Boole
 // contacts: raw GHL contacts (from /contacts/search), already limited to the lookback window.
 // withOpp: Set of contact ids with an opportunity in any pipeline.
 // inbound: Map contactId -> Set of channels the contact called or messaged in on ('Call', 'SMS', …).
-// Returns { items, skipped } — items are what details.enc.json keeps; skipped holds counts only.
+// Returns { items, skipped, tally }: items are what details.enc.json keeps; skipped holds counts only;
+// tally has one row per contact with no opportunity ({ outcome, at, medium }, no names/phones/emails)
+// for the came-in-by breakdown (see breakdown below).
 export function pickNotInPipeline(contacts, { withOpp = new Set(), inbound = new Map(), rules = {} } = {}) {
   const R = { ...DEFAULT_RULES, ...rules, bulk: { ...DEFAULT_RULES.bulk, ...(rules.bulk || {}) } };
   const mediums = new Set((R.inboundMediums || []).map(key));
@@ -52,22 +54,38 @@ export function pickNotInPipeline(contacts, { withOpp = new Set(), inbound = new
       if (j - i + 1 >= R.bulk.count) for (let k = i; k <= j; k++) bulk.add(sorted[k].id);
     }
   }
-  const items = [];
+  const items = [], tally = [];
   for (const c of noOpp) {
-    if (!types.has(norm(c.type))) { skipped.notLeadType++; continue; }
-    if (bulk.has(c.id)) { skipped.bulk++; continue; }
-    const m = key(mediumOf(c));
+    const m = key(mediumOf(c)), row = (outcome, via) => tally.push({ outcome, via: via || null, at: at(c), medium: m || null });
+    if (!types.has(norm(c.type))) { skipped.notLeadType++; row('notLeadType'); continue; }
+    if (bulk.has(c.id)) { skipped.bulk++; row('bulk'); continue; }
     const ch = [...(inbound.get(c.id) || [])];
-    if (!mediums.has(m) && !ch.length) { skipped.noInboundSignal++; continue; }
+    if (!mediums.has(m) && !ch.length) { skipped.noInboundSignal++; row('noInboundSignal'); continue; }
+    const via = mediums.has(m) ? (MEDIUM_LABEL[m] || m) : (CHANNEL_LABEL[[...ch].sort()[0]] || 'Messaged in');
+    row('counted', via);
     items.push({
       contactId: c.id, name: contactName(c), email: c.email || null, phone: c.phone || null,
       createdAt: new Date(at(c)).toISOString(),
-      via: mediums.has(m) ? (MEDIUM_LABEL[m] || m) : (CHANNEL_LABEL[ch.sort()[0]] || 'Messaged in'),
+      via,
     });
   }
   items.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-  return { items, skipped };
+  return { items, skipped, tally };
 }
+
+// Came-in-by breakdown for the sync log and status/sync-status.json: counts only, fixed keys.
+// Counted contacts split by how they came in, plus contacts with no opportunity that were left out.
+export const BREAKDOWN_KEYS = ['form', 'survey', 'chat', 'booking', 'call', 'sms', 'email', 'other', 'bulk', 'notLeadType', 'noInboundSignal'];
+const VIA_KEY = { Form: 'form', 'Facebook form': 'form', Survey: 'survey', 'Chat widget': 'chat', 'Calendar booking': 'booking', 'Called in': 'call', 'Texted in': 'sms', 'Emailed in': 'email' };
+export function breakdown(tally, now, days) {
+  const out = Object.fromEntries(BREAKDOWN_KEYS.map(k => [k, 0]));
+  for (const r of tally || []) {
+    if (!(r.at >= now - days * 864e5 && r.at <= now)) continue;
+    out[r.outcome === 'counted' ? (VIA_KEY[r.via] || 'other') : r.outcome]++;
+  }
+  return out;
+}
+export const countedIn = b => ['form', 'survey', 'chat', 'booking', 'call', 'sms', 'email', 'other'].reduce((t, k) => t + (b[k] || 0), 0);
 
 // Admin bell notices: firms with 1+ new contacts not in any pipeline in the last 30 days.
 // kpis[slug].notInPipeline30 comes from the firm's public kpis.json (a count, no people).

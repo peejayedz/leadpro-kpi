@@ -16,7 +16,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startMockGhl } from '../mapping/mock-ghl.mjs';
-import { pickNotInPipeline, pipelineNotices, DEFAULT_RULES } from '../../scripts/not-in-pipeline.mjs';
+import { pickNotInPipeline, pipelineNotices, DEFAULT_RULES, breakdown, BREAKDOWN_KEYS } from '../../scripts/not-in-pipeline.mjs';
+import { cleanResult, updateStatus } from '../../scripts/sync-status.mjs';
 import { buildLists, summarize, decryptJSON } from '../../scripts/kpi-core.mjs';
 import { mergeConfig } from '../../scripts/config-merge.mjs';
 
@@ -93,6 +94,39 @@ test('Admin page: count on the firm list, amber notice with what to do, not in t
   ok(!/paintBell[\s\S]{0,400}pipelineNotices/.test(html), 'the badge and tab title don\'t count it');
 });
 
+test('Came-in-by breakdown: counted split by how they came in, plus left-out counts, per window; no personal data', () => {
+  const list = [
+    contact('form', 2 * DAY, medium('form')), contact('fb', 3 * DAY, medium('fb_lead_form')), contact('survey', 4 * DAY, medium('survey')),
+    contact('chat', 5 * DAY, medium('chat_widget')), contact('cal', 6 * DAY, medium('calendar')),
+    contact('call', 7 * DAY, medium('manual')), contact('sms', 8 * DAY), contact('mail', 9 * DAY, medium('other')), contact('wa', 10 * DAY),
+    contact('client', 11 * DAY, { ...medium('form'), type: 'customer' }), contact('quiet', 12 * DAY, medium('manual')),
+    ...Array.from({ length: 5 }, (_, i) => contact(`b${i}`, 13 * DAY + i * MIN)),
+    contact('old', 60 * DAY, medium('chat_widget')), contact('hasopp', 2 * DAY, medium('form')),
+  ];
+  const inbound = new Map([['call', new Set(['Call', 'Email'])], ['sms', new Set(['SMS'])], ['mail', new Set(['Email'])], ['wa', new Set(['WhatsApp'])]]);
+  const { tally } = pickNotInPipeline(list, { withOpp: new Set(['hasopp']), inbound });
+  const b30 = breakdown(tally, NOW, 30), b90 = breakdown(tally, NOW, 90);
+  eq(Object.keys(b30), BREAKDOWN_KEYS, 'fixed keys');
+  eq(b30, { form: 2, survey: 1, chat: 1, booking: 1, call: 1, sms: 1, email: 1, other: 1, bulk: 5, notLeadType: 1, noInboundSignal: 1 }, 'last 30');
+  eq(b90.chat, 2, 'last 90 includes the 60-day-old chat contact');
+  ok(tally.every(r => Object.keys(r).sort().join() === 'at,medium,outcome,via'), 'tally rows hold no names, phones, emails or ids');
+});
+
+test('Status file: breakdown copied from the result with fixed keys and whole numbers only; kept through a failed sync', () => {
+  const good = { last30: { form: 1, email: 3, bulk: 2 }, last90: { chat: 7, email: 'x', name: 'Jane Doe', notLeadType: -4 } };
+  const r = cleanResult({ slug: 'fx', ok: true, at: iso(NOW), notInPipeline: good, extra: 'Jane' }, 'fx');
+  eq(r.notInPipeline.last30, { form: 1, survey: 0, chat: 0, booking: 0, call: 0, sms: 0, email: 3, other: 0, bulk: 2, notLeadType: 0, noInboundSignal: 0 }, 'last30');
+  eq([r.notInPipeline.last90.chat, r.notInPipeline.last90.email, r.notInPipeline.last90.notLeadType, 'name' in r.notInPipeline.last90, 'extra' in r], [7, 0, 0, false, false], 'junk dropped');
+  eq(cleanResult({ slug: 'fx', ok: true, notInPipeline: 'Jane Doe' }, 'fx').notInPipeline, undefined, 'a non-object is dropped');
+  const s1 = updateStatus(null, { now: NOW, attempted: ['fx'], results: { fx: { slug: 'fx', ok: true, at: iso(NOW), notInPipeline: good } } });
+  eq(s1.firms.fx.notInPipeline.last30.email, 3, 'written to the firm');
+  const s2 = updateStatus(s1, { now: NOW + 30 * MIN, attempted: ['fx'], results: { fx: { slug: 'fx', ok: false, category: 'ghl', detail: 'server' } } });
+  eq(s2.firms.fx.notInPipeline.last30.email, 3, 'kept after a failed sync');
+  const s3 = updateStatus(s2, { now: NOW + 60 * MIN, attempted: ['fx'], results: { fx: { slug: 'fx', ok: true, at: iso(NOW) } } });
+  eq(s3.firms.fx.notInPipeline.last30.email, 3, 'kept after a sync that couldn\'t check contacts');
+  ok(!JSON.stringify(s3).includes('Jane'), 'no names in the status file');
+});
+
 // ---------- 2. kpi-core ----------
 test('Dashboard list and count follow the selected dates; an older details file gives null (line hidden)', () => {
   const records = { generatedAt: iso(NOW), leads: [], calls: [], appointments: [], notInPipeline: [
@@ -117,15 +151,18 @@ async function makeRepo() {
 }
 async function sync(tmp, { contacts = [], intercept = () => null, exportHandler } = {}) {
   const mock = await startMockGhl(discovery, 0, { contacts, intercept, exportHandler });
+  const resultFile = join(tmp, 'result.json');
+  await rm(resultFile, { force: true });
   let out = '', code = 0;
   try {
-    const r = await run(process.execPath, [join(tmp, 'scripts/sync.mjs'), 'fx'], { env: { PATH: process.env.PATH, GHL_API_BASE: mock.url, GHL_TOKEN: TOKEN, DASHBOARD_PASSPHRASE: PASS, GHL_BACKOFF_MS: '5' } });
+    const r = await run(process.execPath, [join(tmp, 'scripts/sync.mjs'), 'fx'], { env: { PATH: process.env.PATH, GHL_API_BASE: mock.url, GHL_TOKEN: TOKEN, DASHBOARD_PASSPHRASE: PASS, GHL_BACKOFF_MS: '5', SYNC_RESULT_FILE: resultFile } });
     out = r.stdout + r.stderr;
   } catch (e) { code = e.code || 1; out = (e.stdout || '') + (e.stderr || e.message); }
   finally { await mock.close(); }
   const kpisText = await readFile(join(tmp, 'firms/fx/data/kpis.json'), 'utf8');
   const details = await decryptJSON(await readJSON(join(tmp, 'firms/fx/data/details.enc.json')), PASS);
-  return { code, out, kpisText, kpis: JSON.parse(kpisText), details };
+  const resultText = await readFile(resultFile, 'utf8').catch(() => null);
+  return { code, out, kpisText, kpis: JSON.parse(kpisText), details, resultText, result: resultText && JSON.parse(resultText) };
 }
 // The mock puts one opportunity per stage on contacts c1, c2, …
 const world = () => [
@@ -155,6 +192,10 @@ test('Sync: counts in kpis.json, list only in the encrypted details, nothing per
       ok(!r.out.includes(v), `run log contains "${v}"`);
     }
     ok(/New contacts not in any pipeline: 4 of 12 contacts created in the window \(skipped: 1 have an opportunity, 1 not typed lead, 5 added in bulk, 1 no inbound signal\)/.test(r.out), 'log has counts only');
+    eq(r.result.notInPipeline.last30, { form: 1, survey: 0, chat: 1, booking: 0, call: 1, sms: 0, email: 0, other: 0, bulk: 5, notLeadType: 1, noInboundSignal: 1 }, 'result file breakdown, last 30');
+    eq(r.result.notInPipeline.last90.chat, 2, 'result file breakdown, last 90');
+    ok(/Not in pipeline, last30: 3 counted \(form 1, survey 0, chat widget 1, booking 0, inbound call 1, inbound SMS 0, inbound email 0, other 0\); left out: 5 bulk-added, 1 not typed lead, 1 no inbound signal\./.test(r.out), 'log line, last 30');
+    for (const c of contacts) for (const v of [c.email, c.phone, `Person ${c.id}`, c.id]) ok(!r.resultText.includes(`"${v}"`) && !r.resultText.includes(v + '@'), `result file contains "${v}"`);
     const files = await readdir(join(tmp, 'firms/fx/data'));
     eq(files.sort(), ['details.enc.json', 'kpis.json'], 'no other files written');
   } finally { await rm(tmp, { recursive: true, force: true }); }

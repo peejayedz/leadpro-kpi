@@ -18,7 +18,7 @@ import { computeAll, encryptJSON, decryptJSON, tzOffsetMin } from './kpi-core.mj
 import { checkSlug, loadFirmConfig } from './firms.mjs';
 import { checkScopes, scopeForPath } from './scope-check.mjs';
 import { areaForPath } from './sync-status.mjs';
-import { pickNotInPipeline } from './not-in-pipeline.mjs';
+import { pickNotInPipeline, breakdown, countedIn } from './not-in-pipeline.mjs';
 
 const SLUG = process.argv[2];
 
@@ -27,6 +27,7 @@ const SLUG = process.argv[2];
 // writes SYNC_RESULT_FILE and exits 1. A finished sync (published or held) writes ok: true.
 const RESULT_FILE = process.env.SYNC_RESULT_FILE || '';
 let resultWritten = false;
+let resultExtra = {};   // counts-only additions to a successful result (the came-in-by breakdown)
 function writeResult(r) {
   if (!RESULT_FILE || resultWritten) return;
   resultWritten = true;
@@ -34,7 +35,7 @@ function writeResult(r) {
   writeFileSync(RESULT_FILE, JSON.stringify({ slug: SLUG, at: new Date().toISOString(), ...r }) + '\n');
 }
 const failure = (category, detail, msg, extra = {}) => Object.assign(new Error(msg), { category, detail, ...extra });
-process.on('exit', code => { if (code === 0) writeResult({ ok: true }); });
+process.on('exit', code => { if (code === 0) writeResult({ ok: true, ...resultExtra }); });
 process.on('uncaughtException', e => {
   classify(e).catch(() => ({ category: 'unknown', detail: 'crash' })).then(c => {
     console.error(`Sync failed (${c.category}${c.detail ? `: ${c.detail}` : ''}${c.scopes?.length ? `: ${c.scopes.join(', ')}` : ''}): ${e.message}`);
@@ -499,8 +500,15 @@ const notInPipeline = await optional('contacts search', async () => {
   const withOpp = new Set(opps.map(o => o.contactId || o.contact?.id).filter(Boolean));
   const inbound = new Map();
   for (const e of messageLog.items) if (e.direction === 'inbound' && e.contactId) (inbound.get(e.contactId) || inbound.set(e.contactId, new Set()).get(e.contactId)).add(e.channel);
-  const { items, skipped } = pickNotInPipeline(found, { withOpp, inbound, rules: cfg.notInPipeline || {} });
+  const { items, skipped, tally } = pickNotInPipeline(found, { withOpp, inbound, rules: cfg.notInPipeline || {} });
   console.log(`New contacts not in any pipeline: ${items.length} of ${found.length} contacts created in the window (skipped: ${skipped.hasOpportunity} have an opportunity, ${skipped.notLeadType} not typed lead, ${skipped.bulk} added in bulk, ${skipped.noInboundSignal} no inbound signal).`);
+  // Came-in-by breakdown (counts only) for the log and status/sync-status.json.
+  const bd = { last30: breakdown(tally, now, 30), last90: breakdown(tally, now, 90) };
+  for (const [w, b] of Object.entries(bd)) console.log(`Not in pipeline, ${w}: ${countedIn(b)} counted (form ${b.form}, survey ${b.survey}, chat widget ${b.chat}, booking ${b.booking}, inbound call ${b.call}, inbound SMS ${b.sms}, inbound email ${b.email}, other ${b.other}); left out: ${b.bulk} bulk-added, ${b.notLeadType} not typed lead, ${b.noInboundSignal} no inbound signal.`);
+  const emailed = tally.filter(r => r.via === 'Emailed in' && r.at >= now - 90 * DAY), byMedium = {};
+  for (const r of emailed) { const m = /^[a-z0-9_]{1,30}$/.test(r.medium || '') ? r.medium : '(none)'; byMedium[m] = (byMedium[m] || 0) + 1; }
+  if (emailed.length) console.log(`Emailed-in only (last 90 days) by first-touch medium: ${Object.entries(byMedium).sort((a, b) => b[1] - a[1]).map(([m, n]) => `${m} ${n}`).join(', ')}.`);
+  resultExtra = { notInPipeline: bd };
   return items;
 });
 

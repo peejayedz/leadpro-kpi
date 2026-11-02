@@ -56,10 +56,21 @@ export function areaForPath(path) {
 const isoOr = v => (typeof v === 'string' && !Number.isNaN(Date.parse(v)) && /^\d{4}-\d\d-\d\dT[\d:.]+Z$/.test(v) ? v : null);
 const intOr = (v, d = 0) => (Number.isInteger(v) && v >= 0 && v < 1e7 ? v : d);
 const runOr = v => (typeof v === 'string' && RUN_RE.test(v) ? v : null);
+// The came-in-by breakdown: { last30, last90 } of fixed keys -> whole numbers; anything else dropped.
+const NIP_KEYS = ['form', 'survey', 'chat', 'booking', 'call', 'sms', 'email', 'other', 'bulk', 'notLeadType', 'noInboundSignal'];
+export function cleanBreakdown(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const out = {};
+  for (const w of ['last30', 'last90']) {
+    const b = raw[w]; if (!b || typeof b !== 'object') return null;
+    out[w] = Object.fromEntries(NIP_KEYS.map(k => [k, intOr(b[k])]));
+  }
+  return out;
+}
 // A sync result file (written by sync.mjs) reduced to the allowed fields and values.
 export function cleanResult(raw, slug) {
   if (!raw || typeof raw !== 'object' || raw.slug !== slug) return null;
-  if (raw.ok === true) return { slug, ok: true, at: isoOr(raw.at) };
+  if (raw.ok === true) { const nip = cleanBreakdown(raw.notInPipeline); return { slug, ok: true, at: isoOr(raw.at), ...(nip ? { notInPipeline: nip } : {}) }; }
   const category = Object.hasOwn(CATEGORIES, raw.category) ? raw.category : 'unknown';
   const detail = DETAILS[category].includes(raw.detail) ? raw.detail : DETAILS[category][0];
   const out = { slug, ok: false, at: isoOr(raw.at), category, detail };
@@ -122,7 +133,9 @@ export function updateStatus(prev, { now, runUrl, event, chained, attempted = []
     } else f.failStreak = intOr(f.failStreak) + 1;
     f.status = !res.ok ? 'failed' : current.some(c => c.kind === 'held') ? 'held' : 'ok';
     f.lastAttemptAt = at; f.lastRunUrl = run || f.lastRunUrl || null;
-    s.firms[slug] = { status: f.status, lastAttemptAt: f.lastAttemptAt, lastSuccessAt: isoOr(f.lastSuccessAt), lastRunUrl: runOr(f.lastRunUrl), failStreak: intOr(f.failStreak) };
+    // Came-in-by counts from the latest sync that checked contacts (a held or failed sync keeps the last ones).
+    const nip = (res.ok && res.notInPipeline) || cleanBreakdown(f.notInPipeline);
+    s.firms[slug] = { status: f.status, lastAttemptAt: f.lastAttemptAt, lastSuccessAt: isoOr(f.lastSuccessAt), lastRunUrl: runOr(f.lastRunUrl), failStreak: intOr(f.failStreak), ...(nip ? { notInPipeline: nip } : {}) };
   }
 
   // System-wide: the chain switch, and gaps with no sync at all.
