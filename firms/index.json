@@ -14,5 +14,13 @@
     "practiceArea": "Digital marketing agency",
     "locationId": "sQ2VSMkR7cLHb46Wdemi",
     "createdAt": "2026-11-02T00:00:00.000Z"
+  },
+  {
+    "slug": "hedayati-law-group-p-c",
+    "secretKey": "HEDAYATI_LAW_GROUP_P_C",
+    "name": "Hedayati Law Group, P.C",
+    "practiceArea": "Family Law",
+    "locationId": "pBNZKHAEHetHe3AVJ7GH",
+    "createdAt": "2026-11-02T19:19:40.900Z"
   }
 ]
