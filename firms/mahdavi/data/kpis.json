@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T00:37:47.588Z",
+  "generatedAt": "2026-11-02T07:22:26.326Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -21,8 +21,8 @@
   "periods": {
     "today": {
       "label": "Today",
-      "from": 1793509200000,
-      "to": 1793579867588,
+      "from": 1793599200000,
+      "to": 1793604146326,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -182,8 +182,8 @@
     },
     "yesterday": {
       "label": "Yesterday",
-      "from": 1793422800000,
-      "to": 1793509200000,
+      "from": 1793509200000,
+      "to": 1793599200000,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -343,8 +343,8 @@
     },
     "thisWeek": {
       "label": "This week",
-      "from": 1792990800000,
-      "to": 1793579867588,
+      "from": 1793599200000,
+      "to": 1793604146326,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -504,8 +504,8 @@
     },
     "lastWeek": {
       "label": "Last week",
-      "from": 1792386000000,
-      "to": 1792990800000,
+      "from": 1792990800000,
+      "to": 1793599200000,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -585,13 +585,13 @@
         ]
       },
       "previous": {
-        "totalLeads": 1,
+        "totalLeads": 0,
         "contacted": 0,
-        "contactRatePct": 0,
+        "contactRatePct": null,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
-        "within5Pct": 0,
+        "within5Pct": null,
         "missedCalls": 0,
         "missedNotReturned": 0,
         "qualified": 0,
@@ -609,30 +609,18 @@
         "sentRatePct": null,
         "signed": 0,
         "signRatePct": null,
-        "leadToSignedPct": 0,
+        "leadToSignedPct": null,
         "adSpend": null,
         "costPerSigned": null,
-        "bySource": [
-          [
-            "Chat",
-            1,
-            0
-          ]
-        ],
-        "byChannel": [
-          [
-            "Other referral",
-            1,
-            0
-          ]
-        ],
-        "attributedLeads": 1,
+        "bySource": [],
+        "byChannel": [],
+        "attributedLeads": 0,
         "stageMoved": 0,
-        "attributionPct": 100,
+        "attributionPct": null,
         "funnel": [
           [
             "New leads",
-            1,
+            0,
             "newLeads",
             null
           ],
@@ -677,8 +665,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1792975067588,
-      "to": 1793579867588,
+      "from": 1792999346326,
+      "to": 1793604146326,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -838,8 +826,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1790987867588,
-      "to": 1793579867588,
+      "from": 1791012146326,
+      "to": 1793604146326,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -1023,8 +1011,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1785803867588,
-      "to": 1793579867588,
+      "from": 1785828146326,
+      "to": 1793604146326,
       "current": {
         "totalLeads": 7,
         "contacted": 1,
@@ -1224,7 +1212,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1793579867588,
+      "to": 1793604146326,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1575,7 +1563,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1793579867588,
+      "to": 1793604146326,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -1965,5 +1953,32 @@
   },
   "notice": {
     "graduatedAt": null
+  },
+  "sync": {
+    "checkedAt": "2026-11-02T07:22:26.326Z",
+    "counts": {
+      "Call": 0,
+      "SMS": 0,
+      "Email": 4,
+      "FB": null,
+      "IG": null,
+      "GMB": null,
+      "Live_Chat": null,
+      "WhatsApp": 0
+    },
+    "channels": {
+      "Call": "complete",
+      "SMS": "complete",
+      "Email": "complete",
+      "FB": "unavailable",
+      "IG": "unavailable",
+      "GMB": "unavailable",
+      "Live_Chat": "unavailable",
+      "WhatsApp": "complete"
+    },
+    "holds": 0,
+    "heldSince": null,
+    "incomplete": false,
+    "reason": null
   }
 }
