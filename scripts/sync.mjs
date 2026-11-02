@@ -9,13 +9,14 @@
 //      DASHBOARD_PASSPHRASE (team passphrase that unlocks names, custom dates and drill-downs)
 
 import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
-import { computeAll, encryptJSON, tzOffsetMin } from './kpi-core.mjs';
+import { computeAll, encryptJSON, decryptJSON, tzOffsetMin } from './kpi-core.mjs';
 import { checkSlug, loadFirmConfig } from './firms.mjs';
 
 const SLUG = process.argv[2];
 const slugErr = checkSlug(SLUG);
 if (slugErr) { console.error(slugErr); process.exit(1); }
 const firmDir = new URL(`../firms/${SLUG}/`, import.meta.url);
+const dataDir = new URL('data/', firmDir);
 
 const API = process.env.GHL_API_BASE || 'https://services.leadconnectorhq.com';
 const cfg = await loadFirmConfig(SLUG);   // _defaults.json → practice-area defaults → firm config.json
@@ -32,15 +33,28 @@ const norm = s => String(s ?? '').trim().toLowerCase();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const iso = v => (v ? new Date(typeof v === 'number' || /^\d+$/.test(String(v)) ? Number(v) : v).toISOString() : null);
 
+// A GitHub Actions warning annotation (shows on the run's summary page), or a plain line locally.
+const warn = msg => console.log(process.env.GITHUB_ACTIONS ? `::warning::${msg}` : `Warning: ${msg}`);
+
+// GET with retries: rate limits (429), GHL server errors (5xx) and network errors are retried up
+// to 3 times with a growing pause; anything else fails at once. Errors carry the HTTP status.
+const BACKOFF = Number(process.env.GHL_BACKOFF_MS ?? 2000);   // tests shorten this
 async function ghl(path, { version = '2021-07-28' } = {}) {
+  const where = path.split('?')[0], fail = (status, msg) => Object.assign(new Error(msg), { status });
+  let last;
   for (let attempt = 0; attempt < 4; attempt++) {
-    const res = await fetch(API + path, { headers: { Accept: 'application/json', Authorization: `Bearer ${TOKEN}`, Version: version } });
-    if (res.status === 429) { await sleep(2000 * (attempt + 1)); continue; }
-    if (res.status === 401 || res.status === 403) throw new Error(`GHL ${res.status} on ${path.split('?')[0]}: token invalid or missing a scope`);
-    if (!res.ok) throw new Error(`GHL ${res.status} on ${path.split('?')[0]}: ${(await res.text()).slice(0, 300)}`);
-    return res.json();
+    if (attempt) await sleep(BACKOFF * attempt);
+    let res;
+    try { res = await fetch(API + path, { headers: { Accept: 'application/json', Authorization: `Bearer ${TOKEN}`, Version: version } }); }
+    catch (e) { last = fail(0, `GHL network error on ${where}: ${e.message}`); continue; }
+    if (res.status === 429) { last = fail(429, `GHL rate limit on ${where}`); continue; }
+    if (res.status >= 500) { last = fail(res.status, `GHL ${res.status} on ${where}: ${(await res.text().catch(() => '')).slice(0, 200)}`); continue; }
+    if (res.status === 401 || res.status === 403) throw fail(res.status, `GHL ${res.status} on ${where}: token invalid or missing a scope`);
+    if (!res.ok) throw fail(res.status, `GHL ${res.status} on ${where}: ${(await res.text()).slice(0, 300)}`);
+    try { return await res.json(); }
+    catch (e) { last = fail(0, `GHL sent unreadable JSON on ${where}`); }
   }
-  throw new Error(`GHL rate limit on ${path}`);
+  throw last;
 }
 async function optional(label, fn) {
   try { return await fn(); } catch (e) { console.warn(`${label} skipped: ${e.message}`); return null; }
@@ -181,59 +195,154 @@ if (appointments) {
   for (const a of appointments) { const c = contacts[a.contactId] || {}; Object.assign(a, { name: c.name || a.title || 'Unknown', email: c.email || null, phone: c.phone || null }); }
 }
 
-// ---------- Conversation messages (calls + inbound replies) ----------
+// ---------- Conversation messages: calls + inbound replies ----------
+// GHL's message export is unreliable: the same request returns a different subset of messages
+// from one pull to the next (with no sign that anything is missing), a long pull can stop early,
+// and deep pages sometimes fail with HTTP 500. So that the dashboard doesn't dip:
+//   1. each channel is pulled twice, three times if the two disagree, and the pulls are combined;
+//   2. that is combined with the message log the previous sync kept in details.enc.json, so a
+//      call or reply seen once stays counted until it leaves the lookback window (a message
+//      deleted in GHL therefore also stays counted until then);
+//   3. if a channel still comes in clearly lower than last sync, the previous numbers stay up
+//      ("hold", below) for up to HOLD.maxHolds syncs, then publish with an "incomplete" note.
+// The log keeps only what the KPIs need: message and contact ids, channel, direction, status,
+// call duration and time. No message bodies or subjects.
+const CHANNELS = [['Call', 'Call'], ['SMS', 'SMS reply'], ['Email', 'Email reply'], ['FB', 'Facebook reply'], ['IG', 'Instagram reply'], ['GMB', 'Google message reply'], ['Live_Chat', 'Chat reply'], ['WhatsApp', 'WhatsApp reply']];
+const REPLY_LABEL = Object.fromEntries(CHANNELS);
+const MAX_PAGES = 100;
+const HOLD = { dropPct: 10, minDrop: 5, maxHolds: 3 };
+const OPT_OUT = /^\s*(stop|stopall|unsubscribe|cancel|end|quit)\s*[.!]?\s*$/i;
 const diag = {};
-async function exportChannel(channel, maxPages = 100) {
-  const out = [];
-  let cursor;
-  for (let guard = 0; guard < maxPages; guard++) {
+
+// One pull of one channel. Stops once a whole page is older than the window. An error before the
+// pull reaches the window's edge makes it "incomplete" (what it got is still used); a 4xx on the
+// first page means the channel isn't available to this token or sub-account.
+async function pullOnce(channel) {
+  const got = new Map();
+  let cursor, pastEdge = false;
+  for (let page = 0; page < MAX_PAGES; page++) {
     const q = new URLSearchParams({ locationId: LOC, channel, limit: '100' });
     if (cursor) q.set('cursor', cursor);
-    const r = await ghl(`/conversations/messages/export?${q}`);
+    let r;
+    try { r = await ghl(`/conversations/messages/export?${q}`); }
+    catch (e) {
+      if (page === 0 && e.status >= 400 && e.status < 500 && e.status !== 429) return { state: 'unavailable', reason: e.message, got };
+      return { state: pastEdge ? 'complete' : 'incomplete', reason: e.message, got };
+    }
     const batch = r.messages || [];
-    out.push(...batch);
-    if (guard === 0 && batch[0]) diag[channel + '_keys'] = Object.keys(batch[0]).sort().join(',');
-    const oldest = Math.min(...batch.map(m => Date.parse(m.dateAdded) || now));
-    if (!r.nextCursor || batch.length === 0 || oldest < since) break;
+    if (page === 0 && batch[0] && !diag[channel + '_keys']) diag[channel + '_keys'] = Object.keys(batch[0]).sort().join(',');
+    let newest = -Infinity;
+    for (const m of batch) {
+      const t = Date.parse(m.dateAdded) || 0;
+      newest = Math.max(newest, t);
+      if (t >= since) got.set(m.id ?? `${m.dateAdded}|${m.contactId}|${m.direction}`, m); else pastEdge = true;
+    }
+    if (!r.nextCursor || !batch.length || newest < since) return { state: 'complete', got };
     cursor = r.nextCursor;
   }
-  const kept = out.filter(m => (Date.parse(m.dateAdded) || 0) >= since);
-  const tally = {};
-  for (const m of kept) { const k = `${norm(m.direction)}/${norm(m.meta?.call?.status || m.status)}`; tally[k] = (tally[k] || 0) + 1; }
-  diag[channel] = { count: kept.length, byDirectionStatus: tally };
-  return kept;
+  return { state: pastEdge ? 'complete' : 'incomplete', reason: `stopped after ${MAX_PAGES} pages`, got };
 }
-const OPT_OUT = /^\s*(stop|stopall|unsubscribe|cancel|end|quit)\s*[.!]?\s*$/i;
-const replies = [];
-for (const [channel, label] of [['SMS', 'SMS reply'], ['Email', 'Email reply'], ['FB', 'Facebook reply'], ['IG', 'Instagram reply'], ['GMB', 'Google message reply'], ['Live_Chat', 'Chat reply'], ['WhatsApp', 'WhatsApp reply']]) {
-  const msgs = await optional(`${channel} messages`, () => exportChannel(channel));
-  for (const m of msgs || []) {
-    if (norm(m.direction) !== 'inbound' || !m.contactId) continue;
-    if (OPT_OUT.test(String(m.body ?? m.message ?? ''))) continue;   // a STOP is not a conversation
-    replies.push({ contactId: m.contactId, at: iso(m.dateAdded), method: label });
+async function pullChannel(channel) {
+  const first = await pullOnce(channel);
+  if (first.state === 'unavailable') return { state: 'unavailable', reason: first.reason, got: new Map(), sizes: [] };
+  const pulls = [first, await pullOnce(channel)];
+  const ids = p => [...p.got.keys()].sort().join('\n');
+  if (ids(pulls[0]) !== ids(pulls[1]) || pulls.some(p => p.state !== 'complete')) pulls.push(await pullOnce(channel));
+  const got = new Map();
+  for (const p of pulls) for (const [id, m] of p.got) got.set(id, m);   // the latest pull's copy wins
+  return { state: pulls.some(p => p.state === 'complete') ? 'complete' : 'incomplete', reason: pulls.find(p => p.reason)?.reason || null, got, sizes: pulls.map(p => p.got.size) };
+}
+// The log entry kept for a message, or null if the KPIs don't use it (outbound messages, opt-outs).
+function toLog(channel, id, m) {
+  const direction = norm(m.direction), at = iso(m.dateAdded);
+  if (channel === 'Call') {
+    const d = Number(m.meta?.call?.duration ?? m.meta?.duration ?? m.duration ?? NaN);
+    return { id, contactId: m.contactId || null, channel, direction, status: norm(m.meta?.call?.status || m.status), durationSec: Number.isFinite(d) ? d : null, at };
   }
+  if (direction !== 'inbound' || !m.contactId) return null;
+  if (OPT_OUT.test(String(m.body ?? m.message ?? ''))) return null;   // a STOP is not a conversation
+  return { id, contactId: m.contactId, channel, direction, status: norm(m.status) || null, at };
 }
 
-// ---------- Calls ----------
-const calls = await optional('calls', async () => {
-  const out = [];
-  let cursor;
-  for (let guard = 0; guard < 50; guard++) {
-    const q = new URLSearchParams({ locationId: LOC, channel: 'Call', limit: '100' });
-    if (cursor) q.set('cursor', cursor);
-    const r = await ghl(`/conversations/messages/export?${q}`);
-    const batch = r.messages || [];
-    for (const m of batch) {
-      const status = norm(m.meta?.call?.status || m.status);
-      out.push({ id: m.id, contactId: m.contactId, direction: norm(m.direction), status, answered: ['completed', 'answered'].includes(status),
-        at: iso(m.dateAdded), assignedTo: m.userId || null, durationSec: Number(m.meta?.call?.duration ?? m.meta?.duration ?? m.duration ?? NaN) });
-    }
-    const oldest = Math.min(...batch.map(m => Date.parse(m.dateAdded) || now));
-    if (!r.nextCursor || batch.length === 0 || oldest < since) break;
-    cursor = r.nextCursor;
+// What the previous sync published and kept.
+let prevPub = null, prevRecords = null;
+try { prevPub = JSON.parse(await readFile(new URL('kpis.json', dataDir), 'utf8')); } catch {}
+if (PASS) {
+  let env = null;
+  try { env = JSON.parse(await readFile(new URL('details.enc.json', dataDir), 'utf8')); } catch {}
+  if (!env) warn(`${SLUG}: no previous details file, so no earlier calls or messages to carry forward; starting fresh from this pull.`);
+  else {
+    try { prevRecords = await decryptJSON(env, PASS); }
+    catch { warn(`${SLUG}: the previous details file couldn't be decrypted (passphrase changed?); starting fresh from this pull.`); }
   }
-  return out.filter(k => Date.parse(k.at) >= since);
-});
+}
+const prevLog = prevRecords?.messageLog?.items
+  // first sync after this change: the previous file has calls but no log yet
+  || (prevRecords?.calls || []).filter(k => k.id).map(k => ({ id: k.id, contactId: k.contactId || null, channel: 'Call', direction: k.direction, status: k.status, durationSec: Number.isFinite(k.durationSec) ? k.durationSec : null, at: k.at }));
+const prevAssigned = Object.fromEntries((prevRecords?.calls || []).map(k => [k.id, k.assignedTo || null]));
+
+const pulled = {}, chState = {};
+for (const [ch] of CHANNELS) {
+  pulled[ch] = await pullChannel(ch);
+  chState[ch] = pulled[ch].state;
+  if (pulled[ch].state === 'incomplete') warn(`${SLUG}: ${ch} pull incomplete (${pulled[ch].reason}); using what came back plus earlier syncs.`);
+}
+const log = new Map();
+for (const e of prevLog) {
+  if (!e?.id || !chState[e.channel] || chState[e.channel] === 'unavailable' || !(Date.parse(e.at) >= since)) continue;
+  log.set(e.id, e);
+}
+const fromPrev = new Set(log.keys());
+const rawCall = {};
+for (const [ch] of CHANNELS) for (const [id, m] of pulled[ch].got) {
+  const e = toLog(ch, id, m);
+  if (!e) continue;
+  log.set(id, e); fromPrev.delete(id);              // the newest copy wins
+  if (ch === 'Call') rawCall[id] = m;
+}
+const counts = {};
+for (const [ch] of CHANNELS) {
+  const n = [...log.values()].filter(e => e.channel === ch).length;
+  counts[ch] = chState[ch] === 'unavailable' ? null : n;
+  if (chState[ch] === 'unavailable') { diag[ch] = { unavailable: pulled[ch].reason }; continue; }
+  const tally = {};
+  for (const m of pulled[ch].got.values()) { const k = `${norm(m.direction)}/${norm(m.meta?.call?.status || m.status)}`; tally[k] = (tally[k] || 0) + 1; }
+  diag[ch] = { pulls: pulled[ch].sizes, combined: pulled[ch].got.size, kept: n, carried: [...fromPrev].filter(id => log.get(id).channel === ch).length, state: chState[ch], byDirectionStatus: tally };
+}
+console.log('Calls and replies kept per channel:', JSON.stringify(counts), `(${fromPrev.size} carried forward from earlier syncs)`);
+
+// Hold: a channel more than HOLD.dropPct % (and at least HOLD.minDrop) below last sync is far more
+// likely a short answer from GHL than a real drop, so the previous numbers stay up. After
+// HOLD.maxHolds holds in a row the new numbers publish anyway, flagged as possibly incomplete,
+// so a real drop can't stay hidden.
+const checkedAt = new Date(now).toISOString();
+const prevSync = prevPub?.sync || null;
+const drops = [];
+for (const [ch, before] of Object.entries(prevSync?.counts || {})) {
+  if (typeof before !== 'number' || !(ch in counts)) continue;
+  const after = counts[ch] ?? 0;
+  if (before - after >= HOLD.minDrop && after < before * (1 - HOLD.dropPct / 100)) drops.push(`${ch} ${before} → ${after}`);
+}
+const holdsSoFar = prevSync?.holds || 0;
+if (drops.length && holdsSoFar < HOLD.maxHolds && prevPub?.periods) {
+  prevPub.sync = { ...prevSync, checkedAt, holds: holdsSoFar + 1, heldSince: prevSync.heldSince || checkedAt, reason: drops.join(', ') };
+  await writeFile(new URL('kpis.json', dataDir), JSON.stringify(prevPub, null, 2) + '\n');
+  warn(`${SLUG}: held (${holdsSoFar + 1} of ${HOLD.maxHolds}). GHL returned fewer calls or messages than last sync (${drops.join(', ')}); the dashboard keeps the numbers from ${prevPub.generatedAt}.`);
+  console.log('Message export diagnostics:', JSON.stringify(diag));
+  process.exit(0);
+}
+if (drops.length) warn(`${SLUG}: still lower after ${HOLD.maxHolds} holds (${drops.join(', ')}); publishing, marked as possibly incomplete.`);
+const syncInfo = { checkedAt, counts, channels: chState, holds: 0, heldSince: null, incomplete: drops.length > 0, reason: drops.length ? drops.join(', ') : null };
+
+const byTimeDesc = (a, b) => Date.parse(b.at) - Date.parse(a.at);
+const messageLog = { items: [...log.values()].sort(byTimeDesc) };
+const replies = messageLog.items.filter(e => e.channel !== 'Call').map(e => ({ contactId: e.contactId, at: e.at, method: REPLY_LABEL[e.channel] }));
+
+// ---------- Calls ----------
+const calls = chState.Call === 'unavailable' ? null : messageLog.items.filter(e => e.channel === 'Call').map(e => ({
+  id: e.id, contactId: e.contactId, direction: e.direction, status: e.status, answered: ['completed', 'answered'].includes(e.status),
+  at: e.at, assignedTo: rawCall[e.id]?.userId || prevAssigned[e.id] || null, durationSec: e.durationSec ?? NaN,
+}));
 if (calls) {
   await loadContacts(calls.map(k => k.contactId));
   for (const k of calls) { const c = contacts[k.contactId] || {}; Object.assign(k, { name: c.name || 'Unknown caller', phone: c.phone || null }); }
@@ -291,6 +400,7 @@ console.log('Message export diagnostics:', JSON.stringify(diag));
 // ---------- Compute + write ----------
 const records = {
   generatedAt: new Date(now).toISOString(), locationId: LOC, ghlBase: cfg.ghlAppBase, users, leads, appointments, calls,
+  messageLog,   // carried into the next sync (see "Conversation messages")
 };
 const periods = computeAll(records, cfg, now);
 // Public file: numbers only (bySource and turned-away reasons are names + counts, no people).
@@ -310,15 +420,15 @@ const out = {
 // later drops below the threshold, the page shows a low-activity notice instead.
 {
   const A = cfg.notice?.autoHide;
-  let prevGrad = null;
-  try { prevGrad = JSON.parse(await readFile(new URL('data/kpis.json', firmDir), 'utf8')).notice?.graduatedAt || null; } catch {}
+  const prevGrad = prevPub?.notice?.graduatedAt || null;
   const moved = A ? (periods[A.window || 'last90']?.current?.stageMoved ?? 0) : 0;
   const graduatedAt = prevGrad || (A && moved >= A.minLeadsMoved ? records.generatedAt : null);
   out.notice = { graduatedAt };
   if (graduatedAt && !prevGrad) console.log(`Testing period ended: ${moved} leads moved in the last 90 days (threshold ${A.minLeadsMoved}).`);
 }
 
-const dataDir = new URL('data/', firmDir);
+out.sync = syncInfo;
+
 await mkdir(dataDir, { recursive: true });
 await writeFile(new URL('kpis.json', dataDir), JSON.stringify(out, null, 2) + '\n');
 if (PASS) {

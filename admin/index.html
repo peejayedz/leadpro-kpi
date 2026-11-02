@@ -592,8 +592,16 @@ async function loadFirms() {
   await loadShared();
   await Promise.all(firms.map(async f => {
     try { configs[f.slug] = await getJSON(`firms/${f.slug}/config.json`); bases[f.slug] = await baseFor(configs[f.slug]); } catch { configs[f.slug] = null; }
-    try { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); kpis[f.slug] = k ? { generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null } : null; } catch { kpis[f.slug] = null; }
+    try { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); kpis[f.slug] = k ? kpiSummary(k) : null; } catch { kpis[f.slug] = null; }
   }));
+}
+const kpiSummary = k => ({ generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null, sync: k.sync || null });
+// Held / incomplete call and message data (scripts/sync.mjs, "Hold").
+function syncFlag(k) {
+  const s = k?.sync; if (!s) return '';
+  if (s.holds > 0) return `<p class="meta syncflag"><span><span class="chip warn">Holding previous numbers</span> GHL returned fewer calls or messages than last sync (${esc(s.reason || '')}). Hold ${s.holds} of 3 since ${esc(ago(s.heldSince))}; the dashboard keeps showing the last good numbers and publishes anyway after 3 holds.</span></p>`;
+  if (s.incomplete) return `<p class="meta syncflag"><span><span class="chip warn">Calls/messages may be incomplete</span> Published after 3 holds (${esc(s.reason || '')}). The dashboard shows a note until the next sync.</span></p>`;
+  return '';
 }
 function firmRow(f) {
   const cfg = configs[f.slug], k = kpis[f.slug];
@@ -605,6 +613,7 @@ function firmRow(f) {
       <p class="meta"><span>${esc(f.practiceArea || 'No practice area')}</span><span class="mono">${esc(f.slug)}</span></p>
       <p class="meta"><span title="${esc(fmtTime(k?.generatedAt))}">Last sync ${k ? esc(ago(k.generatedAt)) : '<span class="chip warn">no data yet</span>'}${stale ? ' <span class="chip bad">stale</span>' : ''}</span>
         ${k?.leads90 != null ? `<span>${k.leads90} lead${k.leads90 === 1 ? '' : 's'} in the last 90 days</span>` : ''}</p>
+      ${syncFlag(k)}
     </div>
     <div class="acts">
       <a class="btn" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener">${ICON.ext}Open dashboard</a>
@@ -662,11 +671,13 @@ async function resyncFirm(f, status, btn) {
   try {
     const t0 = await dispatch('sync.yml', { slug: f.slug });
     const before = kpis[f.slug]?.generatedAt || '';
-    const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Sync', limitMs: 4 * 60e3, say, stop: () => !document.body.contains(status),
-      check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return k?.generatedAt && k.generatedAt !== before && Date.parse(k.generatedAt) > t0 - 60e3 ? k : null; } });
-    kpis[f.slug] = { generatedAt: value.generatedAt, leads90: value.periods?.last90?.current?.totalLeads ?? null };
+    const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Sync', limitMs: 8 * 60e3, say, stop: () => !document.body.contains(status),
+      // a held sync leaves generatedAt alone and only updates sync.checkedAt
+      check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return (k?.generatedAt && k.generatedAt !== before && Date.parse(k.generatedAt) > t0 - 60e3) || Date.parse(k?.sync?.checkedAt) > t0 - 60e3 ? k : null; } });
+    kpis[f.slug] = kpiSummary(value);
+    const held = value.generatedAt === before;
     const row = document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`);
-    if (row) { row.outerHTML = firmRow(f); flashRow(f.slug, `<span class="chip good">Synced</span> ${esc(fmtTime(value.generatedAt))}. The dashboard shows it within a minute.`); }
+    if (row) { row.outerHTML = firmRow(f); flashRow(f.slug, held ? `<span class="chip warn">Held</span> GHL returned fewer calls or messages than last sync, so the dashboard keeps the numbers from ${esc(fmtTime(value.generatedAt))}.` : `<span class="chip good">Synced</span> ${esc(fmtTime(value.generatedAt))}. The dashboard shows it within a minute.`); }
   } catch (e) { say(`<span class="chip bad">Sync failed</span> ${errHtml(e)}`); btn.disabled = false; }
 }
 
@@ -1021,7 +1032,7 @@ const STEP_FNS = [
   // 5. First sync
   async (ctx, say) => {
     const t0 = await dispatch('sync.yml', { slug: ctx.slug });
-    const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${ctx.slug}`, t0, label: 'Syncing', limitMs: 4 * 60e3, say, stop: ctx.stop,
+    const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${ctx.slug}`, t0, label: 'Syncing', limitMs: 8 * 60e3, say, stop: ctx.stop,
       check: async () => { const k = await getJSON(`firms/${ctx.slug}/data/kpis.json`); return k?.generatedAt ? k : null; } });
     ctx.kpis = value;
     say(`Synced at ${esc(fmtTime(value.generatedAt))}.`);
@@ -1080,7 +1091,7 @@ async function renderEditMapping(f) {
       });
       status('Saved. Re-syncing so the dashboard uses the new mapping…');
       const t0 = await dispatch('sync.yml', { slug: f.slug });
-      await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Syncing', limitMs: 4 * 60e3, stop, say: h => status(`Mapping saved. ${h}`),
+      await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Syncing', limitMs: 8 * 60e3, stop, say: h => status(`Mapping saved. ${h}`),
         check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return k && Date.parse(k.generatedAt) > t0 - 60e3 ? k : null; } });
       await renderList(`Saved the mapping for ${esc(f.name)} and re-synced.`);
     } catch (e) { status(''); $('emHost').insertAdjacentHTML('afterbegin', `<div class="errbox" style="margin-bottom:12px">${errHtml(e)}</div>`); $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = false; }); }

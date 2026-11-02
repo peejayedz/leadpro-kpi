@@ -282,6 +282,7 @@ button.mini{cursor:pointer} button.mini:hover span:first-child{color:var(--link)
     </div>
   </header>
   <div id="notice" hidden></div>
+  <div id="dataNote" hidden></div>
   <div class="status-line" id="statusLine" aria-live="polite"></div>
   <div class="summary" id="exec"></div>
   <div id="app"></div>
@@ -496,6 +497,18 @@ function renderNotice() {
   el.innerHTML = `<div class="notice" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18.5A2 2 0 0 0 3.5 21.5h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><div>${title ? `<b>${esc(title)}</b>` : ''}${esc(text)}${esc(progress)}</div></div>`;
 }
 
+// Shown when the last sync had to publish call and message numbers that look short (see scripts/sync.mjs, "Hold").
+const DATA_NOTE = {
+  title: 'Call and message numbers may be incomplete',
+  text: "GoHighLevel didn't return all call and message records in the last update, so missed calls, speed to first contact and contact rate may read low. Other numbers aren't affected. This note clears on its own at the next update.",
+};
+function renderDataNote() {
+  const el = $('dataNote');
+  if (!pub?.sync?.incomplete) { el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  el.innerHTML = `<div class="notice" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><b>${esc(DATA_NOTE.title)}</b>${esc(DATA_NOTE.text)}</div></div>`;
+}
+
 // ---------- building blocks ----------
 function badge(value, goal, { lower = false, denom = Infinity, suffix = '' } = {}) {
   if (goal === undefined || goal === null) return '';
@@ -538,6 +551,7 @@ function render() {
   $('updated').textContent = `${cfg.locationName}, ${sel.key === 'custom' ? range.label : `${range.label.toLowerCase()} (${fmtSpan(range.from, range.to)})`}. Data as of ${ts.toLocaleString('en-US', { timeZone: TZ(), dateStyle: 'medium', timeStyle: 'short' })}; updates from GoHighLevel every 30 minutes.`;
   renderCompareLine();
   renderNotice();
+  renderDataNote();
 
   const drill = canDrill();
   const funnelRows = c.funnel.map(([label, v, key, of], i) => {

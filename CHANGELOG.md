@@ -5,6 +5,13 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.4.0 — 2 Nov 2026
+- [client] Missed calls, speed to first contact and contact rate no longer dip between updates when GoHighLevel returns only part of the call and message history. If an update still looks short after 90 minutes, the dashboard shows a "Call and message numbers may be incomplete" note.
+- [internal] The sync pulls each message channel twice (three times if they disagree), combines the pulls, and carries earlier syncs' calls and replies forward in a message log inside `details.enc.json` (ids, channel, direction, status, duration and time only). An unreadable previous file starts fresh with a warning.
+- [internal] A channel more than 10% (and at least 5) below the last sync holds the previous numbers for up to 3 syncs, then publishes flagged as incomplete. The admin page's firm list shows held and incomplete firms, Re-sync reports a hold, and it waits up to 8 minutes for a sync (pulling twice makes large firms slower).
+- [internal] GHL server errors (5xx) and network errors are retried like rate limits; a page that keeps failing marks that channel incomplete instead of dropping it to zero; duplicate calls count once; paging stops only once a whole page is older than the window.
+- [internal] Call and message tests: `node tests/messages/run.mjs`.
+
 ## v1.3.1 — 2 Nov 2026
 - [internal] Read-only diagnostic for GHL's message export (`scripts/diag-export.mjs`, "Diagnose message export" workflow): pulls it several times in a row and logs page-by-page counts, dates, timings and rate-limit headers. No message content or contact data is logged.
 

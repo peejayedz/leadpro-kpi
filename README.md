@@ -82,6 +82,18 @@ GitHub Pages sites are public, so:
 - Each dashboard remembers its own passphrase per device (`lfmp-pass-<slug>` in localStorage), so firms never share one.
 - GHL tokens live only in Actions secrets.
 
+## Calls and messages
+
+Missed calls, missed calls not returned, speed to first contact, contacted within 5 minutes and part of "Contacted" come from GHL's conversation-message export (calls and inbound replies). That export is unreliable: the same request returns a different subset of messages from one pull to the next with no sign anything is missing, a long pull can stop early, and deep pages sometimes fail with HTTP 500. So the sync:
+
+- **Pulls each channel twice**, a third time if the two disagree, and combines them by message id. Rate limits (429), GHL server errors (5xx) and network errors are retried per page; a channel GHL doesn't offer (a 4xx on the first page, e.g. Facebook on a sub-account without it) is skipped.
+- **Carries earlier syncs forward.** Each sync keeps a message log inside `details.enc.json` and combines it with what GHL returned, so a call or reply seen once stays counted until it leaves the lookback window. The log holds only message and contact ids, channel, direction, status, call duration and time; no message bodies or subjects. It needs the firm's passphrase. If the previous file is missing or can't be decrypted (passphrase changed), the sync starts fresh from the current pull and logs a warning.
+- **A call or message deleted in GHL stays counted until it leaves the 400-day window** (`lookbackDays`), because the sync can't tell a deleted message from one GHL left out of a pull.
+- **Holds** a firm when a channel still comes in more than 10% (and at least 5 messages) below the last sync: `kpis.json` keeps the previous numbers and only its `sync` block changes (`holds`, `heldSince`, `reason`). After 3 holds in a row (about 90 minutes) the new numbers publish anyway with `sync.incomplete: true`, and the dashboard shows "Call and message numbers may be incomplete" until the next sync. The admin page flags held and incomplete firms in the firm list.
+- Logs per-channel counts (each pull, combined, carried forward) in the Action log. A held or incomplete sync shows as a warning on the run's summary page.
+
+To look at the export itself: Actions → **Diagnose message export (read-only)** → Run workflow (manual only). It pulls each channel several times in a row and logs page-by-page counts, dates, timings and rate-limit headers; no message content or contact data.
+
 ## Running a sync by hand
 
 Actions → **Sync KPIs from GoHighLevel** → Run workflow. Enter a slug for one firm, or leave it empty for all. Each firm shows as its own `sync (<slug>)` job; a failing firm doesn't stop the others, the commit job lists ✓/✗ per firm, and the run is marked failed if any firm failed.
@@ -134,4 +146,6 @@ The page finds the workflow run it started by its title (`run-name`: "Sync <slug
 - **Round trip:** Edit mapping, then saving with no changes, must leave `config.json` byte-identical.
 - **Funnel:** `scripts/sync.mjs` runs in a temp copy against a mock GHL (`tests/mapping/mock-ghl.mjs`) with one lead in every stage. Each funnel count, the no-shows and the turned-away reasons must match what the expected mapping implies.
 
-It prints a table and exits 1 on any failure. Run it after any change to the mapping panel, `kpi-core.mjs`, the sync or a firm's mapping (update that firm's fixture when its mapping changes on purpose). Add a fixture for any new pipeline style that should be recognised.
+`node tests/messages/run.mjs` runs the real sync against a mock GHL whose message export misbehaves the way the real one does (short pulls, 500s and 429s, a missing channel, duplicate ids, unordered pages) and checks that numbers don't dip, that holds keep the previous numbers and then publish, what the message log stores, and that an unreadable previous file starts fresh.
+
+Both print their results and exit 1 on any failure. Run it after any change to the mapping panel, `kpi-core.mjs`, the sync or a firm's mapping (update that firm's fixture when its mapping changes on purpose). Add a fixture for any new pipeline style that should be recognised.

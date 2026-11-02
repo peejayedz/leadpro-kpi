@@ -1,6 +1,7 @@
 // A tiny GoHighLevel API stand-in for tests. Serves a firm's pipelines and puts ONE open lead
 // in every stage of every pipeline (created 3 days ago), with no calls, messages or calendars.
-// Everything else the sync asks for comes back empty.
+// Everything else the sync asks for comes back empty, unless opts.exportHandler is given: it gets
+// the export request's query ({ channel, cursor, … }) and returns { status?, body? }.
 //
 //   import { startMockGhl } from './mock-ghl.mjs';
 //   const mock = await startMockGhl({ pipelines: [{ id, name, stages: [{ id, name }] }] }, 0);
@@ -20,7 +21,7 @@ export function leadsFor(fixture, now = Date.now()) {
   return leads;
 }
 
-export function startMockGhl(fixture, port = 0) {
+export function startMockGhl(fixture, port = 0, { exportHandler } = {}) {
   const leads = leadsFor(fixture);
   const json = (res, body, status = 200) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(body)); };
   const server = http.createServer((req, res) => {
@@ -34,7 +35,11 @@ export function startMockGhl(fixture, port = 0) {
     if (path === '/calendars/') return json(res, { calendars: [] });
     if (path === '/calendars/events') return json(res, { events: [] });
     if (path === '/conversations/search') return json(res, { conversations: [] });
-    if (path === '/conversations/messages/export') return json(res, { messages: [] });
+    if (path === '/conversations/messages/export') {
+      if (!exportHandler) return json(res, { messages: [] });
+      const r = exportHandler(Object.fromEntries(url.searchParams));
+      return json(res, r.body ?? {}, r.status ?? 200);
+    }
     return json(res, { message: 'not mocked' }, 404);
   });
   return new Promise(resolve => server.listen(port, '127.0.0.1', () => {
