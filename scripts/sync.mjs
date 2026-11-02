@@ -18,6 +18,7 @@ import { computeAll, encryptJSON, decryptJSON, tzOffsetMin } from './kpi-core.mj
 import { checkSlug, loadFirmConfig } from './firms.mjs';
 import { checkScopes, scopeForPath } from './scope-check.mjs';
 import { areaForPath } from './sync-status.mjs';
+import { pickNotInPipeline } from './not-in-pipeline.mjs';
 
 const SLUG = process.argv[2];
 
@@ -73,13 +74,13 @@ const warn = msg => console.log(process.env.GITHUB_ACTIONS ? `::warning::${msg}`
 // GET with retries: rate limits (429), GHL server errors (5xx) and network errors are retried up
 // to 3 times with a growing pause; anything else fails at once. Errors carry the HTTP status.
 const BACKOFF = Number(process.env.GHL_BACKOFF_MS ?? 2000);   // tests shorten this
-async function ghl(path, { version = '2021-07-28' } = {}) {
+async function ghl(path, { version = '2021-07-28', method = 'GET', body } = {}) {
   const where = path.split('?')[0], fail = (status, msg) => Object.assign(new Error(msg), { status, area: areaForPath(where) });
   let last;
   for (let attempt = 0; attempt < 4; attempt++) {
     if (attempt) await sleep(BACKOFF * attempt);
     let res;
-    try { res = await fetch(API + path, { headers: { Accept: 'application/json', Authorization: `Bearer ${TOKEN}`, Version: version } }); }
+    try { res = await fetch(API + path, { method, headers: { Accept: 'application/json', Authorization: `Bearer ${TOKEN}`, Version: version, ...(body ? { 'Content-Type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined }); }
     catch (e) { last = fail(0, `GHL network error on ${where}: ${e.message}`); continue; }
     if (res.status === 429) { last = fail(429, `GHL rate limit on ${where}`); continue; }
     if (res.status >= 500) { last = fail(res.status, `GHL ${res.status} on ${where}: ${(await res.text().catch(() => '')).slice(0, 200)}`); continue; }
@@ -481,10 +482,33 @@ for (const l of leads) {
 console.log(`Derived speed-to-lead for ${stlComputed} leads and first contact for ${contactComputed} leads (of ${leads.length}).`);
 console.log('Message export diagnostics:', JSON.stringify(diag));
 
+// ---------- New contacts not in any pipeline (safety net; see scripts/not-in-pipeline.mjs) ----------
+// Contacts created in the lookback window, newest first, checked against opportunities in EVERY
+// pipeline (not just the mapped ones). The list (names, phones, emails) goes only into the encrypted
+// details file; kpis.json gets counts and the log gets counts only. null = couldn't check.
+const notInPipeline = await optional('contacts search', async () => {
+  const found = [];
+  let reachedEdge = false;
+  for (let page = 1; page <= 100 && !reachedEdge; page++) {
+    const r = await ghl('/contacts/search', { method: 'POST', body: { locationId: LOC, page, pageLimit: 100, sort: [{ field: 'dateAdded', direction: 'desc' }] } });
+    const batch = r.contacts || [];
+    for (const c of batch) { if ((Date.parse(c.dateAdded) || 0) >= since) found.push(c); else reachedEdge = true; }
+    if (batch.length < 100) reachedEdge = true;
+  }
+  if (!reachedEdge) warn(`${SLUG}: contact search stopped after 10,000 contacts; older contacts aren't checked for "not in pipeline".`);
+  const withOpp = new Set(opps.map(o => o.contactId || o.contact?.id).filter(Boolean));
+  const inbound = new Map();
+  for (const e of messageLog.items) if (e.direction === 'inbound' && e.contactId) (inbound.get(e.contactId) || inbound.set(e.contactId, new Set()).get(e.contactId)).add(e.channel);
+  const { items, skipped } = pickNotInPipeline(found, { withOpp, inbound, rules: cfg.notInPipeline || {} });
+  console.log(`New contacts not in any pipeline: ${items.length} of ${found.length} contacts created in the window (skipped: ${skipped.hasOpportunity} have an opportunity, ${skipped.notLeadType} not typed lead, ${skipped.bulk} added in bulk, ${skipped.noInboundSignal} no inbound signal).`);
+  return items;
+});
+
 // ---------- Compute + write ----------
 const records = {
   generatedAt: new Date(now).toISOString(), locationId: LOC, ghlBase: cfg.ghlAppBase, users, leads, appointments, calls,
   messageLog,   // carried into the next sync (see "Conversation messages")
+  notInPipeline,
 };
 const periods = computeAll(records, cfg, now);
 // Public file: numbers only (bySource and turned-away reasons are names + counts, no people).

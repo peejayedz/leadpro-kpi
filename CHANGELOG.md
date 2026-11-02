@@ -5,6 +5,14 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.7.0 — 3 Nov 2026
+- [client] Under the New leads number: which pipeline it counts ("From your Lead Stages pipeline"). The New leads hover, the New leads row in "Where leads drop off", the "Lead → signed client" hover and "How this works" now explain that someone who called, texted or filled in a form but was never added to that pipeline isn't counted.
+- [client] Hover explanations open with a tap on phones and tablets, and inside GoHighLevel.
+- [internal] New contacts not in pipeline: each sync finds contacts created in the dates with no opportunity in any pipeline, typed lead, that came in by form, survey, chat widget or calendar booking (first-touch attribution) or called, texted or emailed in, leaving out bulk adds (5+ within 10 minutes). Rules in `scripts/not-in-pipeline.mjs` and `firms/_defaults.json` (`notInPipeline`).
+- [internal] Admin page: each firm's 30-day count in the firm list, and an amber bell notice (not counted in the badge) with what to do when it's 1 or more.
+- [internal] Client dashboard line under New leads with hover text and a "See who" list, behind `showNotInPipeline` in `firms/_defaults.json` (off; not turned on for any firm). The list lives only in `details.enc.json`; `kpis.json` and the run log get counts only.
+- [internal] Tests: `node tests/pipeline/run.mjs` and `node tests/wording/run.mjs`.
+
 ## v1.6.1 — 3 Nov 2026
 - [internal] Read-only diagnostic "Diagnose missing leads" (`diag-leads.yml`, `scripts/diag-leads.mjs`): opportunities by pipeline, new contacts with no opportunity (by source, type, attribution and tag), and inbound calls and messages from them. Counts only; writes and commits nothing.
 

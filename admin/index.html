@@ -318,6 +318,7 @@ import { parseChangelog, latestVersion, inlineMd } from '../scripts/changelog.mj
 import { STEPS_MAP, initialState, stageList as stagesOf, buildMapping, applyMapping } from './mapping.mjs';
 import { openIssues, firmState, describeIssue, seenKey, inBadge, STALE_MIN } from '../scripts/sync-status.mjs';
 import { checkScopes } from '../scripts/scope-check.mjs';
+import { pipelineNotices } from '../scripts/not-in-pipeline.mjs';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -659,7 +660,9 @@ async function loadFirms() {
     try { subNames[f.slug] = (await getJSON(`firms/${f.slug}/discovery.json`))?.locationName || null; } catch { subNames[f.slug] = null; }   // the GHL sub-account's name
   }));
 }
-const kpiSummary = k => ({ generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null, sync: k.sync || null });
+const kpiSummary = k => ({ generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null, sync: k.sync || null,
+  notInPipeline30: k.periods?.last30?.current?.notInPipeline ?? null });   // null until the firm's first sync with the contact check
+const contactsUrl = slug => { const loc = configs[slug]?.locationId || firmOf(slug)?.locationId || ''; return validLoc(loc) ? `${configs[slug]?.ghlAppBase || 'https://app.lawfirmmarketingpros.com'}/v2/location/${loc}/contacts/smart_list/All` : ''; };
 // Held / incomplete call and message data (scripts/sync.mjs, "Hold").
 function syncFlag(k) {
   const s = k?.sync; if (!s) return '';
@@ -680,7 +683,8 @@ function firmRow(f) {
       ${fi ? `<p class="meta issueline"><span><span class="chip ${fi.kind === 'failed' ? 'bad' : 'warn'}">${esc(issueText(fi).title)}</span> since ${esc(ago(fi.firstSeen))}</span><button class="linkbtn" type="button" data-open-issue="${esc(fi.id)}">Details and fix</button></p>` : ''}
       <p class="meta"><span>${esc(f.practiceArea || 'No practice area')}</span><span class="mono">${esc(f.slug)}</span>${subNames[f.slug] ? `<span>GHL: ${esc(subNames[f.slug])}</span>` : ''}</p>
       <p class="meta"><span title="${esc(fmtTime(k?.generatedAt))}">Last updated ${k ? `${esc(ago(k.generatedAt))} (${esc(fmtTime(k.generatedAt))})` : '<span class="chip warn">no data yet</span>'}${stale ? ' <span class="chip bad" title="Syncs should run every 30 minutes. Check Actions for skipped or failed runs.">over 2 hours old</span>' : ''}</span>
-        ${k?.leads90 != null ? `<span>${k.leads90} lead${k.leads90 === 1 ? '' : 's'} in the last 90 days</span>` : ''}</p>
+        ${k?.leads90 != null ? `<span>${k.leads90} lead${k.leads90 === 1 ? '' : 's'} in the last 90 days</span>` : ''}
+        ${k?.notInPipeline30 != null ? `<span title="Contacts created in the last 30 days who came in by form, chat, booking, call, text or email but have no opportunity in any pipeline (imports and bulk adds left out)">${k.notInPipeline30 ? `<span class="chip warn">${k.notInPipeline30} new contact${k.notInPipeline30 === 1 ? '' : 's'} not in pipeline</span> last 30 days` : '0 new contacts outside the pipeline (30 days)'}</span>` : ''}</p>
       ${syncFlag(k)}
     </div>
     <div class="acts">
@@ -922,6 +926,7 @@ function issueHtml(i, seen) {
 }
 function paintPanel() {
   const seen = seenSet(), open = listed(), notices = issues.filter(i => !inBadge(i)), n = open.filter(i => !seen.has(seenKey(i))).length;
+  const nip = pipelineNotices(firms, kpis);   // amber notices, never counted in the badge or tab title
   const resolved = [...(syncStatus?.resolved || []), ...readStore(LOCAL_RESOLVED, [])]
     .filter(r => (!r.slug || firmOf(r.slug)) && inBadge(r)).sort((a, b) => Date.parse(b.resolvedAt) - Date.parse(a.resolvedAt)).slice(0, 20);
   const lasted = r => { const m = Math.round((Date.parse(r.resolvedAt) - Date.parse(r.firstSeen)) / 60e3); return m >= 0 ? (m < 120 ? `${m} min` : m < 2880 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} days`) : ''; };
@@ -931,7 +936,7 @@ function paintPanel() {
         <button class="linkbtn" type="button" data-n="check">Check now</button>${n ? '<button class="linkbtn" type="button" data-n="seen-all">Mark all as seen</button>' : ''}</p>
       ${checkErr ? `<div class="errbox small">Couldn't check everything: ${esc(checkErr)}</div>` : ''}
     </div>
-    ${notices.length ? `<div class="nnotices">${notices.map(i => { const f = firmOf(i.slug); return `<div class="warnbox nnotice"><b>Holding previous numbers</b> · ${esc(f?.name || i.slug)} · hold ${i.count} of 3, since ${esc(ago(i.firstSeen))}<br>GHL returned fewer calls or messages than the last sync${i.reason ? ` (${esc(i.reason)})` : ''}, so the dashboard keeps the previous numbers. Nothing to do: it usually clears on the next sync. After 3 holds it publishes with a "may be incomplete" note, which shows here as an issue. <button class="linkbtn" type="button" data-n="firm" data-slug="${esc(i.slug)}">Go to firm</button></div>`; }).join('')}</div>` : ''}
+    ${notices.length || nip.length ? `<div class="nnotices">${nip.map(x => { const u = contactsUrl(x.slug); return `<div class="warnbox nnotice"><b>New contacts not in pipeline</b> · ${esc(x.name)} · ${x.count} in the last 30 days<br>${x.count === 1 ? 'A contact' : `${x.count} contacts`} came in by form, chat, booking, call, text or email but ${x.count === 1 ? 'has' : 'have'} no opportunity in any pipeline, so ${x.count === 1 ? 'it isn\'t' : 'they aren\'t'} counted in New leads. What to do: check the firm's lead intake in GHL (the chat widget, form and call workflows) and make sure each one creates an opportunity in the lead pipeline, then add these contacts to it. ${u ? `<a class="linkbtn" href="${esc(u)}" target="_blank" rel="noopener">Open contacts in GHL</a> · ` : ''}<button class="linkbtn" type="button" data-n="firm" data-slug="${esc(x.slug)}">Go to firm</button></div>`; }).join('')}${notices.map(i => { const f = firmOf(i.slug); return `<div class="warnbox nnotice"><b>Holding previous numbers</b> · ${esc(f?.name || i.slug)} · hold ${i.count} of 3, since ${esc(ago(i.firstSeen))}<br>GHL returned fewer calls or messages than the last sync${i.reason ? ` (${esc(i.reason)})` : ''}, so the dashboard keeps the previous numbers. Nothing to do: it usually clears on the next sync. After 3 holds it publishes with a "may be incomplete" note, which shows here as an issue. <button class="linkbtn" type="button" data-n="firm" data-slug="${esc(i.slug)}">Go to firm</button></div>`; }).join('')}</div>` : ''}
     ${open.length ? open.map(i => issueHtml(i, seen)).join('')
       : `<div class="nempty"><span class="okic">${ICON.tick}</span><b>No open issues</b><p>Every firm synced in the last ${STALE_MIN} minutes and the sync chain is running.</p></div>`}
     <details class="nresolved"${resolved.length ? '' : ' hidden'}><summary>Recently resolved (${resolved.length})</summary><ul>${resolved.map(r => {

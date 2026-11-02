@@ -128,6 +128,13 @@ button.metric{cursor:pointer} button.metric:hover .mv b{color:var(--link)}
 .mv{display:flex;align-items:baseline;gap:8px;margin:2px 0 4px;flex-wrap:wrap}
 .mv b{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
 .mv small{font-size:12px;color:var(--ink-2)}
+.metric-in{display:block;width:100%;text-align:left;background:none;border:0;padding:0;margin:0;font:inherit;color:inherit}
+button.metric-in{cursor:pointer} button.metric-in:hover .mv b{color:var(--link)}
+.leadsub{display:block;font-size:12px;color:var(--ink-2);margin:0 0 2px;cursor:help;width:fit-content;text-decoration:underline dotted var(--ink-3);text-underline-offset:3px}
+.nip{margin:6px 0 0;font-size:12px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.nip.warn .niptext{color:var(--warn-ink);font-weight:600}
+.niptext{cursor:help;text-decoration:underline dotted var(--ink-3);text-underline-offset:3px}
+.ftip{cursor:help}
 .badge{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:3px;margin-right:6px}
 .badge.ok{background:var(--ok-bg);color:var(--ok-ink)} .badge.bad{background:var(--bad-bg);color:var(--bad-ink)} .badge.few{background:var(--track);color:var(--ink-3)}
 .cmpv{display:block;font-size:12px;color:var(--ink-2);margin-top:4px}
@@ -303,6 +310,8 @@ const FIRM = PATH_FIRM ? './' : `${ROOT}firms/${SLUG}/`;
 const { buildLists, summarize, periodRange, customRange, compareRange, hasFullPrev, tzOffsetMin, decryptJSON } = await import(`${ROOT}scripts/kpi-core.mjs`);
 const { mergeConfig, practiceSlug } = await import(`${ROOT}scripts/config-merge.mjs`);
 const { parseChangelog, latestVersion, onlyTag, inlineMd } = await import(`${ROOT}scripts/changelog.mjs`);
+const { pipelineWording } = await import(`${ROOT}scripts/wording.mjs`);
+const W = () => pipelineWording(cfg?.pipelines);   // "From your Lead Stages pipeline" etc.
 let changelog = [];   // from CHANGELOG.md; the dashboard shows only [client] entries
 const PASS_KEY = `lfmp-pass-${SLUG}`;   // one saved passphrase per firm (all firms share this origin)
 
@@ -404,7 +413,7 @@ const col = {
 };
 const leadCols = [col.name, col.company, col.email, col.phone, col.source, col.created, col.stage, col.step, col.assigned];
 const DRILLS = {
-  newLeads: { title: 'New leads', list: L => L.newLeads, def: 'Every opportunity created in the selected dates.', cols: [...leadCols, { label: 'Contact status', key: 'contactStatus', type: 'badge', filter: 'contactStatus' }] },
+  newLeads: { title: 'New leads', list: L => L.newLeads, get def() { return W().hover; }, cols: [...leadCols, { label: 'Contact status', key: 'contactStatus', type: 'badge', filter: 'contactStatus' }] },
   contacted: { title: 'Contacted leads', list: L => L.contacted, def: 'New leads with a two-way contact: a reply, a connected call, a booking, or a later stage.', cols: [col.name, col.company, col.phone, { label: 'Contacted at', key: 'firstContactedAt', type: 'dt' }, { label: 'Method', key: 'contactMethod', filter: 'contactMethod' }, col.assigned, col.step] },
   contactRate: { title: 'Contact rate', list: L => L.newLeads, numerator: L => L.contacted.length, numLabel: 'contacted', def: 'All new leads with how far contact got. Filter by Contact status to see who still needs a call.', cols: [col.name, col.company, col.phone, col.created, { label: 'Contact status', key: 'contactStatus', type: 'badge', filter: 'contactStatus' }, col.assigned] },
   speed: { title: 'Speed to first contact', list: L => L.speed, numerator: L => L.speedMeasured.length, numLabel: 'have had a first call',
@@ -427,6 +436,10 @@ DRILLS.showRate = { ...DRILLS.consultHeld, title: 'Consult show rate', denom: L 
 DRILLS.noShowRate = { ...DRILLS.noShows, title: 'Consult no-show rate', denom: L => L.bookedPast.length, denomLabel: 'consults that should have happened by now' };
 DRILLS.signRate = { ...DRILLS.signed, title: 'Agreement → signed', denom: L => L.agreementSent.length, denomLabel: 'agreements sent' };
 DRILLS.leadToSigned = { ...DRILLS.signed, title: 'Lead → signed client', denom: L => L.newLeads.length, denomLabel: 'new leads' };
+// Safety net, shown only when config showNotInPipeline is true (firms/_defaults.json: false).
+const NIP_TIP = 'Contacts created in the selected dates who came in through a form, chat, calendar booking, call, text or email but have no opportunity in any pipeline, so they aren\u2019t in New leads. Imports and bulk-added contacts are left out.';
+DRILLS.notInPipeline = { title: 'New contacts not in any pipeline', list: L => L.notInPipeline || [], def: `${NIP_TIP} Add each real enquiry to the pipeline so it's counted.`,
+  cols: [col.name, col.email, col.phone, { label: 'Contact created', key: 'createdAt', type: 'dt' }, { label: 'Came in by', key: 'via', type: 'badge', filter: 'via' }] };
 
 // ---------- comparison helpers ----------
 const LOWER_BETTER = new Set(['speedToLeadAvgMin', 'noShowPct', 'missedNotReturned', 'turnedAway', 'costPerSigned']);
@@ -458,8 +471,8 @@ const isoDay = ms => new Date(ms).toLocaleDateString('en-CA', { timeZone: TZ() }
 
 // ---------- plain-language definitions (hover on any metric label) ----------
 const DEFS = {
-  leadToSigned: 'Of the leads that came in during these dates, the share that signed. The headline number for pipeline health.',
-  totalLeads: 'Opportunities created in the selected dates. Every other number is a share of this one.',
+  get leadToSigned() { return W().leadToSigned; },
+  get totalLeads() { return W().hover; },
   speedToLeadAvgMin: 'Average minutes from a lead arriving to the first outbound call, counting business hours only. Emails and texts do not stop the clock.',
   within5Pct: 'Share of new leads called within 5 minutes. Leads never called count as not within 5 minutes.',
   missedNotReturned: 'Inbound calls nobody answered that still have no call back. Each one is a lead that may be gone.',
@@ -517,7 +530,7 @@ function badge(value, goal, { lower = false, denom = Infinity, suffix = '' } = {
   const ok = lower ? value <= goal : value >= goal;
   return `<span class="badge ${ok ? 'ok' : 'bad'}">${ok ? 'On goal' : 'Off goal'} (${goal}${suffix})</span>`;
 }
-function metric({ k, label, big, small = '', goal = '', drill, priorCount = false }) {
+function metric({ k, label, big, small = '', goal = '', drill, priorCount = false, sub = '', after = '' }) {
   const can = canDrill() && drill;
   const tag = can ? 'button' : 'div';
   let extra = '';
@@ -527,9 +540,22 @@ function metric({ k, label, big, small = '', goal = '', drill, priorCount = fals
     const pvTxt = pv === null || pv === undefined ? '—' : k === 'speedToLeadAvgMin' ? `${pv} min` : isPct(k) ? fmt.pct(pv) : k === 'costPerSigned' ? fmt.usd(pv) : fmt.n(pv);
     extra = `<span class="cmpv"><span class="sw prev"></span> ${esc(bShort())}: <b>${pvTxt}</b> · <span class="chg ${ch.state}">${esc(ch.text)}</span></span>`;
   } else if (priorCount && prev && prev[k] !== null && prev[k] !== undefined) small = `vs ${fmt.n(prev[k])} prior`;
-  return `<${tag} class="metric" ${can ? `data-drill="${drill}" aria-label="${esc(label)}: view the list"` : ''}>
-    <p class="label" ${DEFS[k] ? `data-tip="${esc(DEFS[k])}"` : ''}>${esc(label)}</p>
-    <span class="mv"><b>${big}</b>${small ? `<small>${small}</small>` : ''}</span>${goal}${extra}</${tag}>`;
+  const inner = `<p class="label" ${DEFS[k] ? `data-tip="${esc(DEFS[k])}"` : ''}>${esc(label)}</p>
+    <span class="mv"><b>${big}</b>${small ? `<small>${small}</small>` : ''}</span>${sub}${goal}${extra}`;
+  const attrs = can ? `data-drill="${drill}" aria-label="${esc(label)}: view the list"` : '';
+  // Something clickable of its own (after) can't sit inside the metric's button, so it goes below it.
+  if (after) return `<div class="metric"><${tag} class="metric-in" ${attrs}>${inner}</${tag}>${after}</div>`;
+  return `<${tag} class="metric" ${attrs}>${inner}</${tag}>`;
+}
+
+// "N new contacts not in any pipeline" under New leads: only with showNotInPipeline on, and only
+// when the sync checked contacts (count not null). The list lives in the encrypted details file.
+function notInPipelineLine() {
+  const v = cur?.notInPipeline;
+  if (cfg.showNotInPipeline !== true || v === null || v === undefined) return '';
+  const text = v === 0 ? 'No new contacts outside the pipeline' : `${fmt.n(v)} new contact${v === 1 ? '' : 's'} not in any pipeline`;
+  const see = v > 0 && canDrill() ? ` <a class="lnk" href="#" role="button" data-drill="notInPipeline">See who</a>` : '';
+  return `<p class="nip${v > 0 ? ' warn' : ''}"><span class="niptext" data-tip="${esc(NIP_TIP)}">${text}</span>${see}</p>`;
 }
 
 // ---------- render ----------
@@ -559,8 +585,9 @@ function render() {
     const share = i === 0 ? '' : `${before ? Math.round((v / before) * 100) : 0}% ${of}`;
     const pv = cmp.on && prev ? (prev.funnel || [])[i]?.[1] : null;
     const tag = drill ? 'button' : 'div';
-    return `<${tag} class="frow" ${drill ? `data-drill="${key}"` : ''} data-tip="${esc(`${label}: ${v}${pv !== null && pv !== undefined ? ` · ${bShort()}: ${pv}` : ''}${drill ? ' · click for the list' : ''}`)}">
-      <span>${label}</span><span class="track"><span class="fill" style="display:block;width:${n ? (v / n) * 100 : 0}%;animation-delay:${i * 60}ms"></span></span>
+    const def = i === 0 ? W().hover : '';   // the New leads row explains what counts as a lead
+    return `<${tag} class="frow" ${drill ? `data-drill="${key}"` : ''} data-tip="${esc(`${label}: ${v}${pv !== null && pv !== undefined ? ` · ${bShort()}: ${pv}` : ''}${def ? ` · ${def}` : ''}${drill ? ' · click for the list' : ''}`)}">
+      <span${def ? ` class="ftip" data-tip="${esc(def)}"` : ''}>${label}</span><span class="track"><span class="fill" style="display:block;width:${n ? (v / n) * 100 : 0}%;animation-delay:${i * 60}ms"></span></span>
       <span class="num">${v}</span><span class="pct">${share}${pv !== null && pv !== undefined ? ` <span class="pv">· ${pv}</span>` : ''}</span></${tag}>`;
   }).join('');
 
@@ -603,7 +630,8 @@ function render() {
 
   <div class="stages">
     <section class="stage"><h2 data-tip="${esc(DEFS.secLeads)}"><span>1</span>Leads in</h2>
-      ${metric({ k: 'totalLeads', label: 'New leads', big: fmt.n(n), drill: 'newLeads', priorCount: true })}
+      ${metric({ k: 'totalLeads', label: 'New leads', big: fmt.n(n), drill: 'newLeads', priorCount: true,
+        sub: `<span class="leadsub" data-tip="${esc(W().hover)}">${esc(W().sub)}</span>`, after: notInPipelineLine() })}
       ${metric({ k: 'speedToLeadAvgMin', label: 'Speed to first contact', big: fmt.min(c.speedToLeadAvgMin), drill: 'speed', goal: badge(c.speedToLeadAvgMin, T.speedToLeadMin, { lower: true, denom: c.speedMeasured, suffix: ' min' }) })}
       ${metric({ k: 'within5Pct', label: 'Contacted within 5 min', big: fmt.pct(c.within5Pct), small: `${c.within5} of ${n}`, drill: 'within5', goal: badge(c.within5Pct, T.within5Pct, { denom: n, suffix: '%' }) })}
       ${metric({ k: 'missedNotReturned', label: 'Missed calls not returned', big: fmt.n(c.missedNotReturned), drill: 'missedNotReturned', priorCount: true })}
@@ -905,7 +933,8 @@ function openHow() {
       <section><h4>Where the numbers come from</h4>
         <ul>
           <li>Pulled from GoHighLevel automatically every 30 minutes. Last sync: <b>${esc(ts)}</b>. Press <b>Reload</b> to show the newest numbers.</li>
-          <li>Pipeline: ${list(cfg.pipelines?.length ? cfg.pipelines : ['All pipelines'])}. Each opportunity created in the selected dates counts as one new lead.</li>
+          <li><b>New leads</b> are leads added to ${esc(W().your)} during the selected dates. ${esc(W().notCounted)} Pipeline${(cfg.pipelines || []).length === 1 ? '' : 's'}: ${list(cfg.pipelines?.length ? cfg.pipelines : ['All pipelines'])}.</li>
+          ${cfg.showNotInPipeline === true ? `<li><b>New contacts not in any pipeline</b> (under New leads): ${esc(NIP_TIP)}</li>` : ''}
           <li>Consults come from the GHL calendar, and speed to first contact and missed calls come from the GHL call log.</li>
         </ul></section>
       <section><h4>Using the dashboard</h4>
@@ -1009,15 +1038,38 @@ $('refreshBtn').addEventListener('click', refresh);
 $('howBtn').addEventListener('click', () => { if (cfg) openHow(); });
 document.addEventListener('click', e => { if (e.target.closest('#discMore') && cfg) { e.preventDefault(); openHow(); setTimeout(() => { const h = [...$('modal').querySelectorAll('.how h4')].find(x => x.textContent.includes('Where leads come from')); h?.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); } });
 $('lockBtn').addEventListener('click', () => (records ? lock() : openUnlock(null)));
+// Hover text: follows the mouse; on a phone or tablet (and inside the GHL iframe) a tap opens it.
+// A tap on an explanation (a label, heading or the line under New leads) shows its text instead of
+// opening the list; a tap on a number, button or link works as usual. Tap again or elsewhere to close.
 const tip = $('tip');
+let pointer = 'mouse', tipFor = null;
+const hideTip = () => { tip.style.opacity = 0; tipFor = null; };
+document.addEventListener('pointerdown', e => { pointer = e.pointerType || 'mouse'; }, true);
+document.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') pointer = 'mouse'; }, true);
 document.addEventListener('mousemove', e => {
+  if (pointer !== 'mouse') return;
   const el = e.target.closest('[data-tip]');
-  if (!el) { tip.style.opacity = 0; return; }
+  if (!el) { hideTip(); return; }
   tip.textContent = el.dataset.tip;
-  tip.style.left = Math.min(e.clientX + 14, innerWidth - 290) + 'px';
+  tip.style.left = Math.max(8, Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8)) + 'px';
   tip.style.top = e.clientY + 14 + 'px';
   tip.style.opacity = 1;
 });
+document.addEventListener('click', e => {
+  if (pointer === 'mouse') return;
+  const el = e.target.closest('[data-tip]');
+  const info = el && !el.matches('button, a, [data-drill], input, select');
+  if (!info) { hideTip(); return; }
+  e.preventDefault(); e.stopPropagation();   // don't also open the metric's list
+  if (tipFor === el) { hideTip(); return; }
+  tipFor = el;
+  tip.textContent = el.dataset.tip;
+  const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8)) + 'px';
+  tip.style.top = (r.bottom + 6 + h > innerHeight && r.top - h - 6 > 0 ? r.top - h - 6 : r.bottom + 6) + 'px';
+  tip.style.opacity = 1;
+}, true);
+addEventListener('scroll', () => { if (tipFor) hideTip(); }, { passive: true, capture: true });
 
 // ---------- start ----------
 (async () => {

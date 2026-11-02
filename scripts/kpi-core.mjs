@@ -192,6 +192,9 @@ export function buildLists(records, cfg, from, to) {
     inboundCalls,
     missed,
     missedNotReturned: missed ? missed.filter(k => !k.calledBack) : null,
+    // Contacts created in the dates who came in like a lead but have no opportunity in any pipeline
+    // (chosen by scripts/not-in-pipeline.mjs at sync time). null = not checked (older details file).
+    notInPipeline: Array.isArray(records.notInPipeline) ? records.notInPipeline.filter(c => inRange(c.createdAt, from, to)) : null,
   };
 }
 
@@ -216,6 +219,7 @@ export function summarize(L) {
     within5Pct: pct(L.within5.length, n),
     missedCalls: L.missed ? L.missed.length : null,
     missedNotReturned: L.missedNotReturned ? L.missedNotReturned.length : null,
+    notInPipeline: L.notInPipeline ? L.notInPipeline.length : null,
     qualified: L.qualified.length,
     qualifiedPct: pct(L.qualified.length, L.contacted.length),
     turnedAway: L.turnedAway.length,

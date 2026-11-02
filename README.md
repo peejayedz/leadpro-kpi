@@ -98,6 +98,19 @@ Missed calls, missed calls not returned, speed to first contact, contacted withi
 
 To look at the export itself: Actions → **Diagnose message export (read-only)** → Run workflow (manual only). It pulls each channel several times in a row and logs page-by-page counts, dates, timings and rate-limit headers; no message content or contact data.
 
+## New leads and new contacts not in a pipeline
+
+**New leads** counts opportunities created in the firm's mapped pipelines (`pipelines` in `config.json`). The dashboard says so under the number ("From your Lead Stages pipeline"; "From your X and Y pipelines" for two, "From N pipelines" for more, built by `scripts/wording.mjs`), and the same sentence appears in the New leads hover, the funnel's New leads row, the "Lead → signed client" hover and "How this works". Hovers open on tap on phones and inside the GHL iframe.
+
+**New contacts not in pipeline** is a safety net for enquiries that never got an opportunity (e.g. a chat workflow that stopped creating one). Each sync pulls contacts created in the lookback window (`POST /contacts/search`, newest first) and keeps those that (rules in `scripts/not-in-pipeline.mjs`, settings in `firms/_defaults.json` → `notInPipeline`):
+
+- have **no opportunity in any pipeline** (not just the mapped ones);
+- are typed **lead** (or blank), so customers and offboarded clients are skipped;
+- **came in like a lead**: first-touch attribution medium is a form, survey, chat widget, calendar booking or similar (`inboundMediums`), or they called, texted or emailed in (from the message log);
+- **weren't bulk-added**: 5+ such contacts created within 10 minutes of each other (`bulk`) are treated as an import and skipped. GHL has no reliable "imported" flag (`createdBy` is blank and `source` mostly empty), so this rule and the inbound signal decide instead.
+
+The list (name, email, phone, created, "came in by") goes only into `details.enc.json`; `kpis.json` gets the count per period (`notInPipeline`), and the run log prints counts only. A failed contact search leaves the count `null` (unknown) rather than 0. The admin page shows each firm's 30-day count in the firm list and an amber bell notice (not counted in the badge) when it's 1 or more. On the client dashboard it's a line under New leads with a "See who" list, shown only when `showNotInPipeline` is `true` (default `false`; set it in a firm's `config.json` to turn it on).
+
 ## Sync schedule and the sync chain
 
 Syncs are meant to run every 30 minutes, at :07 and :37 UTC. GitHub skips many scheduled runs, so the cron is backed up by a **sync chain**: when a scheduled or chained sync ends, it starts `sync-chain.yml`, which waits for the next :07/:37 and starts "Sync all firms (chain)", unless a scheduled or chained sync already started for that slot. That run starts the chain again.
@@ -196,6 +209,10 @@ The page finds the workflow run it started by its title (`run-name`: "Sync <slug
 `node tests/messages/run.mjs` runs the real sync against a mock GHL whose message export misbehaves the way the real one does (short pulls, 500s and 429s, a missing channel, duplicate ids, unordered pages) and checks that numbers don't dip, that holds keep the previous numbers and then publish, what the message log stores, and that an unreadable previous file starts fresh.
 
 `node tests/chain/run.mjs` checks the sync chain: slot timing, when a slot counts as already covered, the script against a mock GitHub API, and that the workflows keep their guardrails (who chains, concurrency, `SYNC_CHAIN`, the backup cron, and that a failed sync still commits the other firms and starts the next link).
+
+`node tests/pipeline/run.mjs` checks "New contacts not in pipeline": who counts (opportunity anywhere, contact type, inbound signal, bulk adds), the admin notices, the count by dates, and the real sync against a mock GHL with contacts (counts in `kpis.json`, the list only in the encrypted file, no name, phone or email in `kpis.json` or the log, a failing search gives `null`, a refused one stops the sync), and that `showNotInPipeline` is off for every firm.
+
+`node tests/wording/run.mjs` checks the New leads wording for one, two, three or more and no mapped pipelines, every firm's real config, and that the dashboard uses it in all four places and opens hovers on tap.
 
 `node tests/status/run.mjs` runs the real sync against a mock GHL that fails in every way the bell reports (token rejected, missing scopes, server error, rate limit, unreachable, config errors, missing token secret, a crash) and checks the category, that nothing is published, and that the result file holds no secrets or contact data. It also checks how runs open and resolve issues, the system-wide states (chain off, chain stopped, no sync at all, stale firms), the wording and buttons for each issue type, and that nothing outside the allow-list reaches `status/sync-status.json`.
 

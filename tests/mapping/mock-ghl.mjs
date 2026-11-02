@@ -4,6 +4,8 @@
 // the export request's query ({ channel, cursor, … }) and returns { status?, body? }.
 // opts.intercept(path, query) runs first for every request; returning { status?, body? } answers
 // it instead (tests use it for refused tokens, missing scopes and server errors).
+// opts.contacts: contacts returned by POST /contacts/search, 100 per page in the order given
+// (newest first, as the sync asks); none by default.
 //
 //   import { startMockGhl } from './mock-ghl.mjs';
 //   const mock = await startMockGhl({ pipelines: [{ id, name, stages: [{ id, name }] }] }, 0);
@@ -23,7 +25,7 @@ export function leadsFor(fixture, now = Date.now()) {
   return leads;
 }
 
-export function startMockGhl(fixture, port = 0, { exportHandler, intercept } = {}) {
+export function startMockGhl(fixture, port = 0, { exportHandler, intercept, contacts = [] } = {}) {
   const leads = leadsFor(fixture);
   const json = (res, body, status = 200) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(body)); };
   const server = http.createServer((req, res) => {
@@ -32,6 +34,16 @@ export function startMockGhl(fixture, port = 0, { exportHandler, intercept } = {
     if (hit) return json(res, hit.body ?? {}, hit.status ?? 200);
     if (path === '/opportunities/pipelines') return json(res, { pipelines: fixture.pipelines || [] });
     if (path === '/opportunities/search') return json(res, { opportunities: url.searchParams.get('page') && url.searchParams.get('page') !== '1' ? [] : leads.map(({ _pipeline, _stage, ...o }) => o), meta: {} });
+    if (path === '/contacts/search' && req.method === 'POST') {
+      let raw = '';
+      req.on('data', d => { raw += d; });
+      req.on('end', () => {
+        let body = {}; try { body = JSON.parse(raw || '{}'); } catch {}
+        const size = body.pageLimit || 100, page = body.page || 1;
+        json(res, { contacts: contacts.slice((page - 1) * size, page * size), total: contacts.length });
+      });
+      return;
+    }
     if (path.startsWith('/contacts/')) { const id = path.split('/')[2]; return json(res, { contact: { id, firstName: 'Lead', lastName: id, tags: [], source: 'Web form' } }); }
     if (path === '/users/') return json(res, { users: [] });
     if (/^\/locations\/[^/]+\/customFields$/.test(path)) return json(res, { customFields: [] });

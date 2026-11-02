@@ -200,5 +200,12 @@
     "connectedCallSeconds": 60,
     "maxDays": 7
   },
+  "_notInPipelineNote": "New contacts not in pipeline (safety net): contacts created in the dates with no opportunity in any pipeline, typed lead (or blank), that came in through one of inboundMediums (first-touch attribution medium) or called, texted or emailed in, and weren't part of a bulk add (bulk.count+ such contacts within bulk.minutes). The admin page always shows the count; showNotInPipeline puts a line under New leads on the client dashboard.",
+  "showNotInPipeline": false,
+  "notInPipeline": {
+    "inboundMediums": ["form", "survey", "quiz", "chat_widget", "live_chat", "calendar", "appointment", "booking", "call", "phone", "sms", "messenger", "facebook_form", "fb_lead_form", "gmb", "whatsapp"],
+    "leadTypes": ["lead", ""],
+    "bulk": { "count": 5, "minutes": 10 }
+  },
   "_channelsNote": "Marketing channel rules, applied to each lead's FIRST-TOUCH attribution from GHL, first match wins. Add a channel by adding a rule here; no code change needed. clickIds: gclid=Google Ads, msclkid=Bing/Microsoft Ads, fbclid=Meta. paidMedium:true means utm_medium must be a paid medium (or a click ID present)."
 }
