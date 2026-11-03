@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-03T14:11:29.026Z",
+  "updatedAt": "2026-11-03T14:40:36.700Z",
   "lastRun": {
-    "at": "2026-11-03T14:11:29.026Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41650526775",
+    "at": "2026-11-03T14:40:36.700Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41655450390",
     "event": "workflow_dispatch",
     "chained": true
   },
@@ -11,13 +11,13 @@
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-03T14:11:29.026Z",
+  "lastAnySuccessAt": "2026-11-03T14:40:36.700Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-03T14:11:29.026Z",
-      "lastSuccessAt": "2026-11-03T14:11:29.026Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41650526775",
+      "lastAttemptAt": "2026-11-03T14:40:36.700Z",
+      "lastSuccessAt": "2026-11-03T14:40:36.700Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41655450390",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -50,9 +50,9 @@
     },
     "lfmp": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-03T14:11:29.026Z",
-      "lastSuccessAt": "2026-11-03T14:11:29.026Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41650526775",
+      "lastAttemptAt": "2026-11-03T14:40:36.700Z",
+      "lastSuccessAt": "2026-11-03T14:40:36.700Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41655450390",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -66,7 +66,7 @@
           "other": 0,
           "bulk": 0,
           "notLeadType": 1,
-          "noInboundSignal": 5
+          "noInboundSignal": 6
         },
         "last90": {
           "form": 1,
@@ -78,16 +78,16 @@
           "email": 1,
           "other": 0,
           "bulk": 9,
-          "notLeadType": 14,
-          "noInboundSignal": 37
+          "notLeadType": 11,
+          "noInboundSignal": 38
         }
       }
     },
     "hedayati-law-group-p-c": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-03T14:11:29.026Z",
-      "lastSuccessAt": "2026-11-03T14:11:29.026Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41650526775",
+      "lastAttemptAt": "2026-11-03T14:40:36.700Z",
+      "lastSuccessAt": "2026-11-03T14:40:36.700Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41655450390",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
