@@ -5,6 +5,9 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.8.0 — 4 Nov 2026
+- [client] LeadPro logo added; date line tidied.
+
 ## v1.7.1 — 3 Nov 2026
 - [internal] Came-in-by breakdown for "New contacts not in pipeline": each sync logs, and writes to `status/sync-status.json` per firm, the last 30 and 90 days' counts by form, survey, chat widget, booking, inbound call, inbound SMS, inbound email and other, plus how many were left out as bulk-added, not typed lead or no inbound signal. The log also shows the first-touch medium of contacts counted only because they emailed in. Counts only; the status file accepts fixed keys and whole numbers only. No dashboard change.
 

@@ -5,7 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>LeadPro KPI Scorecard</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+<script>
+// Runs before first paint: apply the saved theme (so the page and logo don't flash) and add the
+// tab icons. Paths resolve from firms/<slug>/ and app/ alike (same rule as ROOT below).
+(function () {
+  try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  var b = location.pathname.replace(/(?:firms\/[^/]+|app)\/[^/]*$/, '') + 'brand/', v = '?v=1.8.0';
+  window.LP_BRAND = function (f) { return b + f + v; };
+  [['icon', 'favicon-32.png', 'image/png', '32x32'], ['icon', 'leadpro-icon.svg', 'image/svg+xml'], ['apple-touch-icon', 'apple-touch-icon-180.png', '', '180x180']].forEach(function (i) {
+    var l = document.createElement('link'); l.rel = i[0]; l.href = b + i[1] + v; if (i[2]) l.type = i[2]; if (i[3]) l.sizes = i[3]; document.head.appendChild(l);
+  });
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
@@ -46,6 +57,14 @@ a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
 .head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px 20px;flex-wrap:wrap;padding-bottom:12px;border-bottom:2px solid var(--rule-strong)}
 .head .titles{flex:1 1 380px;min-width:0}
 .brandline{font-size:13px;color:var(--ink-2);margin:0 0 4px} .brandline b{color:var(--ink)}
+.brandmark{display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex:0 0 auto}
+.brandmark .logo{display:block;height:36px;width:auto}
+.brandmark .brandline{white-space:nowrap}
+.brandmark .logo-dark,.brandmark.text .logo,.brandmark:not(.text) .brandname{display:none}
+.brandmark .brandname{font-weight:700;color:var(--ink);font-size:13px}
+:root[data-theme="dark"] .brandmark:not(.text) .logo-light{display:none} :root[data-theme="dark"] .brandmark:not(.text) .logo-dark{display:block}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .brandmark:not(.text) .logo-light{display:none} :root:not([data-theme="light"]) .brandmark:not(.text) .logo-dark{display:block}}
+@media (max-width:520px){.brandmark .logo{height:30px}}
 h1{font-family:var(--serif);font-weight:600;font-size:clamp(24px,3.4vw,30px);line-height:1.15;margin:0 0 4px;letter-spacing:-.01em}
 .sub{font-size:13px;color:var(--ink-2);margin:0}
 .practice{font-size:13.5px;font-weight:600;color:var(--ink-2);margin:0 0 4px}
@@ -195,7 +214,7 @@ button.mini{cursor:pointer} button.mini:hover span:first-child{color:var(--link)
 .pweye svg{width:18px;height:18px}
 
 /* how this works */
-.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:2px}
+.topline{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 12px;margin-bottom:10px}
 .topline .brandline{margin:0}
 .howbtn{border-radius:999px}
 .themebtn{border-radius:999px;padding:6px 10px}
@@ -233,7 +252,12 @@ button.mini{cursor:pointer} button.mini:hover span:first-child{color:var(--link)
 </head>
 <body>
 <main class="wrap"><div class="card">
-  <div class="topline"><p class="brandline"><b id="brand">LeadPro</b> client dashboard</p>
+  <div class="topline"><div class="brandmark" id="brandMark">
+      <img class="logo logo-light" data-brand="leadpro-logo-for-light-backgrounds.svg" alt="LeadPro" width="158" height="36">
+      <img class="logo logo-dark" data-brand="leadpro-logo-for-dark-backgrounds.svg" alt="LeadPro" width="158" height="36">
+      <b class="brandname" id="brand">LeadPro</b>
+      <p class="brandline">client dashboard</p></div>
+    <script>document.querySelectorAll('#brandMark img[data-brand]').forEach(function (i) { i.src = LP_BRAND(i.dataset.brand); });</script>
     <span style="display:flex;gap:8px;align-items:center">
     <button class="btn themebtn" id="themeBtn" title="Switch between automatic, light and dark"></button>
     <button class="btn howbtn" id="howBtn" aria-haspopup="dialog">
@@ -455,10 +479,10 @@ function change(k, c, p) {
   if (!isPct(k) && k !== 'speedToLeadAvgMin') text += p === 0 ? ' (new)' : ` (${d > 0 ? '+' : '−'}${Math.abs(Math.round((d / Math.abs(p)) * 100))}%)`;
   return { state: dir > 0 ? 'good' : 'bad', text };
 }
-const fmtSpan = (from, to) => {
+const fmtSpan = (from, to, inParens = false) => {   // inParens: the span sits inside brackets already, so "to now" follows a comma
   const o = { timeZone: TZ(), month: 'short', day: 'numeric' };
   const a = new Date(from).toLocaleDateString('en-US', o), b = new Date(to - 1).toLocaleDateString('en-US', o);
-  return (a === b ? a : `${a} – ${b}`) + (Math.abs(to - Date.parse((records || pub).generatedAt)) < 60000 ? ' (to now)' : '');
+  return (a === b ? a : `${a} – ${b}`) + (Math.abs(to - Date.parse((records || pub).generatedAt)) < 60000 ? (inParens ? ', to now' : ' (to now)') : '');
 };
 const B_NAMES = {
   prev: { today: 'Yesterday, same time', yesterday: 'Day before', thisWeek: 'Last week, same point', lastWeek: 'Week before', last7: 'Previous 7 days', last30: 'Previous 30 days', last90: 'Previous 90 days', thisMonth: 'Last month, same point', lastMonth: 'Month before', thisQuarter: 'Last quarter, same point', lastQuarter: 'Quarter before', custom: 'Previous period' },
@@ -562,6 +586,7 @@ function notInPipelineLine() {
 function render() {
   const T = pub.targets, c = cur, n = c.totalLeads;
   $('brand').textContent = cfg.brand || 'LeadPro';
+  $('brandMark').classList.toggle('text', !!cfg.brand && cfg.brand !== 'LeadPro');   // a firm with its own brand text keeps the text instead of the logo
   $('pageTitle').textContent = cfg.title || `${cfg.locationName} KPI Scorecard`;
   document.title = cfg.title || `${cfg.locationName} KPI Scorecard`;
   $('practiceArea').textContent = cfg.practiceArea || '';
@@ -574,7 +599,7 @@ function render() {
   $('cmpBtn').classList.toggle('on', cmp.on);
   $('cmpBtnLabel').textContent = cmp.on ? 'Comparing' : 'Compare to prior';
   const ts = new Date((records || pub).generatedAt);
-  $('updated').textContent = `${cfg.locationName}, ${sel.key === 'custom' ? range.label : `${range.label.toLowerCase()} (${fmtSpan(range.from, range.to)})`}. Data as of ${ts.toLocaleString('en-US', { timeZone: TZ(), dateStyle: 'medium', timeStyle: 'short' })}; updates from GoHighLevel every 30 minutes.`;
+  $('updated').textContent = `${cfg.locationName}, ${sel.key === 'custom' ? range.label : `${range.label.toLowerCase()} (${fmtSpan(range.from, range.to, true)})`}. Data as of ${ts.toLocaleString('en-US', { timeZone: TZ(), dateStyle: 'medium', timeStyle: 'short' })}; updates from GoHighLevel every 30 minutes.`;
   renderCompareLine();
   renderNotice();
   renderDataNote();

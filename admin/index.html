@@ -6,7 +6,10 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <title>LeadPro Admin</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+<link rel="icon" type="image/png" sizes="32x32" href="../brand/favicon-32.png?v=1.8.0">
+<link rel="icon" type="image/svg+xml" href="../brand/leadpro-icon.svg?v=1.8.0">
+<link rel="apple-touch-icon" sizes="180x180" href="../brand/apple-touch-icon-180.png?v=1.8.0">
+<script>/* apply the saved theme before first paint so the page and logo don't flash */ try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
@@ -47,8 +50,15 @@ a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
 .small{font-size:13px}
 
 /* top + header */
-.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:2px}
+.topline{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 12px;margin-bottom:8px}
 .brandline{font-size:13px;color:var(--ink-2);margin:0} .brandline b{color:var(--ink)}
+.brandmark{display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex:0 0 auto}
+.brandmark .logo{display:block;height:36px;width:auto}
+.brandmark .brandline{white-space:nowrap}
+.brandmark .logo-dark{display:none}
+:root[data-theme="dark"] .brandmark .logo-light{display:none} :root[data-theme="dark"] .brandmark .logo-dark{display:block}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .brandmark .logo-light{display:none} :root:not([data-theme="light"]) .brandmark .logo-dark{display:block}}
+@media (max-width:520px){.brandmark .logo{height:30px}}
 h1{font-family:var(--serif);font-weight:600;font-size:clamp(24px,3.4vw,30px);line-height:1.15;margin:4px 0 4px;letter-spacing:-.01em}
 h2{font-family:var(--serif);font-weight:600;font-size:21px;margin:0 0 4px}
 h3{font-size:16px;margin:0}
@@ -96,6 +106,7 @@ input[readonly]{color:var(--ink-2)}
 .mark{width:42px;height:42px;border-radius:10px;background:var(--sel-bg);display:grid;place-items:center}
 .mark svg{width:20px;height:20px;stroke:var(--bar);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .gate h1{font-size:24px;margin:0}
+.gate .brandmark{margin-bottom:10px}
 .gate ol{margin:0;padding-left:20px;font-size:13.5px;color:var(--ink-2)} .gate ol li{margin:3px 0}
 
 /* firm list */
@@ -242,8 +253,7 @@ input[readonly]{color:var(--ink-2)}
 <!-- ================= lock screen ================= -->
 <div class="gate" id="lockView" hidden>
   <form class="card" id="lockForm" autocomplete="on">
-    <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
-    <div><p class="brandline"><b>LeadPro</b> admin</p><h1>Scorecard admin</h1><p class="sub">Enter the admin password to continue.</p></div>
+    <div><div class="brandmark"><img class="logo logo-light" src="../brand/leadpro-logo-for-light-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><img class="logo logo-dark" src="../brand/leadpro-logo-for-dark-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><p class="brandline">admin</p></div><h1>Scorecard admin</h1><p class="sub">Enter the admin password to continue.</p></div>
     <input type="text" name="username" value="leadpro-admin" autocomplete="username" hidden>
     <label class="f" for="lockPw">Password
       <span class="pw"><input type="password" id="lockPw" autocomplete="current-password" required><button type="button" class="eye" data-eye="lockPw" aria-label="Show password"></button></span>
@@ -257,7 +267,7 @@ input[readonly]{color:var(--ink-2)}
 <div class="gate" id="setupView" hidden>
   <div class="card">
     <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
-    <div><p class="brandline"><b>LeadPro</b> admin</p><h1>Set an admin password first</h1></div>
+    <div><div class="brandmark"><img class="logo logo-light" src="../brand/leadpro-logo-for-light-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><img class="logo logo-dark" src="../brand/leadpro-logo-for-dark-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><p class="brandline">admin</p></div><h1>Set an admin password first</h1></div>
     <p class="sub">This page has no password yet. In the repo folder, run <code class="mono">node scripts/set-admin-password.mjs</code>, then commit and push <code class="mono">admin/lock.json</code>.</p>
     <div class="ferr" id="setupErr"></div>
   </div>
@@ -267,7 +277,7 @@ input[readonly]{color:var(--ink-2)}
 <div class="gate wide" id="tokenView" hidden>
   <form class="card" id="tokenForm" autocomplete="off">
     <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/></svg></div>
-    <div><p class="brandline"><b>LeadPro</b> admin</p><h1>Connect GitHub</h1><p class="sub" id="tokenWhy">This device has no GitHub token saved yet. It's stored here only, encrypted with your admin password.</p></div>
+    <div><div class="brandmark"><img class="logo logo-light" src="../brand/leadpro-logo-for-light-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><img class="logo logo-dark" src="../brand/leadpro-logo-for-dark-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><p class="brandline">admin</p></div><h1>Connect GitHub</h1><p class="sub" id="tokenWhy">This device has no GitHub token saved yet. It's stored here only, encrypted with your admin password.</p></div>
     <ol>
       <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → Fine-grained tokens → Generate new token</a>.</li>
       <li>Repository access: <b>Only select repositories</b> → <b class="repoName">leadpro-kpi</b>.</li>
@@ -285,7 +295,7 @@ input[readonly]{color:var(--ink-2)}
 <!-- ================= app ================= -->
 <main class="wrap" id="appView" hidden>
   <div class="card">
-    <div class="topline"><p class="brandline"><b>LeadPro</b> admin</p>
+    <div class="topline"><div class="brandmark"><img class="logo logo-light" src="../brand/leadpro-logo-for-light-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><img class="logo logo-dark" src="../brand/leadpro-logo-for-dark-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><p class="brandline">admin</p></div>
       <span class="controls">
         <span class="bellwrap" id="bellWrap">
           <button class="btn bellbtn" type="button" id="bellBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="nPanel" aria-label="Sync issues" title="Sync issues">
