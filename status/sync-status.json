@@ -1,23 +1,23 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-06T21:09:20.399Z",
+  "updatedAt": "2026-11-06T21:30:42.735Z",
   "lastRun": {
-    "at": "2026-11-06T21:09:20.399Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42294030469",
-    "event": "workflow_dispatch",
-    "chained": true
+    "at": "2026-11-06T21:30:42.735Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42296816089",
+    "event": "schedule",
+    "chained": false
   },
   "syncChain": {
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-06T21:09:20.399Z",
+  "lastAnySuccessAt": "2026-11-06T21:30:42.735Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-06T21:09:20.399Z",
-      "lastSuccessAt": "2026-11-06T21:09:20.399Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42294030469",
+      "lastAttemptAt": "2026-11-06T21:30:42.735Z",
+      "lastSuccessAt": "2026-11-06T21:30:42.735Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42296816089",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -50,13 +50,13 @@
     },
     "lfmp": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-06T21:09:20.399Z",
-      "lastSuccessAt": "2026-11-06T21:09:20.399Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42294030469",
+      "lastAttemptAt": "2026-11-06T21:30:42.735Z",
+      "lastSuccessAt": "2026-11-06T21:30:42.735Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42296816089",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
-          "form": 1,
+          "form": 2,
           "survey": 0,
           "chat": 0,
           "booking": 0,
@@ -69,7 +69,7 @@
           "noInboundSignal": 8
         },
         "last90": {
-          "form": 1,
+          "form": 2,
           "survey": 0,
           "chat": 0,
           "booking": 0,
@@ -85,9 +85,9 @@
     },
     "hedayati-law-group-p-c": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-06T21:09:20.399Z",
-      "lastSuccessAt": "2026-11-06T21:09:20.399Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42294030469",
+      "lastAttemptAt": "2026-11-06T21:30:42.735Z",
+      "lastSuccessAt": "2026-11-06T21:30:42.735Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42296816089",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
