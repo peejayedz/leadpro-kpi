@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-06T18:11:26.107Z",
+  "updatedAt": "2026-11-06T18:42:21.941Z",
   "lastRun": {
-    "at": "2026-11-06T18:11:26.107Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42267750615",
+    "at": "2026-11-06T18:42:21.941Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42272322181",
     "event": "workflow_dispatch",
     "chained": true
   },
@@ -11,13 +11,13 @@
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-06T18:11:26.107Z",
+  "lastAnySuccessAt": "2026-11-06T18:42:21.941Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-06T18:11:26.107Z",
-      "lastSuccessAt": "2026-11-06T18:11:26.107Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42267750615",
+      "lastAttemptAt": "2026-11-06T18:42:21.941Z",
+      "lastSuccessAt": "2026-11-06T18:42:21.941Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42272322181",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -50,9 +50,9 @@
     },
     "lfmp": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-06T18:11:26.107Z",
-      "lastSuccessAt": "2026-11-06T18:11:26.107Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42267750615",
+      "lastAttemptAt": "2026-11-06T18:42:21.941Z",
+      "lastSuccessAt": "2026-11-06T18:42:21.941Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42272322181",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -85,9 +85,9 @@
     },
     "hedayati-law-group-p-c": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-06T18:11:26.107Z",
-      "lastSuccessAt": "2026-11-06T18:11:26.107Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42267750615",
+      "lastAttemptAt": "2026-11-06T18:42:21.941Z",
+      "lastSuccessAt": "2026-11-06T18:42:21.941Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42272322181",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
