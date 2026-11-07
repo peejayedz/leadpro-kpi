@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-06T21:30:42.735Z",
+  "updatedAt": "2026-11-07T01:14:09.909Z",
   "lastRun": {
-    "at": "2026-11-06T21:30:42.735Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42296816089",
+    "at": "2026-11-07T01:14:09.909Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42322529418",
     "event": "schedule",
     "chained": false
   },
@@ -11,13 +11,13 @@
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-06T21:30:42.735Z",
+  "lastAnySuccessAt": "2026-11-07T01:14:09.909Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-06T21:30:42.735Z",
-      "lastSuccessAt": "2026-11-06T21:30:42.735Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42296816089",
+      "lastAttemptAt": "2026-11-07T01:14:09.909Z",
+      "lastSuccessAt": "2026-11-07T01:14:09.909Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42322529418",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -50,13 +50,13 @@
     },
     "lfmp": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-06T21:30:42.735Z",
-      "lastSuccessAt": "2026-11-06T21:30:42.735Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42296816089",
+      "lastAttemptAt": "2026-11-07T01:14:09.909Z",
+      "lastSuccessAt": "2026-11-07T01:14:09.909Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42322529418",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
-          "form": 2,
+          "form": 1,
           "survey": 0,
           "chat": 0,
           "booking": 0,
@@ -69,7 +69,7 @@
           "noInboundSignal": 8
         },
         "last90": {
-          "form": 2,
+          "form": 1,
           "survey": 0,
           "chat": 0,
           "booking": 0,
@@ -85,9 +85,9 @@
     },
     "hedayati-law-group-p-c": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-06T21:30:42.735Z",
-      "lastSuccessAt": "2026-11-06T21:30:42.735Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42296816089",
+      "lastAttemptAt": "2026-11-07T01:14:09.909Z",
+      "lastSuccessAt": "2026-11-07T01:14:09.909Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42322529418",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -121,6 +121,50 @@
   },
   "open": [],
   "resolved": [
+    {
+      "id": "system:no-sync",
+      "slug": null,
+      "kind": "no-sync",
+      "firstSeen": "2026-11-06T22:15:42.735Z",
+      "lastSeen": "2026-11-07T01:14:09.909Z",
+      "count": 7,
+      "runUrl": null,
+      "resolvedAt": "2026-11-07T01:14:09.909Z",
+      "resolvedRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42322529418"
+    },
+    {
+      "id": "hedayati-law-group-p-c:stale",
+      "slug": "hedayati-law-group-p-c",
+      "kind": "stale",
+      "firstSeen": "2026-11-06T22:15:42.735Z",
+      "lastSeen": "2026-11-07T01:14:09.909Z",
+      "count": 7,
+      "runUrl": null,
+      "resolvedAt": "2026-11-07T01:14:09.909Z",
+      "resolvedRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42322529418"
+    },
+    {
+      "id": "lfmp:stale",
+      "slug": "lfmp",
+      "kind": "stale",
+      "firstSeen": "2026-11-06T22:15:42.735Z",
+      "lastSeen": "2026-11-07T01:14:09.909Z",
+      "count": 7,
+      "runUrl": null,
+      "resolvedAt": "2026-11-07T01:14:09.909Z",
+      "resolvedRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42322529418"
+    },
+    {
+      "id": "mahdavi:stale",
+      "slug": "mahdavi",
+      "kind": "stale",
+      "firstSeen": "2026-11-06T22:15:42.735Z",
+      "lastSeen": "2026-11-07T01:14:09.909Z",
+      "count": 7,
+      "runUrl": null,
+      "resolvedAt": "2026-11-07T01:14:09.909Z",
+      "resolvedRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42322529418"
+    },
     {
       "id": "system:no-sync",
       "slug": null,
