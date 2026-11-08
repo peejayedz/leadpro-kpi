@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-08T02:22:34.618Z",
+  "generatedAt": "2026-11-08T02:37:26.983Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,15 +22,15 @@
     "today": {
       "label": "Today",
       "from": 1794031200000,
-      "to": 1794104554618,
+      "to": 1794105446983,
       "current": {
-        "totalLeads": 0,
+        "totalLeads": 1,
         "contacted": 0,
-        "contactRatePct": null,
+        "contactRatePct": 0,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
-        "within5Pct": null,
+        "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
@@ -49,18 +49,30 @@
         "sentRatePct": null,
         "signed": 0,
         "signRatePct": null,
-        "leadToSignedPct": null,
+        "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
-        "bySource": [],
-        "byChannel": [],
-        "attributedLeads": 0,
+        "bySource": [
+          [
+            "Chat",
+            1,
+            0
+          ]
+        ],
+        "byChannel": [
+          [
+            "Meta Ads",
+            1,
+            0
+          ]
+        ],
+        "attributedLeads": 1,
         "stageMoved": 0,
-        "attributionPct": null,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            0,
+            1,
             "newLeads",
             null
           ],
@@ -348,15 +360,15 @@
     "thisWeek": {
       "label": "This week",
       "from": 1793599200000,
-      "to": 1794104554618,
+      "to": 1794105446983,
       "current": {
-        "totalLeads": 0,
+        "totalLeads": 1,
         "contacted": 0,
-        "contactRatePct": null,
+        "contactRatePct": 0,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
-        "within5Pct": null,
+        "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
@@ -375,18 +387,30 @@
         "sentRatePct": null,
         "signed": 0,
         "signRatePct": null,
-        "leadToSignedPct": null,
+        "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
-        "bySource": [],
-        "byChannel": [],
-        "attributedLeads": 0,
+        "bySource": [
+          [
+            "Chat",
+            1,
+            0
+          ]
+        ],
+        "byChannel": [
+          [
+            "Meta Ads",
+            1,
+            0
+          ]
+        ],
+        "attributedLeads": 1,
         "stageMoved": 0,
-        "attributionPct": null,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            0,
+            1,
             "newLeads",
             null
           ],
@@ -673,16 +697,16 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1793499754618,
-      "to": 1794104554618,
+      "from": 1793500646983,
+      "to": 1794105446983,
       "current": {
-        "totalLeads": 0,
+        "totalLeads": 1,
         "contacted": 0,
-        "contactRatePct": null,
+        "contactRatePct": 0,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
-        "within5Pct": null,
+        "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
@@ -701,18 +725,30 @@
         "sentRatePct": null,
         "signed": 0,
         "signRatePct": null,
-        "leadToSignedPct": null,
+        "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
-        "bySource": [],
-        "byChannel": [],
-        "attributedLeads": 0,
+        "bySource": [
+          [
+            "Chat",
+            1,
+            0
+          ]
+        ],
+        "byChannel": [
+          [
+            "Meta Ads",
+            1,
+            0
+          ]
+        ],
+        "attributedLeads": 1,
         "stageMoved": 0,
-        "attributionPct": null,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            0,
+            1,
             "newLeads",
             null
           ],
@@ -836,10 +872,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1791512554618,
-      "to": 1794104554618,
+      "from": 1791513446983,
+      "to": 1794105446983,
       "current": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -870,24 +906,29 @@
         "bySource": [
           [
             "Chat",
-            1,
+            2,
             0
           ]
         ],
         "byChannel": [
+          [
+            "Meta Ads",
+            1,
+            0
+          ],
           [
             "Other referral",
             1,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -1023,12 +1064,12 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786328554618,
-      "to": 1794104554618,
+      "from": 1786329446983,
+      "to": 1794105446983,
       "current": {
-        "totalLeads": 7,
+        "totalLeads": 8,
         "contacted": 1,
-        "contactRatePct": 14.3,
+        "contactRatePct": 12.5,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1057,7 +1098,7 @@
         "bySource": [
           [
             "Chat",
-            7,
+            8,
             0
           ]
         ],
@@ -1071,15 +1112,20 @@
             "Google Organic Search",
             2,
             0
+          ],
+          [
+            "Meta Ads",
+            1,
+            0
           ]
         ],
-        "attributedLeads": 7,
+        "attributedLeads": 8,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            7,
+            8,
             "newLeads",
             null
           ],
@@ -1226,15 +1272,15 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1794104554618,
+      "to": 1794105446983,
       "current": {
-        "totalLeads": 0,
+        "totalLeads": 1,
         "contacted": 0,
-        "contactRatePct": null,
+        "contactRatePct": 0,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
-        "within5Pct": null,
+        "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
@@ -1253,18 +1299,30 @@
         "sentRatePct": null,
         "signed": 0,
         "signRatePct": null,
-        "leadToSignedPct": null,
+        "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
-        "bySource": [],
-        "byChannel": [],
-        "attributedLeads": 0,
+        "bySource": [
+          [
+            "Chat",
+            1,
+            0
+          ]
+        ],
+        "byChannel": [
+          [
+            "Meta Ads",
+            1,
+            0
+          ]
+        ],
+        "attributedLeads": 1,
         "stageMoved": 0,
-        "attributionPct": null,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            0,
+            1,
             "newLeads",
             null
           ],
@@ -1581,9 +1639,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1794104554618,
+      "to": 1794105446983,
       "current": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1614,24 +1672,29 @@
         "bySource": [
           [
             "Chat",
-            1,
+            2,
             0
           ]
         ],
         "byChannel": [
+          [
+            "Meta Ads",
+            1,
+            0
+          ],
           [
             "Other referral",
             1,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -1977,7 +2040,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-08T02:22:34.618Z",
+    "checkedAt": "2026-11-08T02:37:26.983Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
