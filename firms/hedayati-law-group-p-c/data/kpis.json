@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-08T04:37:24.333Z",
+  "generatedAt": "2026-11-08T05:07:21.930Z",
   "location": "Hedayati Law Group, P.C",
   "targets": {
     "leadToSignedPct": 8,
@@ -21,8 +21,8 @@
   "periods": {
     "today": {
       "label": "Today",
-      "from": 1794027600000,
-      "to": 1794112644333,
+      "from": 1794114000000,
+      "to": 1794114441930,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -184,8 +184,8 @@
     },
     "yesterday": {
       "label": "Yesterday",
-      "from": 1793941200000,
-      "to": 1794027600000,
+      "from": 1794027600000,
+      "to": 1794114000000,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -348,7 +348,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1793595600000,
-      "to": 1794112644333,
+      "to": 1794114441930,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -673,8 +673,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1793507844333,
-      "to": 1794112644333,
+      "from": 1793509641930,
+      "to": 1794114441930,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -836,8 +836,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1791520644333,
-      "to": 1794112644333,
+      "from": 1791522441930,
+      "to": 1794114441930,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -999,8 +999,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786336644333,
-      "to": 1794112644333,
+      "from": 1786338441930,
+      "to": 1794114441930,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1163,7 +1163,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1794112644333,
+      "to": 1794114441930,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1489,7 +1489,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1794112644333,
+      "to": 1794114441930,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1817,7 +1817,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-08T04:37:24.333Z",
+    "checkedAt": "2026-11-08T05:07:21.930Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
