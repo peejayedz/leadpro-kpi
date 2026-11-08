@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-08T15:37:20.671Z",
+  "generatedAt": "2026-11-08T16:07:23.961Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794117600000,
-      "to": 1794152240671,
+      "to": 1794154043961,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -360,7 +360,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1793599200000,
-      "to": 1794152240671,
+      "to": 1794154043961,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -697,8 +697,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1793547440671,
-      "to": 1794152240671,
+      "from": 1793549243961,
+      "to": 1794154043961,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -872,8 +872,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1791560240671,
-      "to": 1794152240671,
+      "from": 1791562043961,
+      "to": 1794154043961,
       "current": {
         "totalLeads": 2,
         "contacted": 0,
@@ -1064,8 +1064,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786376240671,
-      "to": 1794152240671,
+      "from": 1786378043961,
+      "to": 1794154043961,
       "current": {
         "totalLeads": 8,
         "contacted": 1,
@@ -1272,7 +1272,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1794152240671,
+      "to": 1794154043961,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -1639,7 +1639,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1794152240671,
+      "to": 1794154043961,
       "current": {
         "totalLeads": 2,
         "contacted": 0,
@@ -2040,7 +2040,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-08T15:37:20.671Z",
+    "checkedAt": "2026-11-08T16:07:23.961Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
