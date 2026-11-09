@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-09T19:37:23.104Z",
+  "generatedAt": "2026-11-09T20:07:24.827Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,9 +22,9 @@
     "today": {
       "label": "Today",
       "from": 1794200400000,
-      "to": 1794253043104,
+      "to": 1794254844827,
       "current": {
-        "totalLeads": 4,
+        "totalLeads": 3,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -59,11 +59,6 @@
             0
           ],
           [
-            "Direct Traffic, Facebook",
-            1,
-            0
-          ],
-          [
             "[DLF] 2027 AI Ready Growth Kit",
             1,
             0
@@ -76,23 +71,18 @@
             0
           ],
           [
-            "CRM UI",
-            1,
-            0
-          ],
-          [
             "Other referral",
             1,
             0
           ]
         ],
-        "attributedLeads": 4,
+        "attributedLeads": 3,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            4,
+            3,
             "newLeads",
             null
           ],
@@ -380,9 +370,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794200400000,
-      "to": 1794253043104,
+      "to": 1794254844827,
       "current": {
-        "totalLeads": 4,
+        "totalLeads": 3,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -417,11 +407,6 @@
             0
           ],
           [
-            "Direct Traffic, Facebook",
-            1,
-            0
-          ],
-          [
             "[DLF] 2027 AI Ready Growth Kit",
             1,
             0
@@ -434,23 +419,18 @@
             0
           ],
           [
-            "CRM UI",
-            1,
-            0
-          ],
-          [
             "Other referral",
             1,
             0
           ]
         ],
-        "attributedLeads": 4,
+        "attributedLeads": 3,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            4,
+            3,
             "newLeads",
             null
           ],
@@ -771,10 +751,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1793648243104,
-      "to": 1794253043104,
+      "from": 1793650044827,
+      "to": 1794254844827,
       "current": {
-        "totalLeads": 7,
+        "totalLeads": 6,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -817,11 +797,6 @@
             "Calendly",
             2,
             0
-          ],
-          [
-            "Direct Traffic, Facebook",
-            1,
-            0
           ]
         ],
         "byChannel": [
@@ -836,11 +811,6 @@
             0
           ],
           [
-            "CRM UI",
-            1,
-            0
-          ],
-          [
             "Other referral",
             1,
             0
@@ -851,13 +821,13 @@
             0
           ]
         ],
-        "attributedLeads": 5,
+        "attributedLeads": 4,
         "stageMoved": 0,
-        "attributionPct": 71.4,
+        "attributionPct": 66.7,
         "funnel": [
           [
             "New leads",
-            7,
+            6,
             "newLeads",
             null
           ],
@@ -993,12 +963,12 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1791661043104,
-      "to": 1794253043104,
+      "from": 1791662844827,
+      "to": 1794254844827,
       "current": {
-        "totalLeads": 13,
+        "totalLeads": 12,
         "contacted": 1,
-        "contactRatePct": 7.7,
+        "contactRatePct": 8.3,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1041,11 +1011,6 @@
             0
           ],
           [
-            "Direct Traffic, Facebook",
-            1,
-            0
-          ],
-          [
             "[IN USE] V2 - LFMP Client Intake Form",
             1,
             0
@@ -1058,12 +1023,12 @@
             0
           ],
           [
-            "CRM UI",
-            3,
+            "Third Party",
+            2,
             0
           ],
           [
-            "Third Party",
+            "CRM UI",
             2,
             0
           ],
@@ -1078,13 +1043,13 @@
             0
           ]
         ],
-        "attributedLeads": 7,
+        "attributedLeads": 6,
         "stageMoved": 0,
-        "attributionPct": 53.8,
+        "attributionPct": 50,
         "funnel": [
           [
             "New leads",
-            13,
+            12,
             "newLeads",
             null
           ],
@@ -1208,12 +1173,12 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786477043104,
-      "to": 1794253043104,
+      "from": 1786478844827,
+      "to": 1794254844827,
       "current": {
-        "totalLeads": 18,
+        "totalLeads": 17,
         "contacted": 1,
-        "contactRatePct": 5.6,
+        "contactRatePct": 5.9,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1256,11 +1221,6 @@
             0
           ],
           [
-            "Direct Traffic, Facebook",
-            1,
-            0
-          ],
-          [
             "[IN USE] V2 - LFMP Client Intake Form",
             1,
             0
@@ -1273,12 +1233,12 @@
             0
           ],
           [
-            "CRM UI",
-            3,
+            "Third Party",
+            2,
             0
           ],
           [
-            "Third Party",
+            "CRM UI",
             2,
             0
           ],
@@ -1293,13 +1253,13 @@
             0
           ]
         ],
-        "attributedLeads": 7,
+        "attributedLeads": 6,
         "stageMoved": 0,
-        "attributionPct": 38.9,
+        "attributionPct": 35.3,
         "funnel": [
           [
             "New leads",
-            18,
+            17,
             "newLeads",
             null
           ],
@@ -1424,9 +1384,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1794253043104,
+      "to": 1794254844827,
       "current": {
-        "totalLeads": 7,
+        "totalLeads": 6,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1469,11 +1429,6 @@
             "Calendly",
             2,
             0
-          ],
-          [
-            "Direct Traffic, Facebook",
-            1,
-            0
           ]
         ],
         "byChannel": [
@@ -1488,11 +1443,6 @@
             0
           ],
           [
-            "CRM UI",
-            1,
-            0
-          ],
-          [
             "Other referral",
             1,
             0
@@ -1503,13 +1453,13 @@
             0
           ]
         ],
-        "attributedLeads": 5,
+        "attributedLeads": 4,
         "stageMoved": 0,
-        "attributionPct": 71.4,
+        "attributionPct": 66.7,
         "funnel": [
           [
             "New leads",
-            7,
+            6,
             "newLeads",
             null
           ],
@@ -1841,11 +1791,11 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1794253043104,
+      "to": 1794254844827,
       "current": {
-        "totalLeads": 13,
+        "totalLeads": 12,
         "contacted": 1,
-        "contactRatePct": 7.7,
+        "contactRatePct": 8.3,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1888,11 +1838,6 @@
             0
           ],
           [
-            "Direct Traffic, Facebook",
-            1,
-            0
-          ],
-          [
             "[IN USE] V2 - LFMP Client Intake Form",
             1,
             0
@@ -1905,12 +1850,12 @@
             0
           ],
           [
-            "CRM UI",
-            3,
+            "Third Party",
+            2,
             0
           ],
           [
-            "Third Party",
+            "CRM UI",
             2,
             0
           ],
@@ -1925,13 +1870,13 @@
             0
           ]
         ],
-        "attributedLeads": 7,
+        "attributedLeads": 6,
         "stageMoved": 0,
-        "attributionPct": 53.8,
+        "attributionPct": 50,
         "funnel": [
           [
             "New leads",
-            13,
+            12,
             "newLeads",
             null
           ],
@@ -2238,7 +2183,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-09T19:37:23.104Z",
+    "checkedAt": "2026-11-09T20:07:24.827Z",
     "counts": {
       "Call": 63,
       "SMS": 1,
