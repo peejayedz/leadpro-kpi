@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-09T15:07:26.414Z",
+  "generatedAt": "2026-11-09T15:37:23.915Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794200400000,
-      "to": 1794236846414,
+      "to": 1794238643915,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -360,7 +360,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794200400000,
-      "to": 1794236846414,
+      "to": 1794238643915,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -731,8 +731,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1793632046414,
-      "to": 1794236846414,
+      "from": 1793633843915,
+      "to": 1794238643915,
       "current": {
         "totalLeads": 4,
         "contacted": 0,
@@ -933,8 +933,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1791644846414,
-      "to": 1794236846414,
+      "from": 1791646643915,
+      "to": 1794238643915,
       "current": {
         "totalLeads": 10,
         "contacted": 1,
@@ -1138,8 +1138,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786460846414,
-      "to": 1794236846414,
+      "from": 1786462643915,
+      "to": 1794238643915,
       "current": {
         "totalLeads": 15,
         "contacted": 1,
@@ -1344,7 +1344,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1794236846414,
+      "to": 1794238643915,
       "current": {
         "totalLeads": 4,
         "contacted": 0,
@@ -1741,7 +1741,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1794236846414,
+      "to": 1794238643915,
       "current": {
         "totalLeads": 10,
         "contacted": 1,
@@ -2128,7 +2128,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-09T15:07:26.414Z",
+    "checkedAt": "2026-11-09T15:37:23.915Z",
     "counts": {
       "Call": 63,
       "SMS": 1,
