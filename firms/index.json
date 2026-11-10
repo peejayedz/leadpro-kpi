@@ -22,5 +22,13 @@
     "practiceArea": "Family Law",
     "locationId": "pBNZKHAEHetHe3AVJ7GH",
     "createdAt": "2026-11-02T19:19:40.900Z"
+  },
+  {
+    "slug": "emery-law-office",
+    "secretKey": "EMERY_LAW_OFFICE",
+    "name": "Emery Law Office",
+    "practiceArea": "Personal Injury",
+    "locationId": "l68l8TvqZyERd5q1zdlj",
+    "createdAt": "2026-11-10T13:35:26.381Z"
   }
 ]

@@ -1,0 +1,88 @@
+{
+  "locationName": "Emery Law Office",
+  "practiceArea": "Personal Injury",
+  "locationId": "l68l8TvqZyERd5q1zdlj",
+  "title": "",
+  "showUnlockButton": false,
+  "brand": "LeadPro",
+  "brandFooter": "LeadPro",
+  "timezone": "America/New_York",
+  "ghlAppBase": "https://app.lawfirmmarketingpros.com",
+  "lookbackDays": 400,
+  "minSample": 5,
+  "_pipelinesNote": "Pipeline names to include. Empty = every pipeline. firms/<slug>/discovery.json lists every pipeline and stage name.",
+  "pipelines": [
+    "Lead Stages"
+  ],
+  "_stagesNote": "Stage names for each funnel step; must match GHL exactly (case does not matter). A later step counts as every earlier step, so list only the stages that first prove each step. Filled in by the admin page's mapping panel.",
+  "stages": {
+    "contacted": [
+      "Stage 3: Lead Contacted?"
+    ],
+    "qualified": [
+      "Stage 4: Lead Qualified?"
+    ],
+    "consultBooked": [
+      "Stage 5: Booked Consultation"
+    ],
+    "consultHeld": [
+      "Stage 6: Consultation Showed - Agreement Sent",
+      "Stage 7: Consultation Showed - Lead Rejected",
+      "Stage 8: Consultation Showed - Lead Referred",
+      "Stage 9: Consultation Showed - Lead Thinking"
+    ],
+    "agreementSent": [
+      "Stage 6: Consultation Showed - Agreement Sent"
+    ],
+    "signed": [
+      "Stage 11: Agreement Signed"
+    ],
+    "noShow": [
+      "Stage 10: Consultation No Show"
+    ]
+  },
+  "tags": {
+    "contacted": [
+      "contacted"
+    ],
+    "consultBooked": [],
+    "consultHeld": [
+      "showed"
+    ],
+    "noShow": [
+      "no show",
+      "no-show",
+      "noshow"
+    ],
+    "agreementSent": [
+      "agreement sent",
+      "proposal sent",
+      "contract sent"
+    ],
+    "signed": []
+  },
+  "_turnedAwayNote": "Why leads were turned away: a tag starting with tagPrefix (e.g. 'turned away: wrong practice area'), else the GHL lost reason, else the stage name if it's listed in stages.",
+  "turnedAway": {
+    "tagPrefix": "turned away:",
+    "stages": [
+      "Stage 7: Consultation Showed - Lead Rejected",
+      "Stage 8: Consultation Showed - Lead Referred",
+      "Stage 12: Referred Lead Accepted?"
+    ],
+    "reasonLabels": {}
+  },
+  "_bookingNote": "A consult = an appointment on a calendar whose name contains one of these words. Empty list = every calendar counts.",
+  "booking": {
+    "calendarKeywords": []
+  },
+  "_adSpendNote": "Monthly ad spend in dollars, by YYYY-MM. Spread evenly over the month's days for any date range. Used for cost per signed case.",
+  "adSpend": {
+    "monthly": {},
+    "defaultMonthly": null
+  },
+  "fields": {
+    "speedToLead": "Speed to Lead (min)",
+    "firstContacted": "First Contacted Date",
+    "contactMethod": "Contact Method"
+  }
+}
