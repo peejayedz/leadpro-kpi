@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-10T14:43:42.744Z",
+  "updatedAt": "2026-11-10T15:15:01.116Z",
   "lastRun": {
-    "at": "2026-11-10T14:43:42.744Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42835897223",
+    "at": "2026-11-10T15:15:01.116Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42841000785",
     "event": "workflow_dispatch",
     "chained": true
   },
@@ -11,13 +11,13 @@
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-10T14:43:42.744Z",
+  "lastAnySuccessAt": "2026-11-10T15:15:01.116Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-10T14:43:42.744Z",
-      "lastSuccessAt": "2026-11-10T14:43:42.744Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42835897223",
+      "lastAttemptAt": "2026-11-10T15:15:01.116Z",
+      "lastSuccessAt": "2026-11-10T15:15:01.116Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42841000785",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -50,9 +50,9 @@
     },
     "lfmp": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-10T14:43:42.744Z",
-      "lastSuccessAt": "2026-11-10T14:43:42.744Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42835897223",
+      "lastAttemptAt": "2026-11-10T15:15:01.116Z",
+      "lastSuccessAt": "2026-11-10T15:15:01.116Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42841000785",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -85,9 +85,9 @@
     },
     "hedayati-law-group-p-c": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-10T14:43:42.744Z",
-      "lastSuccessAt": "2026-11-10T14:43:42.744Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42835897223",
+      "lastAttemptAt": "2026-11-10T15:15:01.116Z",
+      "lastSuccessAt": "2026-11-10T15:15:01.116Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42841000785",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -120,9 +120,9 @@
     },
     "emery-law-office": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-10T14:43:42.744Z",
-      "lastSuccessAt": "2026-11-10T14:43:42.744Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42835897223",
+      "lastAttemptAt": "2026-11-10T15:15:01.116Z",
+      "lastSuccessAt": "2026-11-10T15:15:01.116Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42841000785",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
