@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-10T21:37:24.933Z",
+  "generatedAt": "2026-11-10T22:07:26.599Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,9 +22,9 @@
     "today": {
       "label": "Today",
       "from": 1794290400000,
-      "to": 1794346644933,
+      "to": 1794348446599,
       "current": {
-        "totalLeads": 15,
+        "totalLeads": 17,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -64,6 +64,11 @@
             0
           ],
           [
+            "Website Number Pool - Houston",
+            2,
+            0
+          ],
+          [
             "Google Ads location extensions phone for GBP",
             1,
             0
@@ -72,7 +77,7 @@
         "byChannel": [
           [
             "Third Party",
-            8,
+            10,
             0
           ],
           [
@@ -91,13 +96,13 @@
             0
           ]
         ],
-        "attributedLeads": 15,
+        "attributedLeads": 17,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            15,
+            17,
             "newLeads",
             null
           ],
@@ -385,9 +390,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794204000000,
-      "to": 1794346644933,
+      "to": 1794348446599,
       "current": {
-        "totalLeads": 15,
+        "totalLeads": 17,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -427,6 +432,11 @@
             0
           ],
           [
+            "Website Number Pool - Houston",
+            2,
+            0
+          ],
+          [
             "Google Ads location extensions phone for GBP",
             1,
             0
@@ -435,7 +445,7 @@
         "byChannel": [
           [
             "Third Party",
-            8,
+            10,
             0
           ],
           [
@@ -454,13 +464,13 @@
             0
           ]
         ],
-        "attributedLeads": 15,
+        "attributedLeads": 17,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            15,
+            17,
             "newLeads",
             null
           ],
@@ -759,10 +769,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1793741844933,
-      "to": 1794346644933,
+      "from": 1793743646599,
+      "to": 1794348446599,
       "current": {
-        "totalLeads": 16,
+        "totalLeads": 18,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -802,12 +812,12 @@
             0
           ],
           [
-            "Google Ads location extensions phone for GBP",
-            1,
+            "Website Number Pool - Houston",
+            3,
             0
           ],
           [
-            "Website Number Pool - Houston",
+            "Google Ads location extensions phone for GBP",
             1,
             0
           ]
@@ -815,7 +825,7 @@
         "byChannel": [
           [
             "Third Party",
-            8,
+            10,
             0
           ],
           [
@@ -834,13 +844,13 @@
             0
           ]
         ],
-        "attributedLeads": 16,
+        "attributedLeads": 18,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            16,
+            18,
             "newLeads",
             null
           ],
@@ -964,10 +974,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1791754644933,
-      "to": 1794346644933,
+      "from": 1791756446599,
+      "to": 1794348446599,
       "current": {
-        "totalLeads": 17,
+        "totalLeads": 19,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1007,12 +1017,12 @@
             0
           ],
           [
-            "Google Ads location extensions phone for GBP",
-            1,
+            "Website Number Pool - Houston",
+            3,
             0
           ],
           [
-            "Website Number Pool - Houston",
+            "Google Ads location extensions phone for GBP",
             1,
             0
           ]
@@ -1020,7 +1030,7 @@
         "byChannel": [
           [
             "Third Party",
-            8,
+            10,
             0
           ],
           [
@@ -1039,13 +1049,13 @@
             0
           ]
         ],
-        "attributedLeads": 17,
+        "attributedLeads": 19,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            17,
+            19,
             "newLeads",
             null
           ],
@@ -1181,12 +1191,12 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786570644933,
-      "to": 1794346644933,
+      "from": 1786572446599,
+      "to": 1794348446599,
       "current": {
-        "totalLeads": 22,
+        "totalLeads": 24,
         "contacted": 1,
-        "contactRatePct": 4.5,
+        "contactRatePct": 4.2,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1224,12 +1234,12 @@
             0
           ],
           [
-            "Google Ads location extensions phone for GBP",
-            1,
+            "Website Number Pool - Houston",
+            3,
             0
           ],
           [
-            "Website Number Pool - Houston",
+            "Google Ads location extensions phone for GBP",
             1,
             0
           ]
@@ -1237,7 +1247,7 @@
         "byChannel": [
           [
             "Third Party",
-            8,
+            10,
             0
           ],
           [
@@ -1256,13 +1266,13 @@
             0
           ]
         ],
-        "attributedLeads": 22,
+        "attributedLeads": 24,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            22,
+            24,
             "newLeads",
             null
           ],
@@ -1409,9 +1419,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1794346644933,
+      "to": 1794348446599,
       "current": {
-        "totalLeads": 16,
+        "totalLeads": 18,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1451,12 +1461,12 @@
             0
           ],
           [
-            "Google Ads location extensions phone for GBP",
-            1,
+            "Website Number Pool - Houston",
+            3,
             0
           ],
           [
-            "Website Number Pool - Houston",
+            "Google Ads location extensions phone for GBP",
             1,
             0
           ]
@@ -1464,7 +1474,7 @@
         "byChannel": [
           [
             "Third Party",
-            8,
+            10,
             0
           ],
           [
@@ -1483,13 +1493,13 @@
             0
           ]
         ],
-        "attributedLeads": 16,
+        "attributedLeads": 18,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            16,
+            18,
             "newLeads",
             null
           ],
@@ -1806,9 +1816,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1794346644933,
+      "to": 1794348446599,
       "current": {
-        "totalLeads": 17,
+        "totalLeads": 19,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1848,12 +1858,12 @@
             0
           ],
           [
-            "Google Ads location extensions phone for GBP",
-            1,
+            "Website Number Pool - Houston",
+            3,
             0
           ],
           [
-            "Website Number Pool - Houston",
+            "Google Ads location extensions phone for GBP",
             1,
             0
           ]
@@ -1861,7 +1871,7 @@
         "byChannel": [
           [
             "Third Party",
-            8,
+            10,
             0
           ],
           [
@@ -1880,13 +1890,13 @@
             0
           ]
         ],
-        "attributedLeads": 17,
+        "attributedLeads": 19,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            17,
+            19,
             "newLeads",
             null
           ],
@@ -2232,7 +2242,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-10T21:37:24.933Z",
+    "checkedAt": "2026-11-10T22:07:26.599Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
