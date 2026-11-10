@@ -1,17 +1,17 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-10T13:11:32.935Z",
+  "updatedAt": "2026-11-10T13:36:26.192Z",
   "lastRun": {
-    "at": "2026-11-10T13:11:32.935Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42821578431",
+    "at": "2026-11-10T13:36:26.192Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42825930345",
     "event": "workflow_dispatch",
-    "chained": true
+    "chained": false
   },
   "syncChain": {
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-10T13:11:32.935Z",
+  "lastAnySuccessAt": "2026-11-10T13:36:26.192Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
@@ -115,6 +115,41 @@
           "bulk": 0,
           "notLeadType": 0,
           "noInboundSignal": 16
+        }
+      }
+    },
+    "emery-law-office": {
+      "status": "ok",
+      "lastAttemptAt": "2026-11-10T13:36:26.192Z",
+      "lastSuccessAt": "2026-11-10T13:36:26.192Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/42825930345",
+      "failStreak": 0,
+      "notInPipeline": {
+        "last30": {
+          "form": 0,
+          "survey": 0,
+          "chat": 0,
+          "booking": 0,
+          "call": 0,
+          "sms": 0,
+          "email": 0,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 0,
+          "noInboundSignal": 0
+        },
+        "last90": {
+          "form": 0,
+          "survey": 0,
+          "chat": 0,
+          "booking": 0,
+          "call": 0,
+          "sms": 0,
+          "email": 0,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 0,
+          "noInboundSignal": 0
         }
       }
     }
