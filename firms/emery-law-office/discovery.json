@@ -1,0 +1,122 @@
+{
+  "generatedAt": "2026-11-10T13:26:31.148Z",
+  "slug": "emery-law-office",
+  "locationId": "l68l8TvqZyERd5q1zdlj",
+  "locationName": "Emery Law Office",
+  "scopes": {
+    "checkedAt": "2026-11-10T13:26:30.042Z",
+    "ok": [
+      "opportunities.readonly",
+      "contacts.readonly",
+      "users.readonly",
+      "locations.readonly",
+      "locations/customFields.readonly",
+      "calendars.readonly",
+      "conversations.readonly",
+      "conversations/message.readonly"
+    ],
+    "missing": [],
+    "unchecked": [
+      "calendars/events.readonly"
+    ],
+    "tokenRejected": false
+  },
+  "pipelines": [
+    {
+      "id": "qLuXwWjJ1PIP1fsMpHl3",
+      "name": "Lead Stages",
+      "stages": [
+        {
+          "id": "4b4bcfd2-15f3-4b89-a892-306cef53658b",
+          "name": "Stage 1: Web Lead",
+          "position": 0
+        },
+        {
+          "id": "b07a1997-73ec-497c-b214-5700dee82d0d",
+          "name": "Stage 2: Phone lead",
+          "position": 1
+        },
+        {
+          "id": "41831a66-a487-4cf1-9227-59850c68c159",
+          "name": "Stage 3: Lead Contacted?",
+          "position": 2
+        },
+        {
+          "id": "7a3dffc9-2740-414a-9486-fd4cdee4a0b9",
+          "name": "Stage 4: Lead Qualified?",
+          "position": 3
+        },
+        {
+          "id": "e2286f0b-752a-4d89-8c0b-e5bcd6de1fd7",
+          "name": "Stage 5: Booked Consultation",
+          "position": 4
+        },
+        {
+          "id": "52771221-3e83-4588-9f54-b39afb22b214",
+          "name": "Stage 6: Consultation Showed - Agreement Sent",
+          "position": 5
+        },
+        {
+          "id": "9486d6a4-4a26-4b65-8a44-f32708cdc60c",
+          "name": "Stage 7: Consultation Showed - Lead Rejected",
+          "position": 6
+        },
+        {
+          "id": "87ff3de4-e509-4981-8f7f-e7b8c709bdc1",
+          "name": "Stage 8: Consultation Showed - Lead Referred",
+          "position": 7
+        },
+        {
+          "id": "bbc8a099-1ab4-4f54-82ad-48b610151a07",
+          "name": "Stage 9: Consultation Showed - Lead Thinking",
+          "position": 8
+        },
+        {
+          "id": "7d00b2f9-e4e2-4628-8140-b584402e20ab",
+          "name": "Stage 10: Consultation No Show",
+          "position": 9
+        },
+        {
+          "id": "0823a617-8b95-4e07-a7e7-4ff0eea7d559",
+          "name": "Stage 11: Agreement Signed",
+          "position": 10
+        },
+        {
+          "id": "a3263a9d-3d5e-42c1-afd8-5cf22912231b",
+          "name": "Stage 12: Referred Lead Accepted?",
+          "position": 11
+        }
+      ]
+    }
+  ],
+  "calendars": [],
+  "customFields": {
+    "contact": [
+      {
+        "id": "RPok8iO5CTrEpAsdlTvg",
+        "name": "PI Intake Stage",
+        "fieldKey": "contact.pi_intake_stage",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "Z83Q66NkeIA4NJuYXcq7",
+        "name": "Receiving Medical Treatment",
+        "fieldKey": "contact.receiving_medical_treatment",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "o8eyoyMQNmzxv2irWFrp",
+        "name": "Incident Type",
+        "fieldKey": "contact.incident_type",
+        "dataType": "TEXT"
+      },
+      {
+        "id": "sozoctH9gg2LJz8vx957",
+        "name": "Accident Date",
+        "fieldKey": "contact.accident_date",
+        "dataType": "TEXT"
+      }
+    ],
+    "opportunity": []
+  }
+}
