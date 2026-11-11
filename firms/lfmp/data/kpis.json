@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T16:07:22.505Z",
+  "generatedAt": "2026-11-11T16:37:23.014Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794373200000,
-      "to": 1794413242505,
+      "to": 1794415043014,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -406,7 +406,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794200400000,
-      "to": 1794413242505,
+      "to": 1794415043014,
       "current": {
         "totalLeads": 6,
         "contacted": 0,
@@ -509,7 +509,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -540,14 +540,14 @@
         "bySource": [
           [
             "Calendly",
-            1,
+            2,
             0
           ]
         ],
         "byChannel": [
           [
             "Unknown source",
-            1,
+            2,
             0
           ]
         ],
@@ -557,7 +557,7 @@
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -799,10 +799,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1793808442505,
-      "to": 1794413242505,
+      "from": 1793810243014,
+      "to": 1794415043014,
       "current": {
-        "totalLeads": 8,
+        "totalLeads": 7,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -840,11 +840,6 @@
             "[DLF] 2027 AI Ready Growth Kit",
             2,
             0
-          ],
-          [
-            "Calendly",
-            1,
-            0
           ]
         ],
         "byChannel": [
@@ -862,20 +857,15 @@
             "Google Organic Search",
             1,
             0
-          ],
-          [
-            "Unknown source",
-            1,
-            0
           ]
         ],
         "attributedLeads": 7,
         "stageMoved": 0,
-        "attributionPct": 87.5,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            8,
+            7,
             "newLeads",
             null
           ],
@@ -918,7 +908,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -949,14 +939,14 @@
         "bySource": [
           [
             "Calendly",
-            1,
+            2,
             0
           ]
         ],
         "byChannel": [
           [
             "Unknown source",
-            1,
+            2,
             0
           ]
         ],
@@ -966,7 +956,7 @@
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -1011,8 +1001,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1791821242505,
-      "to": 1794413242505,
+      "from": 1791823043014,
+      "to": 1794415043014,
       "current": {
         "totalLeads": 15,
         "contacted": 1,
@@ -1221,8 +1211,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786637242505,
-      "to": 1794413242505,
+      "from": 1786639043014,
+      "to": 1794415043014,
       "current": {
         "totalLeads": 20,
         "contacted": 1,
@@ -1432,7 +1422,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1794413242505,
+      "to": 1794415043014,
       "current": {
         "totalLeads": 9,
         "contacted": 0,
@@ -1839,7 +1829,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1794413242505,
+      "to": 1794415043014,
       "current": {
         "totalLeads": 15,
         "contacted": 1,
@@ -2231,7 +2221,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-11T16:07:22.505Z",
+    "checkedAt": "2026-11-11T16:37:23.014Z",
     "counts": {
       "Call": 63,
       "SMS": 1,
