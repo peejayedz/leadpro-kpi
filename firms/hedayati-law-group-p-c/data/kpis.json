@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T17:07:23.267Z",
+  "generatedAt": "2026-11-11T17:37:27.875Z",
   "location": "Hedayati Law Group, P.C",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794373200000,
-      "to": 1794416843267,
+      "to": 1794418647875,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -348,7 +348,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794200400000,
-      "to": 1794416843267,
+      "to": 1794418647875,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -673,8 +673,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1793812043267,
-      "to": 1794416843267,
+      "from": 1793813847875,
+      "to": 1794418647875,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -836,8 +836,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1791824843267,
-      "to": 1794416843267,
+      "from": 1791826647875,
+      "to": 1794418647875,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -999,8 +999,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786640843267,
-      "to": 1794416843267,
+      "from": 1786642647875,
+      "to": 1794418647875,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1163,7 +1163,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1794416843267,
+      "to": 1794418647875,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1489,7 +1489,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1794416843267,
+      "to": 1794418647875,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1817,7 +1817,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-11T17:07:23.267Z",
+    "checkedAt": "2026-11-11T17:37:27.875Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
