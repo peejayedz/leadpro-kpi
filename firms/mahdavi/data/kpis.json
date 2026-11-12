@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T15:24:38.944Z",
+  "generatedAt": "2026-11-12T15:38:24.668Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,9 +22,9 @@
     "today": {
       "label": "Today",
       "from": 1794463200000,
-      "to": 1794497078944,
+      "to": 1794497904668,
       "current": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -54,6 +54,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Google Ads Assets",
+            1,
+            0
+          ],
+          [
             "Google Business Profile - Houston",
             1,
             0
@@ -62,17 +67,17 @@
         "byChannel": [
           [
             "Third Party",
-            1,
+            2,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -393,9 +398,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794204000000,
-      "to": 1794497078944,
+      "to": 1794497904668,
       "current": {
-        "totalLeads": 42,
+        "totalLeads": 43,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -441,7 +446,7 @@
           ],
           [
             "Google Ads Assets",
-            1,
+            2,
             0
           ],
           [
@@ -453,7 +458,7 @@
         "byChannel": [
           [
             "Third Party",
-            34,
+            35,
             0
           ],
           [
@@ -477,13 +482,13 @@
             0
           ]
         ],
-        "attributedLeads": 42,
+        "attributedLeads": 43,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            42,
+            43,
             "newLeads",
             null
           ],
@@ -734,10 +739,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1793892278944,
-      "to": 1794497078944,
+      "from": 1793893104668,
+      "to": 1794497904668,
       "current": {
-        "totalLeads": 43,
+        "totalLeads": 44,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -783,7 +788,7 @@
           ],
           [
             "Google Ads Assets",
-            1,
+            2,
             0
           ],
           [
@@ -795,7 +800,7 @@
         "byChannel": [
           [
             "Third Party",
-            34,
+            35,
             0
           ],
           [
@@ -819,13 +824,13 @@
             0
           ]
         ],
-        "attributedLeads": 43,
+        "attributedLeads": 44,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            43,
+            44,
             "newLeads",
             null
           ],
@@ -925,10 +930,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1791905078944,
-      "to": 1794497078944,
+      "from": 1791905904668,
+      "to": 1794497904668,
       "current": {
-        "totalLeads": 44,
+        "totalLeads": 45,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -974,7 +979,7 @@
           ],
           [
             "Google Ads Assets",
-            1,
+            2,
             0
           ],
           [
@@ -986,7 +991,7 @@
         "byChannel": [
           [
             "Third Party",
-            34,
+            35,
             0
           ],
           [
@@ -1010,13 +1015,13 @@
             0
           ]
         ],
-        "attributedLeads": 44,
+        "attributedLeads": 45,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            44,
+            45,
             "newLeads",
             null
           ],
@@ -1128,10 +1133,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786721078944,
-      "to": 1794497078944,
+      "from": 1786721904668,
+      "to": 1794497904668,
       "current": {
-        "totalLeads": 49,
+        "totalLeads": 50,
         "contacted": 1,
         "contactRatePct": 2,
         "speedToLeadAvgMin": null,
@@ -1177,7 +1182,7 @@
           ],
           [
             "Google Ads Assets",
-            1,
+            2,
             0
           ],
           [
@@ -1189,7 +1194,7 @@
         "byChannel": [
           [
             "Third Party",
-            34,
+            35,
             0
           ],
           [
@@ -1213,13 +1218,13 @@
             0
           ]
         ],
-        "attributedLeads": 49,
+        "attributedLeads": 50,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            49,
+            50,
             "newLeads",
             null
           ],
@@ -1342,9 +1347,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1794497078944,
+      "to": 1794497904668,
       "current": {
-        "totalLeads": 43,
+        "totalLeads": 44,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1390,7 +1395,7 @@
           ],
           [
             "Google Ads Assets",
-            1,
+            2,
             0
           ],
           [
@@ -1402,7 +1407,7 @@
         "byChannel": [
           [
             "Third Party",
-            34,
+            35,
             0
           ],
           [
@@ -1426,13 +1431,13 @@
             0
           ]
         ],
-        "attributedLeads": 43,
+        "attributedLeads": 44,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            43,
+            44,
             "newLeads",
             null
           ],
@@ -1701,9 +1706,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1794497078944,
+      "to": 1794497904668,
       "current": {
-        "totalLeads": 44,
+        "totalLeads": 45,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1749,7 +1754,7 @@
           ],
           [
             "Google Ads Assets",
-            1,
+            2,
             0
           ],
           [
@@ -1761,7 +1766,7 @@
         "byChannel": [
           [
             "Third Party",
-            34,
+            35,
             0
           ],
           [
@@ -1785,13 +1790,13 @@
             0
           ]
         ],
-        "attributedLeads": 44,
+        "attributedLeads": 45,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            44,
+            45,
             "newLeads",
             null
           ],
@@ -2101,7 +2106,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-12T15:24:38.944Z",
+    "checkedAt": "2026-11-12T15:38:24.668Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
