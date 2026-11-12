@@ -290,7 +290,8 @@ test('Repo: only scripts/ghl-app.mjs calls /oauth/*; only token-keeper.mjs write
   for (const f of files) {
     const t = await readFile(join(ROOT, 'scripts', f), 'utf8');
     if (f !== 'ghl-app.mjs') ok(!/['"`]\/oauth\//.test(t), `${f} calls /oauth`);
-    if (!['token-keeper.mjs'].includes(f)) ok(!/secret', 'set'|secret set/.test(t), `${f} writes secrets`);
+    // Code that runs a secret write (gh args or the Secrets API), not help text that tells a person to.
+    if (!['token-keeper.mjs'].includes(f)) ok(!/\[\s*'secret',\s*'set'|actions\/secrets\/[^'"`]*['"`]\s*,\s*\{?\s*method:\s*'PUT'|'PUT'[^\n]*actions\/secrets/.test(t), `${f} writes secrets`);
   }
 });
 
