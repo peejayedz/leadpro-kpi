@@ -77,5 +77,14 @@ export function keeperIssues(keeper, { now, firms = [] }) {
   return out;
 }
 
+// "Review mapping": firms set up from the builder whose stage mapping was auto-guessed (no preset for the
+// snapshot, or preset stages missing). configs: { slug: config.json }. Cleared by saving Edit mapping.
+export function reviewIssues(firms, configs = {}) {
+  return firms.filter(f => configs[f.slug]?.mappingReview).map(f => {
+    const r = configs[f.slug].mappingReview, at = isoOr(r.at) || new Date(0).toISOString();
+    return { id: `${f.slug}:mapping-review`, slug: f.slug, kind: 'mapping-review', detail: r.reason === 'unknown-snapshot' ? 'unknown-snapshot' : 'missing-stages', firstSeen: at, lastSeen: at, count: 0, runUrl: null };
+  });
+}
+
 // Short label for the admin firm list.
 export const tokenLabel = f => (f?.tokenSource === 'app' ? 'App' : 'Private Integration');

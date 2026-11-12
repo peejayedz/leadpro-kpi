@@ -327,7 +327,7 @@ import { mergeConfig, practiceSlug } from '../scripts/config-merge.mjs';
 import { parseChangelog, latestVersion, inlineMd } from '../scripts/changelog.mjs';
 import { STEPS_MAP, initialState, stageList as stagesOf, buildMapping, applyMapping } from './mapping.mjs';
 import { openIssues, firmState, describeIssue, seenKey, inBadge, STALE_MIN } from '../scripts/sync-status.mjs';
-import { keeperIssues, tokenLabel } from '../scripts/keeper-status.mjs';
+import { keeperIssues, reviewIssues, tokenLabel } from '../scripts/keeper-status.mjs';
 import { checkScopes } from '../scripts/scope-check.mjs';
 import { pipelineNotices } from '../scripts/not-in-pipeline.mjs';
 const $ = id => document.getElementById(id);
@@ -864,7 +864,7 @@ async function refreshIssues({ reloadKpis = false } = {}) {
       chainInfo = await chainState();
       keeperStatus = await getJSON('status/token-keeper.json').catch(() => null);
       const rank = i => (i.slug ? 1 : 0);
-      issues = [...keeperIssues(keeperStatus, { now: Date.now(), firms }), ...openIssues(syncStatus, { now: Date.now(), firms, kpis, chain: chainInfo })]
+      issues = [...keeperIssues(keeperStatus, { now: Date.now(), firms }), ...reviewIssues(firms, configs), ...openIssues(syncStatus, { now: Date.now(), firms, kpis, chain: chainInfo })]
         .sort((a, b) => rank(a) - rank(b) || Date.parse(b.firstSeen) - Date.parse(a.firstSeen));
       trackLive(); lastCheck = Date.now(); checkErr = null;
     } catch (e) { checkErr = e.message; }
@@ -918,7 +918,7 @@ function issueHtml(i, seen) {
     : code === 'run' ? (i.runUrl ? `<a class="btn${primary ? ' primary' : ''}" href="${esc(i.runUrl)}" target="_blank" rel="noopener">${ICON.ext}View run on GitHub</a>` : '')
     : code === 'variables' ? `<a class="btn${primary ? ' primary' : ''}" href="https://github.com/${esc(OWNER)}/${esc(REPO)}/settings/variables/actions" target="_blank" rel="noopener">${ICON.ext}Open variables</a>`
     : `<button class="btn${primary ? ' primary' : ''}" type="button" data-n="${code}">${html}</button>`;
-  const LABEL = { token: `${ICON.key}Update token`, resync: `${ICON.sync}Re-sync`, firm: `${ICON.target}Go to firm`, restart: `${ICON.sync}Restart chain`, keeper: `${ICON.key}Run token keeper`, 'sync-all': `${ICON.sync}Sync all firms now` };
+  const LABEL = { token: `${ICON.key}Update token`, resync: `${ICON.sync}Re-sync`, firm: `${ICON.target}Go to firm`, restart: `${ICON.sync}Restart chain`, keeper: `${ICON.key}Run token keeper`, map: `${ICON.map}Edit mapping`, 'sync-all': `${ICON.sync}Sync all firms now` };
   const strong = !['held', 'incomplete'].includes(i.kind);
   return `<article class="issue" data-issue="${esc(i.id)}">
     <button class="ihead" type="button" aria-expanded="${open}" data-n="toggle"><span class="sev ${sev}" aria-hidden="true"></span>
@@ -998,6 +998,7 @@ $('nPanel').addEventListener('click', async e => {
     case 'firm': goToFirm(i?.slug || b.dataset.slug); break;
     case 'resync': if (f) startResync(f, say); break;
     case 'token': if (f) tokenDialog(f, say); break;
+    case 'map': { closePanel(); const row = f && document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`); row?.querySelector('[data-f="map"]')?.click(); break; }
     case 'keeper':
       b.disabled = true;
       try { await dispatch('tokens.yml', f ? { slug: f.slug } : {}); say(`<span class="chip good">Started</span> The token keeper is running${f ? ` for ${esc(f.name)}` : ''} (about a minute). This list updates on the next check.`); setTimeout(() => refreshIssues(), 90e3); }
@@ -1419,7 +1420,8 @@ async function renderEditMapping(f) {
     try {
       await commitFiles(`Update stage mapping for ${f.name}`, async head => {
         const c = await getJSON(`firms/${f.slug}/config.json`, head);
-        return [{ path: `firms/${f.slug}/config.json`, content: jsonText(applyMapping(c, m)) }];
+        const next = applyMapping(c, m); delete next.mappingReview;   // a saved mapping clears the builder's "Review mapping" flag
+        return [{ path: `firms/${f.slug}/config.json`, content: jsonText(next) }];
       });
       status('Saved. Re-syncing so the dashboard uses the new mapping…');
       const t0 = await dispatch('sync.yml', { slug: f.slug });

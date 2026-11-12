@@ -131,7 +131,12 @@ export async function runKeeper(env = process.env) {
   }
 
   const left = access?.access_token ? Date.parse(access.expiresAt) - Date.now() : -1;
-  if (!(left > REFRESH_BEFORE_H * 36e5)) { if (!(await refresh(left > 0 ? `${Math.floor(left / 36e5)} h left` : 'no valid agency token saved')) && !(left > 0)) return { exit: 1, run }; }
+  // KEEPER_NO_REFRESH (new-firm.yml): mint with the saved agency token only; refreshing stays the keeper's job.
+  if (env.KEEPER_NO_REFRESH === '1') {
+    if (!(left > 10 * 60e3)) { log('The saved agency token has expired (or expires within 10 minutes). The token keeper must run first.'); return { exit: 1, skipStatus: true, run }; }
+    log(`Using the saved agency token (${Math.floor(left / 36e5)} h left); no refresh here.`);
+    refreshedThisRun = true;   // also stops the "refused → refresh once" fallback below
+  } else if (!(left > REFRESH_BEFORE_H * 36e5)) { if (!(await refresh(left > 0 ? `${Math.floor(left / 36e5)} h left` : 'no valid agency token saved')) && !(left > 0)) return { exit: 1, run }; }
   else log(`Agency token valid for ${Math.floor(left / 36e5)} h ${Math.floor(left / 6e4) % 60} min; no refresh needed.`);
   run.agencyExpiresAt = access?.expiresAt;
 
@@ -175,7 +180,7 @@ async function main() {
   let res;
   try { res = await runKeeper(); }
   catch (e) { console.error(`Keeper error: ${e.message}`); res = { exit: 1, run: { at: new Date().toISOString(), ok: false, runUrl: process.env.RUN_URL, problem: { category: 'unknown', detail: 'crash' }, firms: {} } }; }
-  if (res.run && !res.skipStatus && process.env.KEEPER_DRY_RUN !== '1') {
+  if (res.run && !res.skipStatus && process.env.KEEPER_DRY_RUN !== '1' && process.env.KEEPER_NO_STATUS !== '1') {
     const file = process.env.KEEPER_STATUS_FILE || `${ROOT}status/token-keeper.json`;
     let prev = null; try { prev = JSON.parse(await readFile(file, 'utf8')); } catch {}
     const next = updateKeeper(prev, res.run);

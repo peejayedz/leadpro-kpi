@@ -1,0 +1,197 @@
+name: New firm (from the builder)
+# Started by the Sub-account Builder page after it saved PASSPHRASE_<KEY> (sealed in the browser).
+# Inputs are non-secret. The builder finds this run by its title and follows its jobs and steps.
+# PUBLIC LOGS: step names, slugs and counts only.
+run-name: "New firm ${{ inputs.slug }} [${{ inputs.request }}]"
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Firm name (the sub-account name)"
+        required: true
+      location:
+        description: "GHL location ID"
+        required: true
+      slug:
+        description: "Firm slug (chosen by the builder; must be free)"
+        required: true
+      practice_area:
+        description: "Practice area"
+        required: false
+        default: ""
+      timezone:
+        description: "IANA time zone, e.g. America/New_York"
+        required: false
+        default: "America/New_York"
+      snapshot_id:
+        description: "GHL snapshot the sub-account was made from (picks the stage-mapping preset)"
+        required: false
+        default: ""
+      request:
+        description: "Builder request id (to find this run)"
+        required: true
+
+permissions:
+  contents: write # commits the new firm
+  actions: write  # starts its first sync
+
+# One new firm at a time, so firms/index.json is never written by two runs at once. Never cancelled.
+concurrency:
+  group: new-firm
+  cancel-in-progress: false
+
+env:
+  NF_NAME: ${{ inputs.name }}
+  NF_LOCATION: ${{ inputs.location }}
+  NF_SLUG: ${{ inputs.slug }}
+  NF_PRACTICE: ${{ inputs.practice_area }}
+  NF_TIMEZONE: ${{ inputs.timezone }}
+  NF_SNAPSHOT_ID: ${{ inputs.snapshot_id }}
+  NF_REQUEST: ${{ inputs.request }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      slug: ${{ steps.plan.outputs.slug }}
+      key: ${{ steps.plan.outputs.key }}
+      mode: ${{ steps.plan.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Check the firm list
+        id: plan
+        run: node scripts/new-firm.mjs plan
+      - name: Check the passphrase was saved
+        if: steps.plan.outputs.mode != 'other-token'
+        env:
+          HAS_PASS: ${{ secrets[format('PASSPHRASE_{0}', steps.plan.outputs.key)] != '' }}
+        run: |
+          if [ "$HAS_PASS" != "true" ]; then echo "The dashboard passphrase wasn't saved (PASSPHRASE_${{ steps.plan.outputs.key }} is empty). Start again from the builder."; exit 1; fi
+          echo "Passphrase is saved."
+      - name: Wait for the app on the sub-account
+        if: steps.plan.outputs.mode != 'other-token'
+        env:
+          GHL_APP_ACCESS: ${{ secrets.GHL_APP_ACCESS }}
+          GHL_APP_CLIENT_ID: ${{ secrets.GHL_APP_CLIENT_ID }}
+        run: node scripts/new-firm.mjs wait-app
+
+  token:
+    needs: prepare
+    if: needs.prepare.outputs.mode != 'other-token'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Get the firm's GHL token
+        env:
+          GHL_APP_CLIENT_ID: ${{ secrets.GHL_APP_CLIENT_ID }}
+          GHL_APP_CLIENT_SECRET: ${{ secrets.GHL_APP_CLIENT_SECRET }}
+          GHL_APP_REFRESH_TOKEN: ${{ secrets.GHL_APP_REFRESH_TOKEN }}
+          GHL_APP_ACCESS: ${{ secrets.GHL_APP_ACCESS }}
+          SECRETS_TOKEN: ${{ secrets.KEEPER_GH_TOKEN }}
+          KEEPER_SLUG: ${{ needs.prepare.outputs.slug }}
+          KEEPER_LOCATION: ${{ needs.prepare.outputs.mode == 'new' && inputs.location || '' }}
+          KEEPER_SECRET_KEY: ${{ needs.prepare.outputs.mode == 'new' && needs.prepare.outputs.key || '' }}
+          KEEPER_NO_REFRESH: "1"
+          KEEPER_NO_STATUS: "1"
+        run: node scripts/token-keeper.mjs
+
+  setup:
+    needs: [prepare, token]
+    runs-on: ubuntu-latest
+    env:
+      NF_SLUG: ${{ needs.prepare.outputs.slug }} # the planned slug (a resumed firm keeps its own)
+    timeout-minutes: 10
+    outputs:
+      review: ${{ steps.write.outputs.review }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Read the sub-account's pipelines and stages
+        env:
+          SECRET_KEY: ${{ needs.prepare.outputs.key }}
+          GHL_TOKEN: ${{ secrets[format('GHL_TOKEN_{0}', needs.prepare.outputs.key)] }}
+        run: node scripts/discover.mjs "$NF_SLUG" "$NF_LOCATION"
+      - name: Set up the dashboard
+        id: write
+        run: node scripts/new-firm.mjs write
+      - name: Save the firm
+        run: |
+          git config user.name "kpi-sync-bot"
+          git config user.email "kpi-sync-bot@users.noreply.github.com"
+          git add "firms/$NF_SLUG" firms/index.json
+          if git diff --cached --quiet; then echo "Nothing new to save"; exit 0; fi
+          git commit -m "Add $NF_SLUG (from the builder)"
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            sleep $((i * 5))
+          done
+          echo "Push failed after 3 tries" >&2
+          exit 1
+
+  first-sync:
+    needs: [prepare, setup]
+    runs-on: ubuntu-latest
+    env:
+      NF_SLUG: ${{ needs.prepare.outputs.slug }} # the planned slug (a resumed firm keeps its own)
+    timeout-minutes: 25
+    steps:
+      - name: First sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          start=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run sync.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME" -f slug="$NF_SLUG"
+          for i in $(seq 1 120); do
+            sleep 10
+            run=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow sync.yml --event workflow_dispatch --limit 20 --json databaseId,displayTitle,status,conclusion,createdAt \
+              --jq "[.[] | select(.displayTitle == \"Sync $NF_SLUG\" and .createdAt >= \"$start\")][0]")
+            status=$(echo "$run" | jq -r '.status // empty'); conclusion=$(echo "$run" | jq -r '.conclusion // empty')
+            if [ "$status" = "completed" ]; then
+              echo "First sync finished: $conclusion"
+              [ "$conclusion" = "success" ] && exit 0 || exit 1
+            fi
+          done
+          echo "The first sync didn't finish in 20 minutes." >&2
+          exit 1
+
+  menu-link:
+    needs: [prepare, first-sync]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: GHL menu link
+        id: menu
+        env:
+          GHL_MENU_TOKEN: ${{ secrets.GHL_MENU_TOKEN }}
+          NF_PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', needs.prepare.outputs.key)] }}
+          NF_SLUG: ${{ needs.prepare.outputs.slug }}
+        run: node scripts/new-firm.mjs menu
+      - name: Save the menu-link result
+        env:
+          NF_SLUG: ${{ needs.prepare.outputs.slug }}
+        run: |
+          git config user.name "kpi-sync-bot"
+          git config user.email "kpi-sync-bot@users.noreply.github.com"
+          git add "firms/$NF_SLUG/config.json"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Menu link for $NF_SLUG"
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1

@@ -1,0 +1,27 @@
+{
+  "_note": "Stage mapping for firms created from these GHL snapshots (the ACME \"Lead Stages\" pipeline). Used by scripts/new-firm.mjs: names are checked against the firm's discovery.json and saved as stage ids. A missing stage or an unknown snapshot falls back to the auto-guess and flags \"Review mapping\" on the admin bell.",
+  "name": "ACME Lead Stages",
+  "snapshots": [
+    { "id": "2wuNIU3FfXTzuQKGjNw5", "name": "[IN USE] LFMP Template" },
+    { "id": "AnVc2m4Qj7GC3tgQNr9U", "name": "Law Firm [Template]" }
+  ],
+  "pipelines": ["Lead Stages"],
+  "stages": {
+    "contacted": ["Stage 3: Lead Contacted?"],
+    "qualified": ["Stage 4: Lead Qualified?"],
+    "consultBooked": ["Stage 5: Booked Consultation"],
+    "consultHeld": ["Stage 6: Consultation Showed - Agreement Sent", "Stage 7: Consultation Showed - Lead Rejected", "Stage 8: Consultation Showed - Lead Referred", "Stage 9: Consultation Showed - Lead Thinking"],
+    "agreementSent": ["Stage 6: Consultation Showed - Agreement Sent"],
+    "signed": ["Stage 11: Agreement Signed"],
+    "noShow": ["Stage 10: Consultation No Show"]
+  },
+  "turnedAway": {
+    "stages": ["Stage 7: Consultation Showed - Lead Rejected", "Stage 8: Consultation Showed - Lead Referred", "Stage 12: Referred Lead Accepted?"],
+    "reasonLabels": {
+      "Stage 7: Consultation Showed - Lead Rejected": "Not a fit after consultation",
+      "Stage 8: Consultation Showed - Lead Referred": "Referred to another firm",
+      "Stage 12: Referred Lead Accepted?": "Referred out, accepted"
+    }
+  },
+  "calendarKeywords": []
+}

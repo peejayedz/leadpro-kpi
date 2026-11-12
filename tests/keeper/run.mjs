@@ -250,6 +250,17 @@ test('New firm (not in index yet): token written to its own secret; a location o
   eq(secrets(m).length, 1, 'still only one write');
 }));
 
+test('new-firm mode (KEEPER_NO_REFRESH): mints with the saved token even when a refresh is due; never refreshes; no status file', () => scenario(async (tmp, m) => {
+  const r = await runKeeper(tmp, m, { KEEPER_NO_REFRESH: '1', KEEPER_NO_STATUS: '1', GHL_APP_ACCESS: accessIn(3), KEEPER_SLUG: 'zz-test-2', KEEPER_LOCATION: LOC.fresh, KEEPER_SECRET_KEY: 'ZZ_TEST_2' });
+  eq(r.code, 0, `exit (${r.out})`);
+  ok(!m.events.some(e => e.type === 'refresh'), 'no refresh');
+  eq(secrets(m).map(e => e.name), ['GHL_TOKEN_ZZ_TEST_2'], 'only the new firm\'s token');
+  eq(await statusOf(tmp), null, 'no status file');
+  const r2 = await runKeeper(tmp, m, { KEEPER_NO_REFRESH: '1', KEEPER_NO_STATUS: '1', GHL_APP_ACCESS: accessIn(0.1), KEEPER_SLUG: 'zz-test-2', KEEPER_LOCATION: LOC.fresh, KEEPER_SECRET_KEY: 'ZZ_TEST_2' });
+  ok(r2.code !== 0 && /token keeper must run first/.test(r2.out), 'expired: asks for the keeper');
+  ok(!m.events.some(e => e.type === 'refresh'), 'still no refresh');
+}));
+
 test('Dry run: no refresh, no secret written, no status file', () => scenario(async (tmp, m) => {
   const r = await runKeeper(tmp, m, { KEEPER_DRY_RUN: '1', GHL_APP_ACCESS: accessIn(3) });
   eq(r.code, 0, 'exit');

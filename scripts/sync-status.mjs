@@ -336,6 +336,12 @@ export function describeIssue(i, ctx = {}) {
         what: `The last token keeper run stopped${i.category === 'ghl' ? ' because GHL kept failing or couldn\'t be reached' : i.category === 'github' ? ' while saving to GitHub' : ' with an unexpected error'}. ${keeperNote} Tokens minted earlier keep working for up to 24 hours.`,
         steps: ['Usually temporary: the next hourly run clears it.', 'If it lasts more than 2 hours, press <b>Run token keeper</b> and then <b>View run on GitHub</b>.'],
         actions: ['keeper', 'run'] };
+    case 'mapping-review':
+      return {
+        title: 'Review mapping',
+        what: `This firm was set up automatically from the Sub-account Builder, and its pipeline stages were <b>guessed</b> because ${i.detail === 'unknown-snapshot' ? 'its GHL snapshot has no mapping preset yet' : 'some stages from the snapshot\'s preset weren\'t found in its GHL pipeline (renamed or removed)'}. The dashboard works, but its funnel may count the wrong stages.`,
+        steps: ['Press <b>Edit mapping</b>, check each funnel step against the firm\'s pipeline, and save. This clears when the mapping is saved.', 'If many firms use the same snapshot, ask for a preset in <span class="mono">firms/_presets/</span> so the next ones are mapped for you.'],
+        actions: ['map', 'firm'] };
     case 'app-missing':
       return {
         title: 'App not installed on this sub-account',

@@ -189,6 +189,20 @@ Run **Discover a firm's GHL setup** to (re)write `firms/<slug>/discovery.json`, 
 
 Commit, then run the sync for that slug.
 
+## New firms from the Sub-account Builder
+
+When a sub-account is created in the Sub-account Builder with "Set up KPI dashboard" ticked (or from the record's **Set up KPI dashboard** button), the builder page:
+
+1. reads `firms/index.json`. A location that's already a firm is never added again; a Private Integration firm there is simply linked;
+2. picks a free slug, makes the passphrase **in the browser**, shows it once, and seals it into `PASSPHRASE_<KEY>` (same as the admin page);
+3. starts **New firm (from the builder)** (`new-firm.yml`) with non-secret inputs: name, location, slug, practice area, time zone, snapshot id, request id.
+
+`new-firm.yml` runs one at a time (concurrency `new-firm`): **prepare** (firm list, passphrase saved, wait up to 15 min for the app on the location) → **token** (mints `GHL_TOKEN_<KEY>` with the saved agency token; never refreshes) → **setup** (Discover, config from the snapshot's preset, stub, `firms/index.json` with `"tokenSource": "app"`, one commit) → **first-sync** → **menu-link** (optional, never fails the setup). Started again for the same location, it finishes what's missing. These firms then show in the admin firm list with **Token: App**, and Edit mapping, Re-sync and the bell work as for any firm.
+
+**Presets** (`firms/_presets/*.json`): `{ name, snapshots: [{ id, name }], pipelines, stages, turnedAway: { stages, reasonLabels }, calendarKeywords }`, by stage **name**. The setup saves them as stage ids (`"stageMatch": "id"`). If a name isn't found, or the snapshot has no preset, it uses the admin page's auto-guess and sets `mappingReview` in `config.json`, which shows **Review mapping** on the bell until Edit mapping is saved.
+
+**GHL menu link** (optional): secret `GHL_MENU_TOKEN` = an agency Private Integration named "LeadPro menu links" with only `custom-menu-link.write` and `custom-menu-link.readonly`. `scripts/ghl-menu.mjs` lists the links first (nothing is created if this sub-account already has "KPI Dashboard"), then creates one: title "KPI Dashboard", only this sub-account, not the agency, opens in a new tab, URL = the dashboard with the URL-encoded passphrase. It can't create anything else, edit or delete. The URL is never printed. `config.json` records only `menuLink: { status, at }`.
+
 ## Admin page
 
 `https://peejayedz.github.io/leadpro-kpi/admin/` is a static page that manages this repo through the GitHub API.
@@ -230,6 +244,8 @@ The page finds the workflow run it started by its title (`run-name`: "Sync <slug
 `node tests/pipeline/run.mjs` checks "New contacts not in pipeline": who counts (opportunity anywhere, contact type, inbound signal, bulk adds), the admin notices, the count by dates, and the real sync against a mock GHL with contacts (counts in `kpis.json`, the list only in the encrypted file, no name, phone or email in `kpis.json` or the log, a failing search gives `null`, a refused one stops the sync), and that `showNotInPipeline` is off for every firm.
 
 `node tests/wording/run.mjs` checks the New leads wording for one, two, three or more and no mapped pipelines, every firm's real config, and that the dashboard uses it in all four places and opens hovers on tap.
+
+`node tests/new-firm/run.mjs` checks new firms from the builder: the plan (new, resume, a Private Integration firm left alone, a name clash), the snapshot preset saved as stage ids, the auto-guess + Review mapping when a stage is missing or the snapshot is unknown, waiting for the app (late, never), a double start making one firm, the menu link (created, already there, list failed, no token, every other write blocked, passphrase never printed) and the workflow guardrails.
 
 `node tests/keeper/run.mjs` runs the real token keeper against a mock GHL and a fake `gh` (refresh due / not due, the new refresh token saved before anything new is used, a failed save, a refused refresh, app missing, Private Integration firms never written, a new firm, dry run, check mode) and checks no secret reaches the log or `status/token-keeper.json`.
 
