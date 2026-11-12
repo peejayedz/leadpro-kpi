@@ -5,6 +5,13 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.10.0 — 13 Nov 2026
+- [internal] Token keeper (`tokens.yml`, `scripts/token-keeper.mjs`): firms marked `"tokenSource": "app"` get their GHL token from the private "LFMP LeadPro Connector" app instead of a pasted Private Integration token. Every hour and after each scheduled or chained sync, it mints a fresh sub-account token into the firm's existing `GHL_TOKEN_<KEY>`. It refreshes the agency token only when under 6 hours are left, and saves the new single-use refresh token before using anything new. One keeper runs at a time. Private Integration firms (Mahdavi, LFMP, Hedayati, Emery) are never touched, and `sync.yml` is unchanged.
+- [internal] Admin bell: new issues for "Token keeper hasn't run" (3+ hours), "Re-connect the LeadPro Connector app", "Token keeper failed", "App not installed on this sub-account" and "Couldn't refresh this firm's app token", with a **Run token keeper** button. For app firms, a rejected token now points to the keeper instead of Fix in GHL / Update token.
+- [internal] Admin firm list: each firm shows **Token: App** or **Token: Private Integration**.
+- [internal] `status/token-keeper.json` (public): slugs, times, counts and short codes only.
+- [internal] Tests: `node tests/keeper/run.mjs` (refresh due / not due, save before use, failed save, refused refresh, app missing, Private Integration firms never written, new firm, dry run, check mode, no secrets in logs or status).
+
 ## v1.9.0 — 12 Nov 2026
 - [client] Funnel simplified for firms that sign on the first call.
 - [internal] Stages can be listed by GHL stage id (`"stageMatch": "id"` in a firm's config), so renaming a stage in GHL can't break the mapping; names still work for every other firm. Edit mapping reads and saves ids for those firms, and the sync publishes the current names of id-listed stages (`stageNames` in `kpis.json`) so dashboards never show an id.

@@ -62,6 +62,23 @@ e.g. `harrison-law-group` → `GHL_TOKEN_HARRISON_LAW_GROUP`, `PASSPHRASE_HARRIS
 
 `sync.yml` runs in three jobs: **plan** reads `firms/index.json` (or the one slug) into a list of `{ slug, secretKey }`; **sync** runs once per firm (`fail-fast: false`) and receives only that firm's `GHL_TOKEN_<secretKey>` and `PASSPHRASE_<secretKey>`, then uploads `firms/<slug>/data` as an artifact; **commit** downloads every firm's artifact and makes one commit. A secretKey must match its slug, so one firm can never borrow another's secrets. No script prints a secret.
 
+## App tokens and the token keeper
+
+A firm gets its GHL token in one of two ways (the admin firm list shows **Token: App** or **Token: Private Integration**):
+
+- **Private Integration** (the original way): a person creates a Private Integration token in the sub-account and pastes it in. Mahdavi, LFMP, Hedayati and Emery work like this.
+- **App** (`"tokenSource": "app"` in `firms/index.json`): the private GHL Marketplace app **LFMP LeadPro Connector** is installed on the LFMP agency for all sub-accounts, including future ones. The **Token keeper** workflow (`tokens.yml`, `scripts/token-keeper.mjs`) mints a fresh sub-account token from the agency token and writes it into the firm's usual `GHL_TOKEN_<KEY>` secret. `sync.yml` reads it as before.
+
+**When the keeper runs:** every hour (:23), after every scheduled or chained sync, and on demand (Actions → Token keeper → Run workflow, or the bell's **Run token keeper**). Only one keeper runs at a time (concurrency group `ghl-app-tokens`). Inputs: `slug` (one firm), `mode` = `check` (fingerprints only, no refresh, no writes), `dry_run` = `yes`.
+
+**Agency token rules.** The agency access token lasts about 24 hours. Its refresh token works once (each refresh returns a new one) and lasts up to a year if unused. The keeper refreshes only when under 6 hours are left, saves the new refresh token first (3 tries), then the access token. It never refreshes without `KEEPER_GH_TOKEN`, because the new refresh token couldn't be saved.
+
+**Secrets** (names only): `GHL_APP_CLIENT_ID`, `GHL_APP_CLIENT_SECRET`, `GHL_APP_REFRESH_TOKEN`, `GHL_APP_ACCESS` (JSON: access token + expiry), `KEEPER_GH_TOKEN` (fine-grained, this repo only, Secrets read/write; the built-in token can't write secrets). The keeper may only write `GHL_APP_REFRESH_TOKEN`, `GHL_APP_ACCESS` and `GHL_TOKEN_<KEY>` of app firms. It never writes a Private Integration firm's token, and never writes a passphrase.
+
+**Status:** `status/token-keeper.json` (public: slugs, times, counts, short codes). The bell reads it: keeper hasn't run in 3+ hours, re-connect needed, keeper failed, app not installed on a firm, a firm's token couldn't be refreshed. These only count once at least one firm uses the app.
+
+**Re-connect** (only if the bell says so): re-open the app's install link (agency → all sub-accounts → allow), then run the connect script in the Sub-account Builder repo with the GitHub option (see its HANDOFF.md).
+
 ## GHL Private Integration scopes (all read-only)
 
 | Scope | Used for |
@@ -213,6 +230,8 @@ The page finds the workflow run it started by its title (`run-name`: "Sync <slug
 `node tests/pipeline/run.mjs` checks "New contacts not in pipeline": who counts (opportunity anywhere, contact type, inbound signal, bulk adds), the admin notices, the count by dates, and the real sync against a mock GHL with contacts (counts in `kpis.json`, the list only in the encrypted file, no name, phone or email in `kpis.json` or the log, a failing search gives `null`, a refused one stops the sync), and that `showNotInPipeline` is off for every firm.
 
 `node tests/wording/run.mjs` checks the New leads wording for one, two, three or more and no mapped pipelines, every firm's real config, and that the dashboard uses it in all four places and opens hovers on tap.
+
+`node tests/keeper/run.mjs` runs the real token keeper against a mock GHL and a fake `gh` (refresh due / not due, the new refresh token saved before anything new is used, a failed save, a refused refresh, app missing, Private Integration firms never written, a new firm, dry run, check mode) and checks no secret reaches the log or `status/token-keeper.json`.
 
 `node tests/status/run.mjs` runs the real sync against a mock GHL that fails in every way the bell reports (token rejected, missing scopes, server error, rate limit, unreachable, config errors, missing token secret, a crash) and checks the category, that nothing is published, and that the result file holds no secrets or contact data. It also checks how runs open and resolve issues, the system-wide states (chain off, chain stopped, no sync at all, stale firms), the wording and buttons for each issue type, and that nothing outside the allow-list reaches `status/sync-status.json`.
 

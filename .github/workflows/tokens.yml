@@ -1,0 +1,83 @@
+name: Token keeper
+# Keeps the "LFMP LeadPro Connector" app tokens fresh for firms with tokenSource "app" (scripts/token-keeper.mjs).
+# Private Integration firms are never touched. sync.yml is unchanged: it reads GHL_TOKEN_<KEY> as before.
+# Public logs: step names, slugs and counts only.
+run-name: "Token keeper${{ inputs.slug && format(' {0}', inputs.slug) || '' }}${{ inputs.mode == 'check' && ' (check)' || '' }}${{ inputs.dry_run == 'yes' && ' (dry run)' || '' }}${{ inputs.request && format(' [{0}]', inputs.request) || '' }}${{ github.event_name == 'workflow_run' && ' (after sync)' || '' }}"
+
+on:
+  schedule:
+    - cron: "23 * * * *" # hourly
+  workflow_run: # after every scheduled or chained sync (filtered below)
+    workflows: ["Sync KPIs from GoHighLevel"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "One firm's slug (empty = every app firm)"
+        required: false
+        default: ""
+      location:
+        description: "Only for a new firm not yet in firms/index.json: its GHL location id"
+        required: false
+        default: ""
+      request:
+        description: "Leave empty (set by new-firm.yml to find this run)"
+        required: false
+        default: ""
+      mode:
+        description: "keep (default) or check (fingerprints only, no refresh, no writes)"
+        required: false
+        default: "keep"
+      dry_run:
+        description: "yes = say what would happen, write nothing"
+        required: false
+        default: ""
+
+permissions:
+  contents: write # commits status/token-keeper.json
+
+# One keeper at a time across the repo, so two runs can never refresh the single-use token at once.
+concurrency:
+  group: ghl-app-tokens
+  cancel-in-progress: false
+
+jobs:
+  keep:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.event == 'schedule' || endsWith(github.event.workflow_run.display_title, '(chain)') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Keep app tokens fresh
+        env:
+          GHL_APP_CLIENT_ID: ${{ secrets.GHL_APP_CLIENT_ID }}
+          GHL_APP_CLIENT_SECRET: ${{ secrets.GHL_APP_CLIENT_SECRET }}
+          GHL_APP_REFRESH_TOKEN: ${{ secrets.GHL_APP_REFRESH_TOKEN }}
+          GHL_APP_ACCESS: ${{ secrets.GHL_APP_ACCESS }}
+          SECRETS_TOKEN: ${{ secrets.KEEPER_GH_TOKEN }}
+          KEEPER_MODE: ${{ inputs.mode }}
+          KEEPER_SLUG: ${{ inputs.slug }}
+          KEEPER_LOCATION: ${{ inputs.location }}
+          KEEPER_DRY_RUN: ${{ inputs.dry_run == 'yes' && '1' || '' }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # A new firm's secret name is derived from its slug here, never typed in.
+          if [ -n "$KEEPER_LOCATION" ]; then export KEEPER_SECRET_KEY="$(printf '%s' "$KEEPER_SLUG" | tr 'a-z-' 'A-Z_')"; fi
+          node scripts/token-keeper.mjs
+      - name: Commit keeper status
+        if: ${{ always() && inputs.mode != 'check' && inputs.dry_run != 'yes' }}
+        run: |
+          git config user.name "kpi-sync-bot"
+          git config user.email "kpi-sync-bot@users.noreply.github.com"
+          git add status/token-keeper.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "No status change"; exit 0; fi
+          git commit -m "Token keeper $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            sleep $((i * 5))
+          done
+          echo "Push failed after 3 tries" >&2
+          exit 1

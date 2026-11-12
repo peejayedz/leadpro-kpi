@@ -327,6 +327,7 @@ import { mergeConfig, practiceSlug } from '../scripts/config-merge.mjs';
 import { parseChangelog, latestVersion, inlineMd } from '../scripts/changelog.mjs';
 import { STEPS_MAP, initialState, stageList as stagesOf, buildMapping, applyMapping } from './mapping.mjs';
 import { openIssues, firmState, describeIssue, seenKey, inBadge, STALE_MIN } from '../scripts/sync-status.mjs';
+import { keeperIssues, tokenLabel } from '../scripts/keeper-status.mjs';
 import { checkScopes } from '../scripts/scope-check.mjs';
 import { pipelineNotices } from '../scripts/not-in-pipeline.mjs';
 const $ = id => document.getElementById(id);
@@ -691,7 +692,7 @@ function firmRow(f) {
     <div>
       <div class="fname"><h3>${esc(f.name)}</h3><span class="chip ${stateChip[0]}" title="${esc(stateChip[2])}">${stateChip[1]}</span></div>
       ${fi ? `<p class="meta issueline"><span><span class="chip ${fi.kind === 'failed' ? 'bad' : 'warn'}">${esc(issueText(fi).title)}</span> since ${esc(ago(fi.firstSeen))}</span><button class="linkbtn" type="button" data-open-issue="${esc(fi.id)}">Details and fix</button></p>` : ''}
-      <p class="meta"><span>${esc(f.practiceArea || 'No practice area')}</span><span class="mono">${esc(f.slug)}</span>${subNames[f.slug] ? `<span>GHL: ${esc(subNames[f.slug])}</span>` : ''}</p>
+      <p class="meta"><span>${esc(f.practiceArea || 'No practice area')}</span><span class="mono">${esc(f.slug)}</span><span class="chip" title="${f.tokenSource === 'app' ? 'GHL token made automatically by the LFMP LeadPro Connector app (refreshed every hour by the token keeper)' : 'GHL Private Integration token pasted when the firm was added'}">Token: ${esc(tokenLabel(f))}</span>${subNames[f.slug] ? `<span>GHL: ${esc(subNames[f.slug])}</span>` : ''}</p>
       <p class="meta"><span title="${esc(fmtTime(k?.generatedAt))}">Last updated ${k ? `${esc(ago(k.generatedAt))} (${esc(fmtTime(k.generatedAt))})` : '<span class="chip warn">no data yet</span>'}${stale ? ' <span class="chip bad" title="Syncs should run every 30 minutes. Check Actions for skipped or failed runs.">over 2 hours old</span>' : ''}</span>
         ${k?.leads90 != null ? `<span>${k.leads90} lead${k.leads90 === 1 ? '' : 's'} in the last 90 days</span>` : ''}
         ${k?.notInPipeline30 != null ? `<span title="Contacts created in the last 30 days who came in by form, chat, booking, call, text or email but have no opportunity in any pipeline (imports and bulk adds left out)">${k.notInPipeline30 ? `<span class="chip warn">${k.notInPipeline30} new contact${k.notInPipeline30 === 1 ? '' : 's'} not in pipeline</span> last 30 days` : '0 new contacts outside the pipeline (30 days)'}</span>` : ''}</p>
@@ -826,7 +827,7 @@ async function deleteFirm(slug, secretKey, name) {
 const CHECK_MS = 5 * 60e3;
 const BASE_TITLE = document.title;
 const SEEN_KEY = 'leadpro-admin-seen', LIVE_KEY = 'leadpro-admin-live', LOCAL_RESOLVED = 'leadpro-admin-resolved';
-let syncStatus = null, issues = [], chainInfo = {}, lastCheck = 0, checkErr = null, checkTimer = null, checking = null;
+let syncStatus = null, keeperStatus = null, issues = [], chainInfo = {}, lastCheck = 0, checkErr = null, checkTimer = null, checking = null;
 const subNames = {}, expanded = new Set(), issueMsg = {};
 const readStore = (k, d) => { try { return JSON.parse(store.get(k)) ?? d; } catch { return d; } };
 const seenSet = () => new Set(readStore(SEEN_KEY, []));
@@ -836,7 +837,7 @@ const unseen = () => { const s = seenSet(); return listed().filter(i => !s.has(s
 const when = iso => (iso ? `${fmtTime(iso)} (${ago(iso)})` : 'unknown');
 const firmOf = slug => firms.find(f => f.slug === slug);
 const locOf = f => configs[f.slug]?.locationId || f.locationId || '';
-const issueText = i => { const f = i.slug ? firmOf(i.slug) : null; return describeIssue(i, { now: Date.now(), subAccount: f ? subNames[f.slug] : null, secretKey: f?.secretKey, lastGood: f ? kpis[f.slug]?.generatedAt : null, when }); };
+const issueText = i => { const f = i.slug ? firmOf(i.slug) : null; return describeIssue(i, { now: Date.now(), subAccount: f ? subNames[f.slug] : null, secretKey: f?.secretKey, tokenSource: f?.tokenSource, lastGood: f ? kpis[f.slug]?.generatedAt : null, when }); };
 
 // SYNC_CHAIN and whether a link of the chain is waiting (or a chained sync is running).
 async function chainState() {
@@ -861,7 +862,10 @@ async function refreshIssues({ reloadKpis = false } = {}) {
       if (reloadKpis) await Promise.all(firms.map(async f => { try { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); kpis[f.slug] = k ? kpiSummary(k) : null; } catch {} }));
       syncStatus = await getJSON('status/sync-status.json').catch(() => null);
       chainInfo = await chainState();
-      issues = openIssues(syncStatus, { now: Date.now(), firms, kpis, chain: chainInfo });
+      keeperStatus = await getJSON('status/token-keeper.json').catch(() => null);
+      const rank = i => (i.slug ? 1 : 0);
+      issues = [...keeperIssues(keeperStatus, { now: Date.now(), firms }), ...openIssues(syncStatus, { now: Date.now(), firms, kpis, chain: chainInfo })]
+        .sort((a, b) => rank(a) - rank(b) || Date.parse(b.firstSeen) - Date.parse(a.firstSeen));
       trackLive(); lastCheck = Date.now(); checkErr = null;
     } catch (e) { checkErr = e.message; }
     finally { checking = null; }
@@ -914,7 +918,7 @@ function issueHtml(i, seen) {
     : code === 'run' ? (i.runUrl ? `<a class="btn${primary ? ' primary' : ''}" href="${esc(i.runUrl)}" target="_blank" rel="noopener">${ICON.ext}View run on GitHub</a>` : '')
     : code === 'variables' ? `<a class="btn${primary ? ' primary' : ''}" href="https://github.com/${esc(OWNER)}/${esc(REPO)}/settings/variables/actions" target="_blank" rel="noopener">${ICON.ext}Open variables</a>`
     : `<button class="btn${primary ? ' primary' : ''}" type="button" data-n="${code}">${html}</button>`;
-  const LABEL = { token: `${ICON.key}Update token`, resync: `${ICON.sync}Re-sync`, firm: `${ICON.target}Go to firm`, restart: `${ICON.sync}Restart chain`, 'sync-all': `${ICON.sync}Sync all firms now` };
+  const LABEL = { token: `${ICON.key}Update token`, resync: `${ICON.sync}Re-sync`, firm: `${ICON.target}Go to firm`, restart: `${ICON.sync}Restart chain`, keeper: `${ICON.key}Run token keeper`, 'sync-all': `${ICON.sync}Sync all firms now` };
   const strong = !['held', 'incomplete'].includes(i.kind);
   return `<article class="issue" data-issue="${esc(i.id)}">
     <button class="ihead" type="button" aria-expanded="${open}" data-n="toggle"><span class="sev ${sev}" aria-hidden="true"></span>
@@ -994,6 +998,11 @@ $('nPanel').addEventListener('click', async e => {
     case 'firm': goToFirm(i?.slug || b.dataset.slug); break;
     case 'resync': if (f) startResync(f, say); break;
     case 'token': if (f) tokenDialog(f, say); break;
+    case 'keeper':
+      b.disabled = true;
+      try { await dispatch('tokens.yml', f ? { slug: f.slug } : {}); say(`<span class="chip good">Started</span> The token keeper is running${f ? ` for ${esc(f.name)}` : ''} (about a minute). This list updates on the next check.`); setTimeout(() => refreshIssues(), 90e3); }
+      catch (err) { say(`<span class="chip bad">Couldn't start</span> ${esc(err.message)}`); b.disabled = false; }
+      break;
     case 'restart':
       b.disabled = true;
       try { await dispatch('sync-chain.yml', {}); say('<span class="chip good">Restarted</span> A new link is waiting for the next :07 or :37. This issue clears on the next check.'); setTimeout(() => refreshIssues(), 15e3); }

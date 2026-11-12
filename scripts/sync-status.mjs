@@ -220,10 +220,16 @@ export function describeIssue(i, ctx = {}) {
   const fixGhl = `Press <b>Fix in GHL</b>. It opens Settings → Private Integrations in ${sub}.`;
   const resyncClears = 'Press <b>Re-sync</b>. This issue clears as soon as a sync succeeds.';
   const area = i.area ? ` while reading ${esc(i.area)}` : '';
+  const keeperNote = 'The token keeper (Actions → <b>Token keeper</b>) refreshes app tokens every hour.';
   switch (i.kind) {
     case 'failed':
       switch (i.category) {
         case 'token':
+          if (ctx.tokenSource === 'app') return {
+            title: 'App token rejected or missing',
+            what: `This firm uses the <b>LFMP LeadPro Connector</b> app token, and GHL refused it (or ${key} is empty). It is replaced automatically every hour, so it has probably expired because the token keeper hasn't run. ${keeps}`,
+            steps: ['Check the system issues at the top of this list first (keeper not running, re-connect needed).', 'Press <b>Run token keeper</b>. It mints a fresh token for this firm, then press <b>Re-sync</b>.', 'If the keeper says the app isn\'t installed on this sub-account, see that issue.'],
+            actions: ['keeper', 'resync', 'run', 'firm'] };
           if (i.detail === 'missing-secret') return {
             title: 'GHL token not set',
             what: `The GitHub secret ${key} is empty or missing, so the sync couldn't start. ${keeps}`,
@@ -305,6 +311,38 @@ export function describeIssue(i, ctx = {}) {
         what: `The last successful sync of any firm was ${esc(when(i.lastGood))}. Syncs should run every 30 minutes, so every dashboard is out of date.`,
         steps: ['Fix any other system issue in this list first (chain off or stopped).', 'Press <b>Sync all firms now</b>.', 'If that fails too, press <b>View run on GitHub</b>. If GitHub Actions is having an outage, wait and try again.'],
         actions: ['sync-all', 'restart', 'run'] };
+    case 'keeper-stale':
+      return {
+        title: i.lastGood ? `Token keeper hasn't run in ${fmtMinutes(ctx.now, i.lastGood)}` : 'Token keeper hasn\'t run yet',
+        what: `Firms that use the app token need a fresh token at least once a day. ${i.lastGood ? `The keeper's last good run was ${esc(when(i.lastGood))}.` : 'No keeper run has been recorded.'} ${keeperNote} App tokens last about 24 hours, so their syncs will start failing if this goes on.`,
+        steps: ['Press <b>Run token keeper</b>.', 'If it fails, press <b>View run on GitHub</b> and read the red step.'],
+        actions: ['keeper', 'run'] };
+    case 'keeper-reconnect': {
+      const why = { 'refresh-rejected': 'GHL refused the app\'s refresh token (the app may have been uninstalled or re-authorised elsewhere).', 'save-failed': 'GHL gave a new refresh token, but saving it to GitHub failed, so the saved one no longer works.', 'missing-secrets': 'The app\'s GitHub secrets (GHL_APP_CLIENT_ID, GHL_APP_CLIENT_SECRET, GHL_APP_REFRESH_TOKEN) are missing.' }[i.detail] || 'The app connection needs to be renewed.';
+      return {
+        title: 'Re-connect the LeadPro Connector app',
+        what: `${why} App tokens already minted keep working for up to 24 hours; after that, syncs for app firms stop.`,
+        steps: ['In the GHL developer portal, open <b>LFMP LeadPro Connector → Auth → Install link</b>, open it in the LFMP Chrome profile, choose the agency and <b>All sub-accounts</b>, and allow.', 'In a plain Terminal: run the connect script with the GitHub option (see the builder\'s HANDOFF.md, "Re-connect"), paste the one-time code.', 'Press <b>Run token keeper</b>. This clears when it succeeds.'],
+        actions: ['keeper', 'run'] };
+    }
+    case 'keeper-failed':
+      return {
+        title: 'Token keeper failed',
+        what: `The last token keeper run stopped${i.category === 'ghl' ? ' because GHL kept failing or couldn\'t be reached' : i.category === 'github' ? ' while saving to GitHub' : ' with an unexpected error'}. ${keeperNote} Tokens minted earlier keep working for up to 24 hours.`,
+        steps: ['Usually temporary: the next hourly run clears it.', 'If it lasts more than 2 hours, press <b>Run token keeper</b> and then <b>View run on GitHub</b>.'],
+        actions: ['keeper', 'run'] };
+    case 'app-missing':
+      return {
+        title: 'App not installed on this sub-account',
+        what: `This firm uses the app token, but the <b>LFMP LeadPro Connector</b> app isn't installed on ${sub}, so no token can be made. Its last token keeps working for up to 24 hours.`,
+        steps: ['In GHL (agency view) → Marketplace → <b>LFMP LeadPro Connector</b> → make sure it\'s installed on this sub-account (or on all sub-accounts).', 'Press <b>Run token keeper</b>, then <b>Re-sync</b>.'],
+        actions: ['keeper', 'resync', 'run', 'firm'] };
+    case 'app-token':
+      return {
+        title: 'Couldn\'t refresh this firm\'s app token',
+        what: `The token keeper couldn't ${i.detail === 'save-failed' ? `save a new token into ${key}` : 'get a new token from GHL'} for this firm. Its last token keeps working for up to 24 hours${i.lastGood ? ` (made ${esc(when(i.lastGood))})` : ''}.`,
+        steps: ['Press <b>Run token keeper</b>.', 'If it fails again, press <b>View run on GitHub</b> and read the red step.'],
+        actions: ['keeper', 'run', 'firm'] };
     default:
       return { title: 'Unknown issue', what: '', steps: [], actions: [] };
   }
