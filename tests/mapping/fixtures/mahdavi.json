@@ -1,41 +1,82 @@
 {
-  "description": "The Mahdavi Law Firm (real GHL snapshot, ACME 'Lead Stages'). Edit mapping must pre-select the live config exactly; a new-firm guess on the same stages must give the same answer.",
+  "description": "The Mahdavi Law Firm (real GHL snapshot, ACME 'Lead Stages'). Signs on the first call: stages listed by GHL stage id, consult steps hidden, agreements sent measured against qualified leads. Edit mapping must pre-select the live config exactly. The mock renames Stage 6 (as done in GHL on 12 Nov 2026) to prove a rename doesn't change any count.",
   "kind": "existing",
-  "alsoGuess": true,
+  "alsoGuess": false,
   "discoveryFrom": "firms/mahdavi/discovery.json",
   "configFrom": "firms/mahdavi/config.json",
+  "renames": {
+    "a52a87be-30df-47b9-8a65-2bac90960060": "Agreement Sent – Awaiting Signature"
+  },
   "expected": {
     "pipelines": [
       "Lead Stages"
     ],
     "contacted": [
-      "Stage 3: Lead Contacted?"
+      "625bf5e3-4395-4e0d-baf0-da5579e5c858",
+      "3a669f26-187c-4ca4-b5d7-8d015dfdef4a",
+      "231f014d-662d-4b5e-9db8-ac06d7e4f879",
+      "6b58d85b-a8a6-47ce-a0dc-876f5966816e",
+      "2acfe41b-1c9f-4e1a-8608-d4d13b9520ed"
     ],
     "qualified": [
-      "Stage 4: Lead Qualified?"
+      "2fe6e011-81f1-4b13-abcf-5f0495a938b6",
+      "d367addc-d72d-4a77-99b6-a4615943a783",
+      "57e292b3-722d-4b70-9428-660b22f09d4f"
     ],
-    "consultBooked": [
-      "Stage 5: Booked Consultation"
-    ],
-    "consultHeld": [
-      "Stage 6: Consultation Showed - Agreement Sent",
-      "Stage 7: Consultation Showed - Lead Rejected",
-      "Stage 8: Consultation Showed - Lead Referred",
-      "Stage 9: Consultation Showed - Lead Thinking"
-    ],
+    "consultBooked": [],
+    "consultHeld": [],
     "agreementSent": [
-      "Stage 6: Consultation Showed - Agreement Sent"
+      "a52a87be-30df-47b9-8a65-2bac90960060"
     ],
     "signed": [
-      "Stage 11: Agreement Signed"
+      "27414b87-7fd6-4e32-a9bc-7f87abb24c67"
     ],
-    "noShow": [
-      "Stage 10: Consultation No Show"
-    ],
+    "noShow": [],
     "turnedAway": [
-      "Stage 7: Consultation Showed - Lead Rejected",
-      "Stage 8: Consultation Showed - Lead Referred",
-      "Stage 12: Referred Lead Accepted?"
+      "3a669f26-187c-4ca4-b5d7-8d015dfdef4a",
+      "231f014d-662d-4b5e-9db8-ac06d7e4f879",
+      "2acfe41b-1c9f-4e1a-8608-d4d13b9520ed"
     ]
+  },
+  "expectFunnel": {
+    "rows": [
+      [
+        "New leads",
+        null
+      ],
+      [
+        "Contacted",
+        "of leads"
+      ],
+      [
+        "Qualified",
+        "of contacted"
+      ],
+      [
+        "Agreement sent",
+        "of qualified"
+      ],
+      [
+        "Signed",
+        "of sent"
+      ]
+    ],
+    "sentRateBase": "qualified",
+    "nullRates": [
+      "bookRatePct",
+      "showRatePct",
+      "noShowPct"
+    ],
+    "stageNames": {
+      "a52a87be-30df-47b9-8a65-2bac90960060": "Agreement Sent – Awaiting Signature"
+    },
+    "counts": {
+      "totalLeads": 12,
+      "contacted": 10,
+      "qualified": 5,
+      "agreementSent": 2,
+      "signed": 1,
+      "turnedAway": 3
+    }
   }
 }

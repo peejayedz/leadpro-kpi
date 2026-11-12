@@ -50,7 +50,7 @@ function oracle(fixture, discovery, config) {
     if (!included(p)) continue;
     for (const s of p.stages) {
       out.totalLeads++;
-      const has = k => (X[k] || []).map(norm).includes(norm(s.name));
+      const has = k => (X[k] || []).map(norm).some(x => x === norm(s.name) || x === norm(s.id));   // stage name or stage id
       let reach = -1;
       FUNNEL.forEach((k, i) => { if (has(k)) reach = Math.max(reach, i); });
       const noShow = has('noShow') && reach < FUNNEL.indexOf('consultHeld');
@@ -59,7 +59,7 @@ function oracle(fixture, discovery, config) {
       if (noShow) out.noShows++;
       if (has('turnedAway') && reach < FUNNEL.indexOf('signed')) {
         out.turnedAway++;
-        const label = labels[Object.keys(labels).find(k => norm(k) === norm(s.name))] || s.name;
+        const label = labels[Object.keys(labels).find(k => norm(k) === norm(s.name) || norm(k) === norm(s.id))] || s.name;
         out.reasons[label] = (out.reasons[label] || 0) + 1;
       }
     }
@@ -70,9 +70,11 @@ function oracle(fixture, discovery, config) {
 // ---------- one fixture ----------
 async function check(name) {
   const fx = await readJSON(`tests/mapping/fixtures/${name}.json`);
-  const discovery = fx.discoveryFrom ? await readJSON(fx.discoveryFrom) : fx.discovery;
+  const discovery = clone(fx.discoveryFrom ? await readJSON(fx.discoveryFrom) : fx.discovery);
+  // fx.renames { stageId: newName }: a stage renamed in GHL since the snapshot (the mock serves the new name).
+  for (const p of discovery.pipelines || []) for (const st of p.stages || []) if (fx.renames?.[st.id]) st.name = fx.renames[st.id];
   const template = await readJSON('firms/_template/config.json');
-  const res = { name, kind: fx.kind, steps: {}, notes: [] };
+  const res = { name, kind: fx.kind, steps: {}, notes: [], nameOf: Object.fromEntries((discovery.pipelines || []).flatMap(p => (p.stages || []).map(st => [st.id, st.name]))) };
 
   // 1. pre-selection
   const firmCfg = fx.kind === 'existing' ? await readJSON(fx.configFrom) : template;
@@ -122,7 +124,21 @@ async function check(name) {
     const mock = await startMockGhl(discovery);
     try { await run(process.execPath, [join(tmp, 'scripts/sync.mjs'), 'fx'], { env: { ...process.env, GHL_API_BASE: mock.url, GHL_TOKEN: 'mock', DASHBOARD_PASSPHRASE: '' } }); }
     finally { await mock.close(); }
-    const k = JSON.parse(await readFile(join(tmp, 'firms/fx/data/kpis.json'), 'utf8')).periods.last30.current;
+    const pubOut = JSON.parse(await readFile(join(tmp, 'firms/fx/data/kpis.json'), 'utf8'));
+    const k = pubOut.periods.last30.current;
+    // fx.expectFunnel: funnel rows shown (hidden steps left out), the sent-rate base, rates switched off, stage names published
+    if (fx.expectFunnel) {
+      const E = fx.expectFunnel, probs = [];
+      const rows = (k.funnel || []).map(r => [r[0], r[3]]);
+      if (JSON.stringify(rows) !== JSON.stringify(E.rows)) probs.push(`funnel rows ${JSON.stringify(rows)}`);
+      const base = E.sentRateBase === 'qualified' ? k.qualified : k.consultHeld;
+      const wantSent = base > 0 ? Math.round((k.agreementSent / base) * 1000) / 10 : null;
+      if (k.sentRatePct !== wantSent) probs.push(`sentRatePct ${k.sentRatePct} ≠ ${wantSent}`);
+      for (const [ck, cv] of Object.entries(E.counts || {})) if (k[ck] !== cv) probs.push(`${ck} ${k[ck]} ≠ ${cv}`);
+      for (const r of E.nullRates || []) if (k[r] !== null) probs.push(`${r} should be null, got ${k[r]}`);
+      for (const [sid, nm] of Object.entries(E.stageNames || {})) if (pubOut.stageNames?.[sid] !== nm) probs.push(`stageNames[${sid.slice(0, 8)}] = ${pubOut.stageNames?.[sid]}`);
+      res.extra = { label: 'hidden steps, sent-rate base, stage names', pass: !probs.length, probs };
+    }
     const want = oracle(fx, discovery, mergeConfig(await readJSON('firms/_defaults.json'), null, config));
     const gotF = { totalLeads: k.totalLeads, contacted: k.contacted, qualified: k.qualified, consultBooked: k.consultBooked, consultHeld: k.consultHeld, agreementSent: k.agreementSent, signed: k.signed, noShows: k.noShows, turnedAway: k.turnedAway, reasons: Object.fromEntries(k.turnedAwayReasons || []) };
     const keys = Object.keys(want).filter(x => x !== 'reasons');
@@ -147,7 +163,8 @@ console.log(`${pad('Fixture', 18)}${pad('Step', 16)}${pad('Expected', 46)}${pad(
 console.log('-'.repeat(132));
 for (const r of results) {
   console.log(`${pad(r.name, 18)}${pad('Pipelines', 16)}${pad(short(r.pipelines.expected).slice(0, 44), 46)}${pad(short(r.pipelines.got).slice(0, 44), 46)}${mark(r.pipelines.pass)}`);
-  for (const k of ROWS) { const s = r.steps[k]; console.log(`${pad('', 18)}${pad(LABEL[k], 16)}${pad(short(s.expected).slice(0, 44), 46)}${pad(short(s.got).slice(0, 44), 46)}${mark(s.pass)}`); }
+  const nm = l => (l || []).map(x => r.nameOf[x] || x);   // ids shown by stage name
+  for (const k of ROWS) { const s = r.steps[k]; console.log(`${pad('', 18)}${pad(LABEL[k], 16)}${pad(short(nm(s.expected)).slice(0, 44), 46)}${pad(short(nm(s.got)).slice(0, 44), 46)}${mark(s.pass)}`); }
   console.log('-'.repeat(132));
 }
 console.log('\nPer fixture\n');
@@ -157,6 +174,7 @@ for (const r of results) {
   const other = [r.guess ? `new-firm guess ${mark(r.guess.pass)}${r.guess.bad.length ? ` (${r.guess.bad.join(', ')})` : ''}` : '', r.extra ? `${r.extra.label} ${mark(r.extra.pass)}` : '', ...r.notes].filter(Boolean).join('; ');
   console.log(`${pad(r.name, 18)}${pad(r.kind, 10)}${pad(mark(pre), 12)}${pad(mark(r.roundTrip.pass), 12)}${pad(mark(r.funnel.pass), 10)}${other}`);
   if (!r.roundTrip.pass) console.log(`${pad('', 18)}round trip changed ${r.roundTrip.diff}`);
+  if (r.extra?.probs?.length) console.log(`${pad('', 18)}${r.extra.probs.join('; ')}`);
   if (!r.funnel.pass) console.log(`${pad('', 18)}funnel ${r.funnel.error || `mismatch on ${r.funnel.bad.join(', ')}: expected ${JSON.stringify(r.funnel.want)} got ${JSON.stringify(r.funnel.got)}`}`);
 }
 console.log('\nFunnel counts from the sync (one lead per stage)\n');

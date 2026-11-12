@@ -5,6 +5,12 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.9.0 — 12 Nov 2026
+- [client] Funnel simplified for firms that sign on the first call.
+- [internal] Stages can be listed by GHL stage id (`"stageMatch": "id"` in a firm's config), so renaming a stage in GHL can't break the mapping; names still work for every other firm. Edit mapping reads and saves ids for those firms, and the sync publishes the current names of id-listed stages (`stageNames` in `kpis.json`) so dashboards never show an id.
+- [internal] Optional per-firm `hide` (`consultBooked`, `consultHeld`, `showRate`, `noShow`) and `sentRateBase: "qualified"`, both off by default. Mahdavi uses them: stages by id, consult steps hidden, agreements sent measured against qualified leads, Stage 6 renamed in GHL to "Agreement Sent – Awaiting Signature".
+- [internal] Tests: the Mahdavi mapping fixture checks the new mapping, a simulated Stage 6 rename, hidden funnel steps, the sent-rate base and published stage names.
+
 ## v1.8.0 — 4 Nov 2026
 - [client] LeadPro logo added; date line tidied.
 

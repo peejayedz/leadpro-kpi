@@ -53,7 +53,10 @@ const hasAny = (list, vals) => (list || []).map(norm).some(x => vals.includes(x)
 export function classify(lead, cfg, consultsByContact = {}, nowMs = Date.now()) {
   const S = cfg.stages || {}, T = cfg.tags || {}, Q = cfg.qualification || {}, TA = cfg.turnedAway || {};
   const stage = norm(lead.stage);
-  const st = k => (S[k] || []).map(norm).includes(stage);
+  // A configured stage matches by GHL stage name or by stage id (ids survive renames in GHL).
+  const stageKeys = [stage, norm(lead.stageId)].filter(Boolean);
+  const isStage = list => (list || []).map(norm).some(x => stageKeys.includes(x));
+  const st = k => isStage(S[k]);
   const tags = (lead.tags || []).map(norm);
   const tag = k => hasAny(T[k], tags);
   const vals = (lead.qualValues || []).map(norm);
@@ -79,15 +82,14 @@ export function classify(lead, cfg, consultsByContact = {}, nowMs = Date.now()) 
   // Turned away: lost, marked not qualified, or in a turned-away stage, and never signed.
   const prefix = norm(TA.tagPrefix || '');
   const reasonTag = prefix ? (lead.tags || []).find(x => norm(x).startsWith(prefix)) : null;
-  const turnedAway = !signed && (lead.status === 'lost' || markedNo || hasAny(TA.stages, [stage]) || !!reasonTag);
+  const turnedAway = !signed && (lead.status === 'lost' || markedNo || isStage(TA.stages) || !!reasonTag);
   const turnedAwayReason = !turnedAway ? null
     : reasonTag ? cap1(String(reasonTag).slice(prefix.length).replace(/^[\s:–-]+/, ''))
     : lead.lostReason ? lead.lostReason
-    : hasAny(TA.stages, [stage]) ? ((TA.reasonLabels || {})[Object.keys(TA.reasonLabels || {}).find(k => norm(k) === stage)] || lead.stage)
+    : isStage(TA.stages) ? ((TA.reasonLabels || {})[Object.keys(TA.reasonLabels || {}).find(k => stageKeys.includes(norm(k)))] || lead.stage)
     : markedNo ? 'Not qualified' : 'No reason recorded';
   // A card someone actually moved: it sits in any mapped stage (or a turned-away stage), or was marked Won/Lost.
-  const mapped = Object.values(S).flat().concat(TA.stages || []).map(norm);
-  const stageMoved = mapped.includes(stage) || lead.status === 'won' || lead.status === 'lost';
+  const stageMoved = isStage(Object.values(S).flat().concat(TA.stages || [])) || lead.status === 'won' || lead.status === 'lost';
   const step = signed ? 'Signed' : agreementSent ? 'Agreement sent' : held ? 'Consult held' : booked ? 'Consult booked' : qualified ? 'Qualified' : contacted ? 'Contacted' : 'New';
   return { contacted, qualified, consultBooked: booked, consultHeld: held, bookedPast, noShow, noShowBy, agreementSent, signed, turnedAway, turnedAwayReason, step, stageMoved,
     nextConsult: appts.map(a => a.startTime).sort().pop() || null };
@@ -198,8 +200,18 @@ export function buildLists(records, cfg, from, to) {
   };
 }
 
+// Funnel row suffixes: "of" + the step above. Hiding a step relabels the row below it.
+const OF = { newLeads: 'of leads', contacted: 'of contacted', qualified: 'of qualified', consultBooked: 'of booked', consultHeld: 'of held', agreementSent: 'of sent' };
+// Steps a firm can hide (config "hide"; off by default): consultBooked, consultHeld, showRate, noShow.
+// A hidden step leaves the funnel, and its rate becomes null so no goal or badge is scored for it.
+export const hiddenSet = cfg => new Set(Array.isArray(cfg?.hide) ? cfg.hide : []);
+// What "agreements sent" is a rate of: consults held (default) or qualified leads (config "sentRateBase": "qualified").
+export const sentBaseKey = cfg => (cfg?.sentRateBase === 'qualified' ? 'qualified' : 'consultHeld');
+
 // The only place numbers are produced. Every number = a length of a list.
-export function summarize(L) {
+export function summarize(L, cfg = {}) {
+  const hide = hiddenSet(cfg);
+  const sentBase = L[sentBaseKey(cfg)];
   const n = L.newLeads.length;
   const avg = L.speedMeasured.length ? Math.round((L.speedMeasured.reduce((t, l) => t + l.stlMin, 0) / L.speedMeasured.length) * 10) / 10 : null;
   const src = {};
@@ -225,14 +237,14 @@ export function summarize(L) {
     turnedAway: L.turnedAway.length,
     turnedAwayReasons: Object.entries(reasons).sort((a, b) => b[1] - a[1]),
     consultBooked: L.consultBooked.length,
-    bookRatePct: pct(L.consultBooked.length, L.qualified.length),
+    bookRatePct: hide.has('consultBooked') ? null : pct(L.consultBooked.length, L.qualified.length),
     bookedPast: L.bookedPast.length,
     consultHeld: L.consultHeld.length,
-    showRatePct: pct(L.consultHeld.length, L.bookedPast.length),
+    showRatePct: hide.has('showRate') ? null : pct(L.consultHeld.length, L.bookedPast.length),
     noShows: L.noShows.length,
-    noShowPct: pct(L.noShows.length, L.bookedPast.length),
+    noShowPct: hide.has('noShow') ? null : pct(L.noShows.length, L.bookedPast.length),
     agreementSent: L.agreementSent.length,
-    sentRatePct: pct(L.agreementSent.length, L.consultHeld.length),
+    sentRatePct: pct(L.agreementSent.length, sentBase.length),
     signed: L.signed.length,
     signRatePct: pct(L.signed.length, L.agreementSent.length),
     leadToSignedPct: pct(L.signed.length, n),
@@ -248,7 +260,7 @@ export function summarize(L) {
       ['Qualified', L.qualified.length, 'qualified', 'of contacted'], ['Consult booked', L.consultBooked.length, 'consultBooked', 'of qualified'],
       ['Consult held', L.consultHeld.length, 'consultHeld', 'of booked'], ['Agreement sent', L.agreementSent.length, 'agreementSent', 'of held'],
       ['Signed', L.signed.length, 'signed', 'of sent'],
-    ],
+    ].filter(([, , k]) => !hide.has(k)).map((row, i, rows) => (i ? [row[0], row[1], row[2], OF[rows[i - 1][2]]] : row)),
   };
 }
 
@@ -310,8 +322,8 @@ export function computeAll(records, cfg, now) {
     const r = periodRange(key, now, off, cfg.timezone || null);
     periods[key] = {
       label: r.label, from: r.from, to: r.to,
-      current: summarize(buildLists(records, cfg, r.from, r.to)),
-      previous: summarize(buildLists(records, cfg, r.prevFrom, r.prevTo)),
+      current: summarize(buildLists(records, cfg, r.from, r.to), cfg),
+      previous: summarize(buildLists(records, cfg, r.prevFrom, r.prevTo), cfg),
     };
   }
   return periods;

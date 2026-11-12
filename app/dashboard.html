@@ -138,6 +138,7 @@ button.frow{cursor:pointer} button.frow:hover .fill{filter:brightness(1.15)}
 
 /* stage columns */
 .stages{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--rule)}
+.stages.three{grid-template-columns:repeat(3,1fr)}
 .stage{padding:20px 18px 18px} .stage:first-child{padding-left:0} .stage:last-child{padding-right:0}
 .stage+.stage{border-left:1px solid var(--rule)}
 .stage h2{font-size:14px;font-weight:700;margin:0 0 12px} .stage h2 span{font-weight:400;color:var(--ink-2);margin-right:6px}
@@ -331,7 +332,7 @@ const PATH_FIRM = /\/firms\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(?:index\.html)?$/.exec(
 const SLUG = PATH_FIRM ? PATH_FIRM[1] : (new URLSearchParams(location.search).get('firm') || '').toLowerCase();
 const ROOT = location.pathname.replace(/(?:firms\/[^/]+|app)\/[^/]*$/, '');
 const FIRM = PATH_FIRM ? './' : `${ROOT}firms/${SLUG}/`;
-const { buildLists, summarize, periodRange, customRange, compareRange, hasFullPrev, tzOffsetMin, decryptJSON } = await import(`${ROOT}scripts/kpi-core.mjs`);
+const { buildLists, summarize, hiddenSet, sentBaseKey, periodRange, customRange, compareRange, hasFullPrev, tzOffsetMin, decryptJSON } = await import(`${ROOT}scripts/kpi-core.mjs`);
 const { mergeConfig, practiceSlug } = await import(`${ROOT}scripts/config-merge.mjs`);
 const { parseChangelog, latestVersion, onlyTag, inlineMd } = await import(`${ROOT}scripts/changelog.mjs`);
 const { pipelineWording } = await import(`${ROOT}scripts/wording.mjs`);
@@ -410,8 +411,8 @@ function compute() {
   crange = compareRange(range, mode, now, off, cmp.b, TZ());
   if (records) {
     lists = buildLists(records, cfg, range.from, range.to);
-    cur = summarize(lists);
-    prev = summarize(buildLists(records, cfg, crange.from, crange.to));
+    cur = summarize(lists, cfg);
+    prev = summarize(buildLists(records, cfg, crange.from, crange.to), cfg);
   } else {
     lists = null;
     cur = pub.periods[sel.key].current;
@@ -506,7 +507,7 @@ const DEFS = {
   bookRatePct: 'Of qualified leads, the share that booked a consultation.',
   showRatePct: 'Of consultations that should have happened by now, the share that took place.',
   noShowPct: 'Of consultations that should have happened by now, the share where the lead did not show.',
-  agreementSent: 'Leads sent a fee agreement after their consultation.',
+  get agreementSent() { return sentBaseKey(cfg) === 'qualified' ? 'Leads sent a fee agreement.' : 'Leads sent a fee agreement after their consultation.'; },
   signRatePct: 'Of agreements sent, the share that came back signed.',
   signed: 'Leads who became clients: the opportunity is marked Won or sits in a signed stage.',
   costPerSigned: 'Monthly ad spend from settings divided by signed clients in these dates.',
@@ -514,6 +515,7 @@ const DEFS = {
   secIntake: 'Whether leads were actually reached, which ones were a real fit, and why the rest were turned away.',
   secConsults: 'How well qualified leads convert into booked consultations, and how many of those consultations happen.',
   secSigned: 'Whether consultations turn into fee agreements, and whether those agreements get signed.',
+  secSignedFirstCall: 'Whether qualified leads are sent a fee agreement, and whether those agreements get signed.',
   secFunnel: 'Each bar is the number of leads from these dates that reached that step. Each step is part of the one above it, so the gaps show where leads are lost.',
 };
 function renderNotice() {
@@ -605,6 +607,8 @@ function render() {
   renderDataNote();
 
   const drill = canDrill();
+  const H = hiddenSet(cfg), sentOfQualified = sentBaseKey(cfg) === 'qualified';
+  const showConsults = !(H.has('consultBooked') && H.has('showRate') && H.has('noShow'));
   const funnelRows = c.funnel.map(([label, v, key, of], i) => {
     const before = i ? c.funnel[i - 1][1] : null;
     const share = i === 0 ? '' : `${before ? Math.round((v / before) * 100) : 0}% ${of}`;
@@ -653,7 +657,7 @@ function render() {
     <div class="funnel"><h2 data-tip="${esc(DEFS.secFunnel)}">Where leads drop off</h2>${funnelRows}</div>
   </div>
 
-  <div class="stages">
+  <div class="stages${showConsults ? '' : ' three'}">
     <section class="stage"><h2 data-tip="${esc(DEFS.secLeads)}"><span>1</span>Leads in</h2>
       ${metric({ k: 'totalLeads', label: 'New leads', big: fmt.n(n), drill: 'newLeads', priorCount: true,
         sub: `<span class="leadsub" data-tip="${esc(W().hover)}">${esc(W().sub)}</span>`, after: notInPipelineLine() })}
@@ -666,13 +670,13 @@ function render() {
       ${metric({ k: 'qualified', label: 'Qualified leads', big: fmt.n(c.qualified), small: c.qualifiedPct === null ? '' : `${fmt.pct(c.qualifiedPct)} of contacted`, drill: 'qualified' })}
       <div class="metric"><p class="label" data-tip="${esc(DEFS.turnedAway)}">${drill ? '<a class="lnk" href="#" role="button" data-drill="turnedAway">Why leads were turned away</a>' : 'Why leads were turned away'}</p>${reasonRows}</div>
     </section>
-    <section class="stage"><h2 data-tip="${esc(DEFS.secConsults)}"><span>3</span>Consultations</h2>
-      ${metric({ k: 'bookRatePct', label: 'Qualified → consult booked', big: fmt.pct(c.bookRatePct), small: `${c.consultBooked} of ${c.qualified}`, drill: 'bookRate', goal: badge(c.bookRatePct, T.bookRatePct, { denom: c.qualified, suffix: '%' }) })}
-      ${metric({ k: 'showRatePct', label: 'Consult show rate', big: fmt.pct(c.showRatePct), small: `${c.consultHeld} of ${c.bookedPast}`, drill: 'showRate', goal: badge(c.showRatePct, T.showRatePct, { denom: c.bookedPast, suffix: '%' }) })}
-      ${metric({ k: 'noShowPct', label: 'Consult no-show rate', big: fmt.pct(c.noShowPct), small: `${c.noShows} of ${c.bookedPast}`, drill: 'noShowRate', goal: badge(c.noShowPct, T.noShowPct, { lower: true, denom: c.bookedPast, suffix: '% or less' }) })}
-    </section>
-    <section class="stage"><h2 data-tip="${esc(DEFS.secSigned)}"><span>4</span>Signed clients</h2>
-      ${metric({ k: 'agreementSent', label: 'Agreements sent', big: fmt.n(c.agreementSent), small: c.sentRatePct === null ? '' : `${fmt.pct(c.sentRatePct)} of consults held`, drill: 'agreementSent', goal: badge(c.sentRatePct, T.sentRatePct, { denom: c.consultHeld, suffix: '%' }) })}
+    ${showConsults ? `<section class="stage"><h2 data-tip="${esc(DEFS.secConsults)}"><span>3</span>Consultations</h2>
+      ${H.has('consultBooked') ? '' : metric({ k: 'bookRatePct', label: 'Qualified → consult booked', big: fmt.pct(c.bookRatePct), small: `${c.consultBooked} of ${c.qualified}`, drill: 'bookRate', goal: badge(c.bookRatePct, T.bookRatePct, { denom: c.qualified, suffix: '%' }) })}
+      ${H.has('showRate') ? '' : metric({ k: 'showRatePct', label: 'Consult show rate', big: fmt.pct(c.showRatePct), small: `${c.consultHeld} of ${c.bookedPast}`, drill: 'showRate', goal: badge(c.showRatePct, T.showRatePct, { denom: c.bookedPast, suffix: '%' }) })}
+      ${H.has('noShow') ? '' : metric({ k: 'noShowPct', label: 'Consult no-show rate', big: fmt.pct(c.noShowPct), small: `${c.noShows} of ${c.bookedPast}`, drill: 'noShowRate', goal: badge(c.noShowPct, T.noShowPct, { lower: true, denom: c.bookedPast, suffix: '% or less' }) })}
+    </section>` : ''}
+    <section class="stage"><h2 data-tip="${esc(sentOfQualified ? DEFS.secSignedFirstCall : DEFS.secSigned)}"><span>${showConsults ? 4 : 3}</span>Signed clients</h2>
+      ${metric({ k: 'agreementSent', label: 'Agreements sent', big: fmt.n(c.agreementSent), small: c.sentRatePct === null ? '' : `${fmt.pct(c.sentRatePct)} of ${sentOfQualified ? 'qualified leads' : 'consults held'}`, drill: 'agreementSent', goal: badge(c.sentRatePct, T.sentRatePct, { denom: sentOfQualified ? c.qualified : c.consultHeld, suffix: '%' }) })}
       ${metric({ k: 'signRatePct', label: 'Agreement → signed', big: fmt.pct(c.signRatePct), small: `${c.signed} of ${c.agreementSent}`, drill: 'signRate', goal: badge(c.signRatePct, T.signRatePct, { denom: c.agreementSent, suffix: '%' }) })}
       ${metric({ k: 'signed', label: 'Signed clients', big: fmt.n(c.signed), drill: 'signed', priorCount: true })}
     </section>
@@ -751,9 +755,11 @@ const GOALS = [
 ];
 function execSummary() {
   const t = pub.targets, c = cur, n = c.totalLeads, F = cfg.recommendedFocus || {};
+  const GOALS_FIRM = sentBaseKey(cfg) === 'qualified'
+    ? GOALS.map(g => (g[0] === 'sentRatePct' ? ['sentRatePct', 'Agreements sent to qualified leads', 'sentRatePct', false, 'agreementSent', '%', 'qualified'] : g)) : GOALS;
   const link = (text, d) => canDrill() && d ? `<a class="lnk" href="#" role="button" data-drill="${esc(d)}">${text}</a>` : text;
   const val = (k, u) => k === 'speedToLeadAvgMin' ? `${c[k]} min` : `${Math.round(c[k])}%`;
-  const scored = GOALS.filter(([k, , gk, , , , dk]) => c[k] !== null && c[k] !== undefined && t[gk] !== undefined && (c[dk] ?? 0) >= MIN())
+  const scored = GOALS_FIRM.filter(([k, , gk, , , , dk]) => c[k] !== null && c[k] !== undefined && t[gk] !== undefined && (c[dk] ?? 0) >= MIN())
     .map(([k, name, gk, low, d, u]) => ({ k, name, gk, low, d, u, goal: t[gk], gap: low ? (t[gk] - c[k]) / Math.max(t[gk], 1) : (c[k] - t[gk]) / Math.max(t[gk], 1) }));
   const good = [], bad = [];
   if (prev && c.signed > (prev.signed ?? 0)) good.push(link(`${c.signed} new signed client${c.signed === 1 ? '' : 's'}, up from ${prev.signed} last period.`, 'signed'));
@@ -773,7 +779,7 @@ function execSummary() {
     ? 'Not enough data yet to recommend a focus. Make sure every new lead is moved through the pipeline stages as it progresses, so each step can be measured.'
     : 'Every measurable goal is on track. Keep the same follow-up rhythm and watch lead volume.');
   const li = (arr, empty) => arr.length ? `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>` : `<p class="none">${empty}</p>`;
-  const scorable = scored.length, totalGoals = GOALS.filter(([, , gk]) => t[gk] !== undefined).length;
+  const scorable = scored.length, totalGoals = GOALS_FIRM.filter(([, , gk]) => t[gk] !== undefined).length;
   const coverage = scorable < totalGoals ? ` ${scorable} of ${totalGoals} metrics have enough data to score; the other ${totalGoals - scorable} are waiting on data.` : '';
   $('exec').innerHTML = n === 0
     ? `<section style="--c:var(--dot-focus);grid-column:1/-1"><h2>No new leads in these dates yet</h2><p class="none">Pick a wider date range to see the scorecard.</p></section>`
@@ -938,6 +944,8 @@ $('themeBtn').addEventListener('click', () => {
 function openHow() {
   const S = cfg.stages || {}, T = cfg.tags || {}, G = pub?.targets || cfg.targets || {};
   const list = a => (a || []).length ? a.map(x => `<code>${esc(x)}</code>`).join(' ') : '<span class="muted">—</span>';
+  const stageList = a => list((a || []).map(x => pub?.stageNames?.[x] || x));
+  const H = hiddenSet(cfg), sentOfQualified = sentBaseKey(cfg) === 'qualified';
   const ts = pub ? new Date((records || pub).generatedAt).toLocaleString('en-US', { timeZone: TZ(), dateStyle: 'medium', timeStyle: 'short' }) : '—';
   const steps = [
     ['Contacted', 'contacted', 'A two-way contact: a reply, a connected call, a booking, or one of these stages.'],
@@ -946,7 +954,7 @@ function openHow() {
     ['Consult held', 'consultHeld', 'The consult appointment is marked Showed, or one of these stages.'],
     ['Agreement sent', 'agreementSent', 'One of these stages.'],
     ['Signed', 'signed', 'The opportunity is marked <b>Won</b>, or one of these stages.'],
-  ];
+  ].filter(([, k]) => !H.has(k));
   $('modal').className = 'modal how';
   $('modal').innerHTML = `
     <div class="mhead"><div><h3 id="mTitle">How this scorecard works</h3>
@@ -954,7 +962,7 @@ function openHow() {
       <button class="close" data-close aria-label="Close">×</button></div>
     <div class="hbody">
       <section><h4>What it shows</h4>
-        <p>How new leads move from first contact to signed client, and where they drop off. The top boxes summarise what's on track, what needs attention and what to fix first. The funnel shows how many leads reached each step, and the four columns below break each step down against its goal.</p></section>
+        <p>How new leads move from first contact to signed client, and where they drop off. The top boxes summarise what's on track, what needs attention and what to fix first. The funnel shows how many leads reached each step, and the columns below break each step down against its goal.</p></section>
       <section><h4>Where the numbers come from</h4>
         <ul>
           <li>Pulled from GoHighLevel automatically every 30 minutes. Last sync: <b>${esc(ts)}</b>. Press <b>Reload</b> to show the newest numbers.</li>
@@ -972,8 +980,8 @@ function openHow() {
       <section><h4>How each step is counted</h4>
         <p>The funnel follows the leads that came in during the selected dates. A lead that reached a later step also counts for every earlier step, so each bar is part of the one above it.</p>
         <div class="srcwrap"><table><thead><tr><th>Step</th><th>Counts when</th><th>GHL stages</th></tr></thead><tbody>
-          ${steps.map(([n, k, d]) => `<tr><td><b>${n}</b></td><td>${d}${T[k]?.length ? ` Tags: ${list(T[k])}.` : ''}</td><td>${list(S[k])}</td></tr>`).join('')}
-          <tr><td><b>Turned away</b></td><td>Marked Lost or not qualified, or in a turned-away stage, and never signed. The reason comes from a tag starting with <code>${esc(cfg.turnedAway?.tagPrefix || '')}</code>.</td><td>${list(cfg.turnedAway?.stages)}</td></tr>
+          ${steps.map(([n, k, d]) => `<tr><td><b>${n}</b></td><td>${d}${T[k]?.length ? ` Tags: ${list(T[k])}.` : ''}</td><td>${stageList(S[k])}</td></tr>`).join('')}
+          <tr><td><b>Turned away</b></td><td>Marked Lost or not qualified, or in a turned-away stage, and never signed. The reason comes from a tag starting with <code>${esc(cfg.turnedAway?.tagPrefix || '')}</code>.</td><td>${stageList(cfg.turnedAway?.stages)}</td></tr>
         </tbody></table></div></section>
       <section><h4>Speed to first contact</h4>
         <p>Minutes from the lead being created to the <b>first outbound call</b> from the team to that person, answered or not. Emails and texts don't stop the clock, so this measures how fast somebody picks up the phone.</p>
@@ -986,8 +994,8 @@ function openHow() {
       <section><h4>Goals and badges</h4>
         <ul>
           <li>Lead → signed: ${G.leadToSignedPct ?? '—'}% or more. Speed to first contact: ${G.speedToLeadMin ?? '—'} minutes or less. Contacted within 5 min: ${G.within5Pct ?? '—'}%.</li>
-          <li>Contact rate: ${G.contactRatePct ?? '—'}%. Qualified → consult booked: ${G.bookRatePct ?? '—'}%. Show rate: ${G.showRatePct ?? '—'}%. No-show rate: ${G.noShowPct ?? '—'}% or less.</li>
-          <li>Agreements sent after consults: ${G.sentRatePct ?? '—'}%. Agreement → signed: ${G.signRatePct ?? '—'}%.</li>
+          <li>Contact rate: ${G.contactRatePct ?? '—'}%.${H.has('consultBooked') ? '' : ` Qualified → consult booked: ${G.bookRatePct ?? '—'}%.`}${H.has('showRate') ? '' : ` Show rate: ${G.showRatePct ?? '—'}%.`}${H.has('noShow') ? '' : ` No-show rate: ${G.noShowPct ?? '—'}% or less.`}</li>
+          <li>Agreements sent ${sentOfQualified ? 'to qualified leads' : 'after consults'}: ${G.sentRatePct ?? '—'}%. Agreement → signed: ${G.signRatePct ?? '—'}%.</li>
           <li>A rate based on fewer than ${MIN()} leads shows <b>Too few</b> instead of a badge, so one or two leads can't swing it.</li>
           <li>Cost per signed client uses the monthly ad spend entered in the settings.</li>
         </ul></section>

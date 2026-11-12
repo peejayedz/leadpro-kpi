@@ -43,6 +43,17 @@ export function guessMapping(stageNames) {
 }
 
 
+// A firm whose config says "stageMatch": "id" lists stages by GHL stage id, so renaming a stage in
+// GHL can't break its mapping. The panel still works with names; ids are swapped in on load and save.
+const stageIdIndex = (discovery, chosenPipes) => {
+  const nameOf = {}, idsOf = {};
+  for (const p of discovery?.pipelines || []) for (const s of p.stages || []) {
+    nameOf[s.id] = s.name;
+    if (!chosenPipes || chosenPipes.has(p.id)) (idsOf[norm(s.name)] ||= []).push(s.id);
+  }
+  return { nameOf, idsOf };
+};
+
 // The panel's starting state. Existing firm: from its config. New firm: guessed from the stage names.
 export function initialState({ discovery, config, isNew }) {
   const pipelines = discovery?.pipelines || [];
@@ -61,9 +72,13 @@ export function initialState({ discovery, config, isNew }) {
   }
   const fromCfg = k => k === 'turnedAway' ? (config?.turnedAway?.stages || []) : (config?.stages?.[k] || []);
   const initial = isNew ? guessMapping(stageList(discovery, chosenPipes)) : Object.fromEntries(STEPS_MAP.map(([k]) => [k, fromCfg(k)]));
+  const idMode = !isNew && config?.stageMatch === 'id';
+  // In id mode an id is shown by its stage name; an id not in discovery.json is kept as written.
+  const { nameOf } = stageIdIndex(discovery);
+  const shown = v => (idMode && nameOf[v]) || v;
   const sel = {};
-  for (const [k] of STEPS_MAP) sel[k] = new Map((initial[k] || []).map(n => [norm(n), n]));   // normName -> name as written
-  return { chosenPipes, sel, keywords: [...(config?.booking?.calendarKeywords || [])], allByDefault: !isNew && !cfgPipes.length };
+  for (const [k] of STEPS_MAP) sel[k] = new Map((initial[k] || []).map(v => [norm(shown(v)), shown(v)]));   // normName -> name as written
+  return { chosenPipes, sel, keywords: [...(config?.booking?.calendarKeywords || [])], allByDefault: !isNew && !cfgPipes.length, idMode };
 }
 
 // Stage names of the chosen pipelines, in pipeline order, de-duplicated (case-insensitive).
@@ -77,7 +92,9 @@ export function stageList(discovery, chosenPipes) {
 export function buildMapping(state, discovery) {
   const pipelines = discovery?.pipelines || [];
   const chosen = pipelines.filter(p => state.chosenPipes.has(p.id)).map(p => p.name);
-  const pick = k => [...state.sel[k].values()];
+  const { idsOf } = stageIdIndex(discovery, state.chosenPipes);
+  // Id mode: each picked name becomes the id of every chosen-pipeline stage with that name (ids not found stay as they are).
+  const pick = k => { const names = [...state.sel[k].values()]; return state.idMode ? [...new Set(names.flatMap(n => idsOf[norm(n)] || [n]))] : names; };
   return {
     // A config that said "every pipeline" ([]) keeps saying so while every pipeline is still ticked.
     pipelines: state.allByDefault && chosen.length === pipelines.length ? [] : chosen,

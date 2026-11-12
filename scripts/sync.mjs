@@ -232,7 +232,7 @@ const leads = recentOpps.map(o => {
     name: c.name || o.contact?.name || o.name, company: c.company || o.contact?.companyName || null,
     email: c.email || o.contact?.email || null, phone: c.phone || o.contact?.phone || null,
     source: o.source || c.source || 'Unknown', createdAt: iso(o.createdAt),
-    assignedTo: o.assignedTo || null, pipeline: pipelineName[o.pipelineId] || '—', stage: stageName[o.pipelineStageId] || '—',
+    assignedTo: o.assignedTo || null, pipeline: pipelineName[o.pipelineId] || '—', stage: stageName[o.pipelineStageId] || '—', stageId: o.pipelineStageId || null,
     status: o.status, value: Number(o.monetaryValue) || 0,
     lostReason: o.lostReasonId ? lostReasonNames[o.lostReasonId] || null : null,
     stageChangedAt: iso(o.lastStageChangeAt || o.updatedAt), statusChangedAt: iso(o.lastStatusChangeAt || o.updatedAt),
@@ -530,6 +530,12 @@ const out = {
   detailsAvailable: !!PASS,
   periods,
 };
+// Current GHL names of any stage the config lists by id, so the dashboard shows names, never ids.
+{
+  const listed = new Set([...Object.values(cfg.stages || {}).flat(), ...(cfg.turnedAway?.stages || [])].map(String));
+  const names = Object.fromEntries(Object.entries(stageName).filter(([id]) => listed.has(id)));
+  if (Object.keys(names).length) out.stageNames = names;
+}
 
 // Testing banner: remember the first time the firm reached the activity threshold, carried forward
 // from the previous data/kpis.json. Before that date the banner is "Testing period"; if activity

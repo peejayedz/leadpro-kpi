@@ -14,46 +14,58 @@
   "pipelines": [
     "Lead Stages"
   ],
-  "_stagesNote": "Mahdavi uses the ACME 'Lead Stages' pipeline. Names below must match GHL exactly (case does not matter). Stages 6-9 all mean the consultation happened.",
+  "_stagesNote": "Mahdavi signs on the first call (no booked consultations). Stages are listed by GHL stage id (stageMatch: id), so renaming a stage in GHL does not break the mapping. _stageNames is a reading aid only (names as of 12 Nov 2026); the dashboard shows the live GHL names.",
+  "stageMatch": "id",
+  "_stageNames": {
+    "625bf5e3-4395-4e0d-baf0-da5579e5c858": "Stage 3: Lead Contacted?",
+    "2fe6e011-81f1-4b13-abcf-5f0495a938b6": "Stage 4: Lead Qualified?",
+    "d367addc-d72d-4a77-99b6-a4615943a783": "Stage 5: Booked Consultation",
+    "a52a87be-30df-47b9-8a65-2bac90960060": "Agreement Sent – Awaiting Signature",
+    "3a669f26-187c-4ca4-b5d7-8d015dfdef4a": "Stage 7: Consultation Showed - Lead Rejected",
+    "231f014d-662d-4b5e-9db8-ac06d7e4f879": "Stage 8: Consultation Showed - Lead Referred",
+    "57e292b3-722d-4b70-9428-660b22f09d4f": "Stage 9: Consultation Showed - Lead Thinking",
+    "6b58d85b-a8a6-47ce-a0dc-876f5966816e": "Stage 10: Consultation No Show",
+    "27414b87-7fd6-4e32-a9bc-7f87abb24c67": "Stage 11: Agreement Signed",
+    "2acfe41b-1c9f-4e1a-8608-d4d13b9520ed": "Stage 12: Referred Lead Accepted?"
+  },
   "stages": {
     "contacted": [
-      "Stage 3: Lead Contacted?"
+      "625bf5e3-4395-4e0d-baf0-da5579e5c858",
+      "3a669f26-187c-4ca4-b5d7-8d015dfdef4a",
+      "231f014d-662d-4b5e-9db8-ac06d7e4f879",
+      "6b58d85b-a8a6-47ce-a0dc-876f5966816e",
+      "2acfe41b-1c9f-4e1a-8608-d4d13b9520ed"
     ],
     "qualified": [
-      "Stage 4: Lead Qualified?"
+      "2fe6e011-81f1-4b13-abcf-5f0495a938b6",
+      "d367addc-d72d-4a77-99b6-a4615943a783",
+      "57e292b3-722d-4b70-9428-660b22f09d4f"
     ],
-    "consultBooked": [
-      "Stage 5: Booked Consultation"
-    ],
-    "consultHeld": [
-      "Stage 6: Consultation Showed - Agreement Sent",
-      "Stage 7: Consultation Showed - Lead Rejected",
-      "Stage 8: Consultation Showed - Lead Referred",
-      "Stage 9: Consultation Showed - Lead Thinking"
-    ],
+    "consultBooked": [],
+    "consultHeld": [],
     "agreementSent": [
-      "Stage 6: Consultation Showed - Agreement Sent"
+      "a52a87be-30df-47b9-8a65-2bac90960060"
     ],
     "signed": [
-      "Stage 11: Agreement Signed"
+      "27414b87-7fd6-4e32-a9bc-7f87abb24c67"
     ],
-    "noShow": [
-      "Stage 10: Consultation No Show"
-    ]
+    "noShow": []
   },
+  "_hideNote": "Steps left off this dashboard because the firm signs on the first call. Agreements sent is measured against qualified leads instead of consults held.",
+  "hide": [
+    "consultBooked",
+    "consultHeld",
+    "showRate",
+    "noShow"
+  ],
+  "sentRateBase": "qualified",
   "tags": {
     "contacted": [
       "contacted"
     ],
     "consultBooked": [],
-    "consultHeld": [
-      "showed"
-    ],
-    "noShow": [
-      "no show",
-      "no-show",
-      "noshow"
-    ],
+    "consultHeld": [],
+    "noShow": [],
     "agreementSent": [
       "agreement sent",
       "proposal sent",
@@ -65,14 +77,14 @@
   "turnedAway": {
     "tagPrefix": "turned away:",
     "stages": [
-      "Stage 7: Consultation Showed - Lead Rejected",
-      "Stage 8: Consultation Showed - Lead Referred",
-      "Stage 12: Referred Lead Accepted?"
+      "3a669f26-187c-4ca4-b5d7-8d015dfdef4a",
+      "231f014d-662d-4b5e-9db8-ac06d7e4f879",
+      "2acfe41b-1c9f-4e1a-8608-d4d13b9520ed"
     ],
     "reasonLabels": {
-      "Stage 7: Consultation Showed - Lead Rejected": "Not a fit after consultation",
-      "Stage 8: Consultation Showed - Lead Referred": "Referred to another firm",
-      "Stage 12: Referred Lead Accepted?": "Referred out, accepted"
+      "3a669f26-187c-4ca4-b5d7-8d015dfdef4a": "Not a fit after consultation",
+      "231f014d-662d-4b5e-9db8-ac06d7e4f879": "Referred to another firm",
+      "2acfe41b-1c9f-4e1a-8608-d4d13b9520ed": "Referred out, accepted"
     }
   },
   "_bookingNote": "A consult = an appointment on a calendar whose name contains one of these words. Empty list = every calendar counts. Check the first sync log for Mahdavi's calendar names and adjust.",
