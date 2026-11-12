@@ -47,11 +47,19 @@ async function main() {
   if (!process.env.CHAIN_NO_WAIT) await new Promise(r => setTimeout(r, Math.max(0, slot - Date.now())));
   const since = new Date(slot - RECENT_MS).toISOString();
   const { workflow_runs: runs = [] } = await gh('GET', `/repos/${REPO}/actions/workflows/sync.yml/runs?per_page=20&created=${encodeURIComponent('>=' + since)}`);
-  const cover = coveredBy(runs, slot);
-  if (cover) { console.log(`A ${cover.event === 'schedule' ? 'scheduled' : 'chained'} sync already started at ${cover.created_at.slice(11, 16)} UTC for this slot; it continues the chain.`); return; }
   const ref = process.env.GITHUB_REF_NAME || 'main';
+  // Each slot also starts the token keeper (tokens.yml). GitHub never fires tokens.yml's "after a sync"
+  // trigger for syncs this chain starts (they're started with the built-in token), but a dispatch works.
+  // A failure here never stops the chain.
+  const startKeeper = async () => {
+    try { await gh('POST', `/repos/${REPO}/actions/workflows/tokens.yml/dispatches`, { ref, inputs: {} }); console.log('Started the token keeper.'); }
+    catch (e) { console.log(`Couldn't start the token keeper (${e.message.slice(0, 80)}); its hourly schedule still runs.`); }
+  };
+  const cover = coveredBy(runs, slot);
+  if (cover) { console.log(`A ${cover.event === 'schedule' ? 'scheduled' : 'chained'} sync already started at ${cover.created_at.slice(11, 16)} UTC for this slot; it continues the chain.`); await startKeeper(); return; }
   await gh('POST', `/repos/${REPO}/actions/workflows/sync.yml/dispatches`, { ref, inputs: { chain: 'yes' } });
   console.log(`Started "Sync all firms (chain)" for ${hhmm} UTC.`);
+  await startKeeper();
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(e => { console.error(e.message); process.exit(1); });

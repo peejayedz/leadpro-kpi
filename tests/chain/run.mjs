@@ -59,11 +59,14 @@ test('Starts "Sync all firms (chain)" when nothing covers the slot', async () =>
   const post = r.calls.find(c => c.method === 'POST');
   ok(post, 'dispatched'); eq(post.path, '/repos/o/r/actions/workflows/sync.yml/dispatches', 'path'); eq(post.body, { ref: 'main', inputs: { chain: 'yes' } }, 'body');
   ok(/created=%3E%3D/.test(r.calls[0].path), 'asks only for recent runs');
+  const posts = r.calls.filter(c => c.method === 'POST').map(c => c.path);
+  eq(posts, ['/repos/o/r/actions/workflows/sync.yml/dispatches', '/repos/o/r/actions/workflows/tokens.yml/dispatches'], 'sync first, then the token keeper');
 });
 
-test('Skips when a scheduled run already started for the slot', async () => {
+test('Skips the sync when a scheduled run already started for the slot (still starts the token keeper)', async () => {
   const r = await script([{ event: 'schedule', created_at: iso(nextSlot(Date.now()) + 60e3) }]);   // the cron fired a minute late
-  ok(!r.calls.some(c => c.method === 'POST'), 'no dispatch'); ok(/continues the chain/.test(r.out), 'logged');
+  ok(!r.calls.some(c => c.method === 'POST' && /sync\.yml/.test(c.path)), 'no sync dispatch'); ok(/continues the chain/.test(r.out), 'logged');
+  ok(r.calls.some(c => c.method === 'POST' && /tokens\.yml/.test(c.path)), 'keeper started');
 });
 
 test('SYNC_CHAIN=off stops the chain without calling GitHub', async () => {
