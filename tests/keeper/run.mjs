@@ -83,6 +83,7 @@ async function makeRepo(index = INDEX) {
   await writeFile(gh, `#!/usr/bin/env node
 // Fake gh: "secret set NAME --repo R", value on stdin. Reports name + sha256 to the mock; never prints the value.
 import { createHash } from 'node:crypto';
+if (process.argv[2] === 'api') process.exit(process.env.FAKE_GH_API_FAIL ? 1 : 0);   // the "can write secrets" check
 let v = ''; for await (const c of process.stdin) v += c;
 const name = process.argv[4];
 const fail = (process.env.FAKE_GH_FAIL || '').split(',').includes(name);
@@ -175,6 +176,14 @@ test('Refresh due but KEEPER_GH_TOKEN missing: does NOT refresh (single-use toke
   const s = await statusOf(tmp);
   eq(s.problem?.detail, 'no-secrets-token', 'problem');
   ok(keeperIssues(s, { now: Date.now(), firms: INDEX }).some(i => i.kind === 'keeper-failed'), 'bell');
+}));
+
+test('Refresh due but KEEPER_GH_TOKEN no longer works (expired/revoked): does NOT refresh', () => scenario(async (tmp, m) => {
+  const r = await runKeeper(tmp, m, { GHL_APP_ACCESS: accessIn(3), FAKE_GH_API_FAIL: '1' });
+  ok(r.code !== 0, 'run fails');
+  ok(!m.events.some(e => e.type === 'refresh'), 'no refresh');
+  ok(/not working/.test(r.out), 'says the GitHub token isn\'t working');
+  eq((await statusOf(tmp)).problem?.detail, 'no-secrets-token', 'problem');
 }));
 
 test('App not installed on one firm: that firm flagged app-missing, the other still updated', () => scenario(async (tmp, m) => {

@@ -93,11 +93,17 @@ export async function runKeeper(env = process.env) {
     return { exit: targets.length ? 1 : 0, run };
   }
 
+  // Proves KEEPER_GH_TOKEN can write secrets (reads the repo's secrets public key, which needs the same
+  // Secrets permission) before the single-use refresh token is spent.
+  const canWriteSecrets = () => new Promise(resolve => {
+    const p = spawn(env.KEEPER_GH_BIN || 'gh', ['api', `repos/${env.GITHUB_REPOSITORY}/actions/secrets/public-key`, '--silent'], { env: { ...process.env, GH_TOKEN: env.SECRETS_TOKEN }, stdio: 'ignore' });
+    p.on('error', () => resolve(false)); p.on('close', c => resolve(c === 0));
+  });
   let refreshedThisRun = false;
   async function refresh(reason) {
     if (dry) { log(`  (dry run) would refresh the agency token (${reason})`); return false; }
     // Never spend the single-use refresh token without a way to save the new one.
-    if (!env.SECRETS_TOKEN) { run.problem = { category: 'github', detail: 'no-secrets-token' }; log(`Refresh needed (${reason}) but KEEPER_GH_TOKEN is not set, so the new refresh token couldn't be saved. Not refreshing.`); return false; }
+    if (!env.SECRETS_TOKEN || !(await canWriteSecrets())) { run.problem = { category: 'github', detail: 'no-secrets-token' }; log(`Refresh needed (${reason}) but KEEPER_GH_TOKEN is ${env.SECRETS_TOKEN ? 'not working (expired, revoked or missing the Secrets permission)' : 'not set'}, so the new refresh token couldn't be saved. Not refreshing.`); return false; }
     log(`Refreshing the agency token (${reason}).`);
     let t;
     try { t = await refreshAgency({ clientId, clientSecret, refreshToken }); }

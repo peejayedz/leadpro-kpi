@@ -326,6 +326,11 @@ export function describeIssue(i, ctx = {}) {
         actions: ['keeper', 'run'] };
     }
     case 'keeper-failed':
+      if (i.detail === 'no-secrets-token') return {
+        title: 'Token keeper can\'t save to GitHub',
+        what: 'The agency token needs refreshing, but the keeper\'s GitHub token (<span class="mono">KEEPER_GH_TOKEN</span>) is missing, expired, revoked or lacks the Secrets permission. The keeper did <b>not</b> refresh, so nothing is lost yet. The agency token stops working when it expires (within 6 hours of this alert first showing).',
+        steps: ['On GitHub: Settings → Developer settings → Fine-grained tokens → regenerate (or create) the <b>LeadPro token keeper</b> token: only <span class="mono">leadpro-kpi</span>, Secrets = Read and write.', 'In a plain Terminal: <span class="mono">gh secret set KEEPER_GH_TOKEN -R peejayedz/leadpro-kpi</span> and paste it.', 'Press <b>Run token keeper</b>. This clears when it succeeds.'],
+        actions: ['keeper', 'run'] };
       return {
         title: 'Token keeper failed',
         what: `The last token keeper run stopped${i.category === 'ghl' ? ' because GHL kept failing or couldn\'t be reached' : i.category === 'github' ? ' while saving to GitHub' : ' with an unexpected error'}. ${keeperNote} Tokens minted earlier keep working for up to 24 hours.`,
