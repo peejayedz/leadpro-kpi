@@ -249,6 +249,19 @@ test('new-firm.yml: non-secret inputs, one run at a time, no refresh, menu never
   ok(/needs: \[prepare, first-sync\]/.test(y), 'menu after the first sync');
 });
 
+// Live run 43375600253 (2026-11-13): GitHub reads a run's secrets when the run starts, so the firm token
+// saved by the token job was empty in the setup job. Discover must run in the token job, from the temp file.
+test('new-firm.yml: no job reads the firm\'s token secret (it is made during the run); Discover uses the fresh token, then deletes it', async () => {
+  const y = await readFile(join(ROOT, '.github/workflows/new-firm.yml'), 'utf8');
+  ok(!/secrets\[format\('GHL_TOKEN_/.test(y), 'a job reads GHL_TOKEN_<KEY> from secrets');
+  const tokenJob = y.split('\n  token:')[1].split('\n  setup:')[0];
+  ok(/KEEPER_TOKEN_OUT: \$\{\{ runner\.temp \}\}\/firm-token/.test(tokenJob), 'keeper hands the token over');
+  ok(/trap 'rm -f "\$TOKEN_FILE"' EXIT/.test(tokenJob) && /GHL_TOKEN="\$\(cat "\$TOKEN_FILE"\)" node scripts\/discover\.mjs/.test(tokenJob), 'Discover in the token job, file removed');
+  ok(/upload-artifact[\s\S]*name: discovery[\s\S]*discovery\.json/.test(tokenJob), 'only discovery.json is passed on');
+  const setupJob = y.split('\n  setup:')[1].split('\n  first-sync:')[0];
+  ok(/download-artifact[\s\S]*name: discovery/.test(setupJob) && !/discover\.mjs/.test(setupJob), 'setup job uses the handed-over discovery.json');
+});
+
 const results = [];
 for (const t of tests) {
   if (only && !t.name.toLowerCase().includes(only.toLowerCase())) continue;

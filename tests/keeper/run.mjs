@@ -261,6 +261,21 @@ test('new-firm mode (KEEPER_NO_REFRESH): mints with the saved token even when a 
   ok(!m.events.some(e => e.type === 'refresh'), 'still no refresh');
 }));
 
+test('new-firm mode hands the fresh token to Discover in a 0600 temp file (never printed); other modes never write it', () => scenario(async (tmp, m) => {
+  const out = join(tmp, 'firm-token');
+  const r = await runKeeper(tmp, m, { KEEPER_NO_REFRESH: '1', KEEPER_NO_STATUS: '1', KEEPER_TOKEN_OUT: out, KEEPER_SLUG: 'zz-test-2', KEEPER_LOCATION: LOC.fresh, KEEPER_SECRET_KEY: 'ZZ_TEST_2' });
+  eq(r.code, 0, `exit (${r.out})`);
+  const { stat } = await import('node:fs/promises');
+  const v = await readFile(out, 'utf8');
+  ok(v.startsWith(`LOCTOKEN-${LOC.fresh}`), 'the minted token');
+  eq((await stat(out)).mode & 0o777, 0o600, 'owner-only file');
+  eq(secrets(m).find(e => e.name === 'GHL_TOKEN_ZZ_TEST_2')?.sha, sha(v), 'same token saved as the secret');
+  noLeaks(r.out, null);
+  const out2 = join(tmp, 'other-token');
+  await runKeeper(tmp, m, { KEEPER_TOKEN_OUT: out2 });   // the regular keeper: no file
+  ok(!(await readFile(out2, 'utf8').then(() => true, () => false)), 'regular keeper never writes it');
+}));
+
 test('Dry run: no refresh, no secret written, no status file', () => scenario(async (tmp, m) => {
   const r = await runKeeper(tmp, m, { KEEPER_DRY_RUN: '1', GHL_APP_ACCESS: accessIn(3) });
   eq(r.code, 0, 'exit');

@@ -102,7 +102,25 @@ jobs:
           KEEPER_SECRET_KEY: ${{ needs.prepare.outputs.mode == 'new' && needs.prepare.outputs.key || '' }}
           KEEPER_NO_REFRESH: "1"
           KEEPER_NO_STATUS: "1"
+          KEEPER_TOKEN_OUT: ${{ runner.temp }}/firm-token
         run: node scripts/token-keeper.mjs
+      # GitHub reads secrets when a run starts, so GHL_TOKEN_<KEY> saved above is empty for the later jobs of THIS run.
+      # Discover therefore runs here, with the token just minted (temp file, never printed, deleted straight after).
+      - name: Read the sub-account's pipelines and stages
+        env:
+          NF_SLUG: ${{ needs.prepare.outputs.slug }}
+          SECRET_KEY: ${{ needs.prepare.outputs.key }}
+          TOKEN_FILE: ${{ runner.temp }}/firm-token
+        run: |
+          trap 'rm -f "$TOKEN_FILE"' EXIT
+          GHL_TOKEN="$(cat "$TOKEN_FILE")" node scripts/discover.mjs "$NF_SLUG" "$NF_LOCATION"
+      - name: Hand the GHL setup (names and ids only) to the next job
+        uses: actions/upload-artifact@v7
+        with:
+          name: discovery
+          path: firms/${{ needs.prepare.outputs.slug }}/discovery.json
+          retention-days: 1
+          if-no-files-found: error
 
   setup:
     needs: [prepare, token]
@@ -117,11 +135,11 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "20"
-      - name: Read the sub-account's pipelines and stages
-        env:
-          SECRET_KEY: ${{ needs.prepare.outputs.key }}
-          GHL_TOKEN: ${{ secrets[format('GHL_TOKEN_{0}', needs.prepare.outputs.key)] }}
-        run: node scripts/discover.mjs "$NF_SLUG" "$NF_LOCATION"
+      - name: Get the GHL setup read by the token job
+        uses: actions/download-artifact@v8
+        with:
+          name: discovery
+          path: firms/${{ needs.prepare.outputs.slug }}
       - name: Set up the dashboard
         id: write
         run: node scripts/new-firm.mjs write

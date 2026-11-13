@@ -165,6 +165,11 @@ export async function runKeeper(env = process.env) {
       else log(`${f.slug}: minting failed: ${e.message}`);
     }
     if (!t?.access_token || (t.locationId && t.locationId !== f.locationId)) { run.firms[f.slug] = { ok: false, problem: 'mint-failed' }; firmFail++; continue; }
+    // new-firm.yml: a secret saved during a run is NOT visible to that run's later jobs (GitHub reads secrets when
+    // the run starts), so the same job hands the fresh token to Discover through a temp file (0600, deleted right after).
+    if (env.KEEPER_TOKEN_OUT && targets.length === 1 && env.KEEPER_NO_REFRESH === '1') {
+      await writeFile(env.KEEPER_TOKEN_OUT, t.access_token, { mode: 0o600 });
+    }
     try { await setSecret(tokenName(f.secretKey), t.access_token); run.firms[f.slug] = { ok: true }; log(`${f.slug}: token updated.`); }
     catch (e) { run.firms[f.slug] = { ok: false, problem: 'save-failed' }; firmFail++; log(`${f.slug}: saving the token failed: ${e.message}`); }
   }

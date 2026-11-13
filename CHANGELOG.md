@@ -5,6 +5,9 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.11.1 — 13 Nov 2026
+- [internal] Fix: a new firm from the builder stopped at "Read the sub-account's pipelines and stages" (first live run, ZZ TEST 2). GitHub reads a run's secrets when the run starts, so the firm token saved by the token job was empty for the next job. Discover now runs in the token job with the token it just minted (temporary file, never printed, deleted right after), and only `discovery.json` is passed on. A test fails if any job in `new-firm.yml` reads a firm token secret.
+
 ## v1.11.0 — 13 Nov 2026
 - [internal] New firms from the Sub-account Builder (`new-firm.yml`, `scripts/new-firm.mjs`). The builder saves the firm's passphrase (made and sealed in the browser), then starts this workflow with non-secret inputs. It checks the firm list (never two firms for one location; a location that already has a Private Integration firm is left alone), waits up to 15 minutes for the LeadPro Connector app on the sub-account, mints the firm's token (never refreshing the agency token itself), runs Discover, applies the snapshot's stage-mapping preset, commits the firm in one commit with `"tokenSource": "app"`, and runs the first sync. Re-starting it for the same location finishes what's missing instead of adding a second firm. Public logs: step names, slugs and counts only.
 - [internal] Stage-mapping presets (`firms/_presets/`): `acme-lead-stages.json` covers the [IN USE] LFMP Template and Law Firm [Template] snapshots (the ACME "Lead Stages" pipeline). Names are checked against Discover and saved as stage ids. A missing stage or an unknown snapshot falls back to the auto-guess and shows **Review mapping** on the admin bell, cleared by saving Edit mapping.
