@@ -30,5 +30,15 @@
     "practiceArea": "Personal Injury",
     "locationId": "l68l8TvqZyERd5q1zdlj",
     "createdAt": "2026-11-10T13:35:26.381Z"
+  },
+  {
+    "slug": "zz-test-2",
+    "secretKey": "ZZ_TEST_2",
+    "name": "ZZ TEST 2",
+    "practiceArea": "Personal Injury",
+    "locationId": "bZ8sYUlHFufn3rH3TXip",
+    "createdAt": "2026-11-13T06:09:10.448Z",
+    "tokenSource": "app",
+    "createdBy": "builder"
   }
 ]

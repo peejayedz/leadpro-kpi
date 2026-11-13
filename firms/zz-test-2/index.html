@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>KPI Scorecard</title>
+</head>
+<body>
+<!-- Firm stub: loads the shared dashboard (app/dashboard.html) into this page. The dashboard
+     reads this firm's slug from the URL path and loads ./config.json and ./data/kpis.json from here. -->
+<p id="stubMsg" style="font:14px system-ui,sans-serif;color:#666;padding:24px">Loading…</p>
+<script>
+fetch('../../app/dashboard.html', { cache: 'no-store' })
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+  .then(html => { document.open(); document.write(html); document.close(); })
+  .catch(e => { document.getElementById('stubMsg').textContent = 'Could not load the dashboard (' + e.message + '). Please refresh.'; });
+</script>
+</body>
+</html>

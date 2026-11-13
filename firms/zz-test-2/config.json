@@ -1,0 +1,93 @@
+{
+  "locationName": "ZZ TEST 2",
+  "practiceArea": "Personal Injury",
+  "locationId": "bZ8sYUlHFufn3rH3TXip",
+  "title": "",
+  "showUnlockButton": false,
+  "brand": "LeadPro",
+  "brandFooter": "LeadPro",
+  "timezone": "America/New_York",
+  "ghlAppBase": "https://app.lawfirmmarketingpros.com",
+  "lookbackDays": 400,
+  "minSample": 5,
+  "_pipelinesNote": "Pipeline names to include. Empty = every pipeline. firms/<slug>/discovery.json lists every pipeline and stage name.",
+  "pipelines": [
+    "Lead Stages"
+  ],
+  "_stagesNote": "Stage names for each funnel step; must match GHL exactly (case does not matter). A later step counts as every earlier step, so list only the stages that first prove each step. Filled in by the admin page's mapping panel.",
+  "stages": {
+    "contacted": [
+      "40b2036e-0979-45f1-ae15-532d0a0a54b3"
+    ],
+    "qualified": [
+      "ba059229-3689-45f8-93f0-6c9026df6fab"
+    ],
+    "consultBooked": [
+      "121c0d35-94cb-4795-aa8e-319a51b32189"
+    ],
+    "consultHeld": [
+      "54e5a68e-2fcf-4a0b-bd30-27943eefdd37",
+      "e5cb7851-0dd7-4e78-92f4-959b64f89fd9",
+      "f334df03-83db-46bd-b8a0-4a009bd7082d",
+      "92b72cdd-7936-4dec-8631-8bc1898717f7"
+    ],
+    "agreementSent": [
+      "54e5a68e-2fcf-4a0b-bd30-27943eefdd37"
+    ],
+    "signed": [
+      "2f6d0461-e82e-4055-b849-7e0265844730"
+    ],
+    "noShow": [
+      "c2c58b85-9bb2-40a4-bed3-82da0c00364c"
+    ]
+  },
+  "tags": {
+    "contacted": [
+      "contacted"
+    ],
+    "consultBooked": [],
+    "consultHeld": [
+      "showed"
+    ],
+    "noShow": [
+      "no show",
+      "no-show",
+      "noshow"
+    ],
+    "agreementSent": [
+      "agreement sent",
+      "proposal sent",
+      "contract sent"
+    ],
+    "signed": []
+  },
+  "_turnedAwayNote": "Why leads were turned away: a tag starting with tagPrefix (e.g. 'turned away: wrong practice area'), else the GHL lost reason, else the stage name if it's listed in stages.",
+  "turnedAway": {
+    "tagPrefix": "turned away:",
+    "stages": [
+      "e5cb7851-0dd7-4e78-92f4-959b64f89fd9",
+      "f334df03-83db-46bd-b8a0-4a009bd7082d",
+      "541edfe6-f10f-4287-99ad-fce29ca2cf21"
+    ],
+    "reasonLabels": {
+      "e5cb7851-0dd7-4e78-92f4-959b64f89fd9": "Not a fit after consultation",
+      "f334df03-83db-46bd-b8a0-4a009bd7082d": "Referred to another firm",
+      "541edfe6-f10f-4287-99ad-fce29ca2cf21": "Referred out, accepted"
+    }
+  },
+  "_bookingNote": "A consult = an appointment on a calendar whose name contains one of these words. Empty list = every calendar counts.",
+  "booking": {
+    "calendarKeywords": []
+  },
+  "_adSpendNote": "Monthly ad spend in dollars, by YYYY-MM. Spread evenly over the month's days for any date range. Used for cost per signed case.",
+  "adSpend": {
+    "monthly": {},
+    "defaultMonthly": null
+  },
+  "fields": {
+    "speedToLead": "Speed to Lead (min)",
+    "firstContacted": "First Contacted Date",
+    "contactMethod": "Contact Method"
+  },
+  "stageMatch": "id"
+}
