@@ -1,17 +1,17 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-13T06:10:24.000Z",
+  "updatedAt": "2026-11-13T06:22:19.751Z",
   "lastRun": {
-    "at": "2026-11-13T06:10:24.000Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43376450780",
+    "at": "2026-11-13T06:22:19.751Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43378138459",
     "event": "workflow_dispatch",
-    "chained": true
+    "chained": false
   },
   "syncChain": {
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-13T06:10:24.000Z",
+  "lastAnySuccessAt": "2026-11-13T06:22:19.751Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
@@ -123,6 +123,41 @@
       "lastAttemptAt": "2026-11-13T06:10:24.000Z",
       "lastSuccessAt": "2026-11-13T06:10:24.000Z",
       "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43376450780",
+      "failStreak": 0,
+      "notInPipeline": {
+        "last30": {
+          "form": 0,
+          "survey": 0,
+          "chat": 0,
+          "booking": 0,
+          "call": 0,
+          "sms": 0,
+          "email": 0,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 0,
+          "noInboundSignal": 0
+        },
+        "last90": {
+          "form": 0,
+          "survey": 0,
+          "chat": 0,
+          "booking": 0,
+          "call": 0,
+          "sms": 0,
+          "email": 0,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 0,
+          "noInboundSignal": 0
+        }
+      }
+    },
+    "zz-test-2": {
+      "status": "ok",
+      "lastAttemptAt": "2026-11-13T06:22:19.751Z",
+      "lastSuccessAt": "2026-11-13T06:22:19.751Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43378138459",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
