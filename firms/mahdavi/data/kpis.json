@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T05:37:25.156Z",
+  "generatedAt": "2026-11-13T06:07:24.456Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -21,8 +21,147 @@
   "periods": {
     "today": {
       "label": "Today",
+      "from": 1794549600000,
+      "to": 1794550044456,
+      "current": {
+        "totalLeads": 0,
+        "contacted": 0,
+        "contactRatePct": null,
+        "speedToLeadAvgMin": null,
+        "speedMeasured": 0,
+        "within5": 0,
+        "within5Pct": null,
+        "missedCalls": 0,
+        "missedNotReturned": 0,
+        "notInPipeline": 0,
+        "qualified": 0,
+        "qualifiedPct": null,
+        "turnedAway": 0,
+        "turnedAwayReasons": [],
+        "consultBooked": 0,
+        "bookRatePct": null,
+        "bookedPast": 0,
+        "consultHeld": 0,
+        "showRatePct": null,
+        "noShows": 0,
+        "noShowPct": null,
+        "agreementSent": 0,
+        "sentRatePct": null,
+        "signed": 0,
+        "signRatePct": null,
+        "leadToSignedPct": null,
+        "adSpend": null,
+        "costPerSigned": null,
+        "bySource": [],
+        "byChannel": [],
+        "attributedLeads": 0,
+        "stageMoved": 0,
+        "attributionPct": null,
+        "funnel": [
+          [
+            "New leads",
+            0,
+            "newLeads",
+            null
+          ],
+          [
+            "Contacted",
+            0,
+            "contacted",
+            "of leads"
+          ],
+          [
+            "Qualified",
+            0,
+            "qualified",
+            "of contacted"
+          ],
+          [
+            "Agreement sent",
+            0,
+            "agreementSent",
+            "of qualified"
+          ],
+          [
+            "Signed",
+            0,
+            "signed",
+            "of sent"
+          ]
+        ]
+      },
+      "previous": {
+        "totalLeads": 0,
+        "contacted": 0,
+        "contactRatePct": null,
+        "speedToLeadAvgMin": null,
+        "speedMeasured": 0,
+        "within5": 0,
+        "within5Pct": null,
+        "missedCalls": 0,
+        "missedNotReturned": 0,
+        "notInPipeline": 0,
+        "qualified": 0,
+        "qualifiedPct": null,
+        "turnedAway": 0,
+        "turnedAwayReasons": [],
+        "consultBooked": 0,
+        "bookRatePct": null,
+        "bookedPast": 0,
+        "consultHeld": 0,
+        "showRatePct": null,
+        "noShows": 0,
+        "noShowPct": null,
+        "agreementSent": 0,
+        "sentRatePct": null,
+        "signed": 0,
+        "signRatePct": null,
+        "leadToSignedPct": null,
+        "adSpend": null,
+        "costPerSigned": null,
+        "bySource": [],
+        "byChannel": [],
+        "attributedLeads": 0,
+        "stageMoved": 0,
+        "attributionPct": null,
+        "funnel": [
+          [
+            "New leads",
+            0,
+            "newLeads",
+            null
+          ],
+          [
+            "Contacted",
+            0,
+            "contacted",
+            "of leads"
+          ],
+          [
+            "Qualified",
+            0,
+            "qualified",
+            "of contacted"
+          ],
+          [
+            "Agreement sent",
+            0,
+            "agreementSent",
+            "of qualified"
+          ],
+          [
+            "Signed",
+            0,
+            "signed",
+            "of sent"
+          ]
+        ]
+      }
+    },
+    "yesterday": {
+      "label": "Yesterday",
       "from": 1794463200000,
-      "to": 1794548245156,
+      "to": 1794549600000,
       "current": {
         "totalLeads": 13,
         "contacted": 0,
@@ -202,218 +341,10 @@
         ]
       }
     },
-    "yesterday": {
-      "label": "Yesterday",
-      "from": 1794376800000,
-      "to": 1794463200000,
-      "current": {
-        "totalLeads": 22,
-        "contacted": 0,
-        "contactRatePct": 0,
-        "speedToLeadAvgMin": null,
-        "speedMeasured": 0,
-        "within5": 0,
-        "within5Pct": 0,
-        "missedCalls": 0,
-        "missedNotReturned": 0,
-        "notInPipeline": 0,
-        "qualified": 0,
-        "qualifiedPct": null,
-        "turnedAway": 0,
-        "turnedAwayReasons": [],
-        "consultBooked": 0,
-        "bookRatePct": null,
-        "bookedPast": 0,
-        "consultHeld": 0,
-        "showRatePct": null,
-        "noShows": 0,
-        "noShowPct": null,
-        "agreementSent": 0,
-        "sentRatePct": null,
-        "signed": 0,
-        "signRatePct": null,
-        "leadToSignedPct": 0,
-        "adSpend": null,
-        "costPerSigned": null,
-        "bySource": [
-          [
-            "Google Business Profile - Houston",
-            18,
-            0
-          ],
-          [
-            "Website Number Pool - Houston",
-            3,
-            0
-          ],
-          [
-            "Google Ads Assets",
-            1,
-            0
-          ]
-        ],
-        "byChannel": [
-          [
-            "Third Party",
-            22,
-            0
-          ]
-        ],
-        "attributedLeads": 22,
-        "stageMoved": 0,
-        "attributionPct": 100,
-        "funnel": [
-          [
-            "New leads",
-            22,
-            "newLeads",
-            null
-          ],
-          [
-            "Contacted",
-            0,
-            "contacted",
-            "of leads"
-          ],
-          [
-            "Qualified",
-            0,
-            "qualified",
-            "of contacted"
-          ],
-          [
-            "Agreement sent",
-            0,
-            "agreementSent",
-            "of qualified"
-          ],
-          [
-            "Signed",
-            0,
-            "signed",
-            "of sent"
-          ]
-        ]
-      },
-      "previous": {
-        "totalLeads": 19,
-        "contacted": 0,
-        "contactRatePct": 0,
-        "speedToLeadAvgMin": null,
-        "speedMeasured": 0,
-        "within5": 0,
-        "within5Pct": 0,
-        "missedCalls": 0,
-        "missedNotReturned": 0,
-        "notInPipeline": 0,
-        "qualified": 0,
-        "qualifiedPct": null,
-        "turnedAway": 0,
-        "turnedAwayReasons": [],
-        "consultBooked": 0,
-        "bookRatePct": null,
-        "bookedPast": 0,
-        "consultHeld": 0,
-        "showRatePct": null,
-        "noShows": 0,
-        "noShowPct": null,
-        "agreementSent": 0,
-        "sentRatePct": null,
-        "signed": 0,
-        "signRatePct": null,
-        "leadToSignedPct": 0,
-        "adSpend": null,
-        "costPerSigned": null,
-        "bySource": [
-          [
-            "Chat",
-            8,
-            0
-          ],
-          [
-            "Google Business Profile - Houston",
-            8,
-            0
-          ],
-          [
-            "Website Number Pool - Houston",
-            2,
-            0
-          ],
-          [
-            "Google Ads location extensions phone for GBP",
-            1,
-            0
-          ]
-        ],
-        "byChannel": [
-          [
-            "Third Party",
-            11,
-            0
-          ],
-          [
-            "Google Organic Search",
-            3,
-            0
-          ],
-          [
-            "Other referral",
-            2,
-            0
-          ],
-          [
-            "Meta Ads",
-            2,
-            0
-          ],
-          [
-            "Google Ads",
-            1,
-            0
-          ]
-        ],
-        "attributedLeads": 19,
-        "stageMoved": 0,
-        "attributionPct": 100,
-        "funnel": [
-          [
-            "New leads",
-            19,
-            "newLeads",
-            null
-          ],
-          [
-            "Contacted",
-            0,
-            "contacted",
-            "of leads"
-          ],
-          [
-            "Qualified",
-            0,
-            "qualified",
-            "of contacted"
-          ],
-          [
-            "Agreement sent",
-            0,
-            "agreementSent",
-            "of qualified"
-          ],
-          [
-            "Signed",
-            0,
-            "signed",
-            "of sent"
-          ]
-        ]
-      }
-    },
     "thisWeek": {
       "label": "This week",
       "from": 1794204000000,
-      "to": 1794548245156,
+      "to": 1794550044456,
       "current": {
         "totalLeads": 54,
         "contacted": 0,
@@ -754,8 +685,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1793943445156,
-      "to": 1794548245156,
+      "from": 1793945244456,
+      "to": 1794550044456,
       "current": {
         "totalLeads": 55,
         "contacted": 0,
@@ -945,8 +876,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1791956245156,
-      "to": 1794548245156,
+      "from": 1791958044456,
+      "to": 1794550044456,
       "current": {
         "totalLeads": 56,
         "contacted": 0,
@@ -1148,8 +1079,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786772245156,
-      "to": 1794548245156,
+      "from": 1786774044456,
+      "to": 1794550044456,
       "current": {
         "totalLeads": 61,
         "contacted": 1,
@@ -1362,7 +1293,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1794548245156,
+      "to": 1794550044456,
       "current": {
         "totalLeads": 55,
         "contacted": 0,
@@ -1721,7 +1652,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1794548245156,
+      "to": 1794550044456,
       "current": {
         "totalLeads": 56,
         "contacted": 0,
@@ -2121,7 +2052,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-13T05:37:25.156Z",
+    "checkedAt": "2026-11-13T06:07:24.456Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
