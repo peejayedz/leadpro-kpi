@@ -102,6 +102,7 @@ test('A failed sync still commits the other firms, updates the status and starts
   ok(/name: Upload sync result\s*\n\s*if: \$\{\{ !cancelled\(\) \}\}/.test(job('sync')), 'a failed firm still uploads its result');
   ok(/node scripts\/update-status\.mjs/.test(job('commit')), 'commit job updates status/sync-status.json');
   ok(/git add -A firms status/.test(job('commit')), 'status file is committed');
+  ok(/uses: actions\/checkout@v5\s*\n\s*with:\s*\n\s*ref: \$\{\{ github\.ref_name \}\}/.test(job('commit')), 'commit job works on the latest main (a queued sync must not rebase an old status file)');
   ok(/name: "Sync · \$\{\{ matrix\.firm\.name/.test(job('sync')), 'per-firm jobs are named "Sync · <firm name>"');
 });
 

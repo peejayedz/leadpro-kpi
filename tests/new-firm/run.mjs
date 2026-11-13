@@ -32,7 +32,8 @@ const idOf = n => `stg-${ACME.indexOf(n) + 1}-id`;
 const discovery = (names = ACME, loc = LOC) => ({ generatedAt: new Date().toISOString(), slug: 'zz-test-2', locationId: loc, locationName: 'ZZ TEST 2', scopes: { ok: [], missing: [], unchecked: [] },
   pipelines: [{ id: 'pipe-lead', name: 'Lead Stages', stages: names.map((n, i) => ({ id: ACME.includes(n) ? idOf(n) : `renamed-${i}`, name: n })) }], calendars: [], customFields: [] });
 const template = JSON.parse(await readFile(join(ROOT, 'firms/_template/config.json'), 'utf8'));
-const realIndex = JSON.parse(await readFile(join(ROOT, 'firms/index.json'), 'utf8'));
+// The Private Integration firms only: builder-made (app) firms in the live list, e.g. zz-test-2, would change the expectations.
+const realIndex = JSON.parse(await readFile(join(ROOT, 'firms/index.json'), 'utf8')).filter(f => f.tokenSource !== 'app');
 const INPUT = { name: 'ZZ TEST 2', locationId: LOC, slug: 'zz-test-2', practiceArea: 'Personal Injury', timezone: 'America/New_York', snapshotId: SNAP };
 
 // ---------- plan ----------
@@ -107,7 +108,8 @@ async function makeRepo() {
   const tmp = await mkdtemp(join(tmpdir(), 'lpk-newfirm-'));
   for (const d of ['scripts', 'admin']) await cp(join(ROOT, d), join(tmp, d), { recursive: true });
   await mkdir(join(tmp, 'firms'), { recursive: true });
-  for (const f of ['index.json', '_template', '_presets']) await cp(join(ROOT, 'firms', f), join(tmp, 'firms', f), { recursive: true });
+  for (const f of ['_template', '_presets']) await cp(join(ROOT, 'firms', f), join(tmp, 'firms', f), { recursive: true });
+  await writeFile(join(tmp, 'firms/index.json'), JSON.stringify(realIndex));
   return tmp;
 }
 async function startMock(o = {}) {

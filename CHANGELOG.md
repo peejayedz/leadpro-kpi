@@ -5,6 +5,10 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.11.2 — 13 Nov 2026
+- [internal] Fix: a sync that waited in the queue (an admin Re-sync, or a new firm's first sync, started while another sync was running) could fail at "Commit if changed" with a conflict in `status/sync-status.json`. Its commit job worked on the repo as it was when the run started, not after the sync it waited for. The commit job now checks out the latest main. Seen on 12 Nov (Hedayati Re-sync) and 13 Nov (zz-test-2's first sync); the regular syncs were never affected. The chain test checks it.
+- [internal] new-firm tests start from the Private Integration firms only, so builder-made firms in the live list don't change them.
+
 ## v1.11.1 — 13 Nov 2026
 - [internal] Fix: a new firm from the builder stopped at "Read the sub-account's pipelines and stages" (first live run, ZZ TEST 2). GitHub reads a run's secrets when the run starts, so the firm token saved by the token job was empty for the next job. Discover now runs in the token job with the token it just minted (temporary file, never printed, deleted right after), and only `discovery.json` is passed on. A test fails if any job in `new-firm.yml` reads a firm token secret.
 

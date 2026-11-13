@@ -99,7 +99,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      # The LATEST main, not the commit the run started from: a sync that waited in the queue (e.g. a Re-sync or a
+      # new firm's first sync started during a chain sync) would otherwise build status/sync-status.json on an old
+      # copy and its push would conflict (seen 2026-11-12 Hedayati Re-sync, 2026-11-13 zz-test-2 first sync).
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-node@v5
         with:
           node-version: "20"
