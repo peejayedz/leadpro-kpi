@@ -89,7 +89,7 @@ test('Admin bell notices: firms with 1+ in the last 30 days, biggest first; 0 an
 test('Admin page: count on the firm list, amber notice with what to do, not in the badge', async () => {
   const html = await readFile(join(ROOT, 'admin/index.html'), 'utf8');
   ok(html.includes("notInPipeline30: k.periods?.last30?.current?.notInPipeline ?? null"), 'reads the 30-day count from kpis.json');
-  ok(/not in pipeline<\/span> last 30 days/.test(html) && html.includes('0 new contacts outside the pipeline (30 days)'), 'firm row shows the count, 0 included');
+  ok(/not in pipeline · 30 days<\/span>/.test(html) && html.includes('0 new contacts outside the pipeline (30 days)'), 'firm row shows the count (one tag since v1.12.0), 0 included');
   ok(html.includes('<b>New contacts not in pipeline</b>') && html.includes('warnbox nnotice') && html.includes("What to do: check the firm's lead intake"), 'amber notice with what to do');
   ok(!/paintBell[\s\S]{0,400}pipelineNotices/.test(html), 'the badge and tab title don\'t count it');
 });

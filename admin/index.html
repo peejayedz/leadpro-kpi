@@ -5,269 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<title>LeadPro Admin</title>
+<title>KPI admin · LeadPro</title>
 <link rel="icon" type="image/png" sizes="32x32" href="../brand/favicon-32.png?v=1.8.0">
 <link rel="icon" type="image/svg+xml" href="../brand/leadpro-icon.svg?v=1.8.0">
 <link rel="apple-touch-icon" sizes="180x180" href="../brand/apple-touch-icon-180.png?v=1.8.0">
 <script>/* apply the saved theme before first paint so the page and logo don't flash */ try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --page:#eef0f4; --card:#fff; --raised:#fff; --field:#f7f8fa; --ink:#1c2333; --ink-2:#4a5263; --ink-3:#7a8293;
-  --rule:#e3e6ec; --rule-strong:#1c2333; --hover:#f3f5f8;
-  --bar:#2f4a7a; --bar-soft:#a9b6cc; --track:#eef1f5; --link:#2b5aa8;
-  --ok-bg:#e3f2e6; --ok-ink:#2b6b3a; --bad-bg:#fbe4e2; --bad-ink:#a83a30; --warn-bg:#fbf0d2; --warn-ink:#7a5a12; --warn-line:#ead391;
-  --sel-bg:#e6ecf6; --sel-ink:#22406f; --sel-line:#8ea6cf;
-  --shadow:0 12px 40px rgba(20,30,50,.18);
-  --serif:"Lora",Georgia,"Times New Roman",serif; --sans:"Source Sans 3","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
-  color-scheme:light; box-sizing:border-box;
-}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --page:#0f131b; --card:#171c27; --raised:#1e2431; --field:#131823; --ink:#e7eaf0; --ink-2:#b4bbc8; --ink-3:#8790a0;
-  --rule:#2a3140; --rule-strong:#c9cfda; --hover:#222939;
-  --bar:#7d9bd1; --bar-soft:#4c5c78; --track:#232a38; --link:#8fb3ef;
-  --ok-bg:#1f3a27; --ok-ink:#8fd3a0; --bad-bg:#45231f; --bad-ink:#f2a49b; --warn-bg:#3b3019; --warn-ink:#ecd08a; --warn-line:#5c4a22;
-  --sel-bg:#24314a; --sel-ink:#c9daf8; --sel-line:#4f6894;
-  --shadow:0 12px 40px rgba(0,0,0,.6); color-scheme:dark;}}
-:root[data-theme="dark"]{
-  --page:#0f131b; --card:#171c27; --raised:#1e2431; --field:#131823; --ink:#e7eaf0; --ink-2:#b4bbc8; --ink-3:#8790a0;
-  --rule:#2a3140; --rule-strong:#c9cfda; --hover:#222939;
-  --bar:#7d9bd1; --bar-soft:#4c5c78; --track:#232a38; --link:#8fb3ef;
-  --ok-bg:#1f3a27; --ok-ink:#8fd3a0; --bad-bg:#45231f; --bad-ink:#f2a49b; --warn-bg:#3b3019; --warn-ink:#ecd08a; --warn-line:#5c4a22;
-  --sel-bg:#24314a; --sel-ink:#c9daf8; --sel-line:#4f6894;
-  --shadow:0 12px 40px rgba(0,0,0,.6); color-scheme:dark;}
-*,*::before,*::after{box-sizing:inherit}
-[hidden]{display:none !important}
-body{margin:0;background:var(--page);color:var(--ink);font:15px/1.45 var(--sans);-webkit-font-smoothing:antialiased}
-button,input,select{font:inherit;color:inherit}
-a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
-:focus-visible{outline:2px solid var(--bar);outline-offset:2px}
-.wrap{max-width:1060px;margin:16px auto;padding:0 12px}
-.card{background:var(--card);border-radius:14px;padding:28px 30px 26px;box-shadow:0 1px 2px rgba(20,30,50,.06)}
-.muted{color:var(--ink-3)}
-.small{font-size:13px}
-
-/* top + header */
-.topline{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 12px;margin-bottom:8px}
-.brandline{font-size:13px;color:var(--ink-2);margin:0} .brandline b{color:var(--ink)}
-.brandmark{display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex:0 0 auto}
-.brandmark .logo{display:block;height:36px;width:auto}
-.brandmark .brandline{white-space:nowrap}
-.brandmark .logo-dark{display:none}
-:root[data-theme="dark"] .brandmark .logo-light{display:none} :root[data-theme="dark"] .brandmark .logo-dark{display:block}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .brandmark .logo-light{display:none} :root:not([data-theme="light"]) .brandmark .logo-dark{display:block}}
-@media (max-width:520px){.brandmark .logo{height:30px}}
-h1{font-family:var(--serif);font-weight:600;font-size:clamp(24px,3.4vw,30px);line-height:1.15;margin:4px 0 4px;letter-spacing:-.01em}
-h2{font-family:var(--serif);font-weight:600;font-size:21px;margin:0 0 4px}
-h3{font-size:16px;margin:0}
-.sub{font-size:13px;color:var(--ink-2);margin:0}
-.head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px 20px;flex-wrap:wrap;padding-bottom:12px;border-bottom:2px solid var(--rule-strong);margin-bottom:18px}
-.head .titles{flex:1 1 320px;min-width:0}
-.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-
-/* buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600;font-size:12.5px;padding:6px 11px;border-radius:6px;border:1px solid var(--rule);background:var(--card);cursor:pointer;white-space:nowrap;text-decoration:none;color:var(--ink);min-height:32px}
-.btn:hover{background:var(--hover);text-decoration:none} .btn[disabled]{opacity:.55;cursor:default}
-.btn svg{width:14px;height:14px;flex:0 0 auto}
-.btn.primary{background:var(--bar);border-color:var(--bar);color:#fff} .btn.primary:hover{filter:brightness(1.08);background:var(--bar)}
-:root[data-theme="dark"] .btn.primary{color:#0f131b}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{color:#0f131b}}
-.btn.danger{color:var(--bad-ink)} .btn.danger:hover{background:var(--bad-bg)}
-.btn.big{font-size:14px;padding:9px 16px;min-height:40px}
-.themebtn{border-radius:999px;padding:6px 10px} .themebtn svg{width:15px;height:15px} .themebtn .tlabel{font-size:12px}
-.linkbtn{background:none;border:0;padding:0;color:var(--link);cursor:pointer;font-weight:600;font-size:13px}
-.linkbtn:hover{text-decoration:underline}
-
-/* forms */
-label.f{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--ink-2)}
-.hint{font-weight:400;color:var(--ink-3);font-size:12.5px}
-input[type=text],input[type=password],input[type=url],select{width:100%;font-size:15px;font-weight:400;background:var(--field);border:1px solid var(--rule);border-radius:8px;padding:9px 11px;min-height:40px}
-input:focus,select:focus{outline:none;border-color:var(--bar);box-shadow:0 0 0 3px var(--sel-bg)}
-input[readonly]{color:var(--ink-2)}
-.pw{position:relative;display:block}
-.pw input{padding-right:46px}
-.eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--ink-2);padding:6px 8px;border-radius:6px;cursor:pointer;display:grid;place-items:center}
-.eye:hover{background:var(--hover)} .eye svg{width:18px;height:18px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px}
-.full{grid-column:1/-1}
-.ferr{color:var(--bad-ink);font-size:13px;font-weight:600;min-height:1.2em}
-.note{background:var(--track);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--ink-2);overflow-wrap:anywhere}
-.note code,.mono{font:12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-.okmsg{background:var(--ok-bg);color:var(--ok-ink);border-radius:8px;padding:10px 12px;font-size:13.5px}
-.errbox{background:var(--bad-bg);color:var(--bad-ink);border-radius:8px;padding:10px 12px;font-size:13.5px}
-.warnbox{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);border-radius:8px;padding:10px 12px;font-size:13.5px}
-
-/* lock + token cards */
-.gate{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
-.gate .card{width:100%;max-width:420px;display:flex;flex-direction:column;gap:16px}
-.gate.wide .card{max-width:560px}
-.mark{width:42px;height:42px;border-radius:10px;background:var(--sel-bg);display:grid;place-items:center}
-.mark svg{width:20px;height:20px;stroke:var(--bar);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.gate h1{font-size:24px;margin:0}
-.gate .brandmark{margin-bottom:10px}
-.gate ol{margin:0;padding-left:20px;font-size:13.5px;color:var(--ink-2)} .gate ol li{margin:3px 0}
-
-/* firm list */
-.firms{display:flex;flex-direction:column}
-.firm{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 20px;align-items:center;padding:14px 2px;border-bottom:1px solid var(--rule)}
-.firm .meta{font-size:13px;color:var(--ink-2);margin:3px 0 0;display:flex;flex-wrap:wrap;gap:2px 12px}
-.firm .acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
-.firm .fstatus{grid-column:1/-1;font-size:13px}
-.firm .fstatus:empty{display:none}
-.chip{display:inline-flex;align-items:center;padding:1px 8px;border-radius:999px;font-weight:600;font-size:11.5px;white-space:nowrap;background:var(--track);color:var(--ink-2)}
-.chip.good{background:var(--ok-bg);color:var(--ok-ink)} .chip.bad{background:var(--bad-bg);color:var(--bad-ink)} .chip.warn{background:var(--warn-bg);color:var(--warn-ink)}
-.empty{padding:36px 8px;text-align:center;color:var(--ink-2)}
-.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap}
-
-/* progress */
-.steps{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column}
-.step{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;padding:12px 0;border-bottom:1px solid var(--rule)}
-.step:last-child{border-bottom:0}
-.step .ic{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--rule);margin-top:1px}
-.step .ic svg{width:14px;height:14px}
-.step.run .ic{border-color:var(--bar);border-right-color:transparent;animation:spin .9s linear infinite}
-.step.ok .ic{background:var(--ok-ink);border-color:var(--ok-ink);color:var(--card)}
-.step.fail .ic{background:var(--bad-ink);border-color:var(--bad-ink);color:var(--card)}
-.step.wait .ic{border-color:var(--bar);background:var(--sel-bg)}
-.step .t{font-weight:600}
-.step.pending .t{color:var(--ink-3)}
-.step .d{font-size:13px;color:var(--ink-2);grid-column:2}
-.step .e{grid-column:2;margin-top:6px}
-.step .slot{grid-column:1/-1}
-@keyframes spin{to{transform:rotate(360deg)}}
-.elapsed{font-variant-numeric:tabular-nums}
-.btnrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
-
-/* mapping panel */
-.map{border:1px solid var(--rule);border-radius:10px;padding:16px;margin-top:12px;background:var(--card)}
-.map h4{margin:0 0 6px;font-size:14px}
-.map section{padding:12px 0;border-bottom:1px solid var(--rule)} .map section:first-child{padding-top:0} .map section:last-of-type{border-bottom:0}
-.pipes{display:flex;flex-direction:column;gap:6px}
-.check{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
-.check input{width:16px;height:16px;accent-color:var(--bar);margin:0}
-.mrow{display:grid;grid-template-columns:170px minmax(0,1fr);gap:6px 16px;padding:10px 0;border-top:1px dashed var(--rule)}
-.mrow:first-of-type{border-top:0}
-.mrow .lbl{font-weight:600;font-size:14px} .mrow .lbl .hint{display:block;margin-top:2px}
-.opts{display:flex;flex-wrap:wrap;gap:6px}
-.opt{border:1px solid var(--rule);background:var(--field);border-radius:999px;padding:4px 11px;font-size:13px;cursor:pointer;color:var(--ink-2);line-height:1.3;text-align:left}
-.opt:hover{border-color:var(--bar-soft)}
-.opt[aria-pressed="true"]{background:var(--sel-bg);border-color:var(--sel-line);color:var(--sel-ink);font-weight:600}
-.opt[aria-pressed="true"]::before{content:"✓ "}
-.opt.stale{border-style:dashed}
-.opt.cal{font-size:12.5px}
-
-/* dialogs */
-.ovl{position:fixed;inset:0;background:rgba(10,14,22,.45);display:grid;place-items:center;padding:16px;z-index:50}
-.dlg{background:var(--raised);border-radius:12px;box-shadow:var(--shadow);width:min(440px,100%);padding:20px;display:flex;flex-direction:column;gap:14px}
-.dlg h3{font-family:var(--serif);font-size:19px;font-weight:600}
-.dlg.wide{width:min(760px,100%);max-height:calc(100vh - 32px);overflow:auto}
-.news h4{margin:14px 0 4px;font-size:14.5px} .news h4:first-child{margin-top:0} .news h4 .muted{font-weight:400}
-.news ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
-.news li{display:grid;grid-template-columns:66px minmax(0,1fr);gap:8px;font-size:13.5px;align-items:baseline}
-.news li .chip{justify-content:center}
-.news code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace}
-.dlg .btnrow{justify-content:flex-end;margin-top:2px}
-
-/* token helper */
-.tokhelp{border:1px solid var(--rule);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--card)}
-.tokhelp h3{font-size:15px}
-.tokhelp ol{margin:0;padding-left:20px;font-size:13.5px;color:var(--ink-2)} .tokhelp ol li{margin:2px 0}
-.scopelist{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:6px 18px;margin:0;padding:0;list-style:none}
-.scopelist .check{font-size:13.5px;align-items:flex-start} .scopelist .check input{margin-top:2px}
-.scopelist .mono{display:block;color:var(--ink-3);font-size:11.5px}
-.misslist{margin:6px 0 0;padding-left:20px} .misslist li{margin:2px 0}
-
-/* success */
-.success{display:flex;flex-direction:column;gap:14px;margin-top:16px;border:1px solid var(--ok-ink);border-radius:10px;padding:18px}
-.copyrow{display:flex;gap:8px} .copyrow input{flex:1;min-width:0}
-.success ul{margin:0;padding-left:20px;font-size:14px;color:var(--ink-2)}
-
-/* sync issues: bell + panel */
-.topline{position:relative} /* the issue panel lines up with the card's right edge */
-.bellwrap{display:inline-flex}
-.bellbtn{position:relative;padding:6px 9px} .bellbtn svg{width:17px;height:17px}
-.bellbtn[aria-expanded="true"]{background:var(--sel-bg);border-color:var(--sel-line);color:var(--sel-ink)}
-.badge{position:absolute;top:-7px;right:-7px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#d23a2e;color:#fff;font-size:11px;font-weight:700;line-height:19px;text-align:center;box-shadow:0 0 0 2px var(--card);font-variant-numeric:tabular-nums}
-.npanel{position:absolute;right:0;top:calc(100% + 8px);width:min(540px,calc(100vw - 32px));max-height:min(80vh,760px);overflow:auto;overscroll-behavior:contain;background:var(--raised);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);z-index:40;text-align:left;font-size:14px}
-.nhead{position:sticky;top:0;background:var(--raised);padding:14px 16px 12px;border-bottom:1px solid var(--rule);z-index:1;display:flex;flex-direction:column;gap:4px}
-.nhead .nrow{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.nhead h3{font-family:var(--serif);font-size:18px;font-weight:600}
-.nhead .nsub{font-size:12.5px;color:var(--ink-2);margin:0;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
-.xbtn{border:0;background:none;color:var(--ink-2);width:30px;height:30px;border-radius:6px;cursor:pointer;display:grid;place-items:center} .xbtn:hover{background:var(--hover)} .xbtn svg{width:16px;height:16px}
-.issue{border-bottom:1px solid var(--rule)} .issue:last-child{border-bottom:0}
-.ihead{display:grid;grid-template-columns:10px minmax(0,1fr) 16px;gap:12px;align-items:start;width:100%;text-align:left;background:none;border:0;padding:12px 16px;cursor:pointer;color:var(--ink)}
-.ihead:hover{background:var(--hover)}
-.sev{width:10px;height:10px;border-radius:50%;margin-top:6px;background:var(--warn-ink)} .sev.bad{background:var(--bad-ink)}
-.ititle{display:block;font-weight:600;font-size:14px;line-height:1.35}
-.imeta{display:block;font-size:12.5px;color:var(--ink-2);margin-top:2px}
-.newtag{display:inline-block;background:#d23a2e;color:#fff;border-radius:999px;font-size:10.5px;font-weight:700;padding:0 6px;line-height:16px;vertical-align:1px}
-.chev{width:16px;height:16px;margin-top:3px;color:var(--ink-3);transition:transform .15s} .ihead[aria-expanded="true"] .chev{transform:rotate(180deg)}
-.ibody{padding:0 16px 16px 38px;display:flex;flex-direction:column;gap:10px}
-.ibody h4{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3)}
-.facts{display:grid;grid-template-columns:118px minmax(0,1fr);gap:3px 12px;font-size:13px;margin:0;background:var(--track);border-radius:8px;padding:10px 12px}
-.facts dt{color:var(--ink-3)} .facts dd{margin:0;overflow-wrap:anywhere}
-.iwhat{font-size:13.5px;margin:-4px 0 0;color:var(--ink)}
-.isteps{margin:-4px 0 0;padding-left:20px;font-size:13.5px;display:flex;flex-direction:column;gap:3px}
-.iacts{display:flex;flex-wrap:wrap;gap:6px}
-.istatus{font-size:13px} .istatus:empty{display:none}
-.ifoot{display:flex;justify-content:flex-end;font-size:12.5px}
-.nnotices{padding:12px 16px 0;display:flex;flex-direction:column;gap:8px}
-.nnotice{font-size:13px;line-height:1.45} .nnotice b{font-weight:700}
-.scoperes{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 14px;font-size:13px}
-.scoperes .ok{color:var(--ok-ink)} .scoperes .no{color:var(--bad-ink);font-weight:600} .scoperes .unk{color:var(--warn-ink)}
-.nempty{padding:30px 20px;text-align:center;color:var(--ink-2);display:flex;flex-direction:column;align-items:center;gap:6px}
-.nempty .okic{width:40px;height:40px;border-radius:50%;background:var(--ok-bg);color:var(--ok-ink);display:grid;place-items:center} .nempty .okic svg{width:20px;height:20px}
-.nempty b{color:var(--ink);font-size:15px} .nempty p{margin:0;font-size:13px;max-width:340px}
-.nresolved{border-top:1px solid var(--rule);padding:10px 16px 14px}
-.nresolved summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--ink-2)}
-.nresolved ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column}
-.nresolved li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:7px 0;border-top:1px dashed var(--rule);font-size:13px}
-.nresolved li:first-child{border-top:0} .nresolved .rwho{color:var(--ink-2);font-size:12.5px} .nresolved time{color:var(--ink-3);font-size:12.5px;white-space:nowrap}
-.fname{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.issueline{align-items:center}
-.firm.flash{animation:flash 2.6s ease-out}
-@keyframes flash{0%,45%{background:var(--sel-bg);box-shadow:-12px 0 0 var(--sel-bg),12px 0 0 var(--sel-bg),-15px 0 0 var(--bar)}100%{background:transparent;box-shadow:-12px 0 0 transparent,12px 0 0 transparent,-15px 0 0 transparent}}
-@media (max-width:760px){
-  .npanel{position:fixed;left:8px;right:8px;top:58px;width:auto;max-height:calc(100dvh - 70px)}
-  .ibody{padding-left:16px}
-  .facts{grid-template-columns:1fr} .facts dt{margin-top:4px}
-}
-
-.foot{margin:14px auto 30px;max-width:1060px;padding:0 14px;font-size:12px;color:var(--ink-3);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-
-@media (max-width:760px){
-  .card{padding:20px 16px 18px;border-radius:12px}
-  .wrap{margin:8px auto;padding:0 8px}
-  .grid2{grid-template-columns:1fr}
-  .firm{grid-template-columns:1fr}
-  .firm .acts{display:grid;grid-template-columns:1fr 1fr;justify-content:stretch}
-  .mrow{grid-template-columns:1fr}
-  .themebtn .tlabel{display:none}
-}
-</style>
+<link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="lfmp-ui.css?v=1.12.0">
+<link rel="stylesheet" href="admin.css?v=1.12.0">
 </head>
 <body>
 
 <!-- ================= lock screen ================= -->
 <div class="gate" id="lockView" hidden>
   <form class="card" id="lockForm" autocomplete="on">
-    <div><div class="brandmark"><img class="logo logo-light" src="../brand/leadpro-logo-for-light-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><img class="logo logo-dark" src="../brand/leadpro-logo-for-dark-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><p class="brandline">admin</p></div><h1>Scorecard admin</h1><p class="sub">Enter the admin password to continue.</p></div>
+    <div class="gatehead"><span class="mark" aria-hidden="true">LFMP</span><p class="ey">LeadPro · KPI admin</p></div>
+    <div><h1 class="disp">Scorecard <span class="g">admin.</span></h1><p class="sub" style="margin-top:10px">Enter the admin password to continue.</p></div>
     <input type="text" name="username" value="leadpro-admin" autocomplete="username" hidden>
     <label class="f" for="lockPw">Password
       <span class="pw"><input type="password" id="lockPw" autocomplete="current-password" required><button type="button" class="eye" data-eye="lockPw" aria-label="Show password"></button></span>
     </label>
     <div class="ferr" id="lockErr" role="alert"></div>
-    <button type="submit" class="btn primary big" id="lockGo">Unlock</button>
+    <button type="submit" class="btn p big" id="lockGo">Unlock</button>
   </form>
 </div>
 
 <!-- ================= not set up ================= -->
 <div class="gate" id="setupView" hidden>
   <div class="card">
-    <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
-    <div><div class="brandmark"><img class="logo logo-light" src="../brand/leadpro-logo-for-light-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><img class="logo logo-dark" src="../brand/leadpro-logo-for-dark-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><p class="brandline">admin</p></div><h1>Set an admin password first</h1></div>
+    <div class="gatehead"><span class="mark" aria-hidden="true">LFMP</span><p class="ey">LeadPro · KPI admin</p></div>
+    <h1 class="disp">Set an admin <span class="g">password.</span></h1>
     <p class="sub">This page has no password yet. In the repo folder, run <code class="mono">node scripts/set-admin-password.mjs</code>, then commit and push <code class="mono">admin/lock.json</code>.</p>
     <div class="ferr" id="setupErr"></div>
   </div>
@@ -276,8 +44,8 @@ input[readonly]{color:var(--ink-2)}
 <!-- ================= GitHub token ================= -->
 <div class="gate wide" id="tokenView" hidden>
   <form class="card" id="tokenForm" autocomplete="off">
-    <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/></svg></div>
-    <div><div class="brandmark"><img class="logo logo-light" src="../brand/leadpro-logo-for-light-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><img class="logo logo-dark" src="../brand/leadpro-logo-for-dark-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><p class="brandline">admin</p></div><h1>Connect GitHub</h1><p class="sub" id="tokenWhy">This device has no GitHub token saved yet. It's stored here only, encrypted with your admin password.</p></div>
+    <div class="gatehead"><span class="mark" aria-hidden="true">LFMP</span><p class="ey">LeadPro · KPI admin</p></div>
+    <div><h1 class="disp">Connect <span class="g">GitHub.</span></h1><p class="sub" id="tokenWhy" style="margin-top:10px">This device has no GitHub token saved yet. It's stored here only, encrypted with your admin password.</p></div>
     <ol>
       <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → Fine-grained tokens → Generate new token</a>.</li>
       <li>Repository access: <b>Only select repositories</b> → <b class="repoName">leadpro-kpi</b>.</li>
@@ -288,32 +56,43 @@ input[readonly]{color:var(--ink-2)}
       <span class="pw"><input type="password" id="tokenIn" autocomplete="off" spellcheck="false" placeholder="github_pat_…" required><button type="button" class="eye" data-eye="tokenIn" aria-label="Show token"></button></span>
     </label>
     <div class="ferr" id="tokenErr" role="alert"></div>
-    <div class="btnrow" style="margin-top:0"><button type="submit" class="btn primary big" id="tokenGo">Save token</button><button type="button" class="btn big" data-act="lock">Lock</button></div>
+    <div class="btnrow" style="margin-top:0"><button type="submit" class="btn p big" id="tokenGo">Save token</button><button type="button" class="btn big" data-act="lock">Lock</button></div>
   </form>
 </div>
 
 <!-- ================= app ================= -->
-<main class="wrap" id="appView" hidden>
-  <div class="card">
-    <div class="topline"><div class="brandmark"><img class="logo logo-light" src="../brand/leadpro-logo-for-light-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><img class="logo logo-dark" src="../brand/leadpro-logo-for-dark-backgrounds.svg?v=1.8.0" alt="LeadPro" width="158" height="36"><p class="brandline">admin</p></div>
-      <span class="controls">
-        <span class="bellwrap" id="bellWrap">
-          <button class="btn bellbtn" type="button" id="bellBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="nPanel" aria-label="Sync issues" title="Sync issues">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="badge" id="bellBadge" hidden></span></button>
-          <div class="npanel" id="nPanel" role="dialog" aria-label="Sync issues" hidden></div>
-        </span>
-        <button class="btn themebtn" id="themeBtn" type="button"></button>
-        <button class="btn" type="button" data-act="news" id="newsBtn">What's new</button>
-        <button class="btn" type="button" data-act="forget" title="Remove the saved GitHub token from this device">Forget token</button>
-        <button class="btn" type="button" data-act="lock">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Lock</button>
+<div class="wrap" id="appView" hidden>
+  <header class="top">
+    <a class="mark" href="./" title="LFMP · KPI admin">LFMP</a>
+    <nav class="nav" aria-label="LFMP tools">
+      <a href="https://peejayedz.github.io/ghl-subaccount-builder-page/" target="_blank" rel="noopener">Clients</a>
+      <a href="./" aria-current="page">KPI admin</a>
+      <a href="https://peejayedz.github.io/automation-review/" target="_blank" rel="noopener">Review</a>
+    </nav>
+    <div class="topr">
+      <div class="upd" id="syncInfo" aria-live="polite">Sync every 30 min<b id="syncTimes">…</b><span class="kept" id="keeperLine"></span></div>
+      <span class="bellwrap" id="bellWrap">
+        <button class="btn iconbtn bellbtn" type="button" id="bellBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="nPanel" aria-label="Sync issues" title="Sync issues">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="badge" id="bellBadge" hidden></span></button>
+        <div class="npanel" id="nPanel" role="dialog" aria-label="Sync issues" hidden></div>
+      </span>
+      <button class="btn ver" type="button" data-act="news" id="newsBtn" aria-label="What's new"><span id="adminVersion">v…</span><span class="dot" id="newsDot" hidden></span></button>
+      <div class="themeseg" id="themeSeg" role="group" aria-label="Theme"></div>
+      <span class="menuwrap">
+        <button class="btn iconbtn" type="button" data-menu="topMenu" aria-haspopup="menu" aria-expanded="false" aria-label="More">⋯</button>
+        <div class="menu" id="topMenu" role="menu" hidden>
+          <button type="button" role="menuitem" data-act="forget">Forget token on this device</button>
+          <button type="button" role="menuitem" data-act="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Lock</button>
+        </div>
       </span>
     </div>
-    <div id="screen"></div>
-  </div>
-  <footer class="foot"><span>Repo <a id="repoLink" target="_blank" rel="noopener"></a></span><span>Internal tool · changes are commits to the repo · <span id="adminVersion"></span></span></footer>
-</main>
+  </header>
+  <main id="screen"></main>
+  <footer class="foot"><span>Repo <a id="repoLink" target="_blank" rel="noopener"></a></span><span>Internal tool · changes are commits to the repo · <span id="footVersion"></span></span></footer>
+</div>
 
+<div class="drawer-shade" id="newsShade" hidden></div>
+<aside class="drawer" id="newsPanel" role="dialog" aria-modal="true" aria-labelledby="newsTitle" hidden></aside>
 <div class="ovl" id="ovl" hidden><div class="dlg" id="dlg" role="dialog" aria-modal="true"></div></div>
 
 <script type="module">
@@ -330,6 +109,8 @@ import { openIssues, firmState, describeIssue, seenKey, inBadge, STALE_MIN } fro
 import { keeperIssues, reviewIssues, tokenLabel } from '../scripts/keeper-status.mjs';
 import { checkScopes } from '../scripts/scope-check.mjs';
 import { pipelineNotices } from '../scripts/not-in-pipeline.mjs';
+import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
+import { buildCards, filterCards, newer } from './news.mjs';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -401,6 +182,9 @@ const ICON = {
   target: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>',
   chev: '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
+  arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><path d="m15 6-6 6 6 6"/></svg>',
+  bang: '!',
 };
 function wireEyes(root = document) {
   root.querySelectorAll('[data-eye]').forEach(b => {
@@ -419,15 +203,26 @@ const THEMES = [
   ['light', 'Light', '<circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>'],
   ['dark', 'Dark', '<path d="M20 13.5A8.5 8.5 0 1 1 10.5 4a7 7 0 0 0 9.5 9.5Z"/>'],
 ];
+// Auto · Light · Dark: Auto = no data-theme (follows the system) and nothing saved; Light / Dark are saved under "lfmp-theme".
 function applyTheme(mode) {
+  if (!THEMES.some(t => t[0] === mode)) mode = 'auto';
   if (mode === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', mode);
-  const [, label, icon] = THEMES.find(t => t[0] === mode) || THEMES[0];
-  $('themeBtn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">${icon}</svg><span class="tlabel">${label}</span>`;
-  $('themeBtn').setAttribute('aria-label', `Theme: ${label}. Click to change.`);
+  $('themeSeg').innerHTML = THEMES.map(([k, label], i) => `${i ? '<span class="sep" aria-hidden="true">·</span>' : ''}<button type="button" data-theme-set="${k}" aria-pressed="${k === mode}" title="${k === 'auto' ? 'Follow this device\'s setting' : `Always ${label.toLowerCase()}`}">${label}</button>`).join('');
   store.set('lfmp-theme', mode === 'auto' ? null : mode);
 }
 applyTheme(store.get('lfmp-theme') || 'auto');
-$('themeBtn').addEventListener('click', () => { const now = document.documentElement.getAttribute('data-theme') || 'auto'; applyTheme(THEMES[(THEMES.findIndex(t => t[0] === now) + 1) % THEMES.length][0]); });
+$('themeSeg').addEventListener('click', e => { const b = e.target.closest('[data-theme-set]'); if (b) { applyTheme(b.dataset.themeSet); $('themeSeg').querySelector(`[data-theme-set="${b.dataset.themeSet}"]`)?.focus(); } });
+
+// ---------- small menus (⋯): one open at a time; outside click or Esc closes ----------
+function closeMenus(except) {
+  document.querySelectorAll('.menu:not([hidden])').forEach(m => { if (m !== except) { m.hidden = true; document.querySelector(`[data-menu="${m.id}"]`)?.setAttribute('aria-expanded', 'false'); } });
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-menu]');
+  if (t) { const m = $(t.dataset.menu); closeMenus(m); m.hidden = !m.hidden; t.setAttribute('aria-expanded', String(!m.hidden)); if (!m.hidden) m.querySelector('button,a')?.focus(); return; }
+  if (e.target.closest('.menu button, .menu a')) { closeMenus(); return; }
+  if (!e.target.closest('.menu')) closeMenus();
+});
 
 // ---------- views ----------
 function show(view) { for (const v of ['lockView', 'setupView', 'tokenView', 'appView']) $(v).hidden = v !== view; }
@@ -507,7 +302,7 @@ $('tokenForm').addEventListener('submit', async e => {
   finally { $('tokenGo').disabled = false; $('tokenGo').textContent = 'Save token'; }
 });
 
-function lockNow() { aesKey = null; ghToken = null; cleanupRun(); stopIssues(); $('screen').innerHTML = ''; closeDialog(); show('lockView'); $('lockPw').value = ''; $('lockPw').focus(); }
+function lockNow() { aesKey = null; ghToken = null; cleanupRun(); cleanupAppRun(); stopIssues(); closeMenus(); closeNews(); $('screen').innerHTML = ''; closeDialog(); show('lockView'); $('lockPw').value = ''; $('lockPw').focus(); }
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
   if (a.dataset.act === 'lock') lockNow();
@@ -651,7 +446,7 @@ const bannerOn = (firmCfg, base) => mergeConfig(base, null, firmCfg || {}).notic
 const bases = {};
 async function openApp() {
   show('appView');
-  loadChangelog().then(v => { const x = latestVersion(v); $('adminVersion').textContent = x ? `v${x}` : ''; }).catch(() => {});
+  loadChangelog().then(v => { const x = latestVersion(v); $('adminVersion').textContent = x ? `v${x}` : 'What\'s new'; $('footVersion').textContent = x ? `v${x}` : ''; paintNewsDot(); }).catch(() => { $('adminVersion').textContent = 'What\'s new'; });
   clearInterval(checkTimer); checkTimer = setInterval(() => refreshIssues({ reloadKpis: true }), CHECK_MS);   // re-check every 5 minutes while open
   await renderList();
 }
@@ -681,50 +476,120 @@ function syncFlag(k) {
   if (s.incomplete) return `<p class="meta syncflag"><span><span class="chip warn">Calls/messages may be incomplete</span> Published after 3 holds (${esc(s.reason || '')}). The dashboard shows a note until the counts recover, for 24 hours at most.</span></p>`;
   return '';
 }
+const isStale = k => !!(k?.generatedAt && Date.now() - Date.parse(k.generatedAt) > 2 * 3600e3);   // syncs run every 30 minutes
+const isTest = f => /(^|[-\s])test\b|^zz[-\s]/i.test(f.slug) || /\btest\b|^zz\b/i.test(f.name || '');
+// Needs attention: a failed / held / stale / unsynced firm, any open bell issue for it, a "may be incomplete" note,
+// mapping to review, or new contacts outside a pipeline.
+function needsAttention(f) {
+  const k = kpis[f.slug];
+  return firmState(issues, f.slug) !== 'ok' || !k || isStale(k) || !!k.sync?.holds || !!k.sync?.incomplete || (k.notInPipeline30 || 0) > 0
+    || !!configs[f.slug]?.mappingReview || issues.some(i => i.slug === f.slug);
+}
+const FILTERS = [['all', 'All', () => true], ['attention', 'Needs attention', needsAttention], ['app', 'App', f => f.tokenSource === 'app'], ['pi', 'Private Integration', f => f.tokenSource !== 'app'], ['tests', 'Tests', isTest]];
+const FILTER_KEY = 'leadpro-admin-filter';
+let listFilter = FILTERS.some(x => x[0] === store.get(FILTER_KEY)) ? store.get(FILTER_KEY) : 'all', listQuery = '';
+const matchesQuery = f => { const q = norm(listQuery); return !q || [f.name, f.slug, subNames[f.slug]].some(s => norm(s).includes(q)); };
+const clock = iso => (iso ? new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—');
+const lastSyncIso = () => firms.map(f => kpis[f.slug]?.generatedAt).filter(Boolean).sort().pop() || null;
+// Next scheduled sync: the next :07 or :37 (cron 7,37 plus the sync chain).
+function nextSync(now = new Date()) {
+  const d = new Date(now); d.setSeconds(0, 0);
+  const m = d.getMinutes(), next = m < 7 ? 7 : m < 37 ? 37 : 67;
+  d.setMinutes(next); return d.toISOString();
+}
+
 function firmRow(f) {
   const cfg = configs[f.slug], k = kpis[f.slug];
-  const stale = k?.generatedAt && Date.now() - Date.parse(k.generatedAt) > 2 * 3600e3;   // syncs run every 30 minutes
+  const stale = isStale(k);
   const banner = cfg ? bannerOn(cfg, bases[f.slug] || shared.defaults) : true;
   const state = firmState(issues, f.slug);
-  const stateChip = { ok: ['good', 'OK', 'Last sync succeeded'], held: ['warn', 'Held', 'Holding the previous numbers; see the bell for details'], failed: ['bad', 'Failed', 'The last sync failed; see the bell for details'] }[state];
+  const stateTag = { ok: ['tg-green', 'OK', 'Last sync succeeded'], held: ['tg-acc', 'Held', 'Holding the previous numbers; see the bell for details'], failed: ['tg-red', 'Failed', 'The last sync failed; see the bell for details'] }[state];
   const fi = issues.find(i => i.slug === f.slug && (i.kind === 'failed' || i.kind === 'stale'));
+  const np = k?.notInPipeline30;
+  const mid = `m-${f.slug}`;
   return `<article class="firm" data-slug="${esc(f.slug)}">
-    <div>
-      <div class="fname"><h3>${esc(f.name)}</h3><span class="chip ${stateChip[0]}" title="${esc(stateChip[2])}">${stateChip[1]}</span></div>
-      ${fi ? `<p class="meta issueline"><span><span class="chip ${fi.kind === 'failed' ? 'bad' : 'warn'}">${esc(issueText(fi).title)}</span> since ${esc(ago(fi.firstSeen))}</span><button class="linkbtn" type="button" data-open-issue="${esc(fi.id)}">Details and fix</button></p>` : ''}
-      <p class="meta"><span>${esc(f.practiceArea || 'No practice area')}</span><span class="mono">${esc(f.slug)}</span><span class="chip" title="${f.tokenSource === 'app' ? 'GHL token made automatically by the LFMP LeadPro Connector app (refreshed every hour by the token keeper)' : 'GHL Private Integration token pasted when the firm was added'}">Token: ${esc(tokenLabel(f))}</span>${subNames[f.slug] ? `<span>GHL: ${esc(subNames[f.slug])}</span>` : ''}</p>
-      <p class="meta"><span title="${esc(fmtTime(k?.generatedAt))}">Last updated ${k ? `${esc(ago(k.generatedAt))} (${esc(fmtTime(k.generatedAt))})` : '<span class="chip warn">no data yet</span>'}${stale ? ' <span class="chip bad" title="Syncs should run every 30 minutes. Check Actions for skipped or failed runs.">over 2 hours old</span>' : ''}</span>
-        ${k?.leads90 != null ? `<span>${k.leads90} lead${k.leads90 === 1 ? '' : 's'} in the last 90 days</span>` : ''}
-        ${k?.notInPipeline30 != null ? `<span title="Contacts created in the last 30 days who came in by form, chat, booking, call, text or email but have no opportunity in any pipeline (imports and bulk adds left out)">${k.notInPipeline30 ? `<span class="chip warn">${k.notInPipeline30} new contact${k.notInPipeline30 === 1 ? '' : 's'} not in pipeline</span> last 30 days` : '0 new contacts outside the pipeline (30 days)'}</span>` : ''}</p>
+    <div class="fmain">
+      <div class="fname"><h3>${esc(f.name)}</h3></div>
+      <p class="meta"><span>${esc(f.practiceArea || 'No practice area')}</span><span class="mono">${esc(f.slug)}</span>${subNames[f.slug] ? `<span>GHL: ${esc(subNames[f.slug])}</span>` : ''}</p>
+      <div class="tags"><span class="tag" title="${f.tokenSource === 'app' ? 'GHL token made automatically by the LFMP LeadPro Connector app (refreshed every hour by the token keeper)' : 'GHL Private Integration token pasted when the firm was added'}">Token: ${esc(tokenLabel(f))}</span>
+        ${np ? `<span class="tag tg-acc" title="Contacts created in the last 30 days who came in by form, chat, booking, call, text or email but have no opportunity in any pipeline (imports and bulk adds left out)">${np} new contact${np === 1 ? '' : 's'} not in pipeline · 30 days</span>` : ''}
+        ${cfg?.mappingReview ? '<span class="tag tg-acc" title="The stages were guessed when the firm was set up. Check them in Edit mapping and save.">Review mapping</span>' : ''}</div>
+      ${np === 0 ? '<p class="meta"><span>0 new contacts outside the pipeline (30 days)</span></p>' : ''}
+      ${fi ? `<p class="issueline"><span class="chip ${fi.kind === 'failed' ? 'bad' : 'warn'}">${esc(issueText(fi).title)}</span><span class="muted">since ${esc(ago(fi.firstSeen))}</span><button class="linkbtn" type="button" data-open-issue="${esc(fi.id)}">Details and fix</button></p>` : ''}
       ${syncFlag(k)}
     </div>
+    <div class="fstate"><span class="tag ${stateTag[0]}" title="${esc(stateTag[2])}">${stateTag[1]}</span>
+      ${k ? `<span title="${esc(fmtTime(k.generatedAt))}">Updated ${esc(ago(k.generatedAt))}<br><span class="small">${esc(fmtTime(k.generatedAt))}</span></span>` : '<span class="tag tg-acc">No data yet</span>'}
+      ${stale ? '<span class="tag tg-red" title="Syncs should run every 30 minutes. Check Actions for skipped or failed runs.">Over 2 hours old</span>' : ''}</div>
+    <div class="fleads">${k?.leads90 != null ? `<span class="n">${k.leads90}</span><span class="l">lead${k.leads90 === 1 ? '' : 's'} · last 90 days</span>` : '<span class="n">—</span><span class="l">leads · last 90 days</span>'}</div>
     <div class="acts">
-      <a class="btn" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener">${ICON.ext}Open dashboard</a>
-      <button class="btn" type="button" data-f="link">${ICON.copy}Copy GHL link</button>
-      <button class="btn" type="button" data-f="sync">${ICON.sync}Re-sync</button>
-      <button class="btn" type="button" data-f="map">${ICON.map}Edit mapping</button>
-      <button class="btn" type="button" data-f="banner" aria-pressed="${banner}" title="Testing-period banner on the dashboard">${ICON.flag}Banner ${banner ? 'on' : 'off'}</button>
-      <button class="btn danger" type="button" data-f="delete">${ICON.trash}Delete</button>
+      <a class="btn" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener">Open dashboard ↗</a>
+      <button class="btn wide-only" type="button" data-f="link">Copy GHL link</button>
+      <button class="btn wide-only" type="button" data-f="sync">Re-sync</button>
+      <button class="btn wide-only" type="button" data-f="map">Edit mapping</button>
+      <span class="menuwrap"><button class="btn iconbtn" type="button" data-menu="${esc(mid)}" aria-haspopup="menu" aria-expanded="false" aria-label="More for ${esc(f.name)}">⋯</button>
+        <div class="menu" id="${esc(mid)}" role="menu" hidden>
+          <button class="phone-only" type="button" role="menuitem" data-f="link">${ICON.copy}Copy GHL link</button>
+          <button class="phone-only" type="button" role="menuitem" data-f="sync">${ICON.sync}Re-sync</button>
+          <button class="phone-only" type="button" role="menuitem" data-f="map">${ICON.map}Edit mapping</button>
+          <hr class="phone-only">
+          <button type="button" role="menuitem" data-f="banner" aria-pressed="${banner}" title="Testing-period banner on the dashboard">${ICON.flag}Banner ${banner ? 'on · turn off' : 'off · turn on'}</button>
+          <button class="danger" type="button" role="menuitem" data-f="delete">${ICON.trash}Delete…</button>
+        </div></span>
     </div>
     <div class="fstatus" aria-live="polite"></div>
   </article>`;
 }
+function paintStrip() {
+  const el = $('statStrip'); if (!el) return;
+  const att = firms.filter(f => firmState(issues, f.slug) !== 'ok' || !kpis[f.slug] || isStale(kpis[f.slug])).length;
+  const leads = firms.reduce((n, f) => n + (kpis[f.slug]?.leads90 || 0), 0);
+  const np = firms.reduce((n, f) => n + (kpis[f.slug]?.notInPipeline30 || 0), 0);
+  const last = lastSyncIso();
+  el.innerHTML = `<span>${firms.length} firm${firms.length === 1 ? '' : 's'}</span><span title="${esc(fmtTime(last))}">${att ? `${att} not syncing cleanly` : 'All OK'} · synced ${esc(clock(last))}</span><span>${leads} lead${leads === 1 ? '' : 's'} · 90 days</span><span title="New contacts in the last 30 days with no opportunity in any pipeline">${np} contact${np === 1 ? '' : 's'} outside a pipeline</span>`;
+}
+function paintSyncInfo() {
+  if (!$('syncTimes')) return;
+  $('syncTimes').textContent = `Last ${clock(lastSyncIso())} · Next ${clock(nextSync())}`;
+  const kp = issues.some(i => String(i.kind).startsWith('keeper'));
+  $('keeperLine').textContent = kp ? 'Token keeper: see the bell' : keeperStatus ? 'Token keeper OK' : '';
+}
+function paintFilters() {
+  const seg = $('firmFilters'); if (!seg) return;
+  seg.innerHTML = FILTERS.map(([k, label, fn]) => `<button type="button" data-filter="${k}" aria-pressed="${k === listFilter}">${label}<span class="n">${firms.filter(fn).length}</span></button>`).join('');
+}
+function paintList() {
+  const host = $('firmList'); if (!host) return;
+  const fn = FILTERS.find(x => x[0] === listFilter)[2];
+  const shown = firms.filter(f => fn(f) && matchesQuery(f));
+  host.innerHTML = !firms.length ? `<div class="empty"><p>No firms yet.</p><button class="btn p big" type="button" data-new-firm>${ICON.plus}Add the first firm</button></div>`
+    : shown.length ? `<div class="ftable"><div class="fhead" aria-hidden="true"><span>Firm</span><span>Status</span><span>Leads</span><span>Actions</span></div>${shown.map(firmRow).join('')}</div>`
+    : `<div class="empty panel"><p>No firms match${listQuery ? ` “${esc(listQuery)}”` : ''}${listFilter !== 'all' ? ` in ${esc(FILTERS.find(x => x[0] === listFilter)[1])}` : ''}.</p><button class="btn" type="button" data-clear-filter>Show all firms</button></div>`;
+  paintFilters();
+}
 async function renderList(flash) {
-  cleanupRun();
-  $('screen').innerHTML = `<header class="head"><div class="titles"><h1>Law firm scorecards</h1><p class="sub" id="listSub">Loading firms…</p></div>
-    <div class="controls"><button class="btn primary big" type="button" id="newFirmBtn">${ICON.plus}New firm</button></div></header>
-    ${flash ? `<div class="okmsg" style="margin-bottom:12px">${flash}</div>` : ''}
+  cleanupRun(); cleanupAppRun(); closeMenus();
+  $('screen').innerHTML = `<header class="head"><div class="titles"><p class="ey">LeadPro · KPI admin</p><h1 class="disp">Law firm <span class="g">scorecards.</span></h1><p class="sub" id="listSub">Dashboards sync from GoHighLevel every 30 minutes. Client dashboards look exactly as they do now.</p></div>
+    <div class="controls"><button class="btn p big" type="button" id="newFirmBtn">${ICON.plus}New firm ${ICON.arrow}</button></div></header>
+    <div class="strip" id="statStrip" aria-label="Summary"><span>Loading firms…</span></div>
+    ${flash ? `<div class="okmsg listmsg" role="status">${flash}</div>` : ''}
+    <div class="listtools"><div class="segscroll"><div class="seg" id="firmFilters" role="group" aria-label="Filter firms"></div></div>
+      <input type="search" id="firmSearch" placeholder="Search firms…" aria-label="Search firms by name, slug or GHL name" value="${esc(listQuery)}"></div>
     <div id="firmList"></div>`;
   $('newFirmBtn').addEventListener('click', renderNewFirm);
+  $('firmSearch').addEventListener('input', e => { listQuery = e.target.value; paintList(); });
+  $('firmFilters').addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if (!b) return; listFilter = b.dataset.filter; store.set(FILTER_KEY, listFilter === 'all' ? null : listFilter); paintList(); });
   const host = $('firmList');
   try { await loadFirms(); }
-  catch (e) { if (!document.body.contains(host)) return; $('firmList').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; $('listSub').textContent = ''; return; }
+  catch (e) { if (!document.body.contains(host)) return; $('firmList').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; $('statStrip').innerHTML = ''; return; }
   if (!document.body.contains(host)) return;     // the user moved on while the list was loading
-  $('listSub').textContent = `${firms.length} firm${firms.length === 1 ? '' : 's'} · dashboards sync from GoHighLevel every 30 minutes`;
-  $('firmList').innerHTML = firms.length ? `<div class="firms">${firms.map(firmRow).join('')}</div>`
-    : `<div class="empty"><p>No firms yet.</p><button class="btn primary big" type="button" onclick="document.getElementById('newFirmBtn').click()">${ICON.plus}Add the first firm</button></div>`;
+  paintList(); paintStrip(); paintSyncInfo();
   refreshIssues();
 }
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-new-firm]')) renderNewFirm();
+  if (e.target.closest('[data-clear-filter]')) { listFilter = 'all'; listQuery = ''; store.set(FILTER_KEY, null); if ($('firmSearch')) $('firmSearch').value = ''; paintList(); }
+});
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-f]'); if (!b) return;
   const row = b.closest('.firm'); const f = firms.find(x => x.slug === row.dataset.slug); if (!f) return;
@@ -870,7 +735,7 @@ async function refreshIssues({ reloadKpis = false } = {}) {
     } catch (e) { checkErr = e.message; }
     finally { checking = null; }
     if (!ghToken) return;
-    paintBell(); paintRows(); if (!$('nPanel').hidden) paintPanel();
+    paintBell(); paintRows(); paintStrip(); paintSyncInfo(); paintFilters(); if (!$('nPanel').hidden) paintPanel();
   })();
   return checking;
 }
@@ -968,7 +833,9 @@ function openPanel(focusId) {
 function closePanel() { $('nPanel').hidden = true; $('bellBtn').setAttribute('aria-expanded', 'false'); }
 function goToFirm(slug) {
   closePanel();
-  const row = document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"]`); if (!row) return;
+  let row = document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"]`);
+  if (!row && $('firmList')) { listFilter = 'all'; listQuery = ''; if ($('firmSearch')) $('firmSearch').value = ''; paintList(); row = document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"]`); }   // filtered out: show all
+  if (!row) return;
   row.scrollIntoView({ behavior: 'smooth', block: 'center' });
   row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash');
 }
@@ -979,7 +846,14 @@ document.addEventListener('click', e => {
   const path = e.composedPath();
   if (!$('nPanel').hidden && !path.includes($('bellWrap')) && !path.includes($('ovl'))) closePanel();
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('nPanel').hidden && $('ovl').hidden) { closePanel(); $('bellBtn').focus(); } });
+// Esc closes the topmost thing: a dialog (handled below), then a ⋯ menu, What's new, the bell panel.
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape' || !$('ovl').hidden) return;
+  const menu = document.querySelector('.menu:not([hidden])');
+  if (menu) { closeMenus(); document.querySelector(`[data-menu="${menu.id}"]`)?.focus(); return; }
+  if (!$('newsPanel').hidden) { closeNews(); $('newsBtn').focus(); return; }
+  if (!$('nPanel').hidden) { closePanel(); $('bellBtn').focus(); }
+});
 document.addEventListener('visibilitychange', () => { if (!document.hidden && ghToken && Date.now() - lastCheck > CHECK_MS) refreshIssues({ reloadKpis: true }); });
 $('nPanel').addEventListener('click', async e => {
   const b = e.target.closest('[data-n]'); if (!b) return;
@@ -998,7 +872,7 @@ $('nPanel').addEventListener('click', async e => {
     case 'firm': goToFirm(i?.slug || b.dataset.slug); break;
     case 'resync': if (f) startResync(f, say); break;
     case 'token': if (f) tokenDialog(f, say); break;
-    case 'map': { closePanel(); const row = f && document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`); row?.querySelector('[data-f="map"]')?.click(); break; }
+    case 'map': { closePanel(); if (f) renderEditMapping(f); break; }
     case 'keeper':
       b.disabled = true;
       try { await dispatch('tokens.yml', f ? { slug: f.slug } : {}); say(`<span class="chip good">Started</span> The token keeper is running${f ? ` for ${esc(f.name)}` : ''} (about a minute). This list updates on the next check.`); setTimeout(() => refreshIssues(), 90e3); }
@@ -1018,7 +892,9 @@ $('nPanel').addEventListener('click', async e => {
 });
 // Runs the firm row's Re-sync (progress shows on the row), then re-checks.
 function startResync(f, say) {
+  if (!document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`) && $('firmList')) { listFilter = 'all'; listQuery = ''; paintList(); }   // the row was filtered out
   const row = document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`);
+  if (!row) { say('Open the firm list (KPI admin) and press Re-sync on this firm\'s row.'); return; }
   const btn = row?.querySelector('[data-f="sync"]'), status = row?.querySelector('.fstatus');
   if (!btn || btn.disabled) { say('A Re-sync is already running for this firm. Progress shows on its row.'); return; }
   say(`<span class="chip">Re-syncing</span> Progress shows on the firm's row. <button class="linkbtn" type="button" data-n="firm">Go to firm</button>`);
@@ -1085,16 +961,60 @@ async function loadChangelog() {
   if (!r.ok) throw new Error(`CHANGELOG.md: HTTP ${r.status}`);
   return (changelog = parseChangelog(await r.text()));
 }
-async function openNews() {
-  $('dlg').classList.add('wide');
-  $('dlg').innerHTML = `<div class="mhead" style="display:flex;justify-content:space-between;gap:12px"><h3>What's new</h3><button class="btn" type="button" id="dlgCancel">Close</button></div><div class="news" id="newsBody"><p class="sub">Loading…</p></div>`;
-  $('ovl').hidden = false; $('dlgCancel').onclick = closeDialog; $('dlgCancel').focus();
-  try {
-    const versions = await loadChangelog();
-    $('newsBody').innerHTML = `<p class="sub" style="margin:0 0 10px"><span class="chip good">client</span> shows on the dashboards' What's new · <span class="chip">internal</span> admin page, scripts and workflows</p>` +
-      versions.map(v => `<h4>v${esc(v.version)} <span class="muted">${esc(v.date)}</span></h4><ul>${v.entries.map(e => `<li><span class="chip ${e.tag === 'client' ? 'good' : ''}">${e.tag}</span><span>${inlineMd(e.text)}</span></li>`).join('')}</ul>`).join('');
-  } catch (e) { $('newsBody').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; }
+// Side panel of version cards: newest open with a Latest pill, older ones collapsed; plain bullets from
+// admin/whats-new.json, the developer text (CHANGELOG.md) under "Technical details". Admin only.
+const NEWS_SEEN = 'leadpro-admin-news-seen', NEWS_FILTER = 'leadpro-admin-news-filter';
+let plainNews = null, newsFilter = ['client', 'internal'].includes(store.get(NEWS_FILTER)) ? store.get(NEWS_FILTER) : 'all', newsReturn = null;
+async function loadPlainNews() {
+  if (plainNews) return plainNews;
+  try { const r = await fetch(`./whats-new.json?t=${Date.now()}`, { cache: 'no-store' }); plainNews = r.ok ? await r.json() : {}; } catch { plainNews = {}; }
+  return plainNews;
 }
+function paintNewsDot() { const v = changelog && latestVersion(changelog); $('newsDot').hidden = !v || !newer(v, store.get(NEWS_SEEN) || '0.0.0'); $('newsBtn').setAttribute('aria-label', `What's new${$('newsDot').hidden ? '' : ' (something you haven\'t seen)'}`); }
+const TYPE_LABEL = { new: 'New', improved: 'Improved', fixed: 'Fixed' };
+function newsCardHtml(c, i) {
+  return `<details class="vcard"${i === 0 ? ' open' : ''}><summary><span class="vt"><b>v${esc(c.version)}</b>${i === 0 && newsFilter === 'all' ? '<span class="pill">Latest</span>' : ''}<span class="vdate">${esc(c.date)}</span>${c.tags.map(t => `<span class="tag ${t === 'client' ? 'tg-green' : ''}">${t}</span>`).join('')}</span>${ICON.chev}<p class="vsum">${esc(c.summary)}</p></summary>
+    <div class="vbody"><ul>${c.items.map(it => `<li><span class="tags"><span class="tag tg-${it.type}">${TYPE_LABEL[it.type]}</span><span class="who">${it.tag}</span></span><span>${esc(it.text)}</span></li>`).join('')}</ul>
+      <div><button class="lnk" type="button" data-tech aria-expanded="false">Technical details</button></div>
+      <div class="tech" hidden><ul>${c.technical.map(e => `<li><span class="tag ${e.tag === 'client' ? 'tg-green' : ''}">${e.tag}</span><span>${inlineMd(e.text)}</span></li>`).join('')}</ul></div></div></details>`;
+}
+async function paintNews() {
+  const body = $('newsBody'); if (!body) return;
+  try {
+    const [versions, plain] = await Promise.all([loadChangelog(), loadPlainNews()]);
+    const cards = filterCards(buildCards(versions, plain), newsFilter);
+    body.innerHTML = cards.length ? cards.map(newsCardHtml).join('') : '<p class="sub">Nothing for this filter.</p>';
+  } catch (e) { body.innerHTML = `<div class="errbox">${esc(e.message)}</div>`; }
+}
+async function openNews() {
+  closeMenus(); closePanel();
+  newsReturn = document.activeElement;
+  $('newsPanel').innerHTML = `<div class="dhead"><div class="row"><div><p class="ey">LeadPro · KPI admin</p><h2 class="disp" id="newsTitle">What's <span class="g">new.</span></h2></div><button class="xbtn" type="button" data-news-close aria-label="Close What's new">${ICON.cross}</button></div>
+      <div class="seg" role="group" aria-label="Show">${[['all', 'All'], ['client', 'Client'], ['internal', 'Internal']].map(([k, l]) => `<button type="button" data-news-filter="${k}" aria-pressed="${k === newsFilter}">${l}</button>`).join('')}</div>
+      <p class="sub small">Client: also on the dashboards' own What's new. Internal: this admin page, scripts and workflows.</p></div>
+    <div class="dbody" id="newsBody"><p class="sub">Loading…</p></div>`;
+  $('newsPanel').hidden = false; $('newsShade').hidden = false;
+  $('newsPanel').querySelector('[data-news-close]').focus();
+  await paintNews();
+  const v = changelog && latestVersion(changelog); if (v) { store.set(NEWS_SEEN, v); paintNewsDot(); }
+}
+function closeNews() { if ($('newsPanel').hidden) return; $('newsPanel').hidden = true; $('newsShade').hidden = true; $('newsPanel').innerHTML = ''; newsReturn?.focus?.(); newsReturn = null; }
+$('newsShade').addEventListener('click', closeNews);
+$('newsPanel').addEventListener('click', e => {
+  if (e.target.closest('[data-news-close]')) return closeNews();
+  const f = e.target.closest('[data-news-filter]');
+  if (f) { newsFilter = f.dataset.newsFilter; store.set(NEWS_FILTER, newsFilter === 'all' ? null : newsFilter); $('newsPanel').querySelectorAll('[data-news-filter]').forEach(b => b.setAttribute('aria-pressed', String(b === f))); paintNews(); return; }
+  const t = e.target.closest('[data-tech]');
+  if (t) { const box = t.parentElement.nextElementSibling, open = box.hidden; box.hidden = !open; t.setAttribute('aria-expanded', String(open)); t.textContent = open ? 'Hide technical details' : 'Technical details'; }
+});
+// Keep Tab inside the panel while it's open.
+$('newsPanel').addEventListener('keydown', e => {
+  if (e.key !== 'Tab') return;
+  const els = [...$('newsPanel').querySelectorAll('button,summary,a[href]')].filter(x => x.offsetParent !== null);
+  if (!els.length) return;
+  if (e.shiftKey && document.activeElement === els[0]) { e.preventDefault(); els.at(-1).focus(); }
+  else if (!e.shiftKey && document.activeElement === els.at(-1)) { e.preventDefault(); els[0].focus(); }
+});
 $('ovl').addEventListener('click', e => { if (e.target === $('ovl')) closeDialog(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('ovl').hidden) closeDialog(); });
 
@@ -1102,7 +1022,11 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('ovl').
 // Mapping panel
 // =====================================================================
 // Renders the panel into `host`. Resolves with { pipelines, stages, turnedAway, calendarKeywords } when the user saves.
-function mappingPanel(host, { discovery, config, isNew, saveLabel }) {
+// Short chip text for a stage: "Stage 3: Lead Contacted?" → "3 Lead Contacted?", "Consultation Showed - Agreement Sent" → "Showed · Agreement Sent".
+// Display only: the full name stays in data-stage and the tooltip, and is what gets saved.
+const stageChip = n => String(n).replace(/^stage\s*(\d+)\s*[:.\-–]\s*/i, '$1 ').replace(/\bconsultation\s+(?=showed|no show)/i, '').replace(/\s+[-–]\s+/g, ' · ').replace(/\bReferred Lead Accepted\?/i, 'Referred Accepted?');
+// saveBtn: an existing button (e.g. Save mapping at the top of Edit mapping) to use instead of the one at the bottom.
+function mappingPanel(host, { discovery, config, isNew, saveLabel, saveBtn = null, warnHost = null }) {
   const pipelines = discovery.pipelines || [];
   const state = initialState({ discovery, config, isNew });     // admin/mapping.mjs (also used by tests/mapping)
   const { chosenPipes, sel } = state;
@@ -1113,23 +1037,24 @@ function mappingPanel(host, { discovery, config, isNew, saveLabel }) {
     const draw = () => {
       const names = stageList(); const known = new Set(pipelines.flatMap(p => p.stages.map(s => norm(s.name))));
       host.innerHTML = `<div class="map">
-        <section><h4>Pipelines to include</h4><p class="hint" style="margin:0 0 8px">Only leads in these pipelines are counted.</p>
-          <div class="pipes">${pipelines.map(p => `<label class="check"><input type="checkbox" data-pipe="${esc(p.id)}" ${chosenPipes.has(p.id) ? 'checked' : ''}> ${esc(p.name)} <span class="muted small">(${p.stages.length} stages)</span></label>`).join('') || '<p class="errbox">No pipelines found in this sub-account.</p>'}</div></section>
-        <section><h4>Funnel steps</h4><p class="hint" style="margin:0 0 4px">Pick the stage(s) that prove each step. A later step counts as every earlier one, so list only the stages that first prove it.</p>
+        ${warnHost ? '' : '<div id="mapWarn" class="mapwarn"></div>'}
+        <section><h4>Pipelines to include</h4><p class="hint">Only leads in these pipelines are counted.</p>
+          <div class="pipes">${pipelines.map(p => `<label class="pipe"><input type="checkbox" data-pipe="${esc(p.id)}" ${chosenPipes.has(p.id) ? 'checked' : ''}> ${esc(p.name)} · ${p.stages.length} stage${p.stages.length === 1 ? '' : 's'}</label>`).join('') || '<p class="errbox">No pipelines found in this sub-account.</p>'}</div></section>
+        <section><h4>Funnel steps</h4><p class="hint">Pick the stage(s) that first prove each step. A later step counts as every earlier one, so list only the stages that first prove it.</p>
           ${STEPS_MAP.map(([k, label, hint]) => {
             const extra = [...sel[k].entries()].filter(([n]) => !names.some(x => norm(x) === n));
-            return `<div class="mrow"><div class="lbl">${esc(label)}<span class="hint">${esc(hint)}</span></div><div class="opts">
-              ${names.map(n => `<button type="button" class="opt" data-step="${k}" data-stage="${esc(n)}" aria-pressed="${sel[k].has(norm(n))}">${esc(n)}</button>`).join('')}
-              ${extra.map(([, n]) => `<button type="button" class="opt stale" data-step="${k}" data-stage="${esc(n)}" aria-pressed="true" title="${known.has(norm(n)) ? 'In a pipeline you excluded' : 'Not found in GHL any more'}">${esc(n)} · ${known.has(norm(n)) ? 'excluded pipeline' : 'not in GHL'}</button>`).join('')}
+            return `<div class="mrow" role="group" aria-label="${esc(label)}"><div class="lbl">${esc(label)}<span class="hint">${esc(hint)}</span></div><div class="opts">
+              ${names.map(n => `<button type="button" class="opt" data-step="${k}" data-stage="${esc(n)}" aria-pressed="${sel[k].has(norm(n))}" title="${esc(n)}">${esc(stageChip(n))}</button>`).join('')}
+              ${extra.map(([, n]) => `<button type="button" class="opt stale" data-step="${k}" data-stage="${esc(n)}" aria-pressed="true" title="${esc(n)}: ${known.has(norm(n)) ? 'in a pipeline you excluded' : 'not found in GHL any more'}">${esc(stageChip(n))} · ${known.has(norm(n)) ? 'excluded pipeline' : 'not in GHL'}</button>`).join('')}
               ${!names.length && !extra.length ? '<span class="muted small">Choose a pipeline first.</span>' : ''}</div></div>`;
           }).join('')}</section>
-        <section><h4>Consult calendars</h4><p class="hint" style="margin:0 0 8px">An appointment counts as a consult when its calendar name contains one of these words. Leave empty to count every calendar.</p>
-          <label class="f" for="calKw" style="max-width:520px">Keywords, comma-separated<input type="text" id="calKw" value="${esc(keywords.join(', '))}" placeholder="e.g. consult, case review"></label>
-          ${(discovery.calendars || []).length ? `<p class="hint" style="margin:8px 0 6px">Calendars in GHL (click to add one as a keyword):</p><div class="opts">${discovery.calendars.map(c => `<button type="button" class="opt cal" data-cal="${esc(c.name)}">${esc(c.name)}</button>`).join('')}</div>` : '<p class="hint" style="margin:8px 0 0">This sub-account has no calendars.</p>'}
+        <section><h4>Consult calendars</h4><p class="hint">An appointment counts as a consult when its calendar name contains one of these words. Leave empty to count every calendar.</p>
+          <label class="f" for="calKw">Keywords, comma-separated<input type="text" id="calKw" value="${esc(keywords.join(', '))}" placeholder="e.g. consult, case review"></label>
+          ${(discovery.calendars || []).length ? `<p class="hint" style="margin:12px 0 8px">Calendars in GHL (click to add one as a keyword):</p><div class="opts">${discovery.calendars.map(c => `<button type="button" class="opt cal" data-cal="${esc(c.name)}">${esc(c.name)}</button>`).join('')}</div>` : '<p class="hint" style="margin:12px 0 0">This sub-account has no calendars.</p>'}
         </section>
-        <div id="mapWarn"></div>
-        <div class="btnrow"><button type="button" class="btn primary big" id="mapSave">${esc(saveLabel)}</button></div>
+        ${saveBtn ? '' : `<div class="btnrow"><button type="button" class="btn primary big" id="mapSave">${esc(saveLabel)}</button></div>`}
       </div>`;
+      if (warnHost) warnHost.innerHTML = '<div id="mapWarn" class="mapwarn"></div>';
       host.querySelectorAll('[data-pipe]').forEach(c => c.addEventListener('change', () => { c.checked ? chosenPipes.add(c.dataset.pipe) : chosenPipes.delete(c.dataset.pipe); keywords = parseKw(); draw(); }));
       host.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
         const m = sel[b.dataset.step], n = b.dataset.stage, on = b.getAttribute('aria-pressed') !== 'true';
@@ -1140,7 +1065,9 @@ function mappingPanel(host, { discovery, config, isNew, saveLabel }) {
         const kw = parseKw(); if (!kw.some(k => norm(k) === norm(b.dataset.cal))) kw.push(b.dataset.cal); $('calKw').value = kw.join(', ');
       }));
       let warned = false;
-      $('mapSave').addEventListener('click', () => {
+      const save = saveBtn || $('mapSave');
+      save.disabled = false; save.textContent = saveLabel;
+      save.onclick = () => {
         const chosen = pipelines.filter(p => chosenPipes.has(p.id)).map(p => p.name);
         const warn = [];
         if (!chosen.length) { $('mapWarn').innerHTML = '<div class="errbox">Pick at least one pipeline.</div>'; return; }
@@ -1148,10 +1075,11 @@ function mappingPanel(host, { discovery, config, isNew, saveLabel }) {
         if (warn.length && !warned) {
           warned = true;
           $('mapWarn').innerHTML = `<div class="warnbox">No stage picked for: <b>${warn.map(esc).join(', ')}</b>. Those steps will rely on tags only and may show zero. Click again to save anyway.</div>`;
-          $('mapSave').textContent = `${saveLabel} anyway`; return;
+          save.textContent = `${saveLabel} anyway`; $('mapWarn').scrollIntoView?.({ block: 'nearest' }); return;
         }
+        save.onclick = null;
         resolve(buildMapping({ ...state, keywords: parseKw() }, discovery));
-      });
+      };
     };
     const parseKw = () => ($('calKw')?.value ?? keywords.join(',')).split(',').map(s => s.trim()).filter(Boolean);
     draw();
@@ -1169,40 +1097,81 @@ function makePassphrase() {
   return out.join('-');
 }
 
+const NEXT_STEPS = {
+  app: [['Check the app is on the sub-account', 'The LFMP LeadPro Connector app is on every sub-account; GitHub waits up to 15 minutes for a brand-new one.'], ['Make a read-only token (no paste)', 'Refreshed every hour by the token keeper.'], ['Read pipelines and stages'], ['Map the stages', 'From the preset; if a stage is missing, it\'s guessed and flagged "Review mapping".'], ['Create the dashboard + first sync'], ['Add "KPI Dashboard" to the firm\'s GHL menu', 'Automatic when possible; otherwise copy the link at the end.']],
+  pi: [['Save the token and passphrase', 'Sealed in this browser with the repo\'s key.'], ['Read GHL and check the 9 scopes', 'Missing scopes are named, with a Re-check.'], ['Confirm the stage mapping (pre-filled)'], ['Create the dashboard'], ['First sync'], ['Copy the GHL menu link', 'Add it in GHL by hand.']],
+};
+let presetList = null;
+async function loadPresetChoices() {
+  if (presetList) return presetList;
+  try {
+    const dir = await gh('GET', `${R}/contents/firms/_presets?ref=${BRANCH}`, null, { allow404: true }) || [];
+    const files = dir.filter(x => x.type === 'file' && x.name.endsWith('.json'));
+    presetList = presetChoices(await Promise.all(files.map(x => getJSON(x.path))));
+  } catch { presetList = []; }
+  return presetList;
+}
+
 function renderNewFirm() {
-  cleanupRun();
-  $('screen').innerHTML = `<header class="head"><div class="titles"><p class="sub"><button class="linkbtn" type="button" id="backBtn">← All firms</button></p><h1>New firm</h1><p class="sub">Adds a scorecard for one GoHighLevel sub-account. Takes about 3–5 minutes.</p></div></header>
-    <form id="nfForm" class="grid2" autocomplete="off" novalidate>
-      <label class="f full" for="nfName">Firm name<input type="text" id="nfName" required placeholder="e.g. Harrison Law Group"></label>
-      <div class="full note" id="nfSlug">Slug: <span class="mono">—</span></div>
-      <label class="f" for="nfArea">Practice area<select id="nfArea">${PRACTICE.map(p => `<option>${esc(p)}</option>`).join('')}</select></label>
-      <label class="f" for="nfAreaOther" id="nfAreaOtherWrap" hidden>Practice area (other)<input type="text" id="nfAreaOther" placeholder="e.g. Medical Malpractice"></label>
-      <label class="f" for="nfTz">Time zone<select id="nfTz">${TIMEZONES.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join('')}</select></label>
-      <label class="f full" for="nfLoc">GHL location ID <span class="hint">The sub-account's ID, from its URL: …/v2/location/<b>this part</b>/…</span><input type="text" id="nfLoc" required spellcheck="false" placeholder="e.g. INZKoa3nu45xtcZB0Yuq"></label>
-      <section class="full tokhelp" aria-labelledby="nfHelpTitle">
-        <h3 id="nfHelpTitle">Create the GHL token</h3>
-        <p class="hint" id="nfHelpNeedLoc" style="margin:0">Enter the location ID above to get a direct link to this sub-account's Private Integrations page.</p>
-        <div class="btnrow" id="nfHelpBtns" style="margin:0" hidden>
-          <a class="btn" id="nfPiLink" target="_blank" rel="noopener">${ICON.ext}Open Private Integrations</a>
-          <button type="button" class="btn" id="nfCopyName">${ICON.copy}Copy name “${esc(INTEGRATION_NAME)}”</button>
+  cleanupRun(); cleanupAppRun(); closeMenus();
+  $('screen').innerHTML = `<header class="head"><div class="titles"><button class="back" type="button" id="backBtn">${ICON.back}All firms</button><h1 class="disp">New <span class="g">firm.</span></h1><p class="sub">Adds a scorecard for one GoHighLevel sub-account. Takes about 3–15 minutes.</p></div></header>
+    <form id="nfForm" class="nfgrid" autocomplete="off" novalidate>
+      <div class="nfmain">
+        <fieldset class="connect"><legend class="ey" style="margin-bottom:12px">How should we connect?</legend>
+          <label class="opt-card"><input type="radio" name="nfMode" value="app" checked><span><span class="t">Use the LeadPro app <span class="tag tg-green">Recommended</span></span><span class="d">No token to create or paste. Works for any sub-account the LFMP LeadPro Connector app is installed on (all of them).</span></span></label>
+          <label class="opt-card"><input type="radio" name="nfMode" value="pi"><span><span class="t">Paste a Private Integration token</span><span class="d">The old way: create "${esc(INTEGRATION_NAME)}" in GHL with 9 read-only scopes and paste the pit- token.</span></span></label>
+        </fieldset>
+        <label class="f" for="nfName">Firm name<input type="text" id="nfName" required placeholder="e.g. Harrison Law Group"></label>
+        <div class="slugline" id="nfSlug">Slug: <span class="mono">—</span></div>
+        <div class="grid2">
+          <label class="f" for="nfArea">Practice area<select id="nfArea">${PRACTICE.map(p => `<option>${esc(p)}</option>`).join('')}</select></label>
+          <label class="f" for="nfTz">Time zone<select id="nfTz">${TIMEZONES.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join('')}</select></label>
+          <label class="f full" for="nfAreaOther" id="nfAreaOtherWrap" hidden>Practice area (other)<input type="text" id="nfAreaOther" placeholder="e.g. Medical Malpractice"></label>
         </div>
-        <ol>
-          <li>Create a new integration named <b>${esc(INTEGRATION_NAME)}</b>.</li>
-          <li>Press Next, then tick these nine scopes. All are read-only “View” scopes. GHL lists 180, so type each key below into its “Select scopes” box to find it:</li>
-        </ol>
-        <ul class="scopelist">${SCOPES.map(([k, n]) => `<li><label class="check"><input type="checkbox"><span>${esc(n)}<span class="mono">${esc(k)}</span></span></label></li>`).join('')}</ul>
-        <ol start="3"><li>Create it, then copy the token.</li></ol>
-        <div class="warnbox">GHL shows the token once. Copy it straight into the field below.</div>
-      </section>
-      <label class="f full" for="nfTok">GHL token <span class="hint">The Private Integration token you just created (starts with “pit-”). It's tested scope by scope in step 2.</span>
-        <span class="pw"><input type="password" id="nfTok" required spellcheck="false" placeholder="pit-…"><button type="button" class="eye" data-eye="nfTok" aria-label="Show token"></button></span></label>
-      <label class="f full" for="nfPass">Dashboard passphrase <span class="hint">Unlocks names on the dashboard. Goes into the GHL menu link. Generated for you; change it if you like.</span>
-        <span class="pw"><input type="password" id="nfPass" required spellcheck="false"><button type="button" class="eye" data-eye="nfPass" aria-label="Show passphrase"></button></span>
-        <span><button type="button" class="linkbtn" id="nfRegen">Generate another</button></span></label>
-      <div class="full ferr" id="nfErr" role="alert"></div>
-      <div class="full btnrow" style="margin-top:0"><button type="submit" class="btn primary big" id="nfCreate">Create</button><button type="button" class="btn big" id="nfCancel">Cancel</button></div>
+        <label class="f" for="nfLoc">GHL location ID <span class="hint">The sub-account's ID, from its URL: …/v2/location/<b>this part</b>/…</span><input type="text" id="nfLoc" required spellcheck="false" placeholder="e.g. INZKoa3nu45xtcZB0Yuq"></label>
+        <div id="nfAppOnly">
+          <label class="f" for="nfPreset">Stage mapping <span class="hint">Sub-accounts made from the LFMP template snapshots use the ACME "Lead Stages" pipeline. Anything that doesn't match is guessed and flagged "Review mapping".</span><select id="nfPreset"><option value="">Loading presets…</option></select></label>
+        </div>
+        <div id="nfPiOnly" hidden>
+          <section class="tokhelp" aria-labelledby="nfHelpTitle">
+            <h3 id="nfHelpTitle">Create the GHL token</h3>
+            <p class="hint" id="nfHelpNeedLoc" style="margin:0">Enter the location ID above to get a direct link to this sub-account's Private Integrations page.</p>
+            <div class="btnrow" id="nfHelpBtns" style="margin:0" hidden>
+              <a class="btn sm" id="nfPiLink" target="_blank" rel="noopener">${ICON.ext}Open Private Integrations</a>
+              <button type="button" class="btn sm" id="nfCopyName">${ICON.copy}Copy name “${esc(INTEGRATION_NAME)}”</button>
+            </div>
+            <ol>
+              <li>Create a new integration named <b>${esc(INTEGRATION_NAME)}</b>.</li>
+              <li>Press Next, then tick these nine scopes. All are read-only “View” scopes. GHL lists 180, so type each key below into its “Select scopes” box to find it:</li>
+            </ol>
+            <ul class="scopelist">${SCOPES.map(([k, n]) => `<li><label class="check"><input type="checkbox"><span>${esc(n)}<span class="mono">${esc(k)}</span></span><button type="button" class="btn sm icon cp" data-copy-scope="${esc(k)}" aria-label="Copy ${esc(k)}" title="Copy ${esc(k)}">${ICON.copy}</button></label></li>`).join('')}</ul>
+            <ol start="3"><li>Create it, then copy the token.</li></ol>
+            <div class="warnbox">GHL shows the token once. Copy it straight into the field below.</div>
+          </section>
+          <label class="f" for="nfTok" style="margin-top:20px">GHL token <span class="hint">The Private Integration token you just created (starts with “pit-”). It's tested scope by scope in step 2.</span>
+            <span class="pw"><input type="password" id="nfTok" spellcheck="false" placeholder="pit-…"><button type="button" class="eye" data-eye="nfTok" aria-label="Show token"></button></span></label>
+        </div>
+        <label class="f" for="nfPass">Dashboard passphrase <span class="hint">Unlocks names on the dashboard; goes into the GHL menu link. Save it in your password manager.</span>
+          <span class="passrow"><span class="pw"><input type="password" id="nfPass" required spellcheck="false"><button type="button" class="eye" data-eye="nfPass" aria-label="Show passphrase"></button></span><button type="button" class="btn" id="nfRegen">Generate another</button></span></label>
+        <div class="ferr" id="nfErr" role="alert"></div>
+        <div class="nfacts"><button type="submit" class="btn p big" id="nfCreate">Create ${ICON.arrow}</button><button type="button" class="btn big" id="nfCancel">Cancel</button></div>
+      </div>
+      <aside class="nfside" aria-labelledby="nfNextTitle"><h2 class="ey" id="nfNextTitle">What happens next</h2><ol id="nfNext"></ol><p class="foot" id="nfNextFoot"></p></aside>
     </form>
     <div id="runHost"></div>`;
+  const mode = () => document.querySelector('input[name="nfMode"]:checked')?.value || 'app';
+  const paintMode = () => {
+    const m = mode();
+    $('nfAppOnly').hidden = m !== 'app'; $('nfPiOnly').hidden = m !== 'pi';
+    $('nfNext').innerHTML = NEXT_STEPS[m].map(([t, s], i) => `<li><span class="k">${i + 1}</span><span>${esc(t)}${s ? `<span class="s">${esc(s)}</span>` : ''}</span></li>`).join('');
+    $('nfNextFoot').textContent = m === 'app' ? 'About 5–15 minutes. You can leave this page; GitHub keeps going. A location that already has a firm is refused.' : 'About 3–5 minutes. The token is checked against all 9 scopes before anything is saved to the firm list.';
+  };
+  document.querySelectorAll('input[name="nfMode"]').forEach(r => r.addEventListener('change', () => { paintMode(); $('nfErr').textContent = ''; }));
+  paintMode();
+  loadPresetChoices().then(list => {
+    const sel = $('nfPreset'); if (!sel) return;
+    sel.innerHTML = list.map((p, i) => `<option value="${esc(p.snapshotId)}"${i === 0 ? ' selected' : ''}>${esc(p.name)} (LFMP template snapshots)</option>`).join('') + '<option value="">No preset: guess from the stage names (flagged "Review mapping")</option>';
+  });
   $('backBtn').onclick = $('nfCancel').onclick = () => renderList();
   $('nfPass').value = makePassphrase();
   $('nfRegen').onclick = () => { $('nfPass').value = makePassphrase(); };
@@ -1213,11 +1182,13 @@ function renderNewFirm() {
     let err = '';
     if (!slug) err = '';
     else if (RESERVED.includes(slug)) err = `"${slug}" is reserved. Change the name.`;
-    else if (firms.some(f => f.slug === slug)) err = `A firm with slug "${slug}" already exists.`;
-    $('nfSlug').innerHTML = slug ? `Slug: <span class="mono">${esc(slug)}</span> · Dashboard: <span class="mono">${esc(dashUrl(slug))}</span> · Secrets: <span class="mono">GHL_TOKEN_${esc(secretKeyFor(slug))}</span>, <span class="mono">PASSPHRASE_${esc(secretKeyFor(slug))}</span>${err ? `<div class="ferr" style="margin-top:4px">${esc(err)}</div>` : ''}` : 'Slug: <span class="mono">—</span> (from the firm name)';
+    else if (firms.some(f => f.slug === slug)) err = mode() === 'app' ? '' : `A firm with slug "${slug}" already exists.`;
+    const taken = firms.some(f => f.slug === slug) && mode() === 'app';
+    $('nfSlug').innerHTML = slug ? `Slug: <span class="mono">${esc(slug)}</span>${taken ? ' (taken: the next free one is used)' : ''} · Dashboard: <span class="mono">${esc(dashUrl(slug))}</span>${err ? `<div class="ferr">${esc(err)}</div>` : ''}` : 'Slug: <span class="mono">—</span> (from the firm name)';
     return { slug, err };
   };
   $('nfName').addEventListener('input', slugInfo); slugInfo();
+  document.querySelectorAll('input[name="nfMode"]').forEach(r => r.addEventListener('change', slugInfo));
   const helpInfo = () => {
     const loc = $('nfLoc').value.trim(), ok = validLoc(loc);
     $('nfHelpBtns').hidden = !ok; $('nfHelpNeedLoc').hidden = ok;
@@ -1228,20 +1199,118 @@ function renderNewFirm() {
     try { await navigator.clipboard.writeText(INTEGRATION_NAME); $('nfCopyName').innerHTML = `${ICON.tick}Copied`; setTimeout(() => { const b = $('nfCopyName'); if (b) b.innerHTML = `${ICON.copy}Copy name “${esc(INTEGRATION_NAME)}”`; }, 2000); }
     catch { $('nfCopyName').textContent = INTEGRATION_NAME; }
   };
+  $('nfForm').addEventListener('click', async e => {
+    const b = e.target.closest('[data-copy-scope]'); if (!b) return;
+    e.preventDefault();
+    try { await navigator.clipboard.writeText(b.dataset.copyScope); b.innerHTML = ICON.tick; setTimeout(() => { b.innerHTML = ICON.copy; }, 1500); } catch {}
+  });
   $('nfName').focus();
   $('nfForm').addEventListener('submit', e => {
     e.preventDefault();
+    if ($('nfCreate').disabled) return;                // a second Enter / click while starting
     const { slug, err } = slugInfo();
     const name = $('nfName').value.trim(), loc = $('nfLoc').value.trim(), tok = $('nfTok').value.trim(), pass = $('nfPass').value;
     const area = $('nfArea').value === 'Other' ? $('nfAreaOther').value.trim() : $('nfArea').value;
+    const m = mode();
     const problem = !name ? 'Enter the firm name.' : !slug ? 'The firm name needs at least one letter or digit.' : err ? err
       : !area ? 'Enter the practice area.' : !validLoc(loc) ? 'The location ID looks wrong: letters and digits only, from the sub-account URL.'
-      : tok.length < 20 ? 'Paste the GHL Private Integration Token.' : pass.length < 12 ? 'Use a passphrase of at least 12 characters.' : '';
+      : m === 'pi' && tok.length < 20 ? 'Paste the GHL Private Integration Token.' : pass.length < 12 ? 'Use a passphrase of at least 12 characters.'
+      : m === 'app' && firms.some(f => f.locationId === loc || configs[f.slug]?.locationId === loc) ? `This location already has a firm: ${(firms.find(f => f.locationId === loc || configs[f.slug]?.locationId === loc) || {}).name}. Use its row in the firm list instead.` : '';
     if (problem) { $('nfErr').textContent = problem; return; }
     $('nfErr').textContent = '';
-    startRun({ name, slug, secretKey: secretKeyFor(slug), practiceArea: area, locationId: loc, timezone: $('nfTz').value, token: tok, passphrase: pass });
+    $('nfCreate').disabled = true;
+    if (m === 'pi') startRun({ name, slug, secretKey: secretKeyFor(slug), practiceArea: area, locationId: loc, timezone: $('nfTz').value, token: tok, passphrase: pass });
+    else startAppRun({ name, practiceArea: area, locationId: loc, timezone: $('nfTz').value, snapshotId: $('nfPreset').value, passphrase: pass });
   });
 }
+
+// ---------- app path: "Use the LeadPro app" (admin/app-path.mjs does the work; this is the page side) ----------
+// Writes only PASSPHRASE_<KEY> (sealed) and starts new-firm.yml (or, on a Retry, sync.yml). The passphrase stays in memory.
+let appRun = null;                    // { r, ctx, timer, t0, gone }
+function cleanupAppRun() { if (appRun) { appRun.gone = true; clearInterval(appRun.timer); appRun.ctx.passphrase = null; appRun = null; } }
+function startAppRun(ctx) {
+  document.querySelectorAll('#nfForm input, #nfForm select, #nfForm button').forEach(el => { el.disabled = true; });
+  $('nfForm').hidden = true;
+  const me = { ctx, t0: Date.now(), gone: false };
+  appRun = me;
+  $('runHost').innerHTML = `<div class="runhead"><span><b>${esc(ctx.name)}</b> · ${esc(ctx.practiceArea)} · <span class="mono">${esc(ctx.locationId)}</span> · LeadPro app</span><span><span id="appRunLink"></span> Elapsed <b class="elapsed" id="runElapsed">0:00</b></span></div>
+    <ol class="steps" id="appSteps">${APP_STEPS.map(([k, t, hint], i) => `<li class="step pending" data-k="${k}"><span class="ic" aria-hidden="true"></span><span class="t">${i + 1}. ${esc(t)}</span><span class="d">${esc(hint || '')}</span><div class="e"></div></li>`).join('')}</ol>
+    <p class="sub" style="margin-top:12px">You can leave this page: GitHub keeps going, and the firm shows up in the list when it's ready.</p>
+    <div id="appResult"></div>`;
+  const tick = () => { if (me.gone) return; const s = Math.floor((Date.now() - me.t0) / 1000); const el = $('runElapsed'); if (el) el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+  me.timer = setInterval(tick, 1000); tick();
+  const STOP = new Error('Stopped because you left this page.');
+  const live = () => { if (me.gone || appRun !== me) throw STOP; };
+  const setAppStep = (k, st, d) => {
+    if (me.gone) return;
+    const el = document.querySelector(`#appSteps .step[data-k="${k}"]`); if (!el) return;
+    el.className = `step ${st}`;
+    el.querySelector('.ic').innerHTML = st === 'ok' ? ICON.tick : st === 'fail' ? ICON.cross : st === 'warn' ? ICON.bang : '';
+    if (d !== undefined) el.querySelector('.d').textContent = d;
+    if (st !== 'fail') el.querySelector('.e').innerHTML = '';
+  };
+  me.r = createAppRun({
+    readIndex: async () => { live(); return (await getJSON('firms/index.json')) || []; },
+    secretExists: async name => { live(); return (await gh('GET', `${R}/actions/secrets/${name}`, null, { allow404: true })) !== null; },
+    putPassphrase: async (key, value) => {
+      live();
+      if (!/^[A-Z0-9_]{1,80}$/.test(key)) throw new Error('Blocked: not a dashboard passphrase name.');
+      await putSecret(`PASSPHRASE_${key}`, value);
+    },
+    dispatchNewFirm: async inputs => { live(); return dispatch('new-firm.yml', inputs); },
+    listNewFirmRuns: async () => { live(); return (await gh('GET', `${R}/actions/workflows/new-firm.yml/runs?event=workflow_dispatch&per_page=20`)).workflow_runs || []; },
+    getRun: async id => gh('GET', `${R}/actions/runs/${id}`),
+    getJobs: async id => gh('GET', `${R}/actions/runs/${id}/jobs`),
+    readConfig: async slug => getJSON(`firms/${slug}/config.json`),
+    hasKpis: async slug => !!(await getJSON(`firms/${slug}/data/kpis.json`))?.generatedAt,
+    runSync: async (slug, say) => {
+      const t0 = await dispatch('sync.yml', { slug });
+      await follow({ workflow: 'sync.yml', title: `Sync ${slug}`, t0, label: 'Syncing', limitMs: 8 * 60e3, say: h => say(h.replace(/<[^>]+>/g, '')), stop: () => me.gone,
+        check: async () => { const k = await getJSON(`firms/${slug}/data/kpis.json`); return k?.generatedAt ? k : null; } });
+    },
+    newRequestId: () => `adm-${Date.now().toString(36)}${crypto.getRandomValues(new Uint32Array(1))[0].toString(36)}`,
+    sleep: async ms => { await sleep(ms); live(); },
+    pollMs: 5000,
+    onStep: setAppStep,
+    onRun: url => { const l = $('appRunLink'); if (l && !me.gone) l.innerHTML = `<a href="${esc(url)}" target="_blank" rel="noopener">GitHub run</a> ·`; },
+  });
+  const go = p => p.then(done => { if (!me.gone) appDone(me, done); }, err => { if (err !== STOP && !me.gone) appFail(me, err); });
+  me.go = go;
+  go(me.r.start(ctx));
+}
+function appFail(me, err) {
+  clearInterval(me.timer); me.timer = null;
+  const el = document.querySelector(`#appSteps .step[data-k="${err.step || 'check'}"]`) || document.querySelector('#appSteps .step');
+  el.className = 'step fail'; el.querySelector('.ic').innerHTML = ICON.cross;
+  document.querySelectorAll('#appSteps .step.run').forEach(s => { s.className = 'step pending'; s.querySelector('.ic').innerHTML = ''; });
+  el.querySelector('.e').innerHTML = `<div class="errbox" role="alert">${esc(err.message)}</div>
+    <div class="btnrow">${err.refused ? '<button type="button" class="btn p" id="appBack">Back to the firm list</button>' : `<button type="button" class="btn p" id="appRetry">${ICON.sync}Retry</button><button type="button" class="btn" id="appBack">Back to all firms</button>`}</div>
+    ${err.refused ? '' : '<p class="hint" style="margin-top:8px">Retry only finishes what\'s missing. It never makes a second firm or a second passphrase.</p>'}`;
+  $('appBack').onclick = () => renderList();
+  if ($('appRetry')) $('appRetry').onclick = () => {
+    $('appRetry').disabled = true;
+    el.querySelector('.e').innerHTML = '';
+    me.t0 = me.t0 || Date.now();
+    if (!me.timer) me.timer = setInterval(() => { if (me.gone) return; const s = Math.floor((Date.now() - me.t0) / 1000); const x = $('runElapsed'); if (x) x.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }, 1000);
+    me.go(me.r.retry(me.ctx));
+  };
+}
+function appDone(me, done) {
+  clearInterval(me.timer); me.timer = null;
+  const ctx = me.ctx, link = ghlLink(done.slug, ctx.passphrase);
+  $('appResult').innerHTML = `<div class="success">
+      <div><h2>${esc(ctx.name)} is live</h2><p class="sub" style="margin-top:8px">Token: App (refreshed every hour by the token keeper). The dashboard may take a minute to appear while GitHub Pages publishes.</p></div>
+      ${done.review !== 'none' ? `<div class="warnbox">The stages were <b>guessed</b> (${done.review === 'unknown-snapshot' ? 'no preset chosen' : 'some preset stages weren\'t found'}). Check them: <button type="button" class="linkbtn" id="appMap">Edit mapping</button>.</div>` : ''}
+      <label class="f">Dashboard<span class="copyrow"><input type="text" readonly value="${esc(dashUrl(done.slug))}"><a class="btn" href="${esc(dashUrl(done.slug))}" target="_blank" rel="noopener">Open ↗</a></span></label>
+      <label class="f" for="ghlLinkOut">GHL menu link <span class="hint">Includes the passphrase, so names unlock for the firm's team. Save the passphrase in your password manager now; it isn't shown again.</span><span class="copyrow"><input type="password" id="ghlLinkOut" readonly value="${esc(link)}"><button type="button" class="eye" data-eye="ghlLinkOut" aria-label="Show link"></button><button type="button" class="btn" id="copyGhl">${ICON.copy}Copy</button></span></label>
+      ${done.menu === 'manual' ? `<div><b class="small">One step left in GHL</b><ul><li>In ${esc(ctx.name)}'s sub-account: Settings → Custom Menu Links → create "KPI Dashboard" with the GHL menu link above (open in a new tab, only this sub-account).</li></ul></div>` : `<p class="sub">"KPI Dashboard" ${done.menu === 'created' ? 'was added to' : 'was already in'} the sub-account's GHL menu.</p>`}
+      <div class="btnrow" style="margin-top:0"><button type="button" class="btn" id="toList">Back to all firms</button></div></div>`;
+  wireEyes($('appResult'));
+  $('copyGhl').onclick = async () => { try { await navigator.clipboard.writeText(link); $('copyGhl').innerHTML = `${ICON.tick}Copied`; } catch { $('ghlLinkOut').type = 'text'; $('ghlLinkOut').select(); } };
+  $('toList').onclick = () => renderList(`Added ${esc(ctx.name)}.`);
+  if ($('appMap')) $('appMap').onclick = async () => { await loadFirms(); const f = firms.find(x => x.slug === done.slug); if (f) renderEditMapping(f); };
+}
+// ---------- end app path ----------
 
 // ---------- the six-step run ----------
 const RUN_STEPS = ['Save token', "Read the firm's GHL setup", 'Map the stages', 'Create the dashboard', 'First sync', 'Done'];
@@ -1253,7 +1322,7 @@ function startRun(ctx) {
   document.querySelectorAll('#nfForm input, #nfForm select, #nfForm button').forEach(el => { el.disabled = true; });
   $('nfForm').hidden = true;
   run = { ctx, t0: Date.now(), stopped: false };
-  $('runHost').innerHTML = `<div class="note" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span><b>${esc(ctx.name)}</b> · <span class="mono">${esc(ctx.slug)}</span> · ${esc(ctx.practiceArea)}</span><span>Elapsed <b class="elapsed" id="runElapsed">0:00</b></span></div>
+  $('runHost').innerHTML = `<div class="runhead"><span><b>${esc(ctx.name)}</b> · <span class="mono">${esc(ctx.slug)}</span> · ${esc(ctx.practiceArea)}</span><span>Elapsed <b class="elapsed" id="runElapsed">0:00</b></span></div>
     <ol class="steps" id="runSteps">${RUN_STEPS.map((t, i) => `<li class="step pending" data-i="${i}"><span class="ic" aria-hidden="true"></span><span class="t">${i + 1}. ${esc(t)}</span><span class="d"></span><div class="e"></div><div class="slot"></div></li>`).join('')}</ol>`;
   const tick = () => { const s = Math.floor((Date.now() - run.t0) / 1000); $('runElapsed').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
   run.timer = setInterval(tick, 1000); tick();
@@ -1395,18 +1464,20 @@ const STEP_FNS = [
 // =====================================================================
 async function renderEditMapping(f) {
   cleanupRun();
-  $('screen').innerHTML = `<header class="head"><div class="titles"><p class="sub"><button class="linkbtn" type="button" id="backBtn">← All firms</button></p><h1>Edit mapping</h1><p class="sub">${esc(f.name)} · <span class="mono">${esc(f.slug)}</span></p></div>
-    <div class="controls"><button class="btn" type="button" id="rereadBtn">${ICON.sync}Re-read GHL</button></div></header>
-    <div id="emStatus" aria-live="polite"></div><div id="emHost"><p class="sub">Loading…</p></div>`;
+  closeMenus();
+  $('screen').innerHTML = `<header class="head"><div class="titles"><button class="back" type="button" id="backBtn">${ICON.back}All firms</button><h1 class="disp">Edit <span class="g">mapping.</span></h1><p class="sub">${esc(f.name)} · <span class="mono">${esc(f.slug)}</span><span id="emAsOf"></span></p></div>
+    <div class="controls"><button class="btn big" type="button" id="rereadBtn">${ICON.sync}Re-read GHL</button><button class="btn p big" type="button" id="emSave" disabled>Save mapping</button></div></header>
+    <div id="emStatus" aria-live="polite"></div><div id="emWarn"></div><div id="emHost"><p class="sub">Loading…</p></div>`;
   $('backBtn').onclick = () => renderList();
   const host = $('emHost'); const stop = () => !document.body.contains(host);
-  const status = h => { $('emStatus').innerHTML = h ? `<div class="note" style="margin-bottom:12px">${h}</div>` : ''; };
+  const status = h => { $('emStatus').innerHTML = h ? `<div class="note" style="margin-bottom:16px">${h}</div>` : ''; };
   const load = async () => {
     const [cfg, disc] = await Promise.all([getJSON(`firms/${f.slug}/config.json`), getJSON(`firms/${f.slug}/discovery.json`)]);
     if (stop()) return;
     if (!cfg) { $('emHost').innerHTML = '<div class="errbox">config.json not found for this firm.</div>'; return; }
     if (!disc) { $('emHost').innerHTML = `<div class="warnbox">There's no snapshot of this firm's GHL pipelines yet. Press <b>Re-read GHL</b> to take one (about a minute).</div>`; return; }
-    status(`Pipelines and stages as of ${esc(fmtTime(disc.generatedAt))} (${esc(ago(disc.generatedAt))}).`);
+    status('');
+    $('emAsOf').textContent = ` · pipelines read ${fmtTime(disc.generatedAt)} (${ago(disc.generatedAt)})`;
     const problem = scopeProblem(disc.scopes, cfg.locationId || f.locationId);
     if (problem) {
       $('emStatus').insertAdjacentHTML('beforeend', `<div class="warnbox" style="margin-bottom:12px">${problem.message.replace(/Then press Re-check\.|Create a token in that sub-account and paste it below\./, '')}
@@ -1414,8 +1485,9 @@ async function renderEditMapping(f) {
         <div class="btnrow"><button type="button" class="btn primary" id="recheckBtn">${ICON.sync}Re-check</button><a class="btn" href="${esc(piUrl(cfg.locationId || f.locationId))}" target="_blank" rel="noopener">${ICON.ext}Open Private Integrations</a></div></div>`);
       $('recheckBtn').onclick = () => $('rereadBtn').click();
     }
-    const m = await mappingPanel($('emHost'), { discovery: disc, config: cfg, isNew: false, saveLabel: 'Save mapping' });
-    $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = true; });
+    const m = await mappingPanel($('emHost'), { discovery: disc, config: cfg, isNew: false, saveLabel: 'Save mapping', saveBtn: $('emSave'), warnHost: $('emWarn') });
+    const doSave = async () => {
+    $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = true; }); $('emSave').disabled = true; $('emSave').onclick = null;
     status('Saving config.json…');
     try {
       await commitFiles(`Update stage mapping for ${f.name}`, async head => {
@@ -1428,7 +1500,14 @@ async function renderEditMapping(f) {
       await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Syncing', limitMs: 8 * 60e3, stop, say: h => status(`Mapping saved. ${h}`),
         check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return k && Date.parse(k.generatedAt) > t0 - 60e3 ? k : null; } });
       await renderList(`Saved the mapping for ${esc(f.name)} and re-synced.`);
-    } catch (e) { status(''); $('emHost').insertAdjacentHTML('afterbegin', `<div class="errbox" style="margin-bottom:12px">${errHtml(e)}</div>`); $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = false; }); }
+    } catch (e) {
+      if (stop()) return;
+      status(''); $('emWarn').innerHTML = `<div class="errbox" style="margin-bottom:16px">${errHtml(e)}</div>`;
+      $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = false; });
+      $('emSave').disabled = false; $('emSave').textContent = 'Save mapping'; $('emSave').onclick = doSave;   // save the same mapping again
+    }
+    };
+    await doSave();
   };
   $('rereadBtn').onclick = async () => {
     $('rereadBtn').disabled = true;

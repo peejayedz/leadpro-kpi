@@ -1,0 +1,135 @@
+{
+  "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.12.0": {
+    "summary": "The admin page has the new LFMP look, and New firm can use the LeadPro app instead of a pasted token.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "New firm → \"Use the LeadPro app\" (recommended): no token to create or paste. It makes and saves the dashboard passphrase, starts the same setup the Sub-account Builder uses, and shows each step. Retry only finishes what's missing." },
+      { "type": "new", "tag": "internal", "text": "Firm list: a summary strip, filters (Needs attention, App, Private Integration, Tests) and search by name, slug or GHL name." },
+      { "type": "improved", "tag": "internal", "text": "New look: dark and light themes, the gold LFMP style and the same top bar as the builder. Auto · Light · Dark keeps your choice." },
+      { "type": "improved", "tag": "internal", "text": "Edit mapping shows each stage as a short chip, with Save mapping at the top." },
+      { "type": "improved", "tag": "internal", "text": "What's new is now this side panel, with plain summaries and the technical notes one click away." }
+    ]
+  },
+  "1.11.2": {
+    "summary": "A sync started while another one was running could fail to save. Fixed.",
+    "items": [
+      { "type": "fixed", "tag": "internal", "text": "A Re-sync or a new firm's first sync that had to wait for another sync no longer fails at the save step." }
+    ]
+  },
+  "1.11.1": {
+    "summary": "New firms from the builder could stop while reading GHL. Fixed.",
+    "items": [
+      { "type": "fixed", "tag": "internal", "text": "A new firm from the Sub-account Builder no longer stops at \"Read the sub-account's pipelines and stages\"." }
+    ]
+  },
+  "1.11.0": {
+    "summary": "The Sub-account Builder can set up a KPI dashboard by itself.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "New firms from the Sub-account Builder: no token to paste. It never adds two firms for one sub-account." },
+      { "type": "new", "tag": "internal", "text": "Stage-mapping presets: firms made from the LFMP template snapshots get their stages mapped automatically." },
+      { "type": "new", "tag": "internal", "text": "The \"KPI Dashboard\" menu link can be added to the firm's GHL sub-account automatically." },
+      { "type": "improved", "tag": "internal", "text": "When the stages had to be guessed, the bell shows \"Review mapping\" until Edit mapping is saved." }
+    ]
+  },
+  "1.10.0": {
+    "summary": "Firms can get their GHL token from the LeadPro Connector app, refreshed every hour.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "Token keeper: firms set up through the app get a fresh GHL token every hour. Private Integration firms are never touched." },
+      { "type": "new", "tag": "internal", "text": "The bell warns when the token keeper hasn't run, the app needs reconnecting or isn't on a sub-account." },
+      { "type": "improved", "tag": "internal", "text": "Each firm shows Token: App or Token: Private Integration." }
+    ]
+  },
+  "1.9.0": {
+    "summary": "Simpler funnel for firms that sign on the first call; renaming a stage in GHL can't break a mapping.",
+    "items": [
+      { "type": "improved", "tag": "client", "text": "Funnel simplified for firms that sign on the first call." },
+      { "type": "improved", "tag": "internal", "text": "Stages can be saved by their GHL id, so renaming a stage in GHL keeps the mapping working." },
+      { "type": "new", "tag": "internal", "text": "Funnel steps can be hidden per firm (Mahdavi hides the consult steps)." }
+    ]
+  },
+  "1.8.0": {
+    "summary": "The LeadPro logo is on the dashboards.",
+    "items": [
+      { "type": "new", "tag": "client", "text": "LeadPro logo added; date line tidied." }
+    ]
+  },
+  "1.7.1": {
+    "summary": "More detail on how contacts outside a pipeline came in.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "Each sync records how new contacts outside a pipeline came in (form, chat, booking, call, text, email). Counts only." }
+    ]
+  },
+  "1.7.0": {
+    "summary": "Dashboards say which pipeline New leads counts, and the admin page flags contacts outside a pipeline.",
+    "items": [
+      { "type": "improved", "tag": "client", "text": "Under New leads: which pipeline it counts, and why someone never added to it isn't counted." },
+      { "type": "improved", "tag": "client", "text": "Hover explanations open with a tap on phones, tablets and inside GoHighLevel." },
+      { "type": "new", "tag": "internal", "text": "Firm list and bell: new contacts in the last 30 days that aren't in any pipeline." }
+    ]
+  },
+  "1.6.1": {
+    "summary": "A read-only check for missing leads.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "\"Diagnose missing leads\" workflow: counts only, changes nothing." }
+    ]
+  },
+  "1.6.0": {
+    "summary": "The bell: sync problems listed with what to do.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "Bell with a count of new sync issues, each with what happened, numbered steps and fix buttons." },
+      { "type": "new", "tag": "internal", "text": "Update token checks all 9 scopes before replacing a firm's token." },
+      { "type": "improved", "tag": "internal", "text": "Firm rows show OK, Held or Failed and the GHL sub-account name." }
+    ]
+  },
+  "1.5.0": {
+    "summary": "Syncs run reliably every 30 minutes.",
+    "items": [
+      { "type": "improved", "tag": "client", "text": "The \"may be incomplete\" note clears when the counts recover, or after 24 hours." },
+      { "type": "new", "tag": "internal", "text": "Sync chain: each sync starts the next one, because GitHub skips many scheduled runs." },
+      { "type": "improved", "tag": "internal", "text": "Firm list shows the last update time and warns when it's over 2 hours old." }
+    ]
+  },
+  "1.4.0": {
+    "summary": "Call and message numbers no longer dip between updates.",
+    "items": [
+      { "type": "fixed", "tag": "client", "text": "Missed calls, speed to first contact and contact rate no longer dip when GHL returns only part of the history." },
+      { "type": "improved", "tag": "internal", "text": "Each channel is pulled two or three times and combined; a short pull holds the previous numbers for up to 3 syncs." }
+    ]
+  },
+  "1.3.1": {
+    "summary": "A read-only check of GHL's message export.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "\"Diagnose message export\" workflow: counts and timings only." }
+    ]
+  },
+  "1.3.0": {
+    "summary": "No-shows count as booked consults that were missed.",
+    "items": [
+      { "type": "fixed", "tag": "client", "text": "A lead in a no-show stage now counts under Consult booked and No-shows." },
+      { "type": "improved", "tag": "internal", "text": "New firm pre-selects every pipeline with 3 or more funnel stages." },
+      { "type": "fixed", "tag": "internal", "text": "Saving an unchanged mapping leaves config.json exactly as it was." }
+    ]
+  },
+  "1.2.0": {
+    "summary": "What's new on the dashboards and the admin page.",
+    "items": [
+      { "type": "new", "tag": "client", "text": "\"How this works\" has a What's new section; the footer shows the version." },
+      { "type": "new", "tag": "internal", "text": "The admin page shows the full changelog." }
+    ]
+  },
+  "1.1.0": {
+    "summary": "Shared settings live in one place.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "Targets, banner and other shared settings are set once for all firms; each firm keeps only its own values." }
+    ]
+  },
+  "1.0.0": {
+    "summary": "One repo and one admin page for every firm.",
+    "items": [
+      { "type": "new", "tag": "client", "text": "Every firm's scorecard has its own address and shows its practice area." },
+      { "type": "improved", "tag": "client", "text": "Refresh data is now Reload; dashboards update from GoHighLevel every 30 minutes." },
+      { "type": "new", "tag": "internal", "text": "Admin page: password lock, firm list, New firm with stage mapping, retry and clean-up." },
+      { "type": "fixed", "tag": "internal", "text": "Single-firm syncs no longer lose data." }
+    ]
+  }
+}

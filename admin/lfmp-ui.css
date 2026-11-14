@@ -1,0 +1,99 @@
+/* LFMP UI: shared look for LFMP internal tools (KPI admin now; the Sub-account Builder will copy this file as is).
+   Keep the copies byte-identical. Fonts are self-hosted next to this file in fonts/ (SIL OFL 1.1, see fonts/OFL.txt).
+   Theme: no data-theme = Auto (follows the system); data-theme="light" | "dark" forces one. Saved choice: localStorage "lfmp-theme".
+   Contrast: every text/background pair below passes WCAG AA (4.5:1) for normal text. */
+
+@font-face{font-family:"Inter";src:url(fonts/inter-latin-var.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Barlow Condensed";src:url(fonts/barlow-condensed-700.woff2) format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Barlow Condensed";src:url(fonts/barlow-condensed-600.woff2) format("woff2");font-weight:600;font-style:normal;font-display:swap}
+
+:root{
+  --d:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
+  --b:"Inter",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  /* light */
+  --bg:#f4f2ed; --panel:#fff; --panel2:#faf8f4; --line:#dedad2; --ink:#141414; --mut:#6d6a64;
+  --acc:#a8741f; --acc-ink:#8a5d15; --acc-on:#141108; --acc-soft:#f3e9d6;
+  --red:#b3392f; --green:#26754e; --blue:#3d6fb8; --chip:#efece6;
+  --shade:rgba(20,17,10,.45); --shadow:0 18px 50px rgba(20,17,10,.18);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0b0b0c; --panel:#121214; --panel2:#18181b; --line:#2a2a2e; --ink:#f2f1ee; --mut:#9b9aa0;
+  --acc:#d9a64e; --acc-ink:#d9a64e; --acc-on:#141108; --acc-soft:#2a2112;
+  --red:#ef5a52; --green:#46b37f; --blue:#7aa7e6; --chip:#1f1f23;
+  --shade:rgba(0,0,0,.6); --shadow:0 18px 50px rgba(0,0,0,.6);
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0b0b0c; --panel:#121214; --panel2:#18181b; --line:#2a2a2e; --ink:#f2f1ee; --mut:#9b9aa0;
+  --acc:#d9a64e; --acc-ink:#d9a64e; --acc-on:#141108; --acc-soft:#2a2112;
+  --red:#ef5a52; --green:#46b37f; --blue:#7aa7e6; --chip:#1f1f23;
+  --shade:rgba(0,0,0,.6); --shadow:0 18px 50px rgba(0,0,0,.6);
+  color-scheme:dark;}
+
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--b);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--acc-ink)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.mono,code{font-family:var(--mono);font-size:.86em}
+.mut{color:var(--mut)}
+
+/* type */
+.disp{font-family:var(--d);font-weight:700;text-transform:uppercase;line-height:.95;letter-spacing:0;margin:0}
+.disp .g{color:var(--acc-ink)}
+.ey{font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--acc-ink);margin:0}
+
+/* buttons: one gold .btn.p per screen */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:10px 16px;border:1px solid var(--line);background:transparent;color:var(--ink);
+  font:700 12.5px/1 var(--b);letter-spacing:.12em;text-transform:uppercase;text-decoration:none;white-space:nowrap;cursor:pointer;border-radius:0}
+.btn:hover{border-color:var(--ink)}
+.btn[disabled]{opacity:.5;cursor:default} .btn[disabled]:hover{border-color:var(--line)}
+.btn.p{background:var(--acc);border-color:var(--acc);color:var(--acc-on)} .btn.p:hover{filter:brightness(1.07);border-color:var(--acc)}
+.btn.danger{color:var(--red)} .btn.danger:hover{border-color:var(--red)}
+.btn.sm{min-height:32px;padding:7px 11px;font-size:11.5px}
+.btn.icon{padding:0;width:38px}
+.btn svg{width:14px;height:14px;flex:0 0 auto}
+.lnk{background:none;border:0;padding:0;color:var(--acc-ink);font:600 13px var(--b);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:28px;padding:22px 0;border-bottom:1px solid var(--line)}
+.mark{width:34px;height:34px;border:1.5px solid var(--ink);display:grid;place-items:center;font:700 9.5px/1 var(--b);letter-spacing:.02em;color:var(--ink);text-decoration:none;flex:0 0 auto}
+.nav{display:flex;gap:26px}
+.nav a{font:700 12px/1 var(--b);letter-spacing:.14em;text-transform:uppercase;color:var(--mut);text-decoration:none;padding:6px 0;border-bottom:2px solid transparent}
+.nav a:hover{color:var(--ink)}
+.nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--acc)}
+.topr{margin-left:auto;display:flex;align-items:center;gap:10px}
+.upd{text-align:right;font:600 11px/1.35 var(--b);letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.upd b{display:block;color:var(--ink);font-size:12.5px;letter-spacing:.08em}
+.ver{position:relative;text-transform:none;letter-spacing:.04em}
+.ver .dot{position:absolute;top:-4px;right:-4px;width:8px;height:8px;border-radius:50%;background:var(--acc)}
+
+/* stat strip */
+.strip{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 40px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  font:700 12.5px/1.3 var(--b);letter-spacing:.14em;text-transform:uppercase}
+.strip span::before{content:"/ ";color:var(--acc-ink);margin-right:6px}
+
+/* segmented filter */
+.seg{display:inline-flex;border:1px solid var(--line)}
+.seg button{border:0;border-right:1px solid var(--line);background:transparent;padding:11px 18px;font:700 12px/1 var(--b);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);cursor:pointer;white-space:nowrap}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--acc);color:var(--acc-on)}
+.seg button .n{opacity:.7;margin-left:6px}
+
+/* tags */
+.tag{display:inline-flex;align-items:center;gap:6px;border:1px solid currentColor;padding:3px 8px;font:700 10px/1.2 var(--b);letter-spacing:.12em;text-transform:uppercase;color:var(--mut);white-space:nowrap}
+.tg-red{color:var(--red)} .tg-green{color:var(--green)} .tg-acc{color:var(--acc-ink)} .tg-blue{color:var(--blue)}
+
+/* forms */
+.lbl{display:block;font:700 11.5px/1.2 var(--b);letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
+input[type=text],input[type=password],input[type=search],select,textarea{width:100%;min-height:44px;padding:10px 14px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:0;font-size:15px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc)}
+input::placeholder{color:var(--mut)}
+
+/* surfaces */
+.panel{background:var(--panel);border:1px solid var(--line)}
+.wrapx{max-width:1180px;margin:0 auto;padding:0 32px}
+@media (max-width:760px){.wrapx{padding:0 16px}}
