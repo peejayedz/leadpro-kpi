@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-14T18:37:21.396Z",
+  "generatedAt": "2026-11-14T19:07:25.382Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794636000000,
-      "to": 1794681441396,
+      "to": 1794683245382,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -103,7 +103,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 4,
+        "totalLeads": 5,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -136,22 +136,27 @@
             "Google Business Profile - Houston",
             4,
             0
+          ],
+          [
+            "Website Number Pool - Houston",
+            1,
+            0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            4,
+            5,
             0
           ]
         ],
-        "attributedLeads": 4,
+        "attributedLeads": 5,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            4,
+            5,
             "newLeads",
             null
           ],
@@ -373,7 +378,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794204000000,
-      "to": 1794681441396,
+      "to": 1794683245382,
       "current": {
         "totalLeads": 65,
         "contacted": 0,
@@ -719,8 +724,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794076641396,
-      "to": 1794681441396,
+      "from": 1794078445382,
+      "to": 1794683245382,
       "current": {
         "totalLeads": 66,
         "contacted": 0,
@@ -915,8 +920,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792089441396,
-      "to": 1794681441396,
+      "from": 1792091245382,
+      "to": 1794683245382,
       "current": {
         "totalLeads": 67,
         "contacted": 0,
@@ -1123,8 +1128,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786905441396,
-      "to": 1794681441396,
+      "from": 1786907245382,
+      "to": 1794683245382,
       "current": {
         "totalLeads": 72,
         "contacted": 1,
@@ -1342,7 +1347,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1794681441396,
+      "to": 1794683245382,
       "current": {
         "totalLeads": 66,
         "contacted": 0,
@@ -1706,7 +1711,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1794681441396,
+      "to": 1794683245382,
       "current": {
         "totalLeads": 67,
         "contacted": 0,
@@ -2111,7 +2116,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-14T18:37:21.396Z",
+    "checkedAt": "2026-11-14T19:07:25.382Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
