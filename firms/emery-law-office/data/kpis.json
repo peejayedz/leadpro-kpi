@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-14T03:37:30.224Z",
+  "generatedAt": "2026-11-14T04:07:24.893Z",
   "location": "Emery Law Office",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794546000000,
-      "to": 1794627450224,
+      "to": 1794629244893,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -348,7 +348,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794200400000,
-      "to": 1794627450224,
+      "to": 1794629244893,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -673,8 +673,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794022650224,
-      "to": 1794627450224,
+      "from": 1794024444893,
+      "to": 1794629244893,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -836,8 +836,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792035450224,
-      "to": 1794627450224,
+      "from": 1792037244893,
+      "to": 1794629244893,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -999,8 +999,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786851450224,
-      "to": 1794627450224,
+      "from": 1786853244893,
+      "to": 1794629244893,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1163,7 +1163,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1794627450224,
+      "to": 1794629244893,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1489,7 +1489,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1794627450224,
+      "to": 1794629244893,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1817,7 +1817,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-14T03:37:30.224Z",
+    "checkedAt": "2026-11-14T04:07:24.893Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
