@@ -1,23 +1,23 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-14T13:41:57.100Z",
+  "updatedAt": "2026-11-14T14:10:41.532Z",
   "lastRun": {
-    "at": "2026-11-14T13:41:57.100Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43600661384",
-    "event": "workflow_dispatch",
-    "chained": true
+    "at": "2026-11-14T14:10:41.532Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43603017160",
+    "event": "schedule",
+    "chained": false
   },
   "syncChain": {
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-14T13:41:57.100Z",
+  "lastAnySuccessAt": "2026-11-14T14:10:41.532Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-14T13:41:57.100Z",
-      "lastSuccessAt": "2026-11-14T13:41:57.100Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43600661384",
+      "lastAttemptAt": "2026-11-14T14:10:41.532Z",
+      "lastSuccessAt": "2026-11-14T14:10:41.532Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43603017160",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -49,11 +49,11 @@
       }
     },
     "lfmp": {
-      "status": "failed",
-      "lastAttemptAt": "2026-11-14T13:41:57.100Z",
-      "lastSuccessAt": "2026-11-14T13:11:37.398Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43600661384",
-      "failStreak": 1,
+      "status": "ok",
+      "lastAttemptAt": "2026-11-14T14:10:41.532Z",
+      "lastSuccessAt": "2026-11-14T14:10:41.532Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43603017160",
+      "failStreak": 0,
       "notInPipeline": {
         "last30": {
           "form": 0,
@@ -85,9 +85,9 @@
     },
     "hedayati-law-group-p-c": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-14T13:41:57.100Z",
-      "lastSuccessAt": "2026-11-14T13:41:57.100Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43600661384",
+      "lastAttemptAt": "2026-11-14T14:10:41.532Z",
+      "lastSuccessAt": "2026-11-14T14:10:41.532Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43603017160",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -120,9 +120,9 @@
     },
     "emery-law-office": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-14T13:41:57.100Z",
-      "lastSuccessAt": "2026-11-14T13:41:57.100Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43600661384",
+      "lastAttemptAt": "2026-11-14T14:10:41.532Z",
+      "lastSuccessAt": "2026-11-14T14:10:41.532Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43603017160",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -155,9 +155,9 @@
     },
     "zz-test-2": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-14T13:41:57.100Z",
-      "lastSuccessAt": "2026-11-14T13:41:57.100Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43600661384",
+      "lastAttemptAt": "2026-11-14T14:10:41.532Z",
+      "lastSuccessAt": "2026-11-14T14:10:41.532Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43603017160",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -189,7 +189,8 @@
       }
     }
   },
-  "open": [
+  "open": [],
+  "resolved": [
     {
       "id": "lfmp:failed",
       "slug": "lfmp",
@@ -199,10 +200,10 @@
       "firstSeen": "2026-11-14T13:41:57.100Z",
       "lastSeen": "2026-11-14T13:41:57.100Z",
       "count": 1,
-      "runUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43600661384"
-    }
-  ],
-  "resolved": [
+      "runUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43600661384",
+      "resolvedAt": "2026-11-14T14:10:41.532Z",
+      "resolvedRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43603017160"
+    },
     {
       "id": "lfmp:failed",
       "slug": "lfmp",
@@ -738,17 +739,6 @@
     {
       "id": "hedayati-law-group-p-c:stale",
       "slug": "hedayati-law-group-p-c",
-      "kind": "stale",
-      "firstSeen": "2026-11-03T17:16:18.946Z",
-      "lastSeen": "2026-11-03T22:01:22.476Z",
-      "count": 11,
-      "runUrl": null,
-      "resolvedAt": "2026-11-03T22:01:22.476Z",
-      "resolvedRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/41726397424"
-    },
-    {
-      "id": "lfmp:stale",
-      "slug": "lfmp",
       "kind": "stale",
       "firstSeen": "2026-11-03T17:16:18.946Z",
       "lastSeen": "2026-11-03T22:01:22.476Z",
