@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T08:07:23.853Z",
+  "generatedAt": "2026-11-15T08:37:23.542Z",
   "location": "ZZ TEST 2",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794718800000,
-      "to": 1794730043853,
+      "to": 1794731843542,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -360,7 +360,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794200400000,
-      "to": 1794730043853,
+      "to": 1794731843542,
       "current": {
         "totalLeads": 3,
         "contacted": 2,
@@ -697,8 +697,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794125243853,
-      "to": 1794730043853,
+      "from": 1794127043542,
+      "to": 1794731843542,
       "current": {
         "totalLeads": 3,
         "contacted": 2,
@@ -872,8 +872,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792138043853,
-      "to": 1794730043853,
+      "from": 1792139843542,
+      "to": 1794731843542,
       "current": {
         "totalLeads": 3,
         "contacted": 2,
@@ -1047,8 +1047,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786954043853,
-      "to": 1794730043853,
+      "from": 1786955843542,
+      "to": 1794731843542,
       "current": {
         "totalLeads": 3,
         "contacted": 2,
@@ -1223,7 +1223,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1794730043853,
+      "to": 1794731843542,
       "current": {
         "totalLeads": 3,
         "contacted": 2,
@@ -1561,7 +1561,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1794730043853,
+      "to": 1794731843542,
       "current": {
         "totalLeads": 3,
         "contacted": 2,
@@ -1913,7 +1913,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-15T08:07:23.853Z",
+    "checkedAt": "2026-11-15T08:37:23.542Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
