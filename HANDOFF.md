@@ -10,14 +10,20 @@ The README is the full reference and CHANGELOG.md the history. This file covers 
 | Firms | Mahdavi, LFMP, Hedayati, Emery (Private Integration tokens) and ZZ TEST 2 (app token, test sub-account). |
 | Sync | Every 30 min (cron 7,37 + sync chain). The bell on the admin page reports problems. |
 | Token keeper | Hourly; mints app tokens for `tokenSource: "app"` firms only. |
-| Admin page v1.13.0 | **Live** (commit 9e3ed52, 15 Nov 04:26 UTC). Simple home + Details panel (Overview · Performance · Setup); no re-login between screens. |
-| Admin page v1.13.1 | **Built and tested locally, not pushed** (waiting for PJ's OK). Not-in-pipeline rows with email/phone/source, Remember passphrase (encrypted), Copy GHL menu link moved to Setup, local "Copied". Admin files + tests + docs only. |
+| Admin page v1.13.1 | **Live** (commit 3507479, 15 Nov ~04:45 UTC). Not-in-pipeline rows with email/phone/source, Remember passphrase (encrypted), Copy GHL menu link moved to Setup, local "Copied". Admin files + tests + docs only. Built on v1.13.0 (9e3ed52: simple home + Details panel, no re-login between screens). |
 
 ## Admin page v1.13.1
 
 - **Remembered passphrases:** `leadpro-admin-firm-pass` in localStorage = one AES-GCM blob `{ slug: passphrase }`, sealed with the same key as the GitHub token (`readPassVault` / `writePassVault` in `admin/index.html`). Lock (the ⋯ menu) and Forget token clear it; the idle lock doesn't. Order used to open a firm's details: typed → remembered → the client dashboard's `lfmp-pass-<slug>`. When the one-login vault is built, move this blob into it.
 - **Contact rows** come from `notInPipelineList` (`admin/firm-details.mjs`): name, email, phone, `source` (short label from the sync's `via`), `named` (false → the email or phone stands in). Nothing new is written by the sync; email/phone/via were already in `details.enc.json`.
 - **"Copied"** uses `flashCopied(btn)`: next to the clicked button only, 4 s. Don't route it through `firmSay` (that writes to the row and the panel).
+- **Decided (PJ, 15 Nov):** the 30-minute idle lock keeps remembered passphrases; only Lock (by hand) and Forget token clear them.
+
+## Release checks (v1.13.1, 15 Nov)
+
+- Before push: all 11 suites pass (`tests/admin-details` 44 checks, `tests/admin-ui` 184 browser checks against a mock GitHub). No file changed in `app/`, `firms/`, `status/`, `brand/`, `scripts/` or `.github/`. Screenshots (1440 + 390, light + dark): `assets/images/2026-11-15_kpi-admin-v1.13.1/` in the LFMP workspace.
+- Live (Pages build of 3507479): the deployed `admin/index.html`, `admin.css`, `firm-details.mjs` and `whats-new.json` are byte-identical to the commit; the real lock screen at 1440 and 390 in dark and light loads every file (200), both fonts, no console errors. The deployed code with a mock GitHub API, the repo's real public data and a fixture encrypted file passed 40 more checks in all four views: button order, rows with email/phone/source and the no-name fallback, Remember (encrypted, names straight away after a reload, cleared by Lock), Copy GHL menu link in Setup with "Copied" only by the button, gone after 4 s, no page errors, no sideways scroll. Screenshots in `…/2026-11-15_kpi-admin-v1.13.1/live/`; the check script is `assets/code/2026-11-15_kpi-admin-v1.13.1_live-check.mjs` in the LFMP workspace (`node <script> <path-to-leadpro-kpi> <shots-folder>`, needs CHROMIUM_PATH).
+- **Not yet seen with PJ's own unlock:** the real GitHub API, and LFMP's real encrypted contacts (names, emails, phones). First real use of Remember is also on PJ's machine.
 
 ## Admin page v1.13.0 (simple home + Details panel)
 
