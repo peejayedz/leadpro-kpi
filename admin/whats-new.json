@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.15.0": {
+    "summary": "The old KPI admin password is gone: sign in with the shared admin password.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "The KPI admin now signs in only with the shared admin password (the same as the Builder and Review). The old admin-only password and its screen were removed." },
+      { "type": "fixed", "tag": "internal", "text": "If 30 minutes pass without activity, the next click locks straight away." }
+    ]
+  },
   "1.14.0": {
     "summary": "One login for the KPI admin, the Builder and Review, and a red colour so you know you're in the scorecards.",
     "items": [

@@ -13,7 +13,7 @@
 //   activity, or when the tab closes. Lock also writes "lfmp-lock-at", which ends sessions in every other tab.
 // - Wrong-password limit: 5 wrong in a row locks sign-in for 2 minutes in every tool and tab ("lfmp-login-guard":
 //   a count and an end time only, never a password or hash). A speed bump in the browser, not the real protection.
-// - No lfmp-lock.json yet (404) -> start() returns 'legacy' and the page keeps its own old lock.
+// - No lfmp-lock.json (404) -> start() returns 'error' with a plain message (the per-page locks were removed on 15 Nov 2026).
 
 export const LOCK_FILE = './lfmp-lock.json';
 export const KEYS = { session: 'lfmp-session', vault: 'lfmp-vault', lockAt: 'lfmp-lock-at', guard: 'lfmp-login-guard' };
@@ -24,8 +24,9 @@ export const COOLDOWN_MS = 2 * 60e3;
 const CLEAR_ON_LOCK = ['ar_admin_key'];
 // Removed on a manual Lock only (PJ's v1.13.1 decision: the idle lock keeps remembered dashboard passphrases).
 const CLEAR_ON_MANUAL_LOCK = ['leadpro-admin-firm-pass'];
-// Each page's token from before the one login (sealed with its old password). Dropped when the vault gets a token.
-const LEGACY_TOKENS = ['sab-gh-token', 'leadpro-admin-gh-token'];
+// Left over from the per-page locks (sealed with the old page passwords, so useless now). Removed after every sign-in.
+const LEGACY_KEYS = ['sab-gh-token', 'leadpro-admin-gh-token'];
+const LEGACY_SESSION = 'leadpro-admin-session';
 export const TOOLS = [
   { id: 'builder', name: 'Builder', path: '/ghl-subaccount-builder-page/' },
   { id: 'kpi', name: 'Scorecards', path: '/leadpro-kpi/admin/' },
@@ -192,6 +193,8 @@ export function createLogin({ tool, onUnlock, onLock, mount } = {}) {
 
   async function finishUnlock(resumed) {
     hideLogin();
+    for (const k of LEGACY_KEYS) ls.set(k, null);
+    try { sessionStorage.removeItem(LEGACY_SESSION); } catch {}
     const v = await readVault();
     const reset = !!v.__reset; delete v.__reset;
     await onUnlock?.({ vault: v, resumed, reset });
@@ -256,10 +259,12 @@ export function createLogin({ tool, onUnlock, onLock, mount } = {}) {
   }
   const idleLock = () => lock('Locked after 30 minutes without activity.', { manual: false, broadcast: false });
 
+  // Every interaction checks the session (so an expired one locks on the next click); the time is written at most every 20 s.
   function touch() {
-    const now = Date.now(); if (!key || now - lastTouch < 20e3) return;
-    const s = ss.get();
+    if (!key) return;
+    const now = Date.now(), s = ss.get();
     if (!sessionOk(s, { now, lockAt: lockAt(), lockId: lockId() })) return check();
+    if (now - lastTouch < 20e3) return;
     lastTouch = now; s.t = now; ss.set(s);
   }
   function check() {
@@ -272,12 +277,12 @@ export function createLogin({ tool, onUnlock, onLock, mount } = {}) {
 
   const api = {
     mode: null,
-    // 'shared' (one login on) | 'legacy' (no lfmp-lock.json yet: the page keeps its old lock) | 'error' (message in .error)
+    // 'shared' (one login on) | 'error' (no lfmp-lock.json, an old browser, or a bad file: message in .error)
     async start() {
       if (!window.crypto?.subtle) { api.mode = 'error'; api.error = "This browser can't run the admin tools. Use an up-to-date Chrome, Safari, Edge or Firefox."; return api.mode; }
       try {
         const r = await fetch(`${LOCK_FILE}?t=${Date.now()}`, { cache: 'no-store' });
-        if (r.status === 404) { api.mode = 'legacy'; return api.mode; }
+        if (r.status === 404) { api.mode = 'error'; api.error = "The shared admin password isn't set up here (lfmp-lock.json is missing). Run node scripts/set-shared-password.mjs in the leadpro-kpi folder, then publish the three tools."; return api.mode; }
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const l = await r.json();
         if (!validLock(l)) throw new Error('lfmp-lock.json is incomplete');
@@ -306,7 +311,6 @@ export function createLogin({ tool, onUnlock, onLock, mount } = {}) {
     async vaultSet(patch) {
       const v = await readVault(); delete v.__reset;
       for (const [k, val] of Object.entries(patch)) { if (val == null) delete v[k]; else v[k] = val; }
-      if ('gh' in patch) for (const k of LEGACY_TOKENS) ls.set(k, null);
       vaultCache = v;
       ls.set(KEYS.vault, Object.keys(v).length ? await seal(key, v) : null);
       return { ...v };

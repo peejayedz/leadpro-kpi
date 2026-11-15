@@ -31,8 +31,8 @@ firms/<slug>/discovery.json written by the Discover workflow (names and ids only
 .github/workflows/sync.yml      every 30 min + Run workflow (optional slug; empty = all firms)
 .github/workflows/discover.yml  Run workflow with slug + secretKey (and the location ID for a brand-new firm)
 admin/index.html            admin page: firm list, New firm, Edit mapping, banner, delete
-admin/lock.json             admin password verifier (written by scripts/set-admin-password.mjs; no password inside)
-scripts/set-admin-password.mjs  sets the admin password (prompts in the terminal)
+admin/lfmp-lock.json        shared admin password check value (written by scripts/set-shared-password.mjs; no password inside)
+scripts/set-shared-password.mjs  sets the ONE admin password for the KPI admin, Builder and Review admin (prompts in the terminal)
 ```
 
 ## Shared defaults
@@ -207,7 +207,7 @@ When a sub-account is created in the Sub-account Builder with "Set up KPI dashbo
 
 `https://peejayedz.github.io/leadpro-kpi/admin/` is a static page that manages this repo through the GitHub API.
 
-**Password.** Run `node scripts/set-admin-password.mjs` in your own terminal. It asks for the password twice (typing hidden) and writes `admin/lock.json` = `{ salt, iterations, verifier }` (PBKDF2-SHA256, 210,000 iterations). Commit and push it. The password itself is never stored. Changing it makes every saved GitHub token unreadable, so each device asks for the token again.
+**Password (one login).** The admin page signs in with the shared LFMP admin password, the same one as the Sub-account Builder and the Automation Review admin (`admin/lfmp-login.js`, `admin/lfmp-login.css`, `admin/lfmp-lock.json`; keep the three copies byte-identical). Run `node scripts/set-shared-password.mjs` in your own terminal to set or reset it: it asks twice (typing hidden) and writes `lfmp-lock.json` = `{ salt, iterations, verifier }` (PBKDF2-SHA256, 210,000 iterations) into all three tools. The password itself is never stored. A new password makes every browser's vault unreadable: sign in, paste the GitHub token again and re-add the review admin key. (The old page password, `admin/lock.json` + `scripts/set-admin-password.mjs`, was removed in v1.15.0.)
 
 **GitHub token.** After unlocking, a device with no saved token asks for a fine-grained token: repository `leadpro-kpi` only, **Contents**, **Actions** and **Secrets** = Read and write, and **Variables** = Read-only (for the sync-issue bell's `SYNC_CHAIN` check). It's saved in this browser's localStorage under `leadpro-admin-gh-token`, encrypted with AES-GCM under a key derived from the admin password. "Forget token" removes it.
 

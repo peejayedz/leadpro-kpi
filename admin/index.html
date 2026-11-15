@@ -13,31 +13,17 @@
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=1.12.0">
-<link rel="stylesheet" href="admin.css?v=1.14.0">
-<link rel="stylesheet" href="lfmp-login.css?v=1.14.0">
+<link rel="stylesheet" href="admin.css?v=1.15.0">
+<link rel="stylesheet" href="lfmp-login.css?v=1.15.0">
 </head>
 <body>
 
-<!-- ================= lock screen ================= -->
-<div class="gate" id="lockView" hidden>
-  <form class="card" id="lockForm" autocomplete="on">
-    <div class="gatehead"><span class="mark" aria-hidden="true">LFMP</span><p class="ey">LeadPro · KPI admin</p></div>
-    <div><h1 class="disp">Scorecard <span class="g">admin.</span></h1><p class="sub" style="margin-top:10px">Enter the admin password to continue.</p></div>
-    <input type="text" name="username" value="leadpro-admin" autocomplete="username" hidden>
-    <label class="f" for="lockPw">Password
-      <span class="pw"><input type="password" id="lockPw" autocomplete="current-password" required><button type="button" class="eye" data-eye="lockPw" aria-label="Show password"></button></span>
-    </label>
-    <div class="ferr" id="lockErr" role="alert"></div>
-    <button type="submit" class="btn p big" id="lockGo">Unlock</button>
-  </form>
-</div>
-
-<!-- ================= not set up ================= -->
+<!-- ================= the one login can't start ================= -->
 <div class="gate" id="setupView" hidden>
   <div class="card">
     <div class="gatehead"><span class="mark" aria-hidden="true">LFMP</span><p class="ey">LeadPro · KPI admin</p></div>
-    <h1 class="disp">Set an admin <span class="g">password.</span></h1>
-    <p class="sub">This page has no password yet. In the repo folder, run <code class="mono">node scripts/set-admin-password.mjs</code>, then commit and push <code class="mono">admin/lock.json</code>.</p>
+    <h1 class="disp">Sign-in <span class="g">not ready.</span></h1>
+    <p class="sub">The shared admin password file (lfmp-lock.json) is missing. In the leadpro-kpi folder, run <code class="mono">node scripts/set-shared-password.mjs</code>, then publish the three tools.</p>
     <div class="ferr" id="setupErr"></div>
   </div>
 </div>
@@ -145,7 +131,6 @@ const ghlLink = (slug, pass) => `${dashUrl(slug)}#k=${encodeURIComponent(pass)}`
 $('repoLink').href = `https://github.com/${OWNER}/${REPO}`; $('repoLink').textContent = `${OWNER}/${REPO}`;
 document.querySelectorAll('.repoName').forEach(e => { e.textContent = REPO; });
 
-const TOKEN_KEY = 'leadpro-admin-gh-token';
 const SODIUM = { src: 'https://cdnjs.cloudflare.com/ajax/libs/libsodium-wrappers/0.5.4/sodium.min.js', integrity: 'sha384-wwHUJSIg+zP+JE6uHrrp1XCv4UtKW9xE4+LO+lwfrocCav+zHsDN57+5bvmKRCnu' };
 const RESERVED = ['admin', 'app', 'scripts', '_template', '_defaults'];
 const GHL_APP = 'https://app.lawfirmmarketingpros.com';
@@ -171,10 +156,11 @@ const slugify = name => String(name || '').normalize('NFKD').replace(/[̀-ͯ]/g,
   .replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48).replace(/-+$/, '');
 const secretKeyFor = slug => slug.toUpperCase().replace(/-/g, '_');
 
-let lock = null, aesKey = null, ghToken = null;
-// One login (v1.14): with admin/lfmp-lock.json the shared sign-in (lfmp-login.js) unlocks this page, the Builder and the
-// Automation Review admin together, and the GitHub token lives in its shared vault. Without it (legacy) the old lock below runs.
-let login = null, oneLogin = false;
+let aesKey = null, ghToken = null;
+// One login (v1.14; the old page lock was removed in v1.15.0): the shared sign-in (lfmp-login.js + lfmp-lock.json) unlocks
+// this page, the Builder and the Automation Review admin together. The GitHub token lives in its shared vault; aesKey is
+// the shared key (it also seals the remembered dashboard passphrases).
+let login = null;
 
 // ---------- icons ----------
 const ICON = {
@@ -235,70 +221,14 @@ document.addEventListener('click', e => {
 });
 
 // ---------- views ----------
-function show(view) { for (const v of ['lockView', 'setupView', 'tokenView', 'appView']) $(v).hidden = v !== view; }
+function show(view) { for (const v of ['setupView', 'tokenView', 'appView']) $(v).hidden = v !== view; }
 
-// =====================================================================
-// Lock: PBKDF2-SHA256(password, salt, iterations) -> 64 bytes.
-// bytes 0-31 = public verifier in lock.json; bytes 32-63 = AES-GCM key for the saved token.
-// =====================================================================
-async function deriveFromPassword(pw) {
-  const base = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
-  const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: fromB64(lock.salt), iterations: lock.iterations }, base, 512));
-  const verifier = bits.slice(0, 32), raw = bits.slice(32, 64);
-  const key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
-  bits.fill(0);
-  return { verifier, key, raw };
-}
-
-// ---------- unlocked session (v1.13) ----------
-// Moving between screens never asks for the password again. The unlock key (the AES-GCM key that opens the saved token,
-// never the password or the token) is kept in sessionStorage for this browser tab: it survives the Back button and a
-// reload, and is gone when the tab closes, on Lock, or after 30 minutes without activity. The token stays encrypted in localStorage.
-const SESSION_KEY = 'leadpro-admin-session', IDLE_MS = 30 * 60e3;
-const sess = {
-  get() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch { return null; } },
-  set(v) { try { v ? sessionStorage.setItem(SESSION_KEY, JSON.stringify(v)) : sessionStorage.removeItem(SESSION_KEY); } catch {} },
-};
-function startSession(raw) { sess.set({ v: 1, k: toB64(raw), t: Date.now() }); raw.fill(0); }
-let lastTouch = 0;
-function touchSession() {                     // activity keeps the session alive (written at most every 20 s)
-  const now = Date.now(); if (now - lastTouch < 20e3 || !aesKey) return;
-  const s = sess.get(); if (!s) return;
-  if (now - s.t > IDLE_MS) return lockNow('Locked after 30 minutes without activity.');
-  lastTouch = now; s.t = now; sess.set(s);
-}
-['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev => document.addEventListener(ev, touchSession, { passive: true, capture: true }));
-setInterval(() => { if (oneLogin) return; const s = sess.get(); if (aesKey && (!s || Date.now() - s.t > IDLE_MS)) lockNow('Locked after 30 minutes without activity.'); }, 30e3);
-// Returns true when a live session unlocked the page (no password prompt).
-async function resumeSession() {
-  const s = sess.get();
-  if (!s?.k || s.v !== 1 || !(Date.now() - s.t <= IDLE_MS)) { sess.set(null); return false; }
-  try {
-    aesKey = await crypto.subtle.importKey('raw', fromB64(s.k), 'AES-GCM', false, ['encrypt', 'decrypt']);
-    const t = await loadToken();
-    if (!t) { aesKey = null; sess.set(null); return false; }      // no token here, or saved under another password
-    ghToken = t; s.t = Date.now(); sess.set(s);
-    await openApp(); return true;
-  } catch { aesKey = null; ghToken = null; sess.set(null); return false; }
-}
-function sameBytes(a, b) { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a[i] ^ b[i]; return d === 0; }
-
-async function saveToken(token) {
-  if (oneLogin) { await login.vaultSet({ gh: token }); return; }
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, enc.encode(token)));
-  store.set(TOKEN_KEY, JSON.stringify({ v: 1, alg: 'AES-GCM', iv: toB64(iv), ct: toB64(ct) }));
-}
-async function loadToken() {
-  const raw = store.get(TOKEN_KEY); if (!raw) return null;
-  try { const { iv, ct } = JSON.parse(raw); return dec.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(iv) }, aesKey, fromB64(ct))); }
-  catch { return undefined; }   // saved under a different admin password
-}
+const saveToken = token => login.vaultSet({ gh: token });
 
 // ---------- remembered dashboard passphrases (v1.13.1) ----------
-// "Remember on this computer" keeps a firm's dashboard passphrase in localStorage, encrypted with the same AES-GCM key
-// (same lock) as the GitHub token: one sealed blob { slug: passphrase }. Never stored in the clear. Lock and Forget token
-// clear it; a blob sealed under another admin password is dropped. (Moves into the one-login vault when that's built.)
+// "Remember on this computer" keeps a firm's dashboard passphrase in localStorage, encrypted with the shared one-login key:
+// one sealed blob { slug: passphrase }. Never stored in the clear. A manual Lock (any tool) and Forget token clear it; a blob
+// sealed under another admin password is dropped.
 const PASS_VAULT_KEY = 'leadpro-admin-firm-pass';
 async function readPassVault() {
   const raw = store.get(PASS_VAULT_KEY); if (!raw || !aesKey) return {};
@@ -319,43 +249,13 @@ const clearPassVault = () => store.set(PASS_VAULT_KEY, null);
 
 async function boot() {
   if (!window.crypto?.subtle) { show('setupView'); $('setupErr').textContent = "This browser can't run the admin page. Use an up-to-date Chrome, Safari, Edge or Firefox."; return; }
-  login = createLogin({ tool: 'kpi', onUnlock: sharedUnlocked, onLock: why => lockNow(why, { fromLogin: true }) });
-  const mode = await login.start();
-  if (mode === 'shared') return;
-  if (mode === 'error') { show('setupView'); $('setupErr').textContent = login.error; return; }
-  try {
-    const r = await fetch(`./lock.json?t=${Date.now()}`, { cache: 'no-store' });
-    if (r.status === 404) { show('setupView'); return; }
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    lock = await r.json();
-    if (!lock.salt || !lock.verifier || !(lock.iterations >= 100000)) throw new Error('lock.json is incomplete');
-  } catch (e) { show('setupView'); $('setupErr').textContent = `Couldn't read admin/lock.json (${e.message}).`; return; }
-  if (await resumeSession()) return;
-  show('lockView'); $('lockPw').focus();
+  login = createLogin({ tool: 'kpi', onUnlock: unlocked, onLock: why => lockNow(why, { fromLogin: true }) });
+  if (await login.start() === 'error') { show('setupView'); $('setupErr').textContent = login.error; }
 }
 
-$('lockForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const pw = $('lockPw').value; if (!pw) return;
-  $('lockGo').disabled = true; $('lockGo').textContent = 'Checking…'; $('lockErr').textContent = '';
-  try {
-    const { verifier, key, raw } = await deriveFromPassword(pw);
-    if (!sameBytes(verifier, fromB64(lock.verifier))) { raw.fill(0); throw new Error('wrong'); }
-    aesKey = key; $('lockPw').value = ''; $('lockErr').textContent = '';
-    startSession(raw);
-    const t = await loadToken();
-    if (t === undefined) { store.set(TOKEN_KEY, null); clearPassVault(); return askToken('The token saved on this device was locked with a different admin password, so it was removed. Paste a token again.'); }
-    if (!t) return askToken();
-    ghToken = t; await openApp();
-  } catch (err) {
-    $('lockErr').textContent = err.message === 'wrong' ? "That password didn't work. Check caps lock and try again." : `Couldn't unlock: ${err.message}`;
-    $('lockPw').select();
-  } finally { $('lockGo').disabled = false; $('lockGo').textContent = 'Unlock'; }
-});
-
-// Shared sign-in done (password typed, or a live session from any of the three tools in this tab).
-async function sharedUnlocked({ vault, reset }) {
-  oneLogin = true; aesKey = login.key();
+// Signed in (password typed, or a live session from any of the three tools in this tab).
+async function unlocked({ vault, reset }) {
+  aesKey = login.key();
   if (vault.gh) { ghToken = vault.gh; return openApp(); }
   askToken(reset ? 'The saved GitHub token was locked with an older admin password, so it was cleared. Paste the token again.'
     : 'Connect GitHub once for the Builder and the KPI admin. The token is saved in this browser only, encrypted with the admin password.');
@@ -382,21 +282,18 @@ $('tokenForm').addEventListener('submit', async e => {
 });
 
 function lockNow(why, { fromLogin = false } = {}) {
-  if (oneLogin && !fromLogin) { login.lock(why, { manual: false, broadcast: false }); return; }   // the shared login calls back here
-  sess.set(null); aesKey = null; ghToken = null; screenNow = null; for (const s in nip) delete nip[s];   // decrypted names leave memory too
+  if (!fromLogin) { login.lock(why, { manual: false, broadcast: false }); return; }   // the shared login calls back here
+  aesKey = null; ghToken = null; screenNow = null; for (const s in nip) delete nip[s];   // decrypted names leave memory too
   cleanupRun(); cleanupAppRun(); stopIssues(); closeMenus(); closeNews(); closeDetails({ keepHash: true });
-  $('screen').innerHTML = ''; closeDialog();
-  if (oneLogin) { show(null); return; }
-  show('lockView'); $('lockPw').value = '';
-  $('lockErr').textContent = typeof why === 'string' ? why : ''; $('lockPw').focus();
+  $('screen').innerHTML = ''; closeDialog(); show(null);
 }
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
-  if (a.dataset.act === 'lock') { if (oneLogin) login.lock(''); else { clearPassVault(); lockNow(); } }   // Lock (by hand) also forgets remembered passphrases (one login: and locks all three tools); the 30-minute idle lock keeps them
+  if (a.dataset.act === 'lock') login.lock('');   // Lock (by hand) locks all three tools and forgets remembered passphrases; the 30-minute idle lock keeps them
   if (a.dataset.act === 'news') openNews();
   if (a.dataset.act === 'forget') openDialog({
-    title: 'Forget token on this device?', body: `<p class="sub">The saved GitHub token${oneLogin ? ' (shared with the Builder)' : ''} and any remembered dashboard passphrases are removed from this browser. You will need to paste a token again next time. The token itself stays valid on GitHub; revoke it there if this device is lost.</p>`,
-    ok: 'Forget token', danger: true, onOk: async () => { if (oneLogin) await login.vaultSet({ gh: null }); store.set(TOKEN_KEY, null); clearPassVault(); for (const s in nip) delete nip[s]; ghToken = null; closeDialog(); askToken('Token removed from this device. Paste a token to continue.'); },
+    title: 'Forget token on this device?', body: `<p class="sub">The saved GitHub token (shared with the Builder) and any remembered dashboard passphrases are removed from this browser. You will need to paste a token again next time. The token itself stays valid on GitHub; revoke it there if this device is lost.</p>`,
+    ok: 'Forget token', danger: true, onOk: async () => { await login.vaultSet({ gh: null }); clearPassVault(); for (const s in nip) delete nip[s]; ghToken = null; closeDialog(); askToken('Token removed from this device. Paste a token to continue.'); },
   });
 });
 

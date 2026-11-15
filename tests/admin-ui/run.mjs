@@ -2,7 +2,7 @@
 //
 // Needs playwright-core and its Chromium (not a dependency of this repo): set PLAYWRIGHT_CORE to its folder, or keep the
 // Sub-account Builder repo next to this one (../ghl-subaccount-builder/node_modules/playwright-core). Without it, this suite is skipped.
-// Serves the repo folder locally, mocks api.github.com (tests/admin-ui/mock-github.mjs), lock.json and libsodium. Writes nothing in the repo.
+// Serves the repo folder locally, mocks api.github.com (tests/admin-ui/mock-github.mjs), lfmp-lock.json (the shared one login) and libsodium. Writes nothing in the repo.
 //
 // Checks (v1.13): unlock + token; moving between screens never asks for the password again (New firm → All firms, Edit mapping
 // → All firms, the browser Back / Forward buttons, a reload), Lock and 30 minutes idle do; the simple home (strip, All / Needs
@@ -74,8 +74,7 @@ async function wire(page, G) {
   page.on('pageerror', e => { failed++; console.log(`✗ page error: ${e.message}`); });
   // The libsodium stub can't match the real file's SRI hash: drop the integrity attribute for cdnjs in this test only.
   await page.addInitScript(() => { const d = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'integrity'); Object.defineProperty(HTMLScriptElement.prototype, 'integrity', { set(v) { if (!String(this.src).includes('cdnjs.cloudflare.com')) d.set.call(this, v); }, get() { return d.get.call(this); } }); });
-  await page.route('**/admin/lock.json*', r => r.fulfill({ contentType: 'application/json', body: JSON.stringify(LOCK) }));
-  await page.route('**/admin/lfmp-lock.json*', r => r.fulfill({ status: 404, body: 'not found' }));   // this suite tests the page's own lock (one login: tests/one-login + builder tests/e2e/one-login.mjs)
+  await page.route('**/admin/lfmp-lock.json*', r => r.fulfill({ contentType: 'application/json', body: JSON.stringify(LOCK) }));   // the shared one login (the old page lock is gone since v1.15.0)
   await page.route('**/firms/lfmp/data/details.enc.json*', r => r.fulfill({ contentType: 'application/json', body: NIP_ENV }));
   await page.route('https://cdnjs.cloudflare.com/**', r => r.fulfill({ contentType: 'text/javascript', body: SODIUM_STUB }));
   await page.route('https://api.github.com/**', async r => {
@@ -86,8 +85,8 @@ async function wire(page, G) {
 }
 const unlocked = page => page.waitForFunction(() => !document.getElementById('appView').hidden && document.querySelector('#syncTimes')?.textContent.includes('Next'));
 async function unlock(page) {
-  await page.waitForSelector('#lockPw:visible');
-  await page.fill('#lockPw', PASSWORD); await page.click('#lockGo');
+  await page.waitForSelector('#lgPw:visible');
+  await page.fill('#lgPw', PASSWORD); await page.click('#lgGo');
   await page.waitForSelector('#tokenIn:visible, #appView:not([hidden])');
   if (await page.isVisible('#tokenIn')) { await page.fill('#tokenIn', 'github_pat_test_token_for_mock'); await page.click('#tokenGo'); }
   await unlocked(page);
@@ -121,7 +120,7 @@ const contrastFailures = (page, root = 'body') => page.evaluate(root => {
 }, root);
 const noSideScroll = page => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 const slugs = page => page.$$eval('.firm', els => els.map(e => e.dataset.slug));
-const lockShown = page => page.isVisible('#lockView');
+const lockShown = page => page.isVisible('#lfmpLogin');
 const hashIs = page => page.evaluate(() => location.hash);
 const panelOpen = page => page.isVisible('#dPanel');
 
@@ -293,8 +292,8 @@ try {
   check(!(await lockShown(page)), 'LFMP mark / KPI admin link: in-page, no password');
   await page.reload(); await page.waitForSelector('.firm');
   check(!(await lockShown(page)), 'reload: still unlocked');
-  check(await page.evaluate(() => { const s = sessionStorage.getItem('leadpro-admin-session'); return !!s && !s.includes('github_pat') && !s.includes('test password'); }), 'session keeps the unlock key only (no token, no password)');
-  check(await page.evaluate(() => !String(localStorage.getItem('leadpro-admin-gh-token')).includes('github_pat')), 'the GitHub token stays encrypted in localStorage');
+  check(await page.evaluate(() => { const s = sessionStorage.getItem('lfmp-session'); return !!s && !s.includes('github_pat') && !s.includes('test password'); }), 'session keeps the unlock key only (no token, no password)');
+  check(await page.evaluate(() => !String(localStorage.getItem('lfmp-vault')).includes('github_pat')), 'the GitHub token stays encrypted in the shared vault');
 
   // saved dashboard passphrase (as the client dashboard stores it) → names show without typing
   await page.evaluate(p => localStorage.setItem('lfmp-pass-lfmp', p), NIP_PASS);
@@ -310,8 +309,8 @@ try {
   check(!!vault && JSON.parse(vault).alg === 'AES-GCM' && !vault.includes(NIP_PASS) && !vault.includes('lfmp') && !/Jordan|example\.test/.test(vault), 'remembered: stored AES-GCM encrypted (no passphrase, slug or contact in the clear)');
   await page.reload(); await page.waitForSelector('#nipList .nip li');
   check(/Jordan Fixture/.test(await page.textContent('#nipList')) && !(await page.$('#nipPass')), 'remembered: names show straight away after a reload, no typing');
-  await page.evaluate(() => { const s = JSON.parse(sessionStorage.getItem('leadpro-admin-session')); s.t = Date.now() - 31 * 60e3; sessionStorage.setItem('leadpro-admin-session', JSON.stringify(s)); });
-  await page.reload(); await page.waitForSelector('#lockPw:visible');
+  await page.evaluate(() => { const s = JSON.parse(sessionStorage.getItem('lfmp-session')); s.t = Date.now() - 31 * 60e3; sessionStorage.setItem('lfmp-session', JSON.stringify(s)); });
+  await page.reload(); await page.waitForSelector('#lgPw:visible');
   check(await page.evaluate(() => !!localStorage.getItem('leadpro-admin-firm-pass')), 'idle lock keeps the remembered passphrase (still encrypted)');
   await unlock(page); await page.goto(BASE + '#/firm/lfmp'); await page.waitForSelector('#nipList .nip li');
   check(/Jordan Fixture/.test(await page.textContent('#nipList')), 'next unlock: names show straight away');
@@ -328,18 +327,18 @@ try {
   // Lock and idle end the session
   await page.keyboard.press('Escape');
   await page.click('[data-menu="topMenu"]'); await page.click('#topMenu [data-act="lock"]');
-  check(await lockShown(page) && await page.evaluate(() => sessionStorage.getItem('leadpro-admin-session') === null), 'Lock: lock screen, session cleared');
-  check(await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass') === null && !!localStorage.getItem('leadpro-admin-gh-token')), 'Lock clears remembered passphrases (the encrypted GitHub token stays)');
-  await page.reload(); await page.waitForSelector('#lockPw:visible');
+  check(await lockShown(page) && await page.evaluate(() => sessionStorage.getItem('lfmp-session') === null), 'Lock: lock screen, session cleared');
+  check(await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass') === null && !!localStorage.getItem('lfmp-vault')), 'Lock clears remembered passphrases (the encrypted GitHub token stays)');
+  await page.reload(); await page.waitForSelector('#lgPw:visible');
   check(await lockShown(page), 'after Lock, a reload asks for the password');
   await unlock(page); await page.waitForSelector('.firm');
-  await page.evaluate(() => { const s = JSON.parse(sessionStorage.getItem('leadpro-admin-session')); s.t = Date.now() - 31 * 60e3; sessionStorage.setItem('leadpro-admin-session', JSON.stringify(s)); });
-  await page.reload(); await page.waitForSelector('#lockPw:visible');
+  await page.evaluate(() => { const s = JSON.parse(sessionStorage.getItem('lfmp-session')); s.t = Date.now() - 31 * 60e3; sessionStorage.setItem('lfmp-session', JSON.stringify(s)); });
+  await page.reload(); await page.waitForSelector('#lgPw:visible');
   check(await lockShown(page), '30 minutes idle: the password is asked again');
   await unlock(page); await page.waitForSelector('.firm');
-  await page.evaluate(() => { const s = JSON.parse(sessionStorage.getItem('leadpro-admin-session')); s.t = Date.now() - 31 * 60e3; sessionStorage.setItem('leadpro-admin-session', JSON.stringify(s)); });
-  await page.mouse.click(5, 5); await page.waitForSelector('#lockPw:visible', { timeout: 5000 });
-  check(/30 minutes/.test(await page.textContent('#lockErr')), 'idle while open: locks on the next click, says why');
+  await page.evaluate(() => { const s = JSON.parse(sessionStorage.getItem('lfmp-session')); s.t = Date.now() - 31 * 60e3; sessionStorage.setItem('lfmp-session', JSON.stringify(s)); });
+  await page.mouse.click(5, 5); await page.waitForSelector('#lgPw:visible', { timeout: 5000 });
+  check(/30 minutes/.test(await page.textContent('#lgErr')), 'idle while open: locks on the next click, says why');
   await unlock(page); await page.waitForSelector('.firm');
 
   // Forget token also clears remembered passphrases
@@ -349,7 +348,7 @@ try {
   await page.keyboard.press('Escape');
   await page.click('[data-menu="topMenu"]'); await page.click('#topMenu [data-act="forget"]'); await page.click('#dlgOk');
   await page.waitForSelector('#tokenIn:visible');
-  check(await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass') === null && localStorage.getItem('leadpro-admin-gh-token') === null), 'Forget token clears the token and remembered passphrases');
+  check(await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass') === null && localStorage.getItem('lfmp-vault') === null), 'Forget token clears the token and remembered passphrases');
   await page.fill('#tokenIn', 'github_pat_test_token_for_mock'); await page.click('#tokenGo'); await page.waitForSelector('.firm');
 
   // ---------------- top bar, bell, What's new ----------------
