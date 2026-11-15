@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T14:37:22.560Z",
+  "generatedAt": "2026-11-15T15:07:26.600Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794718800000,
-      "to": 1794753442560,
+      "to": 1794755246600,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -436,7 +436,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794200400000,
-      "to": 1794753442560,
+      "to": 1794755246600,
       "current": {
         "totalLeads": 27,
         "contacted": 0,
@@ -854,8 +854,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794148642560,
-      "to": 1794753442560,
+      "from": 1794150446600,
+      "to": 1794755246600,
       "current": {
         "totalLeads": 27,
         "contacted": 0,
@@ -1086,8 +1086,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792161442560,
-      "to": 1794753442560,
+      "from": 1792163246600,
+      "to": 1794755246600,
       "current": {
         "totalLeads": 34,
         "contacted": 1,
@@ -1333,8 +1333,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1786977442560,
-      "to": 1794753442560,
+      "from": 1786979246600,
+      "to": 1794755246600,
       "current": {
         "totalLeads": 39,
         "contacted": 1,
@@ -1569,7 +1569,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1794753442560,
+      "to": 1794755246600,
       "current": {
         "totalLeads": 29,
         "contacted": 0,
@@ -2018,7 +2018,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1794753442560,
+      "to": 1794755246600,
       "current": {
         "totalLeads": 35,
         "contacted": 1,
@@ -2435,7 +2435,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-15T14:37:22.560Z",
+    "checkedAt": "2026-11-15T15:07:26.600Z",
     "counts": {
       "Call": 63,
       "SMS": 1,
