@@ -10,7 +10,21 @@ The README is the full reference and CHANGELOG.md the history. This file covers 
 | Firms | Mahdavi, LFMP, Hedayati, Emery (Private Integration tokens) and ZZ TEST 2 (app token, test sub-account). |
 | Sync | Every 30 min (cron 7,37 + sync chain). The bell on the admin page reports problems. |
 | Token keeper | Hourly; mints app tokens for `tokenSource: "app"` firms only. |
-| Admin page v1.12.0 | **Live** (commit 0c5be7f, 14 Nov 17:48 UTC). Redesigned (LFMP look) + "Use the LeadPro app" in New firm. |
+| Admin page v1.13.0 | **Live** (commit 9e3ed52, 15 Nov 04:26 UTC). Simple home + Details panel (Overview · Performance · Setup); no re-login between screens. |
+
+## Admin page v1.13.0 (simple home + Details panel)
+
+- Files: `admin/firm-details.mjs` (needs-attention reasons, the not-in-pipeline list, Performance numbers and goal rules; pure, tested by `tests/admin-details`), `admin/index.html` (routing, session, list, panel), `admin/admin.css`. `admin/lfmp-ui.css` is unchanged (same hash as below).
+- **Screens** switch in the page by URL hash: `#/`, `#/new`, `#/map/<slug>`, `#/firm/<slug>[/performance|/setup]`. Use `go(hash, flash)` to move between screens; never re-render a screen directly (that's what made Back leave the page).
+- **Session:** after unlocking, the AES key that opens the saved GitHub token sits in sessionStorage (`leadpro-admin-session`, with a last-activity time). Lock, closing the tab, or 30 min without activity end it. Password and token are never stored in it.
+- **Performance** reads `firms/<slug>/data/kpis.json` only. Its Going well / Needs attention copy the dashboard's `GOALS` and rules; `tests/admin-details` fails if `app/dashboard.html`'s `GOALS` change without this file.
+- **Not in a pipeline:** names come from decrypting `details.enc.json` in the browser, with the passphrase the client dashboard saved on this device (`lfmp-pass-<slug>`) or one typed in the panel. Nothing new is written by the sync; the IDs were already in the encrypted file. Names stay in memory only.
+
+## Release checks (v1.13.0, 15 Nov)
+
+- All 11 suites pass (incl. new `tests/admin-details`, 38 checks) and 155 browser checks against a mock GitHub. The 69 client-side files are byte-identical before and after (`assets/docs/2026-11-15_kpi-admin-v1.13_client-hashes-*.sha256` in the LFMP workspace); the commit touches only `admin/`, `tests/`, README, CHANGELOG.
+- Live: the deployed page (Pages build done, every file 200, fonts loaded, no console errors) checked at 1440 and 390 in light and dark: the real lock screen, plus the deployed code with a mock GitHub API reading the repo's real data (the real API needs PJ's password). New firm → All firms and Back stayed unlocked. Screenshots: `assets/images/2026-11-15_kpi-admin-v1.13/` (`live/` for the deployed page).
+- **Not yet seen with PJ's own unlock:** the live page on the real GitHub API, and the "lead not in a pipeline" names from LFMP's real encrypted file.
 
 ## Admin page v1.12.0 (KPI admin redesign)
 
