@@ -23,8 +23,7 @@
   <div class="card">
     <div class="gatehead"><span class="mark" aria-hidden="true">LFMP</span><p class="ey">LeadPro · KPI admin</p></div>
     <h1 class="disp">Sign-in <span class="g">not ready.</span></h1>
-    <p class="sub">The shared admin password file (lfmp-lock.json) is missing. In the leadpro-kpi folder, run <code class="mono">node scripts/set-shared-password.mjs</code>, then publish the three tools.</p>
-    <div class="ferr" id="setupErr"></div>
+    <p class="sub" id="setupMsg" role="alert">The shared admin password file (lfmp-lock.json) is missing. In the leadpro-kpi folder, run <code class="mono">node scripts/set-shared-password.mjs</code>, then publish the three tools.</p>
   </div>
 </div>
 
@@ -248,9 +247,11 @@ const rememberedPass = async slug => (await readPassVault())[slug] || null;
 const clearPassVault = () => store.set(PASS_VAULT_KEY, null);
 
 async function boot() {
-  if (!window.crypto?.subtle) { show('setupView'); $('setupErr').textContent = "This browser can't run the admin page. Use an up-to-date Chrome, Safari, Edge or Firefox."; return; }
+  // One message only: the page's own "file is missing" text, or the other reason in its place.
+  const notReady = msg => { show('setupView'); if (msg && !/lfmp-lock\.json is missing/.test(msg)) $('setupMsg').textContent = msg; };
+  if (!window.crypto?.subtle) { notReady("This browser can't run the admin page. Use an up-to-date Chrome, Safari, Edge or Firefox."); return; }
   login = createLogin({ tool: 'kpi', onUnlock: unlocked, onLock: why => lockNow(why, { fromLogin: true }) });
-  if (await login.start() === 'error') { show('setupView'); $('setupErr').textContent = login.error; }
+  if (await login.start() === 'error') notReady(login.error);
 }
 
 // Signed in (password typed, or a live session from any of the three tools in this tab).
