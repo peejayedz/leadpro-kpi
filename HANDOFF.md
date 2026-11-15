@@ -11,6 +11,13 @@ The README is the full reference and CHANGELOG.md the history. This file covers 
 | Sync | Every 30 min (cron 7,37 + sync chain). The bell on the admin page reports problems. |
 | Token keeper | Hourly; mints app tokens for `tokenSource: "app"` firms only. |
 | Admin page v1.13.0 | **Live** (commit 9e3ed52, 15 Nov 04:26 UTC). Simple home + Details panel (Overview · Performance · Setup); no re-login between screens. |
+| Admin page v1.13.1 | **Built and tested locally, not pushed** (waiting for PJ's OK). Not-in-pipeline rows with email/phone/source, Remember passphrase (encrypted), Copy GHL menu link moved to Setup, local "Copied". Admin files + tests + docs only. |
+
+## Admin page v1.13.1
+
+- **Remembered passphrases:** `leadpro-admin-firm-pass` in localStorage = one AES-GCM blob `{ slug: passphrase }`, sealed with the same key as the GitHub token (`readPassVault` / `writePassVault` in `admin/index.html`). Lock (the ⋯ menu) and Forget token clear it; the idle lock doesn't. Order used to open a firm's details: typed → remembered → the client dashboard's `lfmp-pass-<slug>`. When the one-login vault is built, move this blob into it.
+- **Contact rows** come from `notInPipelineList` (`admin/firm-details.mjs`): name, email, phone, `source` (short label from the sync's `via`), `named` (false → the email or phone stands in). Nothing new is written by the sync; email/phone/via were already in `details.enc.json`.
+- **"Copied"** uses `flashCopied(btn)`: next to the clicked button only, 4 s. Don't route it through `firmSay` (that writes to the row and the panel).
 
 ## Admin page v1.13.0 (simple home + Details panel)
 

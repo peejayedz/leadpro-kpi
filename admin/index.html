@@ -288,6 +288,28 @@ async function loadToken() {
   catch { return undefined; }   // saved under a different admin password
 }
 
+// ---------- remembered dashboard passphrases (v1.13.1) ----------
+// "Remember on this computer" keeps a firm's dashboard passphrase in localStorage, encrypted with the same AES-GCM key
+// (same lock) as the GitHub token: one sealed blob { slug: passphrase }. Never stored in the clear. Lock and Forget token
+// clear it; a blob sealed under another admin password is dropped. (Moves into the one-login vault when that's built.)
+const PASS_VAULT_KEY = 'leadpro-admin-firm-pass';
+async function readPassVault() {
+  const raw = store.get(PASS_VAULT_KEY); if (!raw || !aesKey) return {};
+  try { const { iv, ct } = JSON.parse(raw); const o = JSON.parse(dec.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(iv) }, aesKey, fromB64(ct)))); return o && typeof o === 'object' ? o : {}; }
+  catch { store.set(PASS_VAULT_KEY, null); return {}; }
+}
+async function writePassVault(o) {
+  if (!aesKey) return;
+  if (!Object.keys(o).length) { store.set(PASS_VAULT_KEY, null); return; }
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, enc.encode(JSON.stringify(o))));
+  store.set(PASS_VAULT_KEY, JSON.stringify({ v: 1, alg: 'AES-GCM', iv: toB64(iv), ct: toB64(ct) }));
+}
+async function rememberPass(slug, pass) { const o = await readPassVault(); o[slug] = pass; await writePassVault(o); }
+async function forgetPass(slug) { const o = await readPassVault(); if (slug in o) { delete o[slug]; await writePassVault(o); } }
+const rememberedPass = async slug => (await readPassVault())[slug] || null;
+const clearPassVault = () => store.set(PASS_VAULT_KEY, null);
+
 async function boot() {
   if (!window.crypto?.subtle) { show('setupView'); $('setupErr').textContent = "This browser can't run the admin page. Use an up-to-date Chrome, Safari, Edge or Firefox."; return; }
   try {
@@ -311,7 +333,7 @@ $('lockForm').addEventListener('submit', async e => {
     aesKey = key; $('lockPw').value = ''; $('lockErr').textContent = '';
     startSession(raw);
     const t = await loadToken();
-    if (t === undefined) { store.set(TOKEN_KEY, null); return askToken('The token saved on this device was locked with a different admin password, so it was removed. Paste a token again.'); }
+    if (t === undefined) { store.set(TOKEN_KEY, null); clearPassVault(); return askToken('The token saved on this device was locked with a different admin password, so it was removed. Paste a token again.'); }
     if (!t) return askToken();
     ghToken = t; await openApp();
   } catch (err) {
@@ -341,17 +363,17 @@ $('tokenForm').addEventListener('submit', async e => {
 });
 
 function lockNow(why) {
-  sess.set(null); aesKey = null; ghToken = null; screenNow = null; cleanupRun(); cleanupAppRun(); stopIssues(); closeMenus(); closeNews(); closeDetails({ keepHash: true });
+  sess.set(null); aesKey = null; ghToken = null; screenNow = null; for (const s in nip) delete nip[s];   // decrypted names leave memory too cleanupRun(); cleanupAppRun(); stopIssues(); closeMenus(); closeNews(); closeDetails({ keepHash: true });
   $('screen').innerHTML = ''; closeDialog(); show('lockView'); $('lockPw').value = '';
   $('lockErr').textContent = typeof why === 'string' ? why : ''; $('lockPw').focus();
 }
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
-  if (a.dataset.act === 'lock') lockNow();
+  if (a.dataset.act === 'lock') { clearPassVault(); lockNow(); }   // Lock (by hand) also forgets remembered passphrases; the 30-minute idle lock keeps them
   if (a.dataset.act === 'news') openNews();
   if (a.dataset.act === 'forget') openDialog({
-    title: 'Forget token on this device?', body: '<p class="sub">The saved GitHub token is removed from this browser. You will need to paste a token again next time. The token itself stays valid on GitHub; revoke it there if this device is lost.</p>',
-    ok: 'Forget token', danger: true, onOk: () => { store.set(TOKEN_KEY, null); ghToken = null; closeDialog(); askToken('Token removed from this device. Paste a token to continue.'); },
+    title: 'Forget token on this device?', body: '<p class="sub">The saved GitHub token and any remembered dashboard passphrases are removed from this browser. You will need to paste a token again next time. The token itself stays valid on GitHub; revoke it there if this device is lost.</p>',
+    ok: 'Forget token', danger: true, onOk: () => { store.set(TOKEN_KEY, null); clearPassVault(); for (const s in nip) delete nip[s]; ghToken = null; closeDialog(); askToken('Token removed from this device. Paste a token to continue.'); },
   });
 });
 
@@ -670,10 +692,20 @@ function repaintFirm(slug) {
   paintStrip(); paintFilters();
 }
 
-function copyLinkDialog(f) {
+// "Copied" shows only next to the button that was clicked, then goes away (not on the firm row, not in the message line).
+const COPIED_MS = 4000;
+function flashCopied(btn) {
+  if (!btn || !document.body.contains(btn)) return;
+  btn.parentElement.querySelectorAll('.copied').forEach(x => x.remove());
+  const tag = document.createElement('span');
+  tag.className = 'copied chip good'; tag.setAttribute('role', 'status'); tag.textContent = 'Copied';
+  btn.after(tag);
+  setTimeout(() => tag.remove(), COPIED_MS);
+}
+function copyLinkDialog(f, btn) {
   openDialog({
     title: 'Copy GHL menu link', okIcon: ICON.copy, ok: 'Copy link',
-    body: `<p class="sub">Type <b>${esc(f.name)}</b>'s dashboard passphrase. It's only used to build the link and isn't saved.</p>
+    body: `<p class="sub">The scorecard link to paste into the sub-account's Custom Menu Link. Type <b>${esc(f.name)}</b>'s dashboard passphrase; it's only used to build the link and isn't saved.</p>
       <label class="f" for="dlgPass">Passphrase<span class="pw"><input type="password" id="dlgPass" autocomplete="off" spellcheck="false"><button type="button" class="eye" data-eye="dlgPass" aria-label="Show passphrase"></button></span></label>
       <div class="ferr" id="dlgErr"></div>`,
     onOk: async () => {
@@ -681,7 +713,7 @@ function copyLinkDialog(f) {
       try { await navigator.clipboard.writeText(ghlLink(f.slug, p)); }
       catch { $('dlgErr').textContent = "Couldn't reach the clipboard. Allow clipboard access and try again."; return; }
       $('dlgPass').value = ''; closeDialog();
-      firmSay(f.slug, `<span class="chip good">Copied</span> GHL menu link for ${esc(f.name)}. Paste it into the sub-account's Custom Menu Link.`);
+      flashCopied(btn); btn?.focus({ preventScroll: true });
     },
   });
 }
@@ -1088,9 +1120,9 @@ $('dPanel').addEventListener('click', e => {
 $('dPanel').addEventListener('submit', async e => {
   if (!e.target.matches('[data-nip-unlock]')) return;
   e.preventDefault();
-  const f = firmOf(dpSlug), input = e.target.querySelector('input'); if (!f || !input.value) return;
-  const pass = input.value; input.value = '';
-  await loadNip(f, pass);
+  const f = firmOf(dpSlug), input = e.target.querySelector('#nipPass'); if (!f || !input.value) return;
+  const pass = input.value, remember = !!e.target.querySelector('#nipRemember')?.checked; input.value = '';
+  await loadNip(f, pass, remember);
 });
 // Keep Tab inside the panel on phones, where it covers the page.
 $('dPanel').addEventListener('keydown', e => {
@@ -1125,38 +1157,57 @@ function reasonBox(r, f) {
     <p>${d.what}</p>${d.steps.length ? `<ol>${d.steps.map(s => `<li>${s}</li>`).join('')}</ol>` : ''}
     <p class="meta">Since ${esc(when(i.firstSeen))}</p>${acts ? `<div class="btnrow">${acts}</div>` : ''}</section>`;
 }
+const shortDate = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+function nipRow(c, f) {
+  const loc = locOf(f), base = configs[f.slug]?.ghlAppBase;
+  // The name line falls back to the email or phone (see notInPipelineList); the second line shows whichever wasn't used.
+  const reach = [c.email && c.email !== c.name ? `<span class="nmail">${esc(c.email)}</span>` : '', c.phone && c.phone !== c.name ? `<span class="nphone">${esc(c.phone)}</span>` : ''].filter(Boolean);
+  return `<li><div class="nwho"><span class="nline"><b class="nname${c.named ? '' : ' unnamed'}">${esc(c.name)}</b>${c.named ? '' : ' <span class="muted small">(no name)</span>'}</span>
+      ${reach.length ? `<span class="nreach">${reach.join('<span class="dot" aria-hidden="true">·</span>')}</span>` : ''}
+      <span class="nmeta muted">${c.source ? `<span class="nsrc">${esc(c.source)}</span><span class="dot" aria-hidden="true">·</span>` : ''}<span>${esc(shortDate(c.createdAt))}</span></span></div>
+    ${validLoc(loc) ? `<a class="lnk nopen" href="${esc(ghlContactUrl(base, loc, c.contactId))}" target="_blank" rel="noopener" aria-label="Open ${esc(c.name)} in GHL (new tab)">Open in GHL ↗</a>` : ''}</li>`;
+}
 function nipHtml(f) {
   const s = nip[f.slug], contacts = contactsUrl(f.slug);
-  const listLink = contacts ? `<a class="lnk" href="${esc(contacts)}" target="_blank" rel="noopener">Open Contacts in GHL ↗</a>` : '';
+  const listBtn = contacts ? `<div class="btnrow nipopen"><a class="btn" href="${esc(contacts)}" target="_blank" rel="noopener">Open Contacts in GHL ↗</a></div>` : '';
   if (s?.state === 'ok') {
-    if (!s.list.length) return `<p class="meta">The encrypted details have no contacts from the last 30 days (they may have been added to a pipeline since the last sync). ${listLink}</p>`;
-    const loc = locOf(f), base = configs[f.slug]?.ghlAppBase;
-    return `<ul class="nip">${s.list.map(c => `<li><span><b>${esc(c.name)}</b> · ${esc(new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))}${c.via ? ` <span class="muted">· ${esc(c.via)}</span>` : ''}</span>${validLoc(loc) ? `<a class="lnk" href="${esc(ghlContactUrl(base, loc, c.contactId))}" target="_blank" rel="noopener">Open in GHL ↗</a>` : ''}</li>`).join('')}</ul>`;
+    if (!s.list.length) return `${listBtn}<p class="meta">The encrypted details have no contacts from the last 30 days (they may have been added to a pipeline since the last sync).</p>`;
+    return `${listBtn}<ul class="nip">${s.list.map(c => nipRow(c, f)).join('')}</ul>`;
   }
-  if (s?.state === 'loading') return '<p class="meta">Unlocking the names…</p>';
+  if (s?.state === 'loading') return `${listBtn}<p class="meta">Unlocking the names…</p>`;
   const err = s?.state === 'error' ? `<div class="ferr">${esc(s.err)}</div>` : '';
-  return `<p class="meta">${listLink}${listLink ? ' (newest first) · ' : ''}Unlock to see who:</p>
+  return `${listBtn}<p class="meta">Unlock to see who (newest first):</p>
     <form class="nipform" data-nip-unlock autocomplete="off"><label class="sr" for="nipPass">Dashboard passphrase for ${esc(f.name)}</label>
       <span class="pw"><input type="password" id="nipPass" placeholder="Dashboard passphrase" spellcheck="false"><button type="button" class="eye" data-eye="nipPass" aria-label="Show passphrase"></button></span>
-      <button class="btn" type="submit">Unlock</button></form>${err}
-    <p class="hint">The names are decrypted in this browser from the dashboard's encrypted file and kept only until you leave this page.</p>`;
+      <button class="btn" type="submit">Unlock</button>
+      <label class="check nipremember"><input type="checkbox" id="nipRemember"><span>Remember on this computer</span></label></form>${err}
+    <p class="hint">Names are decrypted in this browser from the dashboard's encrypted file and kept only until you leave this page. "Remember" keeps the passphrase locked with your admin password (like the GitHub token); Lock or Forget token clears it.</p>`;
 }
-// Decrypts the firm's details.enc.json (same file the client dashboard opens) with the passphrase this browser already
-// has for that dashboard, or one typed here. Shows names and links only; nothing is saved or sent anywhere.
-async function loadNip(f, typed) {
+// Decrypts the firm's details.enc.json (same file the client dashboard opens) with, in order: a passphrase typed here,
+// one remembered by this admin page (encrypted, see readPassVault), or the one the client dashboard saved on this device.
+// Shows names and links only; the list itself is never saved or sent anywhere.
+async function loadNip(f, typed, remember = false) {
   const r = reasonsOf(f).find(x => x.kind === 'not-in-pipeline'); if (!r) return;
   const s = nip[f.slug];
-  const pass = typed || savedPass(f.slug);
   const repaint = () => { const el = $('nipList'); if (el && dpSlug === f.slug) { el.innerHTML = nipHtml(f); wireEyes(el); } };
-  if (!typed && (s?.state === 'ok' || s?.state === 'loading' || s?.state === 'error' || !pass)) { repaint(); return; }
-  nip[f.slug] = { state: 'loading' }; repaint();
+  if (!typed && (s?.state === 'ok' || s?.state === 'loading' || s?.state === 'error')) { repaint(); return; }
+  nip[f.slug] = { state: 'loading' };
+  const mine = typed ? null : await rememberedPass(f.slug);
+  const pass = typed || mine || savedPass(f.slug);
+  if (!pass) { delete nip[f.slug]; repaint(); return; }
+  repaint();
   try {
     let env = null;
     try { const res = await fetch(`../firms/${encodeURIComponent(f.slug)}/data/details.enc.json?t=${Date.now()}`, { cache: 'no-store' }); if (res.ok) env = await res.json(); } catch {}
     if (!env) env = await getJSON(`firms/${f.slug}/data/details.enc.json`);
     if (!env) throw new Error('This firm has no encrypted details file yet.');
     let rec;
-    try { rec = await decryptJSON(env, pass); } catch { throw new Error(typed ? 'That passphrase didn\'t work.' : 'The passphrase saved in this browser didn\'t work. Type it below.'); }
+    try { rec = await decryptJSON(env, pass); }
+    catch {
+      if (mine) await forgetPass(f.slug);     // the firm's passphrase changed: drop the stale one
+      throw new Error(typed ? 'That passphrase didn\'t work.' : mine ? 'The remembered passphrase no longer works, so it was forgotten. Type the current one below.' : 'The passphrase saved in this browser didn\'t work. Type it below.');
+    }
+    if (typed && remember) await rememberPass(f.slug, typed);
     nip[f.slug] = { state: 'ok', list: notInPipelineList(rec) };
   } catch (e) { nip[f.slug] = { state: 'error', err: e.message }; }
   repaint();
@@ -1167,7 +1218,6 @@ function overviewHtml(f) {
   const syncing = busy.has(`${f.slug}:sync`);
   return `${rs.map(r => reasonBox(r, f)).join('')}
     <div class="dpacts"><a class="btn p" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener">Open dashboard ↗</a>
-      <button class="btn" type="button" data-f="link">Copy GHL link</button>
       <button class="btn" type="button" data-f="sync"${syncing ? ' disabled' : ''}>${syncing ? 'Re-syncing…' : 'Re-sync'}</button>
       <button class="btn" type="button" data-f="map">Edit mapping</button></div>
     <h3 class="lbl dsec">Info</h3>
@@ -1196,7 +1246,7 @@ function perfHtml(f) {
     <div class="funnel" role="list">${v.funnel.map(r => `<div class="frow" role="listitem"><span class="fl">${esc(r.label)}</span><span class="fbar" aria-hidden="true"><span style="width:${r.width}%"></span></span><span class="fv">${r.value}</span></div>`).join('')}</div>
     <div class="gw"><section class="good"><h3><span class="sdot" aria-hidden="true"></span>Going well</h3>${li(v.good, v.goodEmpty)}</section>
       <section class="bad"><h3><span class="sdot" aria-hidden="true"></span>Needs attention</h3>${li(v.bad, v.badEmpty)}</section></div>
-    <div class="dpacts"><a class="btn p" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener">Open full client dashboard ↗</a><button class="btn" type="button" data-f="link">Copy GHL link</button></div>
+    <div class="dpacts"><a class="btn p" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener">Open full client dashboard ↗</a></div>
     <p class="hint">Same totals the client dashboard shows for these dates (from its public numbers file).</p>`;
 }
 
@@ -1212,6 +1262,9 @@ function setupHtml(f) {
       ${infoRows([['Token', esc(connLabel(f))], ['GHL sub-account', esc(subNames[f.slug] || '—')], ['Location ID', `<span class="mono">${esc(locOf(f) || '—')}</span>`], ['Secrets', `<span class="mono">GHL_TOKEN_${esc(f.secretKey)}</span>, <span class="mono">PASSPHRASE_${esc(f.secretKey)}</span>`]])}
       <p class="hint">${app ? 'The token keeper makes a fresh token every hour. Nothing to paste.' : 'Pasted when the firm was added. Update it only if GHL rejects it (the bell says so).'}</p>
       <div class="btnrow">${app ? `<button class="btn" type="button" data-f="keeper">${ICON.key}Run token keeper</button>` : `<button class="btn" type="button" data-f="token">${ICON.key}Update token</button>`}</div></section>
+    <section class="dset" data-sec="menu-link"><h3 class="lbl">GHL menu link</h3>
+      <p>The scorecard link to paste into the sub-account's Custom Menu Link.</p>
+      <div class="btnrow"><button class="btn" type="button" data-f="link">${ICON.copy}Copy GHL menu link</button></div></section>
     <section class="dset"><h3 class="lbl">Testing banner</h3>
       <p>The dashboard's testing-period banner is <b>${banner ? 'on' : 'off'}</b>.</p>
       <div class="btnrow"><button class="btn" type="button" data-f="banner" aria-pressed="${banner}"${bannerBusy ? ' disabled' : ''}>${ICON.flag}Banner ${banner ? 'on · turn off' : 'off · turn on'}</button></div></section>
@@ -1583,7 +1636,7 @@ function appDone(me, done) {
       ${done.menu === 'manual' ? `<div><b class="small">One step left in GHL</b><ul><li>In ${esc(ctx.name)}'s sub-account: Settings → Custom Menu Links → create "KPI Dashboard" with the GHL menu link above (open in a new tab, only this sub-account).</li></ul></div>` : `<p class="sub">"KPI Dashboard" ${done.menu === 'created' ? 'was added to' : 'was already in'} the sub-account's GHL menu.</p>`}
       <div class="btnrow" style="margin-top:0"><button type="button" class="btn" id="toList">Back to all firms</button></div></div>`;
   wireEyes($('appResult'));
-  $('copyGhl').onclick = async () => { try { await navigator.clipboard.writeText(link); $('copyGhl').innerHTML = `${ICON.tick}Copied`; } catch { $('ghlLinkOut').type = 'text'; $('ghlLinkOut').select(); } };
+  $('copyGhl').onclick = async () => { try { await navigator.clipboard.writeText(link); const b = $('copyGhl'); b.innerHTML = `${ICON.tick}Copied`; setTimeout(() => { if (document.body.contains(b)) b.innerHTML = `${ICON.copy}Copy`; }, COPIED_MS); } catch { $('ghlLinkOut').type = 'text'; $('ghlLinkOut').select(); } };
   $('toList').onclick = () => go('#/', `Added ${esc(ctx.name)}.`);
   if ($('appMap')) $('appMap').onclick = async () => { await loadFirms(); const f = firms.find(x => x.slug === done.slug); if (f) go(hashFor('map', f.slug)); };
 }
@@ -1730,7 +1783,7 @@ const STEP_FNS = [
         <li>Ask the firm's team to move every opportunity through the pipeline stages, so each funnel step can be measured.</li></ul></div>
       <div class="btnrow" style="margin-top:0"><button type="button" class="btn" id="toList">Back to all firms</button></div></div>`;
     wireEyes(slot);
-    $('copyGhl').onclick = async () => { try { await navigator.clipboard.writeText(link); $('copyGhl').innerHTML = `${ICON.tick}Copied`; } catch { $('ghlLinkOut').type = 'text'; $('ghlLinkOut').select(); } };
+    $('copyGhl').onclick = async () => { try { await navigator.clipboard.writeText(link); const b = $('copyGhl'); b.innerHTML = `${ICON.tick}Copied`; setTimeout(() => { if (document.body.contains(b)) b.innerHTML = `${ICON.copy}Copy`; }, COPIED_MS); } catch { $('ghlLinkOut').type = 'text'; $('ghlLinkOut').select(); } };
     $('toList').onclick = () => go('#/', `Added ${esc(ctx.name)}.`);
     ctx.token = null;                     // the GHL token is no longer needed in memory
   },

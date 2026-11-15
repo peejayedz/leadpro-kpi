@@ -1,5 +1,5 @@
 // Admin v1.13 helpers (admin/firm-details.mjs) + a public-data check.   Run:  node tests/admin-details/run.mjs
-// Checks: attention reasons and their order, the not-in-pipeline list (30 days, no emails/phones), GHL contact links, the
+// Checks: attention reasons and their order, the not-in-pipeline list (30 days, name/email/phone/source, no "Unknown"), GHL contact links, the
 // Performance numbers against each firm's real kpis.json, the goal rules (identical to app/dashboard.html's GOALS), and that
 // no public file in the repo (kpis.json, config, discovery, status, firm list) holds contact IDs, names, emails or phones.
 import { readFile, readdir } from 'node:fs/promises';
@@ -31,9 +31,16 @@ const list = notInPipelineList({ notInPipeline: [
   { contactId: 'c2', name: 'B', createdAt: '2026-11-14T00:00:00Z', via: 'Called in' },
   { contactId: 'c3', name: 'Old', createdAt: '2026-09-01T00:00:00Z' },
   { name: 'No id', createdAt: '2026-11-14T00:00:00Z' },
+  { contactId: 'c4', name: 'Unnamed', email: 'only@mail.test', phone: '+15550001', createdAt: '2026-11-12T00:00:00Z', via: 'Chat widget' },
+  { contactId: 'c5', name: '+15550002', email: null, phone: '+15550002', createdAt: '2026-11-11T00:00:00Z', via: 'Texted in' },
+  { contactId: 'c6', name: 'Unknown', createdAt: '2026-11-09T00:00:00Z', via: 'Calendar booking' },
 ] }, now);
-check(JSON.stringify(list.map(c => c.contactId)) === '["c2","c1"]', 'list: last 30 days, newest first, rows without an ID dropped');
-check(list.every(c => !('email' in c) && !('phone' in c)), 'list: no emails or phones');
+check(JSON.stringify(list.map(c => c.contactId)) === '["c2","c4","c5","c1","c6"]', 'list: last 30 days, newest first, rows without an ID dropped');
+const byId = id => list.find(c => c.contactId === id);
+check(byId('c1').email === 'a@x' && byId('c1').phone === '1' && byId('c1').named && byId('c1').source === 'Form', 'list: name, email, phone and source kept (from the encrypted file)');
+check(byId('c4').name === 'only@mail.test' && !byId('c4').named && byId('c5').name === '+15550002' && !byId('c5').named, 'list: no name → email, then phone (never "Unnamed")');
+check(byId('c6').name === 'No name, email or phone' && !list.some(c => /^Unknown$|^Unnamed$/.test(c.name)), 'list: nothing at all → "No name, email or phone", never "Unknown"');
+check(['c2', 'c4', 'c5', 'c6'].map(id => byId(id).source).join() === 'Call,Chat,Text,Booking', 'list: source in short words (Call, Chat, Text, Booking)');
 check(notInPipelineList(null, now).length === 0 && notInPipelineList({}, now).length === 0, 'list: missing data → empty');
 check(ghlContactUrl('https://app.lawfirmmarketingpros.com', 'sQ2VSMkR7cLHb46Wdemi', 'abc') === 'https://app.lawfirmmarketingpros.com/v2/location/sQ2VSMkR7cLHb46Wdemi/contacts/detail/abc', 'Open in GHL link');
 
@@ -80,7 +87,22 @@ for (const d of await readdir(join(ROOT, 'firms'), { withFileTypes: true })) {
 let scanned = 0; const found = [];
 for (const p of publicFiles) { let o; try { o = await json(p); } catch { continue; } scanned++; found.push(...badKeys(o).map(x => `${p}${x}`)); }
 check(scanned >= 10 && !found.length, `no contact IDs, names, email addresses or phone numbers in ${scanned} public files${found.length ? `: ${found.slice(0, 5).join(', ')}` : ''}`);
+// v1.13.1: also look at the VALUES. Any email address or phone number in any unencrypted data file (every .json under
+// firms/, status/ and admin/, except details.enc.json) fails, whatever key it's under.
+const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/, PHONE_RE = /(?:\+\d{10,15}\b|\(\d{3}\)\s?\d{3}-\d{4}|\b\d{3}-\d{3}-\d{4}\b)/;
+const allJson = async dir => (await readdir(join(ROOT, dir), { withFileTypes: true, recursive: true }))
+  .filter(d => d.isFile() && d.name.endsWith('.json') && d.name !== 'details.enc.json')
+  .map(d => join(d.parentPath || d.path, d.name).slice(ROOT.length));
+const plainFiles = [...await allJson('firms'), ...await allJson('status'), ...await allJson('admin')];
+const pii = [];
+// The one exception: custom-field LABELS in discovery.json (a form question can name the firm's own inbox, e.g.
+// "grant CRM access to info@…"). They're field names the sub-account defines, never a lead's details.
+const strip = (p, o) => { if (p.endsWith('discovery.json') && o?.customFields) for (const list of Object.values(o.customFields)) if (Array.isArray(list)) for (const f of list) if (f) delete f.name; return o; };
+for (const p of plainFiles) { const t = JSON.stringify(strip(p, JSON.parse(await readFile(join(ROOT, p), 'utf8')))); const m = t.match(EMAIL_RE) || t.match(PHONE_RE); if (m) pii.push(`${p}: ${m[0].replace(/./g, (c, i) => (i < 2 ? c : '•'))}`); }
+check(plainFiles.length >= 15 && !pii.length, `no email address or phone number in ${plainFiles.length} unencrypted data files${pii.length ? `: ${pii.slice(0, 5).join(', ')}` : ''}`);
 const admin = await readFile(join(ROOT, 'admin/index.html'), 'utf8');
+check(!/console\.(log|info|warn|error|debug)\([^)]*(nip|notInPipeline|email|phone|\.name\b|pass)/i.test(admin), 'the admin page never logs contacts or passphrases to the console');
+check(/store\.set\(PASS_VAULT_KEY, JSON\.stringify\(\{ v: 1, alg: 'AES-GCM'/.test(admin) && !/store\.set\(PASS_VAULT_KEY, (pass|typed|o\b|JSON\.stringify\(o\))/.test(admin), 'remembered passphrases are only ever stored AES-GCM encrypted');
 check(!/localStorage\.setItem\([^)]*(nip|notInPipeline)/i.test(admin) && !/sessionStorage\.setItem\([^)]*(nip|notInPipeline)/i.test(admin), 'the admin page never stores the decrypted list');
 
 console.log(failed ? `\n${failed} failed, ${passed} passed` : `\nAll ${passed} admin details checks passed`);

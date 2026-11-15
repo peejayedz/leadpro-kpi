@@ -24,13 +24,26 @@ export function firmReasons(slug, k, issues = []) {
 }
 
 // Contacts from the ENCRYPTED details file (records.notInPipeline), limited to the last `days` days, newest first.
-// Each: { contactId, name, createdAt, via }. Emails and phones are left out of what the panel shows.
+// Each: { contactId, name, email, phone, createdAt, via, source }. They live only in the page's memory (never stored).
+// No name → the email, then the phone, stands in (never "Unknown"); `named` says whether a real name was there.
+const NO_NAME = new Set(['', 'unnamed', 'unknown', 'unknown caller']);
+// How it came in, as the sync recorded it (scripts/not-in-pipeline.mjs), in short words. Anything else shows as recorded.
+export const SOURCE_LABEL = {
+  Form: 'Form', 'Facebook form': 'Form (Facebook)', Survey: 'Survey', 'Chat widget': 'Chat', 'Calendar booking': 'Booking',
+  'Called in': 'Call', 'Texted in': 'Text', 'Emailed in': 'Email', 'Messaged in': 'Message', 'Google message': 'Google message', WhatsApp: 'WhatsApp',
+};
+const str = v => (v === null || v === undefined ? '' : String(v).trim());
 export function notInPipelineList(records, now = Date.now(), days = 30) {
   const since = now - days * 864e5;
   return (Array.isArray(records?.notInPipeline) ? records.notInPipeline : [])
     .filter(c => c && c.contactId && Date.parse(c.createdAt) >= since)
     .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
-    .map(c => ({ contactId: String(c.contactId), name: String(c.name || 'Unnamed'), createdAt: c.createdAt, via: c.via || '' }));
+    .map(c => {
+      const email = str(c.email) || null, phone = str(c.phone) || null, raw = str(c.name);
+      const named = !NO_NAME.has(raw.toLowerCase()) && raw !== email && raw !== phone;
+      const via = str(c.via);
+      return { contactId: String(c.contactId), name: named ? raw : email || phone || 'No name, email or phone', named, email, phone, createdAt: c.createdAt, via, source: SOURCE_LABEL[via] || via };
+    });
 }
 export const ghlContactUrl = (base, loc, id) => `${base || 'https://app.lawfirmmarketingpros.com'}/v2/location/${encodeURIComponent(loc)}/contacts/detail/${encodeURIComponent(id)}`;
 

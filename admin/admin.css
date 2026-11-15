@@ -139,12 +139,20 @@ input[readonly]{color:var(--mut)}
 .abox .btnrow{margin-top:4px}
 .abox .btn{min-height:34px;padding:8px 12px;font-size:11.5px}
 .nip{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column}
-.nip li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.nip li{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
 .nip li:first-child{border-top:0}
 .nip li b{font-weight:600}
-.nip .lnk{white-space:nowrap;text-decoration:underline}
-.nipform{display:flex;gap:8px;align-items:stretch;margin-top:4px} .nipform .pw{flex:1;min-width:0}
+.nip .nwho{display:flex;flex-direction:column;gap:2px;min-width:0}
+.nip .nname{color:var(--ink);overflow-wrap:anywhere}
+.nip .nreach,.nip .nmeta{display:flex;flex-wrap:wrap;column-gap:6px;font-size:13px;overflow-wrap:anywhere}
+.nip .nreach{color:var(--ink)} .nip .nmeta{color:var(--mut)}
+.nip .nreach>span,.nip .nmeta>span{min-width:0}
+.nip .lnk{white-space:nowrap;text-decoration:underline;flex:none;padding-top:1px}
+.abox .nipopen{margin:2px 0 4px}
+.nipform{display:flex;gap:8px;align-items:stretch;margin-top:4px;flex-wrap:wrap} .nipform .pw{flex:1 1 220px;min-width:0}
 .nipform input{min-height:40px}
+.nipform .nipremember{flex-basis:100%;font-size:13.5px;color:var(--ink)}
+.copied{margin-left:2px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .dpacts{display:flex;flex-wrap:wrap;gap:8px}
 .dpacts .btn{min-height:38px;font-size:11.5px;padding:9px 13px}
@@ -379,7 +387,9 @@ input[readonly]{color:var(--mut)}
   .gw{grid-template-columns:1fr}
   .frow{grid-template-columns:122px minmax(0,1fr) 32px;gap:10px;font-size:13.5px}
   .dpacts{display:grid;grid-template-columns:1fr 1fr} .dpacts .btn{min-height:46px} .dpacts .btn.p,.dpacts .btn:last-child:nth-child(even){grid-column:1/-1}
-  .nipform{flex-direction:column}
+  .nipform{flex-direction:column} .nipform .pw{flex:none} .nipform .btn{min-height:46px} .nipform .nipremember{min-height:32px}
+  .nip li{flex-direction:column;gap:6px} .nip .lnk{padding:6px 0}
+  .abox .nipopen .btn{flex:1 1 auto;min-height:46px}
   .nfmain,.nfside{padding:18px}
   .grid2{grid-template-columns:1fr}
   .nfacts .btn{flex:1 1 auto}

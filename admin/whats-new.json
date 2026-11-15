@@ -1,5 +1,15 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.13.1": {
+    "summary": "See exactly who isn't in a pipeline, remember a firm's passphrase, and find the GHL menu link under Setup.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "Contacts not in a pipeline show name, email, phone, how they came in (form, chat, booking, call, text or email) and the date, each with Open in GHL. No name? The email or phone shows instead of \"Unknown\"." },
+      { "type": "improved", "tag": "internal", "text": "\"Open Contacts in GHL\" is now a button at the top of the needs-attention box." },
+      { "type": "new", "tag": "internal", "text": "\"Remember on this computer\" next to Unlock keeps the firm's passphrase locked with your admin password, so the names show straight away next time. Lock or Forget token clears it." },
+      { "type": "improved", "tag": "internal", "text": "\"Copy GHL link\" is now \"Copy GHL menu link\" and lives in the Setup tab. Overview keeps Open dashboard, Re-sync and Edit mapping." },
+      { "type": "fixed", "tag": "internal", "text": "\"Copied\" shows only next to the button you clicked, and goes away after a few seconds." }
+    ]
+  },
   "1.13.0": {
     "summary": "A simpler firm list, a Details panel for everything else, and no more logging in again when you go back.",
     "items": [

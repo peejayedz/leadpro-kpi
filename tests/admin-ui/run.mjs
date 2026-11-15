@@ -37,9 +37,15 @@ const SODIUM_STUB = `window.sodium = { ready: Promise.resolve(), from_string: s 
 const unseal = b => { const u = Buffer.from(b, 'base64'); return u[0] === 0xEE ? u.subarray(1).toString('utf8') : null; };
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.md': 'text/markdown', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.txt': 'text/plain' };
 
+// The newest version in CHANGELOG.md (What's new opens that card).
+const LATEST = (await readFile(join(ROOT, 'CHANGELOG.md'), 'utf8')).match(/^## v(\d+\.\d+\.\d+)/m)[1];
+// LFMP's real 90-day lead count changes with every sync: read it from the repo instead of hard-coding it.
+const LFMP_LEADS90 = JSON.parse(await readFile(join(ROOT, 'firms/lfmp/data/kpis.json'), 'utf8')).periods.last90.current.totalLeads;
+
 // Fixture for "lead not in a pipeline": LFMP's encrypted details, made here with a test passphrase (the real file stays untouched).
 const NIP_PASS = 'fixture-passphrase-lfmp';
 const NIP = [{ contactId: 'cFixture0001', name: 'Jordan Fixture', email: 'jordan@example.test', phone: '+15550000001', createdAt: new Date(Date.now() - 3 * 864e5).toISOString(), via: 'Chat widget' },
+  { contactId: 'cFixture0002', name: 'Unnamed', email: 'noname@example.test', phone: '+15550000002', createdAt: new Date(Date.now() - 5 * 864e5).toISOString(), via: 'Texted in' },
   { contactId: 'cFixtureOld9', name: 'Old Fixture', email: null, phone: null, createdAt: new Date(Date.now() - 60 * 864e5).toISOString(), via: 'Form' }];
 const NIP_ENV = JSON.stringify(await encryptJSON({ generatedAt: new Date().toISOString(), notInPipeline: NIP, leads: [] }, NIP_PASS, 1000));
 
@@ -57,10 +63,10 @@ let failed = 0, passed = 0;
 const check = (v, what) => { if (v) { passed++; console.log(`✓ ${what}`); } else { failed++; console.log(`✗ ${what}`); } };
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
 
-// LFMP gets 1 "not in a pipeline" contact in the last 30 days (as in the live data) whatever the repo files say.
+// LFMP gets 2 "not in a pipeline" contacts in the last 30 days (as in the live data) whatever the repo files say.
 async function withNip(G) {
   const k = JSON.parse(await G.fileText('firms/lfmp/data/kpis.json'));
-  k.periods.last30.current.notInPipeline = 1;
+  k.periods.last30.current.notInPipeline = 2;
   G.M.overlay.set('firms/lfmp/data/kpis.json', JSON.stringify(k, null, 2) + '\n');
   return G;
 }
@@ -128,7 +134,7 @@ try {
   check(/4 firms/i.test(strip) && /(All synced \d|sync problem)/i.test(strip) && /needs attention/i.test(strip) && !/leads · 90/i.test(strip) && !/outside a pipeline/i.test(strip), `strip: ${strip}`);
   check(JSON.stringify(await page.$$eval('#firmFilters [data-filter]', b => b.map(x => x.dataset.filter))) === '["all","attention"]', 'filters: All · Needs attention only');
   const lf = (await page.textContent('.firm[data-slug="lfmp"]')).replace(/\s+/g, ' ');
-  check(/Needs attention/.test(lf) && /1 lead not in a pipeline/.test(lf) && /36/.test(lf) && /leads · 90 days/.test(lf), `LFMP row: needs attention + reason + leads (${lf.slice(0, 120)})`);
+  check(/Needs attention/.test(lf) && /2 leads not in a pipeline/.test(lf) && new RegExp(`(^|\\D)${LFMP_LEADS90}\\s*leads · 90 days`).test(lf) && /leads · 90 days/.test(lf), `LFMP row: needs attention + reason + leads (${lf.slice(0, 120)})`);
   check(await page.$eval('.firm[data-slug="lfmp"] [data-details]:not(.reason)', e => e.classList.contains('p')) && !(await page.$eval('.firm[data-slug="mahdavi"] [data-details]', e => e.classList.contains('p'))), 'Details is gold only on the firm that needs attention');
   check(/OK/.test(await page.textContent('.firm[data-slug="mahdavi"] .fstate')) && /Synced/.test(await page.textContent('.firm[data-slug="mahdavi"] .fstate')), 'Mahdavi: OK · Synced <time>');
   check(await page.$$eval('.firm[data-slug="mahdavi"] .acts .btn', b => b.map(x => x.textContent.trim().replace(/\s+/g, ' ')).join('|')) === 'Dashboard ↗|Details', 'row has two buttons: Dashboard ↗ and Details →');
@@ -156,22 +162,29 @@ try {
   check(await hashIs(page) === '#/firm/lfmp', `reason link opens Details with a hash (${await hashIs(page)})`);
   const head = (await page.textContent('#dPanel .dphead')).replace(/\s+/g, ' ');
   check(/Law Firm Marketing Pros/i.test(head) && /GHL:/.test(head), `header: name, practice area, GHL name (${head.trim()})`);
-  check(await page.isVisible('#dPanel [data-reason="not-in-pipeline"]') && /1 lead not in a pipeline/.test(await page.textContent('#dPanel .abox')), 'needs-attention box first, with the reason');
-  check(await page.isVisible('#nipPass') && /Open Contacts in GHL/.test(await page.textContent('#nipList')), 'no saved passphrase: Contacts link + unlock to see who');
+  check(await page.isVisible('#dPanel [data-reason="not-in-pipeline"]') && /2 leads not in a pipeline/.test(await page.textContent('#dPanel .abox')), 'needs-attention box first, with the reason');
+  check(await page.isVisible('#nipPass') && await page.isVisible('#nipRemember') && !(await page.isChecked('#nipRemember')), 'no saved passphrase: unlock form with "Remember on this computer" (off by default)');
+  const firstKid = await page.$eval('#nipList', el => { const k = el.firstElementChild; const a = k?.querySelector('a'); return { cls: k?.className, btn: a?.classList.contains('btn') && !a.classList.contains('p'), text: a?.textContent.trim(), beforeForm: !!(k && el.querySelector('form') && (k.compareDocumentPosition(el.querySelector('form')) & 4)) }; });
+  check(firstKid.btn && firstKid.text === 'Open Contacts in GHL ↗' && firstKid.beforeForm, `"Open Contacts in GHL ↗" is an outlined button, first, before the passphrase box (${JSON.stringify(firstKid)})`);
+  check(/Remember on this computer/.test(await page.textContent('#nipList .nipform')), 'Remember checkbox sits with Unlock');
   await page.fill('#nipPass', 'wrong passphrase'); await page.press('#nipPass', 'Enter');
   await page.waitForFunction(() => /didn't work/.test(document.querySelector('#nipList')?.textContent || ''));
   check(true, 'wrong passphrase → plain error');
   await page.fill('#nipPass', NIP_PASS); await page.press('#nipPass', 'Enter');
   await page.waitForSelector('#nipList .nip li');
-  const nipRows = await page.$$eval('#nipList .nip li', l => l.map(x => ({ t: x.textContent, href: x.querySelector('a')?.href })));
-  check(nipRows.length === 1 && /Jordan Fixture/.test(nipRows[0].t) && nipRows[0].href === 'https://app.lawfirmmarketingpros.com/v2/location/sQ2VSMkR7cLHb46Wdemi/contacts/detail/cFixture0001', `typed passphrase: name, date, Open in GHL link (${nipRows[0]?.t?.trim()} → ${nipRows[0]?.href})`);
-  check(!/jordan@example|\+1555/.test(await page.textContent('#dPanel')), 'no email or phone shown');
-  check(await page.evaluate(() => !JSON.stringify(localStorage).includes('Jordan') && !JSON.stringify(sessionStorage).includes('Jordan') && !JSON.stringify(localStorage).includes('fixture-passphrase')), 'nothing about the contact (or the typed passphrase) saved in the browser');
+  const nipRows = await page.$$eval('#nipList .nip li', l => l.map(x => ({ name: x.querySelector('.nname')?.textContent, t: x.textContent.replace(/\s+/g, ' '), href: x.querySelector('a.nopen')?.href })));
+  const URL1 = 'https://app.lawfirmmarketingpros.com/v2/location/sQ2VSMkR7cLHb46Wdemi/contacts/detail/';
+  check(nipRows.length === 2 && nipRows[0].name === 'Jordan Fixture' && /jordan@example\.test/.test(nipRows[0].t) && /\+15550000001/.test(nipRows[0].t) && /Chat/.test(nipRows[0].t) && nipRows[0].href === `${URL1}cFixture0001`, `row: name, email, phone, source, date, Open in GHL ↗ (${nipRows[0]?.t?.trim()} → ${nipRows[0]?.href})`);
+  check(nipRows[1].name === 'noname@example.test' && /\(no name\)/.test(nipRows[1].t) && /\+15550000002/.test(nipRows[1].t) && /Text/.test(nipRows[1].t) && !/Unknown|Unnamed/.test(nipRows[1].t) && nipRows[1].href === `${URL1}cFixture0002`, `no name: the email stands in, never "Unknown" (${nipRows[1]?.t?.trim()})`);
+  check(await page.isVisible('#nipList > .nipopen a.btn'), 'after unlock: Open Contacts in GHL ↗ still first, each row has its own Open in GHL ↗');
+  check(await page.evaluate(() => !JSON.stringify(localStorage).includes('Jordan') && !JSON.stringify(sessionStorage).includes('Jordan') && !JSON.stringify(localStorage).includes('example.test') && !JSON.stringify(localStorage).includes('fixture-passphrase') && localStorage.getItem('leadpro-admin-firm-pass') === null), 'not remembered: nothing about the contacts or the passphrase saved in the browser');
+  await shot(page, 'details_overview_names_1440_dark');
   await shot(page, 'details_overview_1440_dark');
   const ov = (await page.innerText('#dPanel')).replace(/\s+/g, ' ');
-  for (const [what, re] of [['Status + last update', /Status OK|Status Holding|Status Last sync/], ['Leads (90 days)', /Leads 36 in the last 90 days/], ['Not in a pipeline (30 days)', /Not in a pipeline 1 new contact · 30 days/], ['Slug', /Slug lfmp/], ['Connection', /Connection Private Integration token/], ['Banner', /Banner (On|Off)/]])
+  for (const [what, re] of [['Status + last update', /Status OK|Status Holding|Status Last sync/], ['Leads (90 days)', new RegExp(`Leads ${LFMP_LEADS90} in the last 90 days`)], ['Not in a pipeline (30 days)', /Not in a pipeline 2 new contacts · 30 days/], ['Slug', /Slug lfmp/], ['Connection', /Connection Private Integration token/], ['Banner', /Banner (On|Off)/]])
     check(new RegExp(re.source, 'i').test(ov), `Overview info: ${what}`);
-  check(await page.isVisible('#dPanel .dpacts a.btn.p') && await page.isVisible('#dPanel .dpacts [data-f="link"]') && await page.isVisible('#dPanel .dpacts [data-f="sync"]') && await page.isVisible('#dPanel .dpacts [data-f="map"]'), 'Overview actions: Open dashboard (gold), Copy GHL link, Re-sync, Edit mapping');
+  const acts = await page.$$eval('#dPanel .dpacts > *', b => b.map(x => `${x.textContent.trim()}${x.classList.contains('p') ? ' (gold)' : ''}`));
+  check(JSON.stringify(acts) === JSON.stringify(['Open dashboard ↗ (gold)', 'Re-sync', 'Edit mapping']), `Overview actions: Open dashboard ↗ (gold), Re-sync, Edit mapping (${acts.join(' · ')})`);
   await page.keyboard.press('Escape');
   check(!(await panelOpen(page)) && await hashIs(page) === '#/', 'Esc closes Details and the hash');
   await page.click('.firm[data-slug="mahdavi"] .fname');
@@ -185,19 +198,32 @@ try {
   await page.goBack(); await page.waitForFunction(() => document.getElementById('dPanel').hidden);
   check(!(await lockShown(page)), 'Back again: firm list, still unlocked');
 
-  // Copy GHL link from Details
+  // ---------------- Details: Setup (Copy GHL menu link lives here since v1.13.1) ----------------
   await page.click('.firm[data-slug="emery-law-office"] [data-details]');
   await page.waitForSelector('#dPanel:not([hidden])');
-  await page.click('#dPanel .dpacts [data-f="link"]');
-  await page.fill('#dlgPass', 'some-pass phrase#1'); await page.click('#dlgOk');
-  check(/#k=some-pass%20phrase%231$/.test(await page.evaluate(() => navigator.clipboard.readText())) && /Copied/.test(await page.textContent('#dPanel .dpmsg')), 'Copy GHL link (URL-encoded passphrase), message in Details and row');
-
-  // ---------------- Details: Setup ----------------
+  check(!(await page.$('#dPanel [data-f="link"]')), 'Overview has no copy-link button');
+  await page.click('[data-dp-tab="performance"]'); await page.waitForSelector('#dPanel .tiles, #dPanel .perfhead');
+  check(!(await page.$('#dPanel [data-f="link"]')), 'Performance has no copy-link button');
   await page.click('[data-dp-tab="setup"]');
   await page.waitForSelector('#dPanel .dset');
   check(await hashIs(page) === '#/firm/emery-law-office/setup', 'Setup tab has its own hash');
   const st = (await page.innerText('#dPanel')).replace(/\s+/g, ' ');
   check(/Stage mapping/i.test(st) && /Location ID l68l8TvqZyERd5q1zdlj/i.test(st) && /GHL_TOKEN_EMERY_LAW_OFFICE/.test(st) && /Update token/i.test(st) && /Testing banner/i.test(st) && /Delete firm/i.test(st), 'Setup: mapping, connection (location, secrets, Update token), banner, delete');
+  const secs = await page.$$eval('#dPanel .dset .lbl', h => h.map(x => x.textContent.trim()));
+  const mi = secs.findIndex(s => /GHL menu link/i.test(s));
+  check(mi > 0 && /Connection/i.test(secs[mi - 1]) && /Testing banner/i.test(secs[mi + 1]), `Setup: "GHL menu link" between Connection and Testing banner (${secs.join(' · ')})`);
+  check(/The scorecard link to paste into the sub-account's Custom Menu Link\./.test(await page.textContent('#dPanel [data-sec="menu-link"]')) && /^Copy GHL menu link$/.test((await page.textContent('#dPanel [data-sec="menu-link"] [data-f="link"]')).trim()), 'Setup: "Copy GHL menu link" + helper line');
+  check(!/Copy GHL link\b/.test(await page.content()), 'old name "Copy GHL link" is gone');
+  await page.click('#dPanel [data-sec="menu-link"] [data-f="link"]');
+  check(/Custom Menu Link/.test(await page.textContent('#dlg')) && /Copy GHL menu link/.test(await page.textContent('#dlg h3')), 'dialog: Copy GHL menu link, with the helper wording');
+  await page.fill('#dlgPass', 'some-pass phrase#1'); await page.click('#dlgOk');
+  check(/#k=some-pass%20phrase%231$/.test(await page.evaluate(() => navigator.clipboard.readText())), 'Copy GHL menu link: URL-encoded passphrase on the clipboard');
+  check(await page.isVisible('#dPanel [data-sec="menu-link"] [data-f="link"] + .copied') && /Copied/.test(await page.textContent('#dPanel [data-sec="menu-link"] .copied')), '"Copied" shows right next to the clicked button');
+  check(!/Copied/.test(await page.textContent('#dPanel .dpmsg')) && !/Copied/.test(await page.textContent('.firm[data-slug="emery-law-office"] .fstatus')), '"Copied" is not in the message line or on the firm row');
+  { const cfc = await contrastFailures(page, '#dPanel [data-sec="menu-link"]'); check(!cfc.length, `"Copied" passes AA contrast${cfc.length ? `: ${cfc.join(' | ')}` : ''}`); }
+  await shot(page, 'setup_copied_1440_dark');
+  await page.waitForFunction(() => !document.querySelector('#dPanel .copied'), null, { timeout: 7000 });
+  check(true, '"Copied" goes away after a few seconds');
   await shot(page, 'setup_1440_dark');
   const before = await G.fileText('firms/emery-law-office/config.json');
   await page.click('#dPanel [data-f="banner"]');
@@ -275,10 +301,34 @@ try {
   check(/Jordan Fixture/.test(await page.textContent('#nipList')) && !/Old Fixture/.test(await page.textContent('#nipList')), 'saved passphrase: list shows without typing (last 30 days only)');
   await page.evaluate(() => localStorage.removeItem('lfmp-pass-lfmp'));
 
+  // "Remember on this computer": sealed with the admin key, names show straight away next time; idle lock keeps it
+  await page.reload(); await page.waitForSelector('#nipPass');
+  await page.fill('#nipPass', NIP_PASS); await page.check('#nipRemember'); await page.press('#nipPass', 'Enter');
+  await page.waitForSelector('#nipList .nip li');
+  const vault = await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass'));
+  check(!!vault && JSON.parse(vault).alg === 'AES-GCM' && !vault.includes(NIP_PASS) && !vault.includes('lfmp') && !/Jordan|example\.test/.test(vault), 'remembered: stored AES-GCM encrypted (no passphrase, slug or contact in the clear)');
+  await page.reload(); await page.waitForSelector('#nipList .nip li');
+  check(/Jordan Fixture/.test(await page.textContent('#nipList')) && !(await page.$('#nipPass')), 'remembered: names show straight away after a reload, no typing');
+  await page.evaluate(() => { const s = JSON.parse(sessionStorage.getItem('leadpro-admin-session')); s.t = Date.now() - 31 * 60e3; sessionStorage.setItem('leadpro-admin-session', JSON.stringify(s)); });
+  await page.reload(); await page.waitForSelector('#lockPw:visible');
+  check(await page.evaluate(() => !!localStorage.getItem('leadpro-admin-firm-pass')), 'idle lock keeps the remembered passphrase (still encrypted)');
+  await unlock(page); await page.goto(BASE + '#/firm/lfmp'); await page.waitForSelector('#nipList .nip li');
+  check(/Jordan Fixture/.test(await page.textContent('#nipList')), 'next unlock: names show straight away');
+  // a remembered passphrase that stops working (firm passphrase changed) is forgotten, with a plain message
+  const goodVault = await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass'));
+  await page.route('**/firms/lfmp/data/details.enc.json*', async r => r.fulfill({ contentType: 'application/json', body: JSON.stringify(await encryptJSON({ notInPipeline: NIP }, 'a-changed-passphrase', 1000)) }));
+  await page.reload(); await page.waitForFunction(() => /no longer works/.test(document.querySelector('#nipList')?.textContent || ''));
+  check(await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass') === null), 'remembered passphrase that no longer works: forgotten, "type the current one"');
+  await page.unroute('**/firms/lfmp/data/details.enc.json*');
+  await page.route('**/firms/lfmp/data/details.enc.json*', r => r.fulfill({ contentType: 'application/json', body: NIP_ENV }));
+  await page.evaluate(v => localStorage.setItem('leadpro-admin-firm-pass', v), goodVault);
+  await page.reload(); await page.waitForSelector('#nipList .nip li');
+
   // Lock and idle end the session
   await page.keyboard.press('Escape');
   await page.click('[data-menu="topMenu"]'); await page.click('#topMenu [data-act="lock"]');
   check(await lockShown(page) && await page.evaluate(() => sessionStorage.getItem('leadpro-admin-session') === null), 'Lock: lock screen, session cleared');
+  check(await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass') === null && !!localStorage.getItem('leadpro-admin-gh-token')), 'Lock clears remembered passphrases (the encrypted GitHub token stays)');
   await page.reload(); await page.waitForSelector('#lockPw:visible');
   check(await lockShown(page), 'after Lock, a reload asks for the password');
   await unlock(page); await page.waitForSelector('.firm');
@@ -290,6 +340,16 @@ try {
   await page.mouse.click(5, 5); await page.waitForSelector('#lockPw:visible', { timeout: 5000 });
   check(/30 minutes/.test(await page.textContent('#lockErr')), 'idle while open: locks on the next click, says why');
   await unlock(page); await page.waitForSelector('.firm');
+
+  // Forget token also clears remembered passphrases
+  await page.goto(BASE + '#/firm/lfmp'); await page.waitForSelector('#nipPass');
+  await page.fill('#nipPass', NIP_PASS); await page.check('#nipRemember'); await page.press('#nipPass', 'Enter'); await page.waitForSelector('#nipList .nip li');
+  check(await page.evaluate(() => !!localStorage.getItem('leadpro-admin-firm-pass')), 'remembered again (before Forget token)');
+  await page.keyboard.press('Escape');
+  await page.click('[data-menu="topMenu"]'); await page.click('#topMenu [data-act="forget"]'); await page.click('#dlgOk');
+  await page.waitForSelector('#tokenIn:visible');
+  check(await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass') === null && localStorage.getItem('leadpro-admin-gh-token') === null), 'Forget token clears the token and remembered passphrases');
+  await page.fill('#tokenIn', 'github_pat_test_token_for_mock'); await page.click('#tokenGo'); await page.waitForSelector('.firm');
 
   // ---------------- top bar, bell, What's new ----------------
   await page.click('[data-menu="topMenu"]');
@@ -306,7 +366,7 @@ try {
   await page.click('#newsBtn');
   await page.waitForSelector('.vcard');
   const cards = await page.$$eval('.vcard', els => els.map(e => ({ open: e.open, v: e.querySelector('.vt b').textContent })));
-  check(cards[0].v === 'v1.13.0' && cards[0].open && cards.slice(1).every(c => !c.open), `newest card (${cards[0].v}) open, older collapsed`);
+  check(cards[0].v === `v${LATEST}` && cards[0].open && cards.slice(1).every(c => !c.open), `newest card (${cards[0].v}) open, older collapsed`);
   await page.click('.vcard[open] [data-tech]');
   check(await page.isVisible('.vcard[open] .tech'), 'Technical details shows the developer text');
   await shot(page, 'whatsnew_1440_dark');
@@ -387,6 +447,10 @@ try {
       check(box.w <= 390 - 30 && await page.$$eval('.firm[data-slug="lfmp"] .acts .btn', b => b.every(x => x.getBoundingClientRect().height >= 44)), '390: firm card with two big buttons');
     }
     await page.click('.firm[data-slug="lfmp"] [data-details]:not(.reason)'); await page.waitForSelector('#dPanel:not([hidden]) .dpbody');
+    await page.waitForSelector('#nipPass');
+    check(await noSideScroll(page), `${tag}: Details (before unlock) has no sideways scroll`);
+    let cfl = await contrastFailures(page, '#dPanel'); check(!cfl.length, `${tag}: Details before unlock passes AA contrast${cfl.length ? `: ${cfl.join(' | ')}` : ''}`);
+    await shot(page, `details_overview_locked_${tag}`);
     await page.fill('#nipPass', NIP_PASS); await page.press('#nipPass', 'Enter'); await page.waitForSelector('#nipList .nip li');
     if (w === 390) check(await page.$eval('#dPanel', e => { const r = e.getBoundingClientRect(); return r.left === 0 && Math.round(r.width) === 390; }), '390: Details is full screen');
     check(await noSideScroll(page), `${tag}: Details has no sideways scroll`);
