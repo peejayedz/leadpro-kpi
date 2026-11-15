@@ -13,7 +13,7 @@
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=1.12.0">
-<link rel="stylesheet" href="admin.css?v=1.12.0">
+<link rel="stylesheet" href="admin.css?v=1.13.0">
 </head>
 <body>
 
@@ -63,10 +63,10 @@
 <!-- ================= app ================= -->
 <div class="wrap" id="appView" hidden>
   <header class="top">
-    <a class="mark" href="./" title="LFMP · KPI admin">LFMP</a>
+    <a class="mark" href="#/" title="LFMP · KPI admin">LFMP</a>
     <nav class="nav" aria-label="LFMP tools">
       <a href="https://peejayedz.github.io/ghl-subaccount-builder-page/" target="_blank" rel="noopener">Clients</a>
-      <a href="./" aria-current="page">KPI admin</a>
+      <a href="#/" aria-current="page">KPI admin</a>
       <a href="https://peejayedz.github.io/automation-review/" target="_blank" rel="noopener">Review</a>
     </nav>
     <div class="topr">
@@ -91,6 +91,8 @@
   <footer class="foot"><span>Repo <a id="repoLink" target="_blank" rel="noopener"></a></span><span>Internal tool · changes are commits to the repo · <span id="footVersion"></span></span></footer>
 </div>
 
+<div class="drawer-shade dshade" id="dpShade" hidden></div>
+<aside class="drawer dpanel" id="dPanel" role="dialog" aria-labelledby="dpTitle" hidden></aside>
 <div class="drawer-shade" id="newsShade" hidden></div>
 <aside class="drawer" id="newsPanel" role="dialog" aria-modal="true" aria-labelledby="newsTitle" hidden></aside>
 <div class="ovl" id="ovl" hidden><div class="dlg" id="dlg" role="dialog" aria-modal="true"></div></div>
@@ -111,6 +113,8 @@ import { checkScopes } from '../scripts/scope-check.mjs';
 import { pipelineNotices } from '../scripts/not-in-pipeline.mjs';
 import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
 import { buildCards, filterCards, newer } from './news.mjs';
+import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS } from './firm-details.mjs';
+import { decryptJSON } from '../scripts/kpi-core.mjs';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -234,10 +238,42 @@ function show(view) { for (const v of ['lockView', 'setupView', 'tokenView', 'ap
 async function deriveFromPassword(pw) {
   const base = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
   const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: fromB64(lock.salt), iterations: lock.iterations }, base, 512));
-  const verifier = bits.slice(0, 32);
-  const key = await crypto.subtle.importKey('raw', bits.slice(32, 64), 'AES-GCM', false, ['encrypt', 'decrypt']);
+  const verifier = bits.slice(0, 32), raw = bits.slice(32, 64);
+  const key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
   bits.fill(0);
-  return { verifier, key };
+  return { verifier, key, raw };
+}
+
+// ---------- unlocked session (v1.13) ----------
+// Moving between screens never asks for the password again. The unlock key (the AES-GCM key that opens the saved token,
+// never the password or the token) is kept in sessionStorage for this browser tab: it survives the Back button and a
+// reload, and is gone when the tab closes, on Lock, or after 30 minutes without activity. The token stays encrypted in localStorage.
+const SESSION_KEY = 'leadpro-admin-session', IDLE_MS = 30 * 60e3;
+const sess = {
+  get() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch { return null; } },
+  set(v) { try { v ? sessionStorage.setItem(SESSION_KEY, JSON.stringify(v)) : sessionStorage.removeItem(SESSION_KEY); } catch {} },
+};
+function startSession(raw) { sess.set({ v: 1, k: toB64(raw), t: Date.now() }); raw.fill(0); }
+let lastTouch = 0;
+function touchSession() {                     // activity keeps the session alive (written at most every 20 s)
+  const now = Date.now(); if (now - lastTouch < 20e3 || !aesKey) return;
+  const s = sess.get(); if (!s) return;
+  if (now - s.t > IDLE_MS) return lockNow('Locked after 30 minutes without activity.');
+  lastTouch = now; s.t = now; sess.set(s);
+}
+['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev => document.addEventListener(ev, touchSession, { passive: true, capture: true }));
+setInterval(() => { const s = sess.get(); if (aesKey && (!s || Date.now() - s.t > IDLE_MS)) lockNow('Locked after 30 minutes without activity.'); }, 30e3);
+// Returns true when a live session unlocked the page (no password prompt).
+async function resumeSession() {
+  const s = sess.get();
+  if (!s?.k || s.v !== 1 || !(Date.now() - s.t <= IDLE_MS)) { sess.set(null); return false; }
+  try {
+    aesKey = await crypto.subtle.importKey('raw', fromB64(s.k), 'AES-GCM', false, ['encrypt', 'decrypt']);
+    const t = await loadToken();
+    if (!t) { aesKey = null; sess.set(null); return false; }      // no token here, or saved under another password
+    ghToken = t; s.t = Date.now(); sess.set(s);
+    await openApp(); return true;
+  } catch { aesKey = null; ghToken = null; sess.set(null); return false; }
 }
 function sameBytes(a, b) { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a[i] ^ b[i]; return d === 0; }
 
@@ -261,6 +297,7 @@ async function boot() {
     lock = await r.json();
     if (!lock.salt || !lock.verifier || !(lock.iterations >= 100000)) throw new Error('lock.json is incomplete');
   } catch (e) { show('setupView'); $('setupErr').textContent = `Couldn't read admin/lock.json (${e.message}).`; return; }
+  if (await resumeSession()) return;
   show('lockView'); $('lockPw').focus();
 }
 
@@ -269,9 +306,10 @@ $('lockForm').addEventListener('submit', async e => {
   const pw = $('lockPw').value; if (!pw) return;
   $('lockGo').disabled = true; $('lockGo').textContent = 'Checking…'; $('lockErr').textContent = '';
   try {
-    const { verifier, key } = await deriveFromPassword(pw);
-    if (!sameBytes(verifier, fromB64(lock.verifier))) throw new Error('wrong');
-    aesKey = key; $('lockPw').value = '';
+    const { verifier, key, raw } = await deriveFromPassword(pw);
+    if (!sameBytes(verifier, fromB64(lock.verifier))) { raw.fill(0); throw new Error('wrong'); }
+    aesKey = key; $('lockPw').value = ''; $('lockErr').textContent = '';
+    startSession(raw);
     const t = await loadToken();
     if (t === undefined) { store.set(TOKEN_KEY, null); return askToken('The token saved on this device was locked with a different admin password, so it was removed. Paste a token again.'); }
     if (!t) return askToken();
@@ -302,7 +340,11 @@ $('tokenForm').addEventListener('submit', async e => {
   finally { $('tokenGo').disabled = false; $('tokenGo').textContent = 'Save token'; }
 });
 
-function lockNow() { aesKey = null; ghToken = null; cleanupRun(); cleanupAppRun(); stopIssues(); closeMenus(); closeNews(); $('screen').innerHTML = ''; closeDialog(); show('lockView'); $('lockPw').value = ''; $('lockPw').focus(); }
+function lockNow(why) {
+  sess.set(null); aesKey = null; ghToken = null; screenNow = null; cleanupRun(); cleanupAppRun(); stopIssues(); closeMenus(); closeNews(); closeDetails({ keepHash: true });
+  $('screen').innerHTML = ''; closeDialog(); show('lockView'); $('lockPw').value = '';
+  $('lockErr').textContent = typeof why === 'string' ? why : ''; $('lockPw').focus();
+}
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
   if (a.dataset.act === 'lock') lockNow();
@@ -428,7 +470,7 @@ async function follow({ workflow, title, t0, check, limitMs, say, label, stop = 
 // =====================================================================
 // Firm list
 // =====================================================================
-let firms = [], configs = {}, kpis = {};
+let firms = [], configs = {}, kpis = {}, kpiFull = {};
 // Shared layers: firms/_defaults.json and the optional practice-area files listed in firms/_defaults/index.json.
 // configs[slug] holds each firm's own config.json; effective() layers it over the shared files.
 const shared = { defaults: {}, available: [], practice: {} };
@@ -448,7 +490,42 @@ async function openApp() {
   show('appView');
   loadChangelog().then(v => { const x = latestVersion(v); $('adminVersion').textContent = x ? `v${x}` : 'What\'s new'; $('footVersion').textContent = x ? `v${x}` : ''; paintNewsDot(); }).catch(() => { $('adminVersion').textContent = 'What\'s new'; });
   clearInterval(checkTimer); checkTimer = setInterval(() => refreshIssues({ reloadKpis: true }), CHECK_MS);   // re-check every 5 minutes while open
-  await renderList();
+  await route();
+}
+
+// ---------- screens: in-page, one URL hash per screen (no reload, so Back and Forward never ask for the password) ----------
+//   #/ firm list · #/new New firm · #/map/<slug> Edit mapping · #/firm/<slug>[/performance|/setup] firm list + Details
+let pendingFlash = null, screenNow = null;
+function parseHash(h = location.hash) {
+  const p = h.replace(/^#\/?/, '').split('/').map(s => { try { return decodeURIComponent(s); } catch { return ''; } }).filter(Boolean);
+  if (p[0] === 'new') return { screen: 'new' };
+  if (p[0] === 'map' && p[1]) return { screen: 'map', slug: p[1] };
+  if (p[0] === 'firm' && p[1]) return { screen: 'list', slug: p[1], tab: ['performance', 'setup'].includes(p[2]) ? p[2] : 'overview' };
+  return { screen: 'list' };
+}
+const hashFor = (screen, slug, tab) => screen === 'new' ? '#/new' : screen === 'map' ? `#/map/${encodeURIComponent(slug)}` : slug ? `#/firm/${encodeURIComponent(slug)}${tab && tab !== 'overview' ? `/${tab}` : ''}` : '#/';
+// Go to a screen: a new history entry (so Back returns here), then route() draws it.
+function go(hash, flash) {
+  if (flash) pendingFlash = flash;
+  if (location.hash === hash || (hash === '#/' && !location.hash)) route(); else location.hash = hash;
+}
+window.addEventListener('hashchange', () => { if (ghToken) route(); });
+async function route() {
+  const r = parseHash();
+  if (r.screen === 'new') { closeDetails({ keepHash: true }); screenNow = 'new'; return renderNewFirm(); }
+  if (r.screen === 'map') {
+    closeDetails({ keepHash: true });
+    if (!firms.length) { try { await loadFirms(); } catch {} }
+    const f = firmOf(r.slug);
+    if (!f) { pendingFlash = null; return go('#/'); }
+    screenNow = 'map'; return renderEditMapping(f);
+  }
+  // firm list, with or without the Details panel
+  const flash = pendingFlash; pendingFlash = null;
+  if (screenNow !== 'list' || flash || !$('firmList')) { screenNow = 'list'; await renderList(flash); }
+  if (!ghToken || parseHash().screen !== 'list') return;
+  const now = parseHash();
+  if (now.slug && firmOf(now.slug)) openDetails(now.slug, now.tab); else closeDetails({ keepHash: true });
 }
 const ago = iso => {
   if (!iso) return 'never';
@@ -462,32 +539,26 @@ async function loadFirms() {
   await loadShared();
   await Promise.all(firms.map(async f => {
     try { configs[f.slug] = await getJSON(`firms/${f.slug}/config.json`); bases[f.slug] = await baseFor(configs[f.slug]); } catch { configs[f.slug] = null; }
-    try { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); kpis[f.slug] = k ? kpiSummary(k) : null; } catch { kpis[f.slug] = null; }
+    try { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); kpis[f.slug] = k ? kpiSummary(k) : null; kpiFull[f.slug] = k; } catch { kpis[f.slug] = null; kpiFull[f.slug] = null; }
     try { subNames[f.slug] = (await getJSON(`firms/${f.slug}/discovery.json`))?.locationName || null; } catch { subNames[f.slug] = null; }   // the GHL sub-account's name
   }));
 }
 const kpiSummary = k => ({ generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null, sync: k.sync || null,
   notInPipeline30: k.periods?.last30?.current?.notInPipeline ?? null });   // null until the firm's first sync with the contact check
 const contactsUrl = slug => { const loc = configs[slug]?.locationId || firmOf(slug)?.locationId || ''; return validLoc(loc) ? `${configs[slug]?.ghlAppBase || 'https://app.lawfirmmarketingpros.com'}/v2/location/${loc}/contacts/smart_list/All` : ''; };
-// Held / incomplete call and message data (scripts/sync.mjs, "Hold").
-function syncFlag(k) {
-  const s = k?.sync; if (!s) return '';
-  if (s.holds > 0) return `<p class="meta syncflag"><span><span class="chip warn">Holding previous numbers</span> GHL returned fewer calls or messages than last sync (${esc(s.reason || '')}). Hold ${s.holds} of 3 since ${esc(ago(s.heldSince))}; the dashboard keeps showing the last good numbers and publishes anyway after 3 holds.</span></p>`;
-  if (s.incomplete) return `<p class="meta syncflag"><span><span class="chip warn">Calls/messages may be incomplete</span> Published after 3 holds (${esc(s.reason || '')}). The dashboard shows a note until the counts recover, for 24 hours at most.</span></p>`;
-  return '';
-}
 const isStale = k => !!(k?.generatedAt && Date.now() - Date.parse(k.generatedAt) > 2 * 3600e3);   // syncs run every 30 minutes
 const isTest = f => /(^|[-\s])test\b|^zz[-\s]/i.test(f.slug) || /\btest\b|^zz\b/i.test(f.name || '');
-// Needs attention: a failed / held / stale / unsynced firm, any open bell issue for it, a "may be incomplete" note,
-// mapping to review, or new contacts outside a pipeline.
-function needsAttention(f) {
-  const k = kpis[f.slug];
-  return firmState(issues, f.slug) !== 'ok' || !k || isStale(k) || !!k.sync?.holds || !!k.sync?.incomplete || (k.notInPipeline30 || 0) > 0
-    || !!configs[f.slug]?.mappingReview || issues.some(i => i.slug === f.slug);
-}
-const FILTERS = [['all', 'All', () => true], ['attention', 'Needs attention', needsAttention], ['app', 'App', f => f.tokenSource === 'app'], ['pi', 'Private Integration', f => f.tokenSource !== 'app'], ['tests', 'Tests', isTest]];
-const FILTER_KEY = 'leadpro-admin-filter';
+// Needs attention (v1.13): any reason from admin/firm-details.mjs: a sync problem, token/app problem, held or "may be
+// incomplete" numbers, mapping to review, no data yet, or new contacts outside a pipeline. Most urgent first.
+const reasonsOf = f => firmReasons(f.slug, kpiFull[f.slug], issues);
+const needsAttention = f => reasonsOf(f).length > 0;
+const FILTERS = [['all', 'All', () => true], ['attention', 'Needs attention', needsAttention]];
+const FILTER_KEY = 'leadpro-admin-filter', TESTS_KEY = 'leadpro-admin-tests';
 let listFilter = FILTERS.some(x => x[0] === store.get(FILTER_KEY)) ? store.get(FILTER_KEY) : 'all', listQuery = '';
+let showTests = store.get(TESTS_KEY) === '1';                 // test firms are hidden unless "Show test firms" is ticked
+const visibleFirms = () => firms.filter(f => showTests || !isTest(f));
+const effCfg = f => mergeConfig(bases[f.slug] || shared.defaults, null, configs[f.slug] || {});
+const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const matchesQuery = f => { const q = norm(listQuery); return !q || [f.name, f.slug, subNames[f.slug]].some(s => norm(s).includes(q)); };
 const clock = iso => (iso ? new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—');
 const lastSyncIso = () => firms.map(f => kpis[f.slug]?.generatedAt).filter(Boolean).sort().pop() || null;
@@ -498,55 +569,37 @@ function nextSync(now = new Date()) {
   d.setMinutes(next); return d.toISOString();
 }
 
+// Status cell: green "OK · Synced 2:07 AM", or gold/red "Needs attention" + the most urgent reason as a link to Details.
+function statusHtml(f) {
+  const k = kpis[f.slug], rs = reasonsOf(f);
+  if (!rs.length) return `<span class="st ok"><span class="sdot" aria-hidden="true"></span><b>OK</b><span class="muted" title="${esc(fmtTime(k?.generatedAt))}">Synced ${esc(clock(k?.generatedAt))}</span></span>`;
+  const sev = rs.some(r => SYNC_PROBLEMS.has(r.kind) && r.kind !== 'nodata') ? 'bad' : 'warn';
+  return `<span class="st ${sev}"><span class="sdot" aria-hidden="true"></span><b>Needs attention</b></span>
+    <a class="reason" href="${esc(hashFor('list', f.slug))}" data-details="${esc(f.slug)}">${esc(rs[0].short)}${rs.length > 1 ? ` <span class="more">+${rs.length - 1} more</span>` : ''} ${ICON.arrow}</a>`;
+}
+const leadsHtml = k => `<span class="n">${k?.leads90 != null ? k.leads90 : '—'}</span><span class="l">lead${k?.leads90 === 1 ? '' : 's'} · 90 days</span>`;
+// One row (a card on phones): name + practice area · status · leads (90 days) · Dashboard ↗ and Details →.
+// Clicking anywhere else on the row opens Details too. Everything else lives in the Details panel.
 function firmRow(f) {
-  const cfg = configs[f.slug], k = kpis[f.slug];
-  const stale = isStale(k);
-  const banner = cfg ? bannerOn(cfg, bases[f.slug] || shared.defaults) : true;
-  const state = firmState(issues, f.slug);
-  const stateTag = { ok: ['tg-green', 'OK', 'Last sync succeeded'], held: ['tg-acc', 'Held', 'Holding the previous numbers; see the bell for details'], failed: ['tg-red', 'Failed', 'The last sync failed; see the bell for details'] }[state];
-  const fi = issues.find(i => i.slug === f.slug && (i.kind === 'failed' || i.kind === 'stale'));
-  const np = k?.notInPipeline30;
-  const mid = `m-${f.slug}`;
-  return `<article class="firm" data-slug="${esc(f.slug)}">
-    <div class="fmain">
-      <div class="fname"><h3>${esc(f.name)}</h3></div>
-      <p class="meta"><span>${esc(f.practiceArea || 'No practice area')}</span><span class="mono">${esc(f.slug)}</span>${subNames[f.slug] ? `<span>GHL: ${esc(subNames[f.slug])}</span>` : ''}</p>
-      <div class="tags"><span class="tag" title="${f.tokenSource === 'app' ? 'GHL token made automatically by the LFMP LeadPro Connector app (refreshed every hour by the token keeper)' : 'GHL Private Integration token pasted when the firm was added'}">Token: ${esc(tokenLabel(f))}</span>
-        ${np ? `<span class="tag tg-acc" title="Contacts created in the last 30 days who came in by form, chat, booking, call, text or email but have no opportunity in any pipeline (imports and bulk adds left out)">${np} new contact${np === 1 ? '' : 's'} not in pipeline · 30 days</span>` : ''}
-        ${cfg?.mappingReview ? '<span class="tag tg-acc" title="The stages were guessed when the firm was set up. Check them in Edit mapping and save.">Review mapping</span>' : ''}</div>
-      ${np === 0 ? '<p class="meta"><span>0 new contacts outside the pipeline (30 days)</span></p>' : ''}
-      ${fi ? `<p class="issueline"><span class="chip ${fi.kind === 'failed' ? 'bad' : 'warn'}">${esc(issueText(fi).title)}</span><span class="muted">since ${esc(ago(fi.firstSeen))}</span><button class="linkbtn" type="button" data-open-issue="${esc(fi.id)}">Details and fix</button></p>` : ''}
-      ${syncFlag(k)}
-    </div>
-    <div class="fstate"><span class="tag ${stateTag[0]}" title="${esc(stateTag[2])}">${stateTag[1]}</span>
-      ${k ? `<span title="${esc(fmtTime(k.generatedAt))}">Updated ${esc(ago(k.generatedAt))}<br><span class="small">${esc(fmtTime(k.generatedAt))}</span></span>` : '<span class="tag tg-acc">No data yet</span>'}
-      ${stale ? '<span class="tag tg-red" title="Syncs should run every 30 minutes. Check Actions for skipped or failed runs.">Over 2 hours old</span>' : ''}</div>
-    <div class="fleads">${k?.leads90 != null ? `<span class="n">${k.leads90}</span><span class="l">lead${k.leads90 === 1 ? '' : 's'} · last 90 days</span>` : '<span class="n">—</span><span class="l">leads · last 90 days</span>'}</div>
+  const att = needsAttention(f);
+  return `<article class="firm" data-slug="${esc(f.slug)}" data-row>
+    <div class="fname"><h3>${esc(f.name)}</h3><p class="pa">${esc(f.practiceArea || 'No practice area')}${isTest(f) ? ' · <span class="tag">Test</span>' : ''}</p></div>
+    <div class="fstate">${statusHtml(f)}</div>
+    <div class="fleads">${leadsHtml(kpis[f.slug])}</div>
     <div class="acts">
-      <a class="btn" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener">Open dashboard ↗</a>
-      <button class="btn wide-only" type="button" data-f="link">Copy GHL link</button>
-      <button class="btn wide-only" type="button" data-f="sync">Re-sync</button>
-      <button class="btn wide-only" type="button" data-f="map">Edit mapping</button>
-      <span class="menuwrap"><button class="btn iconbtn" type="button" data-menu="${esc(mid)}" aria-haspopup="menu" aria-expanded="false" aria-label="More for ${esc(f.name)}">⋯</button>
-        <div class="menu" id="${esc(mid)}" role="menu" hidden>
-          <button class="phone-only" type="button" role="menuitem" data-f="link">${ICON.copy}Copy GHL link</button>
-          <button class="phone-only" type="button" role="menuitem" data-f="sync">${ICON.sync}Re-sync</button>
-          <button class="phone-only" type="button" role="menuitem" data-f="map">${ICON.map}Edit mapping</button>
-          <hr class="phone-only">
-          <button type="button" role="menuitem" data-f="banner" aria-pressed="${banner}" title="Testing-period banner on the dashboard">${ICON.flag}Banner ${banner ? 'on · turn off' : 'off · turn on'}</button>
-          <button class="danger" type="button" role="menuitem" data-f="delete">${ICON.trash}Delete…</button>
-        </div></span>
+      <a class="btn" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener" aria-label="Open ${esc(f.name)}'s dashboard (new tab)">Dashboard ↗</a>
+      <a class="btn${att ? ' p' : ''}" href="${esc(hashFor('list', f.slug))}" data-details="${esc(f.slug)}" aria-label="Details for ${esc(f.name)}">Details ${ICON.arrow}</a>
     </div>
-    <div class="fstatus" aria-live="polite"></div>
+    <div class="fstatus" data-msg="${esc(f.slug)}" aria-live="polite">${firmMsg[f.slug] || ''}</div>
   </article>`;
 }
 function paintStrip() {
   const el = $('statStrip'); if (!el) return;
-  const att = firms.filter(f => firmState(issues, f.slug) !== 'ok' || !kpis[f.slug] || isStale(kpis[f.slug])).length;
-  const leads = firms.reduce((n, f) => n + (kpis[f.slug]?.leads90 || 0), 0);
-  const np = firms.reduce((n, f) => n + (kpis[f.slug]?.notInPipeline30 || 0), 0);
-  const last = lastSyncIso();
-  el.innerHTML = `<span>${firms.length} firm${firms.length === 1 ? '' : 's'}</span><span title="${esc(fmtTime(last))}">${att ? `${att} not syncing cleanly` : 'All OK'} · synced ${esc(clock(last))}</span><span>${leads} lead${leads === 1 ? '' : 's'} · 90 days</span><span title="New contacts in the last 30 days with no opportunity in any pipeline">${np} contact${np === 1 ? '' : 's'} outside a pipeline</span>`;
+  const vis = visibleFirms(), last = lastSyncIso();
+  const syncBad = vis.filter(f => reasonsOf(f).some(r => SYNC_PROBLEMS.has(r.kind))).length;
+  const att = vis.filter(needsAttention).length;
+  el.innerHTML = `<span>${plural(vis.length, 'firm')}</span><span title="${esc(fmtTime(last))}">${syncBad ? `${plural(syncBad, 'sync problem')}` : `All synced ${esc(clock(last))}`}</span>${att
+    ? `<button type="button" class="stripbtn" data-filter-att>${att} need${att === 1 ? 's' : ''} attention ${ICON.arrow}</button>` : '<span>Nothing needs attention</span>'}`;
 }
 function paintSyncInfo() {
   if (!$('syncTimes')) return;
@@ -556,29 +609,35 @@ function paintSyncInfo() {
 }
 function paintFilters() {
   const seg = $('firmFilters'); if (!seg) return;
-  seg.innerHTML = FILTERS.map(([k, label, fn]) => `<button type="button" data-filter="${k}" aria-pressed="${k === listFilter}">${label}<span class="n">${firms.filter(fn).length}</span></button>`).join('');
+  const vis = visibleFirms();
+  seg.innerHTML = FILTERS.map(([k, label, fn]) => `<button type="button" data-filter="${k}" aria-pressed="${k === listFilter}">${label}<span class="n">${vis.filter(fn).length}</span></button>`).join('');
 }
 function paintList() {
   const host = $('firmList'); if (!host) return;
   const fn = FILTERS.find(x => x[0] === listFilter)[2];
-  const shown = firms.filter(f => fn(f) && matchesQuery(f));
+  const shown = visibleFirms().filter(f => fn(f) && matchesQuery(f));
+  const hiddenTests = !showTests ? firms.filter(f => isTest(f) && fn(f) && matchesQuery(f)).length : 0;
   host.innerHTML = !firms.length ? `<div class="empty"><p>No firms yet.</p><button class="btn p big" type="button" data-new-firm>${ICON.plus}Add the first firm</button></div>`
-    : shown.length ? `<div class="ftable"><div class="fhead" aria-hidden="true"><span>Firm</span><span>Status</span><span>Leads</span><span>Actions</span></div>${shown.map(firmRow).join('')}</div>`
-    : `<div class="empty panel"><p>No firms match${listQuery ? ` “${esc(listQuery)}”` : ''}${listFilter !== 'all' ? ` in ${esc(FILTERS.find(x => x[0] === listFilter)[1])}` : ''}.</p><button class="btn" type="button" data-clear-filter>Show all firms</button></div>`;
+    : shown.length ? `<div class="ftable"><div class="fhead" aria-hidden="true"><span>Firm</span><span>Status</span><span>Leads</span><span></span></div>${shown.map(firmRow).join('')}</div>`
+    : `<div class="empty panel"><p>${listFilter === 'attention' && !listQuery ? 'Nothing needs attention. Every firm synced cleanly.' : `No firms match${listQuery ? ` “${esc(listQuery)}”` : ''}${listFilter !== 'all' ? ` in ${esc(FILTERS.find(x => x[0] === listFilter)[1])}` : ''}.`}${hiddenTests ? ` ${plural(hiddenTests, 'test firm')} hidden.` : ''}</p><button class="btn" type="button" data-clear-filter>Show all firms</button></div>`;
   paintFilters();
+  if (dpSlug) document.querySelector(`.firm[data-slug="${CSS.escape(dpSlug)}"]`)?.classList.add('sel');
 }
+const setFilter = k => { listFilter = k; store.set(FILTER_KEY, k === 'all' ? null : k); paintList(); };
 async function renderList(flash) {
   cleanupRun(); cleanupAppRun(); closeMenus();
-  $('screen').innerHTML = `<header class="head"><div class="titles"><p class="ey">LeadPro · KPI admin</p><h1 class="disp">Law firm <span class="g">scorecards.</span></h1><p class="sub" id="listSub">Dashboards sync from GoHighLevel every 30 minutes. Client dashboards look exactly as they do now.</p></div>
-    <div class="controls"><button class="btn p big" type="button" id="newFirmBtn">${ICON.plus}New firm ${ICON.arrow}</button></div></header>
+  for (const k of Object.keys(firmMsg)) if (!busy.has(`${k}:sync`) && !busy.has(`${k}:banner`)) delete firmMsg[k];
+  $('screen').innerHTML = `<header class="head"><div class="titles"><p class="ey">LeadPro · KPI admin</p><h1 class="disp">Law firm <span class="g">scorecards.</span></h1></div>
+    <div class="controls"><a class="btn p big" href="#/new" id="newFirmBtn">${ICON.plus}New firm ${ICON.arrow}</a></div></header>
     <div class="strip" id="statStrip" aria-label="Summary"><span>Loading firms…</span></div>
     ${flash ? `<div class="okmsg listmsg" role="status">${flash}</div>` : ''}
-    <div class="listtools"><div class="segscroll"><div class="seg" id="firmFilters" role="group" aria-label="Filter firms"></div></div>
+    <div class="listtools"><div class="lt-left"><div class="segscroll"><div class="seg" id="firmFilters" role="group" aria-label="Filter firms"></div></div>
+      <label class="check showtests"><input type="checkbox" id="showTests"${showTests ? ' checked' : ''}><span>Show test firms</span></label></div>
       <input type="search" id="firmSearch" placeholder="Search firms…" aria-label="Search firms by name, slug or GHL name" value="${esc(listQuery)}"></div>
     <div id="firmList"></div>`;
-  $('newFirmBtn').addEventListener('click', renderNewFirm);
   $('firmSearch').addEventListener('input', e => { listQuery = e.target.value; paintList(); });
-  $('firmFilters').addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if (!b) return; listFilter = b.dataset.filter; store.set(FILTER_KEY, listFilter === 'all' ? null : listFilter); paintList(); });
+  $('firmFilters').addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if (b) setFilter(b.dataset.filter); });
+  $('showTests').addEventListener('change', e => { showTests = e.target.checked; store.set(TESTS_KEY, showTests ? '1' : null); paintList(); paintStrip(); });
   const host = $('firmList');
   try { await loadFirms(); }
   catch (e) { if (!document.body.contains(host)) return; $('firmList').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; $('statStrip').innerHTML = ''; return; }
@@ -587,15 +646,29 @@ async function renderList(flash) {
   refreshIssues();
 }
 document.addEventListener('click', e => {
-  if (e.target.closest('[data-new-firm]')) renderNewFirm();
+  if (e.target.closest('[data-new-firm]')) go('#/new');
   if (e.target.closest('[data-clear-filter]')) { listFilter = 'all'; listQuery = ''; store.set(FILTER_KEY, null); if ($('firmSearch')) $('firmSearch').value = ''; paintList(); }
+  if (e.target.closest('[data-filter-att]')) { setFilter('attention'); $('firmList')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  // a click on a row (not on its buttons or links) opens Details
+  const row = e.target.closest('.firm[data-row]');
+  if (row && !e.target.closest('a,button,input,label,.fstatus')) go(hashFor('list', row.dataset.slug));
 });
+// Firm actions, from a row or the Details panel (both carry data-slug).
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-f]'); if (!b) return;
-  const row = b.closest('.firm'); const f = firms.find(x => x.slug === row.dataset.slug); if (!f) return;
-  const status = row.querySelector('.fstatus');
-  ({ link: copyLinkDialog, sync: resyncFirm, map: renderEditMapping, banner: toggleBanner, delete: deleteDialog })[b.dataset.f](f, status, b);
+  const host = b.closest('[data-slug]'); const f = host && firmOf(host.dataset.slug); if (!f) return;
+  ({ link: copyLinkDialog, sync: resyncFirm, map: x => go(hashFor('map', x.slug)), banner: toggleBanner, delete: deleteDialog, token: x => tokenDialog(x, h => firmSay(x.slug, h)), keeper: runKeeperFor })[b.dataset.f]?.(f, b);
 });
+// Per-firm messages ("Copied", "Synced", errors) show on the firm's row and in its Details panel.
+const firmMsg = {}, busy = new Set();
+function firmSay(slug, html) { firmMsg[slug] = html; document.querySelectorAll(`[data-msg="${CSS.escape(slug)}"]`).forEach(el => { el.innerHTML = html; }); }
+function repaintFirm(slug) {
+  const f = firmOf(slug); if (!f) return;
+  const row = document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"]`);
+  if (row) { row.outerHTML = firmRow(f); if (dpSlug === slug) document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"]`)?.classList.add('sel'); }
+  if (dpSlug === slug) paintDetails();
+  paintStrip(); paintFilters();
+}
 
 function copyLinkDialog(f) {
   openDialog({
@@ -608,30 +681,38 @@ function copyLinkDialog(f) {
       try { await navigator.clipboard.writeText(ghlLink(f.slug, p)); }
       catch { $('dlgErr').textContent = "Couldn't reach the clipboard. Allow clipboard access and try again."; return; }
       $('dlgPass').value = ''; closeDialog();
-      flashRow(f.slug, `<span class="chip good">Copied</span> GHL menu link for ${esc(f.name)}. Paste it into the sub-account's Custom Menu Link.`);
+      firmSay(f.slug, `<span class="chip good">Copied</span> GHL menu link for ${esc(f.name)}. Paste it into the sub-account's Custom Menu Link.`);
     },
   });
 }
-function flashRow(slug, html) { const s = document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"] .fstatus`); if (s) s.innerHTML = html; }
 
-async function resyncFirm(f, status, btn) {
-  btn.disabled = true;
-  const say = h => { status.innerHTML = h; };
+// Re-sync one firm. Progress shows on its row and in its Details panel; it keeps going if you switch screens.
+async function resyncFirm(f) {
+  const key = `${f.slug}:sync`; if (busy.has(key)) return;
+  busy.add(key); repaintFirm(f.slug);
+  const say = h => firmSay(f.slug, h);
+  say('<span class="chip">Re-syncing</span> Starting…');
   try {
     const t0 = await dispatch('sync.yml', { slug: f.slug });
     const before = kpis[f.slug]?.generatedAt || '';
-    const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Sync', limitMs: 8 * 60e3, say, stop: () => !document.body.contains(status),
+    const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Sync', limitMs: 8 * 60e3, say, stop: () => !ghToken,
       // a held sync leaves generatedAt alone and only updates sync.checkedAt
       check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return (k?.generatedAt && k.generatedAt !== before && Date.parse(k.generatedAt) > t0 - 60e3) || Date.parse(k?.sync?.checkedAt) > t0 - 60e3 ? k : null; } });
-    kpis[f.slug] = kpiSummary(value);
+    kpis[f.slug] = kpiSummary(value); kpiFull[f.slug] = value;
     const held = value.generatedAt === before;
-    const row = document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`);
-    if (row) { row.outerHTML = firmRow(f); flashRow(f.slug, held ? `<span class="chip warn">Held</span> GHL returned fewer calls or messages than last sync, so the dashboard keeps the numbers from ${esc(fmtTime(value.generatedAt))}.` : `<span class="chip good">Synced</span> ${esc(fmtTime(value.generatedAt))}. The dashboard shows it within a minute.`); }
-  } catch (e) { say(`<span class="chip bad">Sync failed</span> ${errHtml(e)}`); btn.disabled = false; }
+    say(held ? `<span class="chip warn">Held</span> GHL returned fewer calls or messages than last sync, so the dashboard keeps the numbers from ${esc(fmtTime(value.generatedAt))}.` : `<span class="chip good">Synced</span> ${esc(fmtTime(value.generatedAt))}. The dashboard shows it within a minute.`);
+  } catch (e) { say(`<span class="chip bad">Sync failed</span> ${errHtml(e)}`); }
+  finally { busy.delete(key); repaintFirm(f.slug); refreshIssues(); }
+}
+async function runKeeperFor(f, b) {
+  if (b) b.disabled = true;
+  try { await dispatch('tokens.yml', f ? { slug: f.slug } : {}); firmSay(f.slug, `<span class="chip good">Started</span> The token keeper is running for ${esc(f.name)} (about a minute). This updates on the next check.`); setTimeout(() => refreshIssues(), 90e3); }
+  catch (err) { firmSay(f.slug, `<span class="chip bad">Couldn't start</span> ${esc(err.message)}`); if (b) b.disabled = false; }
 }
 
-async function toggleBanner(f, status, btn) {
-  btn.disabled = true; status.textContent = 'Saving…';
+async function toggleBanner(f) {
+  const key = `${f.slug}:banner`; if (busy.has(key)) return;
+  busy.add(key); repaintFirm(f.slug); firmSay(f.slug, 'Saving the banner setting…');
   try {
     let next, nowOn;
     await commitFiles(`${bannerOn(configs[f.slug], bases[f.slug] || shared.defaults) ? 'Hide' : 'Show'} testing banner for ${f.name}`, async head => {
@@ -648,10 +729,9 @@ async function toggleBanner(f, status, btn) {
       return [{ path: `firms/${f.slug}/config.json`, content: jsonText(cfg) }];
     });
     configs[f.slug] = next;
-    const row = document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`);
-    row.outerHTML = firmRow(f);
-    flashRow(f.slug, `<span class="chip good">Saved</span> Banner ${nowOn ? 'on' : 'off'}. The dashboard updates within a minute or two.`);
-  } catch (e) { status.innerHTML = `<span class="chip bad">Not saved</span> ${esc(e.message)}`; btn.disabled = false; }
+    firmSay(f.slug, `<span class="chip good">Saved</span> Banner ${nowOn ? 'on' : 'off'}. The dashboard updates within a minute or two.`);
+  } catch (e) { firmSay(f.slug, `<span class="chip bad">Not saved</span> ${esc(e.message)}`); }
+  finally { busy.delete(key); repaintFirm(f.slug); }
 }
 
 // ---------- delete ----------
@@ -664,7 +744,7 @@ function deleteDialog(f) {
     onOk: async () => {
       if ($('dlgConfirm').value.trim() !== f.slug) { $('dlgErr').textContent = `Type ${f.slug} exactly.`; return; }
       $('dlgOk').disabled = true; $('dlgOk').textContent = 'Deleting…';
-      try { await deleteFirm(f.slug, f.secretKey, f.name); closeDialog(); await renderList(`Deleted ${esc(f.name)}: folder, list entry and both secrets.`); }
+      try { await deleteFirm(f.slug, f.secretKey, f.name); closeDialog(); closeDetails({ keepHash: true }); go('#/', `Deleted ${esc(f.name)}: folder, list entry and both secrets.`); }
       catch (e) { $('dlgErr').innerHTML = esc(e.message); $('dlgOk').disabled = false; $('dlgOk').textContent = 'Delete firm'; }
     },
   });
@@ -724,7 +804,7 @@ async function refreshIssues({ reloadKpis = false } = {}) {
   if (checking) return checking;
   checking = (async () => {
     try {
-      if (reloadKpis) await Promise.all(firms.map(async f => { try { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); kpis[f.slug] = k ? kpiSummary(k) : null; } catch {} }));
+      if (reloadKpis) await Promise.all(firms.map(async f => { try { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); kpis[f.slug] = k ? kpiSummary(k) : null; kpiFull[f.slug] = k; } catch {} }));
       syncStatus = await getJSON('status/sync-status.json').catch(() => null);
       chainInfo = await chainState();
       keeperStatus = await getJSON('status/token-keeper.json').catch(() => null);
@@ -735,7 +815,7 @@ async function refreshIssues({ reloadKpis = false } = {}) {
     } catch (e) { checkErr = e.message; }
     finally { checking = null; }
     if (!ghToken) return;
-    paintBell(); paintRows(); paintStrip(); paintSyncInfo(); paintFilters(); if (!$('nPanel').hidden) paintPanel();
+    paintBell(); paintRows(); paintStrip(); paintSyncInfo(); if (!$('nPanel').hidden) paintPanel();
   })();
   return checking;
 }
@@ -753,13 +833,11 @@ function paintBell() {
   $('bellBtn').setAttribute('aria-label', label); $('bellBtn').title = label;
   document.title = n ? `(${n}) ${BASE_TITLE}` : BASE_TITLE;
 }
-// Redraw firm rows with the latest status, except rows busy with an action.
+// Redraw firm rows (and the open Details panel) with the latest status. Messages and busy states are kept.
 function paintRows() {
-  for (const f of firms) {
-    const row = document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`);
-    if (!row || row.querySelector('.fstatus')?.innerHTML.trim() || row.querySelector('button[disabled]')) continue;
-    row.outerHTML = firmRow(f);
-  }
+  if (!$('firmList')) return;
+  paintList();
+  if (dpSlug) paintDetails({ soft: true });
 }
 function stopIssues() {
   clearInterval(checkTimer); checkTimer = null; issues = []; syncStatus = null; closePanel();
@@ -831,14 +909,8 @@ function openPanel(focusId) {
   if (Date.now() - lastCheck > 60e3) refreshIssues();
 }
 function closePanel() { $('nPanel').hidden = true; $('bellBtn').setAttribute('aria-expanded', 'false'); }
-function goToFirm(slug) {
-  closePanel();
-  let row = document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"]`);
-  if (!row && $('firmList')) { listFilter = 'all'; listQuery = ''; if ($('firmSearch')) $('firmSearch').value = ''; paintList(); row = document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"]`); }   // filtered out: show all
-  if (!row) return;
-  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash');
-}
+// "Go to firm" (bell): opens the firm's Details panel.
+function goToFirm(slug) { closePanel(); if (firmOf(slug)) go(hashFor('list', slug)); }
 $('bellBtn').addEventListener('click', () => ($('nPanel').hidden ? openPanel() : closePanel()));
 document.addEventListener('click', e => {
   const o = e.target.closest('[data-open-issue]'); if (o) { e.stopPropagation(); return openPanel(o.dataset.openIssue); }
@@ -852,7 +924,8 @@ document.addEventListener('keydown', e => {
   const menu = document.querySelector('.menu:not([hidden])');
   if (menu) { closeMenus(); document.querySelector(`[data-menu="${menu.id}"]`)?.focus(); return; }
   if (!$('newsPanel').hidden) { closeNews(); $('newsBtn').focus(); return; }
-  if (!$('nPanel').hidden) { closePanel(); $('bellBtn').focus(); }
+  if (!$('nPanel').hidden) { closePanel(); $('bellBtn').focus(); return; }
+  if (!$('dPanel').hidden) closeDetails();
 });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && ghToken && Date.now() - lastCheck > CHECK_MS) refreshIssues({ reloadKpis: true }); });
 $('nPanel').addEventListener('click', async e => {
@@ -872,7 +945,7 @@ $('nPanel').addEventListener('click', async e => {
     case 'firm': goToFirm(i?.slug || b.dataset.slug); break;
     case 'resync': if (f) startResync(f, say); break;
     case 'token': if (f) tokenDialog(f, say); break;
-    case 'map': { closePanel(); if (f) renderEditMapping(f); break; }
+    case 'map': { closePanel(); if (f) go(hashFor('map', f.slug)); break; }
     case 'keeper':
       b.disabled = true;
       try { await dispatch('tokens.yml', f ? { slug: f.slug } : {}); say(`<span class="chip good">Started</span> The token keeper is running${f ? ` for ${esc(f.name)}` : ''} (about a minute). This list updates on the next check.`); setTimeout(() => refreshIssues(), 90e3); }
@@ -890,15 +963,11 @@ $('nPanel').addEventListener('click', async e => {
       break;
   }
 });
-// Runs the firm row's Re-sync (progress shows on the row), then re-checks.
+// Re-sync from the bell or a dialog: progress shows on the firm's row and in its Details panel, then re-checks.
 function startResync(f, say) {
-  if (!document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`) && $('firmList')) { listFilter = 'all'; listQuery = ''; paintList(); }   // the row was filtered out
-  const row = document.querySelector(`.firm[data-slug="${CSS.escape(f.slug)}"]`);
-  if (!row) { say('Open the firm list (KPI admin) and press Re-sync on this firm\'s row.'); return; }
-  const btn = row?.querySelector('[data-f="sync"]'), status = row?.querySelector('.fstatus');
-  if (!btn || btn.disabled) { say('A Re-sync is already running for this firm. Progress shows on its row.'); return; }
-  say(`<span class="chip">Re-syncing</span> Progress shows on the firm's row. <button class="linkbtn" type="button" data-n="firm">Go to firm</button>`);
-  resyncFirm(f, status, btn).finally(() => refreshIssues({ reloadKpis: true }));
+  if (busy.has(`${f.slug}:sync`)) { say('A Re-sync is already running for this firm. Progress shows in its Details.'); return; }
+  say(`<span class="chip">Re-syncing</span> Progress shows in the firm's Details. <button class="linkbtn" type="button" data-n="firm">Go to firm</button>`);
+  resyncFirm(f).finally(() => refreshIssues({ reloadKpis: true }));
 }
 // Checks a pasted token: one read per scope against GHL, for this firm's location. Never logged or stored.
 async function checkPastedToken(token, loc) {
@@ -941,6 +1010,214 @@ function tokenDialog(f, say) {
       startResync(f, say);
     },
   });
+}
+
+// =====================================================================
+// Details panel (v1.13): right side on desktop, full screen on phones. Tabs Overview · Performance · Setup.
+// Linkable: #/firm/<slug>[/performance|/setup]. Esc or ✕ closes. Holds everything the old firm row showed.
+// =====================================================================
+const PERF_KEY = 'leadpro-admin-perf';
+let dpSlug = null, dpTab = 'overview', dpReturn = null;
+let perfKey = PERF_PERIODS.some(p => p[0] === store.get(PERF_KEY)) ? store.get(PERF_KEY) : 'last30';
+const nip = {};                       // slug -> { state: 'loading' | 'ok' | 'error' | 'locked', list, err } (memory only, never saved)
+const TABS = [['overview', 'Overview'], ['performance', 'Performance'], ['setup', 'Setup']];
+const savedPass = slug => store.get(`lfmp-pass-${slug}`);   // the client dashboard keeps its passphrase here (same site)
+
+function openDetails(slug, tab = 'overview') {
+  const f = firmOf(slug); if (!f) return;
+  const fresh = $('dPanel').hidden || dpSlug !== slug;
+  if ($('dPanel').hidden) dpReturn = document.activeElement?.closest?.('#dPanel') ? null : document.activeElement;
+  dpSlug = slug; dpTab = tab;
+  closeMenus(); closePanel();
+  $('dPanel').hidden = false; $('dpShade').hidden = false; document.body.classList.add('dp-open');
+  document.querySelectorAll('.firm.sel').forEach(r => r.classList.remove('sel'));
+  document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"]`)?.classList.add('sel');
+  paintDetails();
+  if (fresh) { $('dPanel').scrollTop = 0; $('dPanel').querySelector('[data-dp-close]')?.focus({ preventScroll: true }); }
+  else $('dPanel').querySelector(`[data-dp-tab="${tab}"]`)?.focus({ preventScroll: true });
+}
+function closeDetails({ keepHash = false } = {}) {
+  const was = dpSlug; dpSlug = null;
+  document.querySelectorAll('.firm.sel').forEach(r => r.classList.remove('sel'));
+  if ($('dPanel').hidden) return;
+  $('dPanel').hidden = true; $('dpShade').hidden = true; $('dPanel').innerHTML = ''; document.body.classList.remove('dp-open');
+  if (!keepHash && parseHash().slug) go('#/');
+  const back = dpReturn && document.body.contains(dpReturn) ? dpReturn : was && document.querySelector(`.firm[data-slug="${CSS.escape(was)}"] [data-details]:not(.reason)`);
+  back?.focus?.({ preventScroll: true }); dpReturn = null;
+}
+$('dpShade').addEventListener('click', () => closeDetails());
+
+const infoRows = rows => `<dl class="dinfo">${rows.filter(Boolean).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl>`;
+const connLabel = f => (f.tokenSource === 'app' ? 'App (LFMP LeadPro Connector)' : 'Private Integration token');
+function statusLine(f) {
+  const k = kpis[f.slug], st = firmState(issues, f.slug);
+  if (!k) return 'No data yet';
+  const word = { ok: 'OK', held: 'Holding previous numbers', failed: 'Last sync failed' }[st];
+  return `${word} · updated ${esc(clock(k.generatedAt))} (${esc(ago(k.generatedAt))})${isStale(k) ? ' · <span class="chip bad">Over 2 hours old</span>' : ''}`;
+}
+
+// soft: a background refresh. It leaves the panel alone while you're typing in it.
+function paintDetails({ soft = false } = {}) {
+  const f = firmOf(dpSlug), P = $('dPanel'); if (!f || P.hidden) return;
+  if (soft && P.contains(document.activeElement) && document.activeElement.matches('input')) return;
+  const tabBody = dpTab === 'performance' ? perfHtml(f) : dpTab === 'setup' ? setupHtml(f) : overviewHtml(f);
+  const scroll = P.scrollTop;
+  P.dataset.slug = f.slug;
+  P.innerHTML = `<div class="dphead"><div class="dptitles"><p class="ey">Firm details</p><h2 class="disp" id="dpTitle">${esc(f.name)}</h2>
+      <p class="sub">${esc(f.practiceArea || 'No practice area')}${subNames[f.slug] ? ` · GHL: ${esc(subNames[f.slug])}` : ''}</p></div>
+      <button class="xbtn" type="button" data-dp-close aria-label="Close details">${ICON.cross}</button></div>
+    <div class="dptabs" role="tablist" aria-label="${esc(f.name)}">${TABS.map(([k, l]) => `<a role="tab" href="${esc(hashFor('list', f.slug, k))}" data-dp-tab="${k}" aria-selected="${k === dpTab}"${k === dpTab ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</div>
+    <div class="dpmsg" data-msg="${esc(f.slug)}" aria-live="polite">${firmMsg[f.slug] || ''}</div>
+    <div class="dpbody" role="tabpanel" data-tab="${dpTab}">${tabBody}</div>`;
+  if (soft) P.scrollTop = scroll;
+  wireEyes(P);
+  if (dpTab === 'overview') loadNip(f);
+}
+$('dPanel').addEventListener('click', e => {
+  if (e.target.closest('[data-dp-close]')) return closeDetails();
+  const p = e.target.closest('[data-perf]');
+  if (p) { perfKey = p.dataset.perf; store.set(PERF_KEY, perfKey === 'last30' ? null : perfKey); paintDetails({ soft: true }); $('dPanel').querySelector(`[data-perf="${perfKey}"]`)?.focus(); return; }
+  const a = e.target.closest('[data-dpa]'); if (!a) return;
+  const f = firmOf(dpSlug); if (!f) return;
+  const say = h => firmSay(f.slug, h);
+  ({ resync: () => resyncFirm(f), token: () => tokenDialog(f, say), map: () => go(hashFor('map', f.slug)), keeper: () => runKeeperFor(f, a),
+    'sync-all': async () => { a.disabled = true; try { await dispatch('sync.yml', {}); say('<span class="chip good">Started</span> Every firm is syncing now (about 3 minutes).'); setTimeout(() => refreshIssues({ reloadKpis: true }), 4 * 60e3); } catch (err) { say(`<span class="chip bad">Couldn't start</span> ${esc(err.message)}`); a.disabled = false; } },
+    restart: async () => { a.disabled = true; try { await dispatch('sync-chain.yml', {}); say('<span class="chip good">Restarted</span> A new link is waiting for the next :07 or :37.'); setTimeout(() => refreshIssues(), 15e3); } catch (err) { say(`<span class="chip bad">Couldn't restart</span> ${esc(err.message)}`); a.disabled = false; } },
+  })[a.dataset.dpa]?.();
+});
+$('dPanel').addEventListener('submit', async e => {
+  if (!e.target.matches('[data-nip-unlock]')) return;
+  e.preventDefault();
+  const f = firmOf(dpSlug), input = e.target.querySelector('input'); if (!f || !input.value) return;
+  const pass = input.value; input.value = '';
+  await loadNip(f, pass);
+});
+// Keep Tab inside the panel on phones, where it covers the page.
+$('dPanel').addEventListener('keydown', e => {
+  if (e.key !== 'Tab' || window.innerWidth > 760) return;
+  const els = [...$('dPanel').querySelectorAll('button:not([disabled]),a[href],input')].filter(x => x.offsetParent !== null);
+  if (!els.length) return;
+  if (e.shiftKey && document.activeElement === els[0]) { e.preventDefault(); els.at(-1).focus(); }
+  else if (!e.shiftKey && document.activeElement === els.at(-1)) { e.preventDefault(); els[0].focus(); }
+});
+
+// ----- Overview -----
+const ACTION_BTN = {
+  resync: () => `<button class="btn" type="button" data-dpa="resync">${ICON.sync}Re-sync</button>`,
+  token: () => `<button class="btn" type="button" data-dpa="token">${ICON.key}Update token</button>`,
+  map: () => `<button class="btn" type="button" data-dpa="map">${ICON.map}Edit mapping</button>`,
+  keeper: () => `<button class="btn" type="button" data-dpa="keeper">${ICON.key}Run token keeper</button>`,
+  'sync-all': () => `<button class="btn" type="button" data-dpa="sync-all">${ICON.sync}Sync all firms now</button>`,
+  restart: () => `<button class="btn" type="button" data-dpa="restart">${ICON.sync}Restart chain</button>`,
+  run: i => (i.runUrl ? `<a class="btn" href="${esc(i.runUrl)}" target="_blank" rel="noopener">${ICON.ext}View run on GitHub</a>` : ''),
+  ghl: (i, f) => (validLoc(locOf(f)) ? `<a class="btn" href="${esc(piUrl(locOf(f)))}" target="_blank" rel="noopener">${ICON.ext}Fix in GHL</a>` : ''),
+};
+function reasonBox(r, f) {
+  if (r.kind === 'not-in-pipeline') {
+    return `<section class="abox warn" data-reason="not-in-pipeline"><h3>Needs attention · ${esc(r.short)}</h3>
+      <p>New in the last 30 days and came in by form, chat, booking, call, text or email, but not in any pipeline, so the dashboard doesn't count ${r.count === 1 ? 'it' : 'them'}. Add ${r.count === 1 ? 'it' : 'them'} to the lead pipeline, and check the intake (form, chat widget, call workflow) creates an opportunity.</p>
+      <div class="niplist" id="nipList">${nipHtml(f)}</div></section>`;
+  }
+  if (r.kind === 'nodata') return `<section class="abox warn" data-reason="nodata"><h3>No data yet</h3><p>This firm has no published numbers: the first sync hasn't finished, or it failed. Re-sync to try again.</p><div class="btnrow">${ACTION_BTN.resync()}</div></section>`;
+  const i = r.issue, d = issueText(i), sev = ['failed', 'app-missing', 'app-token', 'stale'].includes(i.kind) ? 'bad' : 'warn';
+  const acts = d.actions.filter(a => a !== 'firm' && a !== 'variables').map(a => ACTION_BTN[a]?.(i, f) || '').join('');
+  return `<section class="abox ${sev}" data-reason="${esc(i.kind)}"><h3>${sev === 'bad' ? '' : 'Needs attention · '}${esc(d.title)}</h3>
+    <p>${d.what}</p>${d.steps.length ? `<ol>${d.steps.map(s => `<li>${s}</li>`).join('')}</ol>` : ''}
+    <p class="meta">Since ${esc(when(i.firstSeen))}</p>${acts ? `<div class="btnrow">${acts}</div>` : ''}</section>`;
+}
+function nipHtml(f) {
+  const s = nip[f.slug], contacts = contactsUrl(f.slug);
+  const listLink = contacts ? `<a class="lnk" href="${esc(contacts)}" target="_blank" rel="noopener">Open Contacts in GHL ↗</a>` : '';
+  if (s?.state === 'ok') {
+    if (!s.list.length) return `<p class="meta">The encrypted details have no contacts from the last 30 days (they may have been added to a pipeline since the last sync). ${listLink}</p>`;
+    const loc = locOf(f), base = configs[f.slug]?.ghlAppBase;
+    return `<ul class="nip">${s.list.map(c => `<li><span><b>${esc(c.name)}</b> · ${esc(new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))}${c.via ? ` <span class="muted">· ${esc(c.via)}</span>` : ''}</span>${validLoc(loc) ? `<a class="lnk" href="${esc(ghlContactUrl(base, loc, c.contactId))}" target="_blank" rel="noopener">Open in GHL ↗</a>` : ''}</li>`).join('')}</ul>`;
+  }
+  if (s?.state === 'loading') return '<p class="meta">Unlocking the names…</p>';
+  const err = s?.state === 'error' ? `<div class="ferr">${esc(s.err)}</div>` : '';
+  return `<p class="meta">${listLink}${listLink ? ' (newest first) · ' : ''}Unlock to see who:</p>
+    <form class="nipform" data-nip-unlock autocomplete="off"><label class="sr" for="nipPass">Dashboard passphrase for ${esc(f.name)}</label>
+      <span class="pw"><input type="password" id="nipPass" placeholder="Dashboard passphrase" spellcheck="false"><button type="button" class="eye" data-eye="nipPass" aria-label="Show passphrase"></button></span>
+      <button class="btn" type="submit">Unlock</button></form>${err}
+    <p class="hint">The names are decrypted in this browser from the dashboard's encrypted file and kept only until you leave this page.</p>`;
+}
+// Decrypts the firm's details.enc.json (same file the client dashboard opens) with the passphrase this browser already
+// has for that dashboard, or one typed here. Shows names and links only; nothing is saved or sent anywhere.
+async function loadNip(f, typed) {
+  const r = reasonsOf(f).find(x => x.kind === 'not-in-pipeline'); if (!r) return;
+  const s = nip[f.slug];
+  const pass = typed || savedPass(f.slug);
+  const repaint = () => { const el = $('nipList'); if (el && dpSlug === f.slug) { el.innerHTML = nipHtml(f); wireEyes(el); } };
+  if (!typed && (s?.state === 'ok' || s?.state === 'loading' || s?.state === 'error' || !pass)) { repaint(); return; }
+  nip[f.slug] = { state: 'loading' }; repaint();
+  try {
+    let env = null;
+    try { const res = await fetch(`../firms/${encodeURIComponent(f.slug)}/data/details.enc.json?t=${Date.now()}`, { cache: 'no-store' }); if (res.ok) env = await res.json(); } catch {}
+    if (!env) env = await getJSON(`firms/${f.slug}/data/details.enc.json`);
+    if (!env) throw new Error('This firm has no encrypted details file yet.');
+    let rec;
+    try { rec = await decryptJSON(env, pass); } catch { throw new Error(typed ? 'That passphrase didn\'t work.' : 'The passphrase saved in this browser didn\'t work. Type it below.'); }
+    nip[f.slug] = { state: 'ok', list: notInPipelineList(rec) };
+  } catch (e) { nip[f.slug] = { state: 'error', err: e.message }; }
+  repaint();
+}
+function overviewHtml(f) {
+  const rs = reasonsOf(f), k = kpis[f.slug], cfg = configs[f.slug];
+  const banner = cfg ? bannerOn(cfg, bases[f.slug] || shared.defaults) : true;
+  const syncing = busy.has(`${f.slug}:sync`);
+  return `${rs.map(r => reasonBox(r, f)).join('')}
+    <div class="dpacts"><a class="btn p" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener">Open dashboard ↗</a>
+      <button class="btn" type="button" data-f="link">Copy GHL link</button>
+      <button class="btn" type="button" data-f="sync"${syncing ? ' disabled' : ''}>${syncing ? 'Re-syncing…' : 'Re-sync'}</button>
+      <button class="btn" type="button" data-f="map">Edit mapping</button></div>
+    <h3 class="lbl dsec">Info</h3>
+    ${infoRows([
+      ['Status', statusLine(f)],
+      ['Leads', k?.leads90 != null ? `${k.leads90} in the last 90 days` : '—'],
+      ['Not in a pipeline', k?.notInPipeline30 != null ? `${plural(k.notInPipeline30, 'new contact')} · 30 days` : 'Not checked yet'],
+      ['Slug', `<span class="mono">${esc(f.slug)}</span>`],
+      ['Connection', esc(connLabel(f))],
+      ['Banner', banner ? 'On' : 'Off'],
+    ])}
+    ${!rs.length ? '<p class="meta okline">Nothing needs attention. The last sync was clean.</p>' : ''}`;
+}
+
+// ----- Performance: the same public totals the client dashboard reads (kpis.json), nothing about contacts -----
+function perfHtml(f) {
+  const k = kpiFull[f.slug];
+  const v = k && perfView(k, effCfg(f), perfKey);
+  const head = `<div class="perfhead"><div class="seg" role="group" aria-label="Period">${PERF_PERIODS.map(([key, l]) => `<button type="button" data-perf="${key}" aria-pressed="${key === perfKey}">${l}</button>`).join('')}</div>
+    <span class="muted small">${k?.generatedAt ? `Data as of ${esc(clock(k.generatedAt))}` : ''}</span></div>`;
+  if (!v) return `${head}<p class="sub" style="margin-top:16px">No numbers yet for this firm. They appear after its first sync.</p>`;
+  const li = (arr, empty) => (arr.length ? `<ul>${arr.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : `<p>${esc(empty)}</p>`);
+  return `${head}
+    <div class="tiles">${v.tiles.map(t => `<div class="tile"><span class="tl">${esc(t.label)}</span><span class="tv">${esc(t.value)}</span><span class="ts">${esc(t.sub)}</span></div>`).join('')}</div>
+    <h3 class="lbl dsec">Where leads drop off</h3>
+    <div class="funnel" role="list">${v.funnel.map(r => `<div class="frow" role="listitem"><span class="fl">${esc(r.label)}</span><span class="fbar" aria-hidden="true"><span style="width:${r.width}%"></span></span><span class="fv">${r.value}</span></div>`).join('')}</div>
+    <div class="gw"><section class="good"><h3><span class="sdot" aria-hidden="true"></span>Going well</h3>${li(v.good, v.goodEmpty)}</section>
+      <section class="bad"><h3><span class="sdot" aria-hidden="true"></span>Needs attention</h3>${li(v.bad, v.badEmpty)}</section></div>
+    <div class="dpacts"><a class="btn p" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener">Open full client dashboard ↗</a><button class="btn" type="button" data-f="link">Copy GHL link</button></div>
+    <p class="hint">Same totals the client dashboard shows for these dates (from its public numbers file).</p>`;
+}
+
+// ----- Setup: mapping, connection, banner, delete -----
+function setupHtml(f) {
+  const cfg = configs[f.slug] || {}, banner = configs[f.slug] ? bannerOn(cfg, bases[f.slug] || shared.defaults) : true;
+  const pipes = Array.isArray(cfg.pipelines) ? cfg.pipelines : [];
+  const app = f.tokenSource === 'app', bannerBusy = busy.has(`${f.slug}:banner`);
+  return `<section class="dset"><h3 class="lbl">Stage mapping</h3>
+      <p>${pipes.length ? `Counts leads in <b>${pipes.map(esc).join(', ')}</b>.` : 'Counts leads in every pipeline.'}${cfg.mappingReview ? ' <span class="chip warn">Review mapping</span> The stages were guessed when the firm was set up.' : ''}</p>
+      <div class="btnrow"><button class="btn" type="button" data-f="map">${ICON.map}Edit mapping</button></div></section>
+    <section class="dset"><h3 class="lbl">Connection</h3>
+      ${infoRows([['Token', esc(connLabel(f))], ['GHL sub-account', esc(subNames[f.slug] || '—')], ['Location ID', `<span class="mono">${esc(locOf(f) || '—')}</span>`], ['Secrets', `<span class="mono">GHL_TOKEN_${esc(f.secretKey)}</span>, <span class="mono">PASSPHRASE_${esc(f.secretKey)}</span>`]])}
+      <p class="hint">${app ? 'The token keeper makes a fresh token every hour. Nothing to paste.' : 'Pasted when the firm was added. Update it only if GHL rejects it (the bell says so).'}</p>
+      <div class="btnrow">${app ? `<button class="btn" type="button" data-f="keeper">${ICON.key}Run token keeper</button>` : `<button class="btn" type="button" data-f="token">${ICON.key}Update token</button>`}</div></section>
+    <section class="dset"><h3 class="lbl">Testing banner</h3>
+      <p>The dashboard's testing-period banner is <b>${banner ? 'on' : 'off'}</b>.</p>
+      <div class="btnrow"><button class="btn" type="button" data-f="banner" aria-pressed="${banner}"${bannerBusy ? ' disabled' : ''}>${ICON.flag}Banner ${banner ? 'on · turn off' : 'off · turn on'}</button></div></section>
+    <section class="dset danger"><h3 class="lbl">Delete firm</h3>
+      <p>Removes the dashboard, its data, its place in the firm list and both secrets. You type the slug to confirm.</p>
+      <div class="btnrow"><button class="btn danger" type="button" data-f="delete">${ICON.trash}Delete firm…</button></div></section>`;
 }
 
 // ---------- dialog ----------
@@ -1172,7 +1449,7 @@ function renderNewFirm() {
     const sel = $('nfPreset'); if (!sel) return;
     sel.innerHTML = list.map((p, i) => `<option value="${esc(p.snapshotId)}"${i === 0 ? ' selected' : ''}>${esc(p.name)} (LFMP template snapshots)</option>`).join('') + '<option value="">No preset: guess from the stage names (flagged "Review mapping")</option>';
   });
-  $('backBtn').onclick = $('nfCancel').onclick = () => renderList();
+  $('backBtn').onclick = $('nfCancel').onclick = () => go('#/');
   $('nfPass').value = makePassphrase();
   $('nfRegen').onclick = () => { $('nfPass').value = makePassphrase(); };
   $('nfArea').onchange = () => { $('nfAreaOtherWrap').hidden = $('nfArea').value !== 'Other'; };
@@ -1286,7 +1563,7 @@ function appFail(me, err) {
   el.querySelector('.e').innerHTML = `<div class="errbox" role="alert">${esc(err.message)}</div>
     <div class="btnrow">${err.refused ? '<button type="button" class="btn p" id="appBack">Back to the firm list</button>' : `<button type="button" class="btn p" id="appRetry">${ICON.sync}Retry</button><button type="button" class="btn" id="appBack">Back to all firms</button>`}</div>
     ${err.refused ? '' : '<p class="hint" style="margin-top:8px">Retry only finishes what\'s missing. It never makes a second firm or a second passphrase.</p>'}`;
-  $('appBack').onclick = () => renderList();
+  $('appBack').onclick = () => go('#/');
   if ($('appRetry')) $('appRetry').onclick = () => {
     $('appRetry').disabled = true;
     el.querySelector('.e').innerHTML = '';
@@ -1307,8 +1584,8 @@ function appDone(me, done) {
       <div class="btnrow" style="margin-top:0"><button type="button" class="btn" id="toList">Back to all firms</button></div></div>`;
   wireEyes($('appResult'));
   $('copyGhl').onclick = async () => { try { await navigator.clipboard.writeText(link); $('copyGhl').innerHTML = `${ICON.tick}Copied`; } catch { $('ghlLinkOut').type = 'text'; $('ghlLinkOut').select(); } };
-  $('toList').onclick = () => renderList(`Added ${esc(ctx.name)}.`);
-  if ($('appMap')) $('appMap').onclick = async () => { await loadFirms(); const f = firms.find(x => x.slug === done.slug); if (f) renderEditMapping(f); };
+  $('toList').onclick = () => go('#/', `Added ${esc(ctx.name)}.`);
+  if ($('appMap')) $('appMap').onclick = async () => { await loadFirms(); const f = firms.find(x => x.slug === done.slug); if (f) go(hashFor('map', f.slug)); };
 }
 // ---------- end app path ----------
 
@@ -1370,7 +1647,7 @@ async function runFrom(i) {
       };
       $('discardBtn').onclick = async () => {
         $('discardBtn').disabled = true; $('retryBtn').disabled = true; $('discardBtn').textContent = 'Cleaning up…';
-        try { await deleteFirm(myRun.ctx.slug, myRun.ctx.secretKey, myRun.ctx.name); await renderList(`Discarded ${esc(myRun.ctx.name)}: secrets and any files removed.`); }
+        try { await deleteFirm(myRun.ctx.slug, myRun.ctx.secretKey, myRun.ctx.name); go('#/', `Discarded ${esc(myRun.ctx.name)}: secrets and any files removed.`); }
         catch (err) { stepEl(i).querySelector('.e').insertAdjacentHTML('beforeend', `<div class="errbox" style="margin-top:8px">${esc(err.message)}</div>`); $('discardBtn').disabled = false; $('discardBtn').textContent = 'Try clean-up again'; }
       };
       return;
@@ -1454,7 +1731,7 @@ const STEP_FNS = [
       <div class="btnrow" style="margin-top:0"><button type="button" class="btn" id="toList">Back to all firms</button></div></div>`;
     wireEyes(slot);
     $('copyGhl').onclick = async () => { try { await navigator.clipboard.writeText(link); $('copyGhl').innerHTML = `${ICON.tick}Copied`; } catch { $('ghlLinkOut').type = 'text'; $('ghlLinkOut').select(); } };
-    $('toList').onclick = () => renderList(`Added ${esc(ctx.name)}.`);
+    $('toList').onclick = () => go('#/', `Added ${esc(ctx.name)}.`);
     ctx.token = null;                     // the GHL token is no longer needed in memory
   },
 ];
@@ -1468,7 +1745,7 @@ async function renderEditMapping(f) {
   $('screen').innerHTML = `<header class="head"><div class="titles"><button class="back" type="button" id="backBtn">${ICON.back}All firms</button><h1 class="disp">Edit <span class="g">mapping.</span></h1><p class="sub">${esc(f.name)} · <span class="mono">${esc(f.slug)}</span><span id="emAsOf"></span></p></div>
     <div class="controls"><button class="btn big" type="button" id="rereadBtn">${ICON.sync}Re-read GHL</button><button class="btn p big" type="button" id="emSave" disabled>Save mapping</button></div></header>
     <div id="emStatus" aria-live="polite"></div><div id="emWarn"></div><div id="emHost"><p class="sub">Loading…</p></div>`;
-  $('backBtn').onclick = () => renderList();
+  $('backBtn').onclick = () => go('#/');
   const host = $('emHost'); const stop = () => !document.body.contains(host);
   const status = h => { $('emStatus').innerHTML = h ? `<div class="note" style="margin-bottom:16px">${h}</div>` : ''; };
   const load = async () => {
@@ -1499,7 +1776,7 @@ async function renderEditMapping(f) {
       const t0 = await dispatch('sync.yml', { slug: f.slug });
       await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Syncing', limitMs: 8 * 60e3, stop, say: h => status(`Mapping saved. ${h}`),
         check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return k && Date.parse(k.generatedAt) > t0 - 60e3 ? k : null; } });
-      await renderList(`Saved the mapping for ${esc(f.name)} and re-synced.`);
+      go('#/', `Saved the mapping for ${esc(f.name)} and re-synced.`);
     } catch (e) {
       if (stop()) return;
       status(''); $('emWarn').innerHTML = `<div class="errbox" style="margin-bottom:16px">${errHtml(e)}</div>`;

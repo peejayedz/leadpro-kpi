@@ -1,5 +1,15 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.13.0": {
+    "summary": "A simpler firm list, a Details panel for everything else, and no more logging in again when you go back.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "The firm list shows only what you need to decide: status, leads in 90 days, Dashboard and Details. A firm that needs attention says why, as a link." },
+      { "type": "new", "tag": "internal", "text": "Details panel with Overview (what needs attention and how to fix it, actions, info), Performance (7 / 30 / 90 days, the same numbers as the client dashboard) and Setup (mapping, connection, banner, delete)." },
+      { "type": "new", "tag": "internal", "text": "\"Lead not in a pipeline\" lists who it is, with Open in GHL, when this browser has the firm's dashboard passphrase (or you type it)." },
+      { "type": "improved", "tag": "internal", "text": "Test firms are hidden unless you tick \"Show test firms\"." },
+      { "type": "fixed", "tag": "internal", "text": "Going back to the firm list, or using the browser's Back button, no longer asks for the password. Lock, closing the tab or 30 minutes idle still lock the page." }
+    ]
+  },
   "1.12.0": {
     "summary": "The admin page has the new LFMP look, and New firm can use the LeadPro app instead of a pasted token.",
     "items": [

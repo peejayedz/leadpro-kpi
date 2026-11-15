@@ -2,6 +2,7 @@
 // write (commits, secrets, workflow runs) in memory. Timestamps in kpis.json / status files are moved to "a few minutes ago"
 // so the page looks like a healthy live repo. Nothing here touches GitHub or the working tree.
 import { readFile, readdir, stat } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kpi', stepMs = 600 }) {
@@ -13,7 +14,8 @@ export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kp
     secretPuts: [], secretDeletes: [], dispatches: [], commits: [], runs: [], blobs: new Map(), trees: new Map(), head: 'c0',
     calls: [],
   };
-  const REF_TIME = Date.parse('2026-11-14T16:40:00Z');
+  // The repo's latest sync (from its status file), moved to "12 minutes ago" so syncs on disk look fresh whatever their date.
+  const REF_TIME = (() => { try { return Date.parse(JSON.parse(readFileSync(join(root, 'status/sync-status.json'), 'utf8')).lastAnySuccessAt) || Date.parse('2026-11-14T16:40:00Z'); } catch { return Date.parse('2026-11-14T16:40:00Z'); } })();
   const shift = () => Date.now() - 12 * 60e3 - REF_TIME;   // the latest sync was 12 minutes ago
   const freshen = (path, text) => (/^firms\/[^/]+\/data\/kpis\.json$|^status\/.*\.json$|^firms\/[^/]+\/discovery\.json$/.test(path)
     ? text.replace(/"(20\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z)"/g, (_, iso) => `"${new Date(Date.parse(iso) + shift()).toISOString()}"`) : text);
