@@ -10,9 +10,14 @@ The README is the full reference and CHANGELOG.md the history. This file covers 
 | Firms | Mahdavi, LFMP, Hedayati, Emery (Private Integration tokens) and ZZ TEST 2 (app token, test sub-account). |
 | Sync | Every 30 min (cron 7,37 + sync chain). The bell on the admin page reports problems. |
 | Token keeper | Hourly; mints app tokens for `tokenSource: "app"` firms only. |
-| Admin page v1.13.1 | **Live** (commit 3507479, 15 Nov ~04:45 UTC). Not-in-pipeline rows with email/phone/source, Remember passphrase (encrypted), Copy GHL menu link moved to Setup, local "Copied". Admin files + tests + docs only. Built on v1.13.0 (9e3ed52: simple home + Details panel, no re-login between screens). |
+| Admin page v1.14.0 | **Live** (4698019, 15 Nov): one login with the Builder + Review admin, red tool colour. v1.13.1 before it (commit 3507479, 15 Nov ~04:45 UTC). Not-in-pipeline rows with email/phone/source, Remember passphrase (encrypted), Copy GHL menu link moved to Setup, local "Copied". Admin files + tests + docs only. Built on v1.13.0 (9e3ed52: simple home + Details panel, no re-login between screens). |
 
-## One login + tool colours (built 15 Nov 2026, NOT pushed yet)
+## One login + tool colours: LIVE 15 Nov 2026
+
+- **LIVE 15 Nov 2026:** leadpro-kpi `4698019`, automation-review `c5efbc8` (admin/ only), builder `1ec8cd9`, page repo `a09f070`. PJ set the shared password (the three `lfmp-lock.json` are identical, sha256 `2cd9ab56…`). PJ chose **option A**: a new tab asks once (sessionStorage); no localStorage key.
+- **Live check (24/24, `assets/code/2026-11-15_one-login_live-check.mjs`):** deployed files = pushed files for all three tools; client pages (review index/plan/messages/config, KPI dashboard) unchanged live; the real sign-in on all three at 1440/390 light/dark (every file 200, fonts, no console errors); deployed code on the real site with a test lock + mocked GitHub/Apps Script: sign in once, KPI admin → Review → client Details (admin mode) → Back → Clients → KPI admin → Back with no password, Lock on the Builder locks the other two and removes `ar_admin_key`, client pages never read the vault. Screenshots: `assets/images/2026-11-15_one-login_live/`.
+- **Not yet seen with PJ's own sign-in:** the real GitHub token in the vault, the real review ADMIN_KEY, and the real Sheet in the Review admin list. First steps for PJ: sign in, paste the GitHub token once (Builder or KPI admin), add the review admin key once on the Review page.
+- **Page repo publish now also copies** `lfmp-login.js`, `lfmp-login.css`, `lfmp-lock.json` (as well as the v1.1.0 list). `page/brand/wpp-logo*.png` are not published (nothing loads them).
 
 Builder v1.2.0 · KPI admin v1.14.0 · Automation Review admin v1.0.0 (new `automation-review/admin/`). Prompt: builder `Claude outputs/design-wc6/One_Login_Tool_Colours_Prompt.md`.
 
@@ -22,8 +27,8 @@ Builder v1.2.0 · KPI admin v1.14.0 · Automation Review admin v1.0.0 (new `auto
 - **Colours:** band/chip/underline/headline accent per tool, in each page's own CSS (`--tool`, `--tool-ink`, `--bg`). Light text needs darker shades for AA: Builder `#8a5d15` (not `#a8741f`, 3.6:1) and Review `#1b746f` (not `#1f7f7a`, 4.29:1); bands/borders keep the spec colours. KPI page: every problem shows ✕ / ! + words.
 - **Fixes on the way:** KPI admin Lock never ran its cleanup (calls were inside a comment); locking while a page was still loading showed "Couldn't unlock: …".
 - **Tests (all green 15 Nov):** builder `tests/e2e/one-login.mjs` 47 (three tools on one local site, real Code.gs), builder unit 155, e2e 63, design 46, review 149/56/44, kpi 72, oauth 72; leadpro-kpi all suites incl. admin-ui 184 and `tests/one-login` 8. Screenshots: `assets/images/2026-11-15_one-login-tool-colours_v2/`. Logs: `assets/data/2026-11-15_one-login-test-logs/`.
-- **To go live (in order):** (1) PJ runs `node scripts/set-shared-password.mjs` in leadpro-kpi (writes the 3 lock files). (2) Push leadpro-kpi, automation-review (admin/ only), builder + copy `page/lfmp-login.js`, `page/lfmp-login.css`, `page/lfmp-lock.json` with the other page files to the page repo. Ask PJ before each push. (3) PJ signs in, pastes the GitHub token once, adds the review admin key once on the Review page. (4) Live check: lock screens at 1440/390 light/dark, then PJ's own unlock across the three tools.
-- **Open choice for PJ:** a tool opened in a NEW tab asks once (sessionStorage is per tab). Option: keep the unlocked key in localStorage with the same 30-min idle expiry so new tabs open too (trade-off: the key then sits in browser storage until it expires or Lock, readable by anything running on peejayedz.github.io).
+- **Went live in this order:** (1) PJ runs `node scripts/set-shared-password.mjs` in leadpro-kpi (writes the 3 lock files). (2) Push leadpro-kpi, automation-review (admin/ only), builder + copy `page/lfmp-login.js`, `page/lfmp-login.css`, `page/lfmp-lock.json` with the other page files to the page repo. Ask PJ before each push. (3) PJ signs in, pastes the GitHub token once, adds the review admin key once on the Review page. (4) Live check: lock screens at 1440/390 light/dark, then PJ's own unlock across the three tools.
+- **New tabs (decided, option A):** a tool opened in a new tab asks once; keep it that way unless PJ says otherwise.
 
 ## Admin page v1.13.1
 
