@@ -13,7 +13,8 @@
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=1.12.0">
-<link rel="stylesheet" href="admin.css?v=1.13.0">
+<link rel="stylesheet" href="admin.css?v=1.14.0">
+<link rel="stylesheet" href="lfmp-login.css?v=1.14.0">
 </head>
 <body>
 
@@ -48,7 +49,7 @@
     <div><h1 class="disp">Connect <span class="g">GitHub.</span></h1><p class="sub" id="tokenWhy" style="margin-top:10px">This device has no GitHub token saved yet. It's stored here only, encrypted with your admin password.</p></div>
     <ol>
       <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → Fine-grained tokens → Generate new token</a>.</li>
-      <li>Repository access: <b>Only select repositories</b> → <b class="repoName">leadpro-kpi</b>.</li>
+      <li>Repository access: <b>Only select repositories</b> → <b class="repoName">leadpro-kpi</b> and <b>ghl-subaccount-builder</b> (one token for the Builder and the KPI admin).</li>
       <li>Permissions: <b>Contents</b>, <b>Actions</b> and <b>Secrets</b> = Read and write; <b>Variables</b> = Read-only.</li>
       <li>Generate, copy and paste it below.</li>
     </ol>
@@ -64,10 +65,11 @@
 <div class="wrap" id="appView" hidden>
   <header class="top">
     <a class="mark" href="#/" title="LFMP · KPI admin">LFMP</a>
+    <span class="toolchip" aria-label="You are in: KPI admin">KPI</span>
     <nav class="nav" aria-label="LFMP tools">
-      <a href="https://peejayedz.github.io/ghl-subaccount-builder-page/" target="_blank" rel="noopener">Clients</a>
+      <a href="/ghl-subaccount-builder-page/">Clients</a>
       <a href="#/" aria-current="page">KPI admin</a>
-      <a href="https://peejayedz.github.io/automation-review/" target="_blank" rel="noopener">Review</a>
+      <a href="/automation-review/admin/">Review</a>
     </nav>
     <div class="topr">
       <div class="upd" id="syncInfo" aria-live="polite">Sync every 30 min<b id="syncTimes">…</b><span class="kept" id="keeperLine"></span></div>
@@ -115,6 +117,7 @@ import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
 import { buildCards, filterCards, newer } from './news.mjs';
 import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS } from './firm-details.mjs';
 import { decryptJSON } from '../scripts/kpi-core.mjs';
+import { createLogin } from './lfmp-login.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -169,6 +172,9 @@ const slugify = name => String(name || '').normalize('NFKD').replace(/[̀-ͯ]/g,
 const secretKeyFor = slug => slug.toUpperCase().replace(/-/g, '_');
 
 let lock = null, aesKey = null, ghToken = null;
+// One login (v1.14): with admin/lfmp-lock.json the shared sign-in (lfmp-login.js) unlocks this page, the Builder and the
+// Automation Review admin together, and the GitHub token lives in its shared vault. Without it (legacy) the old lock below runs.
+let login = null, oneLogin = false;
 
 // ---------- icons ----------
 const ICON = {
@@ -262,7 +268,7 @@ function touchSession() {                     // activity keeps the session aliv
   lastTouch = now; s.t = now; sess.set(s);
 }
 ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev => document.addEventListener(ev, touchSession, { passive: true, capture: true }));
-setInterval(() => { const s = sess.get(); if (aesKey && (!s || Date.now() - s.t > IDLE_MS)) lockNow('Locked after 30 minutes without activity.'); }, 30e3);
+setInterval(() => { if (oneLogin) return; const s = sess.get(); if (aesKey && (!s || Date.now() - s.t > IDLE_MS)) lockNow('Locked after 30 minutes without activity.'); }, 30e3);
 // Returns true when a live session unlocked the page (no password prompt).
 async function resumeSession() {
   const s = sess.get();
@@ -278,6 +284,7 @@ async function resumeSession() {
 function sameBytes(a, b) { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a[i] ^ b[i]; return d === 0; }
 
 async function saveToken(token) {
+  if (oneLogin) { await login.vaultSet({ gh: token }); return; }
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, enc.encode(token)));
   store.set(TOKEN_KEY, JSON.stringify({ v: 1, alg: 'AES-GCM', iv: toB64(iv), ct: toB64(ct) }));
@@ -312,6 +319,10 @@ const clearPassVault = () => store.set(PASS_VAULT_KEY, null);
 
 async function boot() {
   if (!window.crypto?.subtle) { show('setupView'); $('setupErr').textContent = "This browser can't run the admin page. Use an up-to-date Chrome, Safari, Edge or Firefox."; return; }
+  login = createLogin({ tool: 'kpi', onUnlock: sharedUnlocked, onLock: why => lockNow(why, { fromLogin: true }) });
+  const mode = await login.start();
+  if (mode === 'shared') return;
+  if (mode === 'error') { show('setupView'); $('setupErr').textContent = login.error; return; }
   try {
     const r = await fetch(`./lock.json?t=${Date.now()}`, { cache: 'no-store' });
     if (r.status === 404) { show('setupView'); return; }
@@ -342,6 +353,14 @@ $('lockForm').addEventListener('submit', async e => {
   } finally { $('lockGo').disabled = false; $('lockGo').textContent = 'Unlock'; }
 });
 
+// Shared sign-in done (password typed, or a live session from any of the three tools in this tab).
+async function sharedUnlocked({ vault, reset }) {
+  oneLogin = true; aesKey = login.key();
+  if (vault.gh) { ghToken = vault.gh; return openApp(); }
+  askToken(reset ? 'The saved GitHub token was locked with an older admin password, so it was cleared. Paste the token again.'
+    : 'Connect GitHub once for the Builder and the KPI admin. The token is saved in this browser only, encrypted with the admin password.');
+}
+
 function askToken(why) {
   show('tokenView'); $('tokenErr').textContent = '';
   if (why) $('tokenWhy').textContent = why;
@@ -362,18 +381,22 @@ $('tokenForm').addEventListener('submit', async e => {
   finally { $('tokenGo').disabled = false; $('tokenGo').textContent = 'Save token'; }
 });
 
-function lockNow(why) {
-  sess.set(null); aesKey = null; ghToken = null; screenNow = null; for (const s in nip) delete nip[s];   // decrypted names leave memory too cleanupRun(); cleanupAppRun(); stopIssues(); closeMenus(); closeNews(); closeDetails({ keepHash: true });
-  $('screen').innerHTML = ''; closeDialog(); show('lockView'); $('lockPw').value = '';
+function lockNow(why, { fromLogin = false } = {}) {
+  if (oneLogin && !fromLogin) { login.lock(why, { manual: false, broadcast: false }); return; }   // the shared login calls back here
+  sess.set(null); aesKey = null; ghToken = null; screenNow = null; for (const s in nip) delete nip[s];   // decrypted names leave memory too
+  cleanupRun(); cleanupAppRun(); stopIssues(); closeMenus(); closeNews(); closeDetails({ keepHash: true });
+  $('screen').innerHTML = ''; closeDialog();
+  if (oneLogin) { show(null); return; }
+  show('lockView'); $('lockPw').value = '';
   $('lockErr').textContent = typeof why === 'string' ? why : ''; $('lockPw').focus();
 }
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
-  if (a.dataset.act === 'lock') { clearPassVault(); lockNow(); }   // Lock (by hand) also forgets remembered passphrases; the 30-minute idle lock keeps them
+  if (a.dataset.act === 'lock') { if (oneLogin) login.lock(''); else { clearPassVault(); lockNow(); } }   // Lock (by hand) also forgets remembered passphrases (one login: and locks all three tools); the 30-minute idle lock keeps them
   if (a.dataset.act === 'news') openNews();
   if (a.dataset.act === 'forget') openDialog({
-    title: 'Forget token on this device?', body: '<p class="sub">The saved GitHub token and any remembered dashboard passphrases are removed from this browser. You will need to paste a token again next time. The token itself stays valid on GitHub; revoke it there if this device is lost.</p>',
-    ok: 'Forget token', danger: true, onOk: () => { store.set(TOKEN_KEY, null); clearPassVault(); for (const s in nip) delete nip[s]; ghToken = null; closeDialog(); askToken('Token removed from this device. Paste a token to continue.'); },
+    title: 'Forget token on this device?', body: `<p class="sub">The saved GitHub token${oneLogin ? ' (shared with the Builder)' : ''} and any remembered dashboard passphrases are removed from this browser. You will need to paste a token again next time. The token itself stays valid on GitHub; revoke it there if this device is lost.</p>`,
+    ok: 'Forget token', danger: true, onOk: async () => { if (oneLogin) await login.vaultSet({ gh: null }); store.set(TOKEN_KEY, null); clearPassVault(); for (const s in nip) delete nip[s]; ghToken = null; closeDialog(); askToken('Token removed from this device. Paste a token to continue.'); },
   });
 });
 

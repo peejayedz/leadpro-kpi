@@ -1,5 +1,16 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.14.0": {
+    "summary": "One login for the KPI admin, the Builder and Review, and a red colour so you know you're in the scorecards.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "One admin password opens the KPI admin, the Builder and the Review admin. Sign in once and move between them from the top menu without being asked again." },
+      { "type": "improved", "tag": "internal", "text": "The KPI admin has its own colour: a red band, a KPI chip and a red headline. Main buttons stay gold." },
+      { "type": "improved", "tag": "internal", "text": "Problems always show an icon and words (✕ Sync failed, ! Needs attention), so red never means a problem on its own." },
+      { "type": "improved", "tag": "internal", "text": "Clients and Review open in the same window. Lock on any tool locks all three." },
+      { "type": "improved", "tag": "internal", "text": "After 5 wrong passwords in a row, sign-in pauses for 2 minutes with a countdown." },
+      { "type": "fixed", "tag": "internal", "text": "Lock now also stops a running sync check and closes open panels." }
+    ]
+  },
   "1.13.1": {
     "summary": "See exactly who isn't in a pipeline, remember a firm's passphrase, and find the GHL menu link under Setup.",
     "items": [

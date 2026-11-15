@@ -75,6 +75,7 @@ async function wire(page, G) {
   // The libsodium stub can't match the real file's SRI hash: drop the integrity attribute for cdnjs in this test only.
   await page.addInitScript(() => { const d = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'integrity'); Object.defineProperty(HTMLScriptElement.prototype, 'integrity', { set(v) { if (!String(this.src).includes('cdnjs.cloudflare.com')) d.set.call(this, v); }, get() { return d.get.call(this); } }); });
   await page.route('**/admin/lock.json*', r => r.fulfill({ contentType: 'application/json', body: JSON.stringify(LOCK) }));
+  await page.route('**/admin/lfmp-lock.json*', r => r.fulfill({ status: 404, body: 'not found' }));   // this suite tests the page's own lock (one login: tests/one-login + builder tests/e2e/one-login.mjs)
   await page.route('**/firms/lfmp/data/details.enc.json*', r => r.fulfill({ contentType: 'application/json', body: NIP_ENV }));
   await page.route('https://cdnjs.cloudflare.com/**', r => r.fulfill({ contentType: 'text/javascript', body: SODIUM_STUB }));
   await page.route('https://api.github.com/**', async r => {
