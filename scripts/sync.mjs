@@ -36,7 +36,11 @@ function writeResult(r) {
   writeFileSync(RESULT_FILE, JSON.stringify({ slug: SLUG, at: new Date().toISOString(), ...r }) + '\n');
 }
 const failure = (category, detail, msg, extra = {}) => Object.assign(new Error(msg), { category, detail, ...extra });
-process.on('exit', code => { if (code === 0) writeResult({ ok: true, ...resultExtra }); });
+process.on('exit', code => {
+  if (code === 0) writeResult({ ok: true, ...resultExtra });
+  // Peak memory of this sync (log only, not in the result file). v1.21.0: LFMP ~450 MB; the ~2 GB heap limit was hit before.
+  try { console.log(`Peak memory: ${Math.round(process.resourceUsage().maxRSS / 1024)} MB`); } catch {}
+});
 process.on('uncaughtException', e => {
   classify(e).catch(() => ({ category: 'unknown', detail: 'crash' })).then(c => {
     console.error(`Sync failed (${c.category}${c.detail ? `: ${c.detail}` : ''}${c.scopes?.length ? `: ${c.scopes.join(', ')}` : ''}): ${e.message}`);

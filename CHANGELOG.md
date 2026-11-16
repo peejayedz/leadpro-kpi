@@ -8,6 +8,7 @@ Syncs and firm add/edit actions are not listed.
 ## v1.21.0 — 17 Nov 2026
 - [internal] Sync no longer runs out of memory on big email exports. Each exported message is kept slim as it arrives (`scripts/message-slim.mjs`: only the fields the KPIs read; bodies, subjects and recipients dropped; the "STOP" opt-out check is done there). LFMP's Email channel returns ~6,300 mostly outbound campaign emails with full HTML bodies per pull, and keeping 2–3 full pulls hit Node's ~2 GB heap limit ("JavaScript heap out of memory", 5 failed LFMP syncs on 15–16 Nov). The sync step also gets `NODE_OPTIONS=--max-old-space-size=4096` as a safety margin. The published numbers are unchanged: `tests/slim-verify/run.mjs` replays the same GHL answers to the old and new sync and compares every field.
 - [internal] Admin bell: "Sync chain stopped" is held only while the last sync run is still queued or running on GitHub, and raised anyway once it has waited over 2 hours (`chainAlive` in `scripts/sync-status.mjs`). On 16 Nov GitHub kept a queued sync waiting an hour; that is not a stopped chain. "No successful sync in 45+ minutes" still shows in that case.
+- [internal] Every sync job now ends its log with "Peak memory: N MB" (log only; not in the status file).
 
 ## v1.20.0 — 17 Nov 2026
 - [internal] **Sign out** is a visible button next to your name in the top bar (phone: in the ⋯ menu). It ends the Google sign-in for all three tools (Cloudflare Access logout) and lands on the sign-in page: "You've been signed out. See you next shift."
