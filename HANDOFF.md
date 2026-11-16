@@ -12,6 +12,15 @@ The README is the full reference and CHANGELOG.md the history. This file covers 
 | Token keeper | Hourly; mints app tokens for `tokenSource: "app"` firms only. |
 | Admin page v1.14.0 | **Live** (4698019, 15 Nov): one login with the Builder + Review admin, red tool colour. v1.13.1 before it (commit 3507479, 15 Nov ~04:45 UTC). Not-in-pipeline rows with email/phone/source, Remember passphrase (encrypted), Copy GHL menu link moved to Setup, local "Copied". Admin files + tests + docs only. Built on v1.13.0 (9e3ed52: simple home + Details panel, no re-login between screens). |
 
+## v1.16.0: new address: LIVE 16 Nov 2026
+
+- Admin and dashboards are served at `https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/…` (custom domain of the user site `peejayedz.github.io`). Old `peejayedz.github.io/leadpro-kpi/…` links 301 there with `#k=` kept.
+- Commit `c94fc5d`. Live: served files = pushed; admin sign-in screen at 1440/390 light/dark with no errors or failed requests; Mahdavi, LFMP and ZZ TEST 2 dashboards 200, and they load framed like GHL's Embedded Page.
+- Admin `PAGES` = new address for owner peejayedz (Dashboard ↗, Copy GHL link, new-firm result). `scripts/ghl-menu.mjs` `PAGES` = new address: new firms get new-address menu links, and the guard accepts only that prefix.
+- **Existing GHL menu links stay on the old address** (PJ, 16 Nov). Read 16 Nov: LFMP, Mahdavi and Emery are **Embedded Page**, ZZ TEST 2 is New tab; Hedayati has none.
+- Cloudflare Access (Phase 6) will protect `/leadpro-kpi/admin/` only. `/leadpro-kpi/firms/…` stays public.
+- Browser storage is per origin: remembered passphrases, the sealed GitHub token and the session must be set up again once on the new address.
+
 ## One login + tool colours: LIVE 15 Nov 2026
 
 - **LIVE 15 Nov 2026:** leadpro-kpi `4698019`, automation-review `c5efbc8` (admin/ only), builder `1ec8cd9`, page repo `a09f070`. PJ set the shared password (the three `lfmp-lock.json` are identical, sha256 `2cd9ab56…`). PJ chose **option A**: a new tab asks once (sessionStorage); no localStorage key.
