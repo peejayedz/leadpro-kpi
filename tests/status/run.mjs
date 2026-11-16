@@ -16,7 +16,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startMockGhl } from '../mapping/mock-ghl.mjs';
-import { updateStatus, openIssues, firmState, describeIssue, cleanResult, seenKey, inBadge, SCOPE_NAMES, CATEGORIES } from '../../scripts/sync-status.mjs';
+import { updateStatus, openIssues, firmState, describeIssue, cleanResult, seenKey, inBadge, SCOPE_NAMES, CATEGORIES, chainAlive } from '../../scripts/sync-status.mjs';
 
 const run = promisify(execFile);
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -273,6 +273,21 @@ test('SYNC_CHAIN off → "chain off" (and not also "chain stopped")', () => {
 test('Chain on but no waiting link → "chain stopped"; unknown → no issue', () => {
   eq(live(null, { chain: { value: 'on', waiting: false, lastLinkAt: ago(40), lastLinkUrl: RUN(9) } }).map(i => [i.id, i.runUrl]), [['system:no-link', RUN(9)]], 'stopped');
   eq(live(null, { chain: { value: 'on', waiting: null } }), [], 'unknown');
+});
+
+test('Chain alive: a waiting link, a link that just ended, or the last sync still queued/running on GitHub (≤ 2 h)', () => {
+  const now = Date.parse('2026-11-16T16:58:00Z'), at = m => new Date(now - m * 60e3).toISOString();
+  const link = (m, status = 'completed') => ({ status, updated_at: at(m) }), sync = (m, status) => ({ status, created_at: at(m) });
+  // 16 Nov 2026: the link ended 16:07 after starting its sync; GitHub kept that sync queued until 17:07
+  eq(chainAlive({ links: [link(51)], syncs: [sync(51, 'queued')], now }), true, 'queued 51 min: held');
+  eq(chainAlive({ links: [link(51)], syncs: [sync(51, 'pending')], now }), true, 'pending: held');
+  eq(chainAlive({ links: [link(51)], syncs: [sync(51, 'in_progress')], now }), true, 'running: held');
+  eq(chainAlive({ links: [link(125)], syncs: [sync(125, 'queued')], now }), false, 'queued over 2 h: raised anyway');
+  eq(chainAlive({ links: [link(40)], syncs: [sync(70, 'completed')], now }), false, 'last sync done, no link waiting: stopped');
+  eq(chainAlive({ links: [link(40)], syncs: [sync(10, 'completed'), sync(60, 'queued')], now }), false, 'only the LAST sync counts');
+  eq(chainAlive({ links: [link(0, 'in_progress'), link(30)], syncs: [], now }), true, 'a link is waiting');
+  eq(chainAlive({ links: [link(3)], syncs: [], now }), true, 'a link ended 3 min ago (its sync not listed yet)');
+  eq(chainAlive({ links: [], syncs: [], now }), false, 'nothing at all');
 });
 
 test('Held / incomplete fall back to kpis.json before the status file knows them', () => {

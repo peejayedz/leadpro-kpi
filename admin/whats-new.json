@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.21.0": {
+    "summary": "Steadier syncs: no more out-of-memory failures, fewer false \"chain stopped\" alerts.",
+    "items": [
+      { "type": "fixed", "tag": "internal", "text": "LFMP's sync no longer fails now and then on its large email history. The numbers on the dashboards are exactly the same." },
+      { "type": "fixed", "tag": "internal", "text": "The bell no longer says the sync chain stopped while GitHub is just slow to start a sync (it still does after 2 hours)." }
+    ]
+  },
   "1.20.0": {
     "summary": "Sign out next to your name, your last sign-in, and who on the team signed in.",
     "items": [

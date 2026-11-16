@@ -79,7 +79,7 @@
 import { mergeConfig, practiceSlug } from '../scripts/config-merge.mjs';
 import { parseChangelog, latestVersion, inlineMd } from '../scripts/changelog.mjs';
 import { STEPS_MAP, initialState, stageList as stagesOf, buildMapping, applyMapping } from './mapping.mjs';
-import { openIssues, firmState, describeIssue, seenKey, inBadge, STALE_MIN } from '../scripts/sync-status.mjs';
+import { openIssues, firmState, describeIssue, seenKey, inBadge, STALE_MIN, chainAlive } from '../scripts/sync-status.mjs';
 import { keeperIssues, reviewIssues, tokenLabel } from '../scripts/keeper-status.mjs';
 import { checkScopes } from '../scripts/scope-check.mjs';
 import { pipelineNotices } from '../scripts/not-in-pipeline.mjs';
@@ -691,10 +691,8 @@ async function chainState() {
     const [links, syncs] = await Promise.all([gh('GET', `${R}/actions/workflows/sync-chain.yml/runs?per_page=5`), gh('GET', `${R}/actions/workflows/sync.yml/runs?per_page=10`)]);
     const L = links.workflow_runs || [], S = syncs.workflow_runs || [], last = L[0];
     out.lastLinkAt = last?.status === 'completed' ? last.updated_at : null; out.lastLinkUrl = last?.html_url || null;
-    const waitingLink = L.some(r => r.status !== 'completed');
-    const chainedSync = S.some(r => r.status !== 'completed' && (r.event === 'schedule' || / \(chain\)$/.test(r.display_title || '')));
-    const justEnded = last?.status === 'completed' && Date.now() - Date.parse(last.updated_at) < 5 * 60e3;   // between a link ending and its sync showing up
-    out.waiting = waitingLink || chainedSync || justEnded;
+    // a waiting link, a link that just ended, or the last sync still queued / running on GitHub (≤ 2 h): scripts/sync-status.mjs
+    out.waiting = chainAlive({ links: L, syncs: S, now: Date.now() });
   } catch { out.waiting = null; }
   return out;
 }

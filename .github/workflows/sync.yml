@@ -69,6 +69,9 @@ jobs:
           SYNC_RESULT_FILE: ${{ runner.temp }}/result/${{ matrix.firm.slug }}.json
           GHL_TOKEN: ${{ secrets[format('GHL_TOKEN_{0}', matrix.firm.secretKey)] }}
           DASHBOARD_PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', matrix.firm.secretKey)] }}
+          # Safety margin only: messages are kept slim (scripts/message-slim.mjs), so a sync needs a few hundred MB.
+          # The default ~2 GB heap ran out on LFMP's email export 5 times on 15–16 Nov 2026 (the runner has 16 GB).
+          NODE_OPTIONS: --max-old-space-size=4096
         run: node scripts/sync.mjs "$SLUG"
       # The artifact holds <slug>/kpis.json etc., so the commit job can tell firms apart
       # whatever folder layout download-artifact uses.

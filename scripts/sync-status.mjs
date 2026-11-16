@@ -153,6 +153,22 @@ export function updateStatus(prev, { now, runUrl, event, chained, attempted = []
   return s;
 }
 
+// ---------- is the sync chain alive? (the admin page's "chain stopped" check) ----------
+// links: sync-chain.yml runs, syncs: sync.yml runs (GitHub API objects, newest first); now: ms.
+// Alive when a chain link is waiting, a link ended under 5 minutes ago (its sync may not be listed yet), or the LAST sync
+// run is still queued or running on GitHub (a link ends once it has started its sync; the next link starts when that sync
+// ends). That last case counts for CHAIN_HOLD_MIN at most: on 16 Nov 2026 GitHub sat on a queued sync for an hour, which
+// is not a stopped chain, but a sync waiting more than 2 hours is worth raising anyway.
+export const CHAIN_HOLD_MIN = 120;
+export function chainAlive({ links = [], syncs = [], now }) {
+  if (links.some(r => r.status !== 'completed')) return true;
+  const last = links[0];
+  if (last?.status === 'completed' && now - Date.parse(last.updated_at) < 5 * 60e3) return true;
+  const s = syncs[0];
+  if (s && s.status !== 'completed') return now - Date.parse(s.created_at) < CHAIN_HOLD_MIN * 60e3;
+  return false;
+}
+
 // ---------- open issues, as the admin page shows them ----------
 // status: the file (or null); firms: firms/index.json; kpis: { slug: kpis.json summary { generatedAt, sync } };
 // chain: { value: 'on'|'off', waiting: true|false|null (null = unknown), lastLinkAt, lastLinkUrl }

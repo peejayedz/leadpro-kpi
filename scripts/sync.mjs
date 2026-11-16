@@ -19,6 +19,7 @@ import { checkSlug, loadFirmConfig } from './firms.mjs';
 import { checkScopes, scopeForPath } from './scope-check.mjs';
 import { areaForPath } from './sync-status.mjs';
 import { pickNotInPipeline, breakdown, countedIn } from './not-in-pipeline.mjs';
+import { slimMessage } from './message-slim.mjs';
 
 const SLUG = process.argv[2];
 
@@ -282,7 +283,7 @@ const CHANNELS = [['Call', 'Call'], ['SMS', 'SMS reply'], ['Email', 'Email reply
 const REPLY_LABEL = Object.fromEntries(CHANNELS);
 const MAX_PAGES = 100;
 const HOLD = { dropPct: 10, minDrop: 5, maxHolds: 3, noteHours: 24 };
-const OPT_OUT = /^\s*(stop|stopall|unsubscribe|cancel|end|quit)\s*[.!]?\s*$/i;
+// Each message is kept slim as it arrives (scripts/message-slim.mjs: no bodies; opt-outs worked out there).
 const diag = {};
 
 // One pull of one channel. Stops once a whole page is older than the window. An error before the
@@ -306,7 +307,7 @@ async function pullOnce(channel) {
     for (const m of batch) {
       const t = Date.parse(m.dateAdded) || 0;
       newest = Math.max(newest, t);
-      if (t >= since) got.set(m.id ?? `${m.dateAdded}|${m.contactId}|${m.direction}`, m); else pastEdge = true;
+      if (t >= since) got.set(m.id ?? `${m.dateAdded}|${m.contactId}|${m.direction}`, slimMessage(m)); else pastEdge = true;
     }
     if (!r.nextCursor || !batch.length || newest < since) return { state: 'complete', got };
     cursor = r.nextCursor;
@@ -331,7 +332,7 @@ function toLog(channel, id, m) {
     return { id, contactId: m.contactId || null, channel, direction, status: norm(m.meta?.call?.status || m.status), durationSec: Number.isFinite(d) ? d : null, at };
   }
   if (direction !== 'inbound' || !m.contactId) return null;
-  if (OPT_OUT.test(String(m.body ?? m.message ?? ''))) return null;   // a STOP is not a conversation
+  if (m.optOut) return null;   // a STOP is not a conversation (checked on the body in slimMessage)
   return { id, contactId: m.contactId, channel, direction, status: norm(m.status) || null, at };
 }
 
