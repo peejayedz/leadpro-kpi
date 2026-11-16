@@ -5,6 +5,10 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.18.0 — 16 Nov 2026
+- [internal] The admin page runs only on the team site **https://lfmp-admin.pages.dev/leadpro-kpi/admin/** (Google sign-in). On the public site (`dashboard.lawfirmmarketingpros.com`, `peejayedz.github.io`) a first script in `admin/index.html` sends the address to `admin/moved.html` before anything else loads: the shared "Moved" screen with "Open LFMP tools →". `moved.html` is a byte-identical copy of the Builder's `admin-site/moved.html` and is not copied to the team site. The client dashboards (`app/`, `firms/`) are unchanged.
+- [internal] `admin/lfmp-login.js` (shared): Forgot password names lfmp-admin.pages.dev for the saved password-manager login.
+
 ## v1.17.0 — 16 Nov 2026
 - [internal] The admin page also runs from the team-only admin site **https://lfmp-admin.pages.dev/leadpro-kpi/admin/** (Cloudflare Pages in PJ's account, behind Google sign-in; deployed by the Builder repo's `admin-site.yml`, which copies `admin/`, the 7 browser modules in `scripts/`, `brand/` and `CHANGELOG.md`). There, a firm's live `details.enc.json` is read from the public site (`DATA_ROOT` = `PAGES`), because the sync writes it every 30 minutes and the admin site holds no client data. On github.io and in tests it is still `../firms/…`.
 
