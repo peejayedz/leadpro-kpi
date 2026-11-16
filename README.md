@@ -2,9 +2,9 @@
 
 One repo hosting the intake KPI dashboard for every Law Firm Marketing Pros law firm. Each firm's dashboard is synced from its GoHighLevel sub-account every 30 minutes by GitHub Actions and served by GitHub Pages.
 
-- Firm dashboard: `https://peejayedz.github.io/leadpro-kpi/firms/<slug>/`
-- GHL Custom Menu Link: `https://peejayedz.github.io/leadpro-kpi/firms/<slug>/#k=<passphrase>` (write `#` inside a passphrase as `%23`)
-- Admin page (adds firms, edits mappings): `https://peejayedz.github.io/leadpro-kpi/admin/`
+- Firm dashboard: `https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/<slug>/` (old `peejayedz.github.io/leadpro-kpi/…` links redirect there)
+- GHL Custom Menu Link: `https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/<slug>/#k=<passphrase>` (links made before 16 Nov 2026 use the old github.io address, which redirects) (write `#` inside a passphrase as `%23`)
+- Admin page (adds firms, edits mappings): `https://lfmp-admin.pages.dev/leadpro-kpi/admin/` (team site, Google sign-in; the public `…/leadpro-kpi/admin/` shows a Moved page)
 
 ## Layout
 
@@ -205,7 +205,7 @@ When a sub-account is created in the Sub-account Builder with "Set up KPI dashbo
 
 ## Admin page
 
-`https://peejayedz.github.io/leadpro-kpi/admin/` is a static page that manages this repo through the GitHub API.
+`https://lfmp-admin.pages.dev/leadpro-kpi/admin/` is a static page that manages this repo through the GitHub API. It is deployed to the team site (Cloudflare Pages, behind Google sign-in) by the Builder repo's `admin-site.yml` from this repo's `admin/` folder; on the public site `admin/index.html` sends visitors to `admin/moved.html`.
 
 **Password (one login).** The admin page signs in with the shared LFMP admin password, the same one as the Sub-account Builder and the Automation Review admin (`admin/lfmp-login.js`, `admin/lfmp-login.css`, `admin/lfmp-lock.json`; keep the three copies byte-identical). Run `node scripts/set-shared-password.mjs` in your own terminal to set or reset it: it asks twice (typing hidden) and writes `lfmp-lock.json` = `{ salt, iterations, verifier }` (PBKDF2-SHA256, 210,000 iterations) into all three tools. The password itself is never stored. A new password makes every browser's vault unreadable: sign in, paste the GitHub token again and re-add the review admin key. (The old page password, `admin/lock.json` + `scripts/set-admin-password.mjs`, was removed in v1.15.0.)
 

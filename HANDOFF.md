@@ -12,6 +12,19 @@ The README is the full reference and CHANGELOG.md the history. This file covers 
 | Token keeper | Hourly; mints app tokens for `tokenSource: "app"` firms only. |
 | Admin page v1.14.0 | **Live** (4698019, 15 Nov): one login with the Builder + Review admin, red tool colour. v1.13.1 before it (commit 3507479, 15 Nov ~04:45 UTC). Not-in-pipeline rows with email/phone/source, Remember passphrase (encrypted), Copy GHL menu link moved to Setup, local "Copied". Admin files + tests + docs only. Built on v1.13.0 (9e3ed52: simple home + Details panel, no re-login between screens). |
 
+## v1.17.0–v1.18.0: admin on the team site only: LIVE 16 Nov 2026
+
+- The admin runs only at **https://lfmp-admin.pages.dev/leadpro-kpi/admin/** (Cloudflare Pages in PJ's account, behind Access / Google sign-in), deployed by the Builder repo's `admin-site.yml`.
+  - That workflow copies `admin/` (without `moved.html`), the 7 browser modules in `scripts/` (changelog, config-merge, keeper-status, sync-status, not-in-pipeline, scope-check, kpi-core), `brand/` and `CHANGELOG.md`.
+  - **After pushing admin files, run the deploy:** `gh workflow run admin-site.yml -R peejayedz/ghl-subaccount-builder`. The daily 07:23 UTC run catches anything missed.
+  - Don't add an import from another folder without adding it to `KPI_MODULES` in the Builder's `scripts/admin-site/assemble.mjs`. The assemble refuses to deploy a missing file.
+- On the team site, `DATA_ROOT` = `PAGES`: a firm's `details.enc.json` is read from the public site, which holds the live data.
+- **Public address:** a first script in `admin/index.html` sends github.io / lawfirmmarketingpros.com visitors to `admin/moved.html`, the shared Moved screen. It's a byte-identical copy of the Builder's `admin-site/moved.html`, checked by the Builder unit test. Local tests (127.0.0.1) are unaffected.
+- Commits `c925528` (v1.17.0), `3aeef16` (v1.18.0). Live check 16 Nov:
+  - old addresses show Moved and the admin never starts there;
+  - client dashboards byte-identical before/after;
+  - PJ signed in and the admin works on the team site.
+
 ## v1.16.0: new address: LIVE 16 Nov 2026
 
 - Admin and dashboards are served at `https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/…` (custom domain of the user site `peejayedz.github.io`). Old `peejayedz.github.io/leadpro-kpi/…` links 301 there with `#k=` kept.
