@@ -13,8 +13,8 @@
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=1.12.0">
-<link rel="stylesheet" href="admin.css?v=1.16.0">
-<link rel="stylesheet" href="lfmp-login.css?v=1.16.0">
+<link rel="stylesheet" href="admin.css?v=1.17.0">
+<link rel="stylesheet" href="lfmp-login.css?v=1.17.0">
 </head>
 <body>
 
@@ -128,6 +128,10 @@ const R = `/repos/${OWNER}/${REPO}`;
 // On that host OWNER/REPO come from the fallback above. Any other owner (local testing with ?repo=) keeps its github.io address.
 const SITE = 'https://dashboard.lawfirmmarketingpros.com/';
 const PAGES = OWNER.toLowerCase() === 'peejayedz' ? `${SITE}${REPO}/` : `https://${OWNER.toLowerCase()}.github.io/${REPO}/`;
+// v1.17.0: on the team-only admin site (lfmp-admin.pages.dev, behind Google sign-in) the firms' live files aren't copied
+// there, so they're read from the public site. Anywhere else (github.io, local tests) they sit next to this page.
+const ADMIN_SITE = /(^|\.)lfmp-admin\.pages\.dev$/.test(location.hostname);
+const DATA_ROOT = ADMIN_SITE ? PAGES : '../';
 const dashUrl = slug => `${PAGES}firms/${slug}/`;
 const ghlLink = (slug, pass) => `${dashUrl(slug)}#k=${encodeURIComponent(pass)}`;
 $('repoLink').href = `https://github.com/${OWNER}/${REPO}`; $('repoLink').textContent = `${OWNER}/${REPO}`;
@@ -1122,7 +1126,7 @@ async function loadNip(f, typed, remember = false) {
   repaint();
   try {
     let env = null;
-    try { const res = await fetch(`../firms/${encodeURIComponent(f.slug)}/data/details.enc.json?t=${Date.now()}`, { cache: 'no-store' }); if (res.ok) env = await res.json(); } catch {}
+    try { const res = await fetch(`${DATA_ROOT}firms/${encodeURIComponent(f.slug)}/data/details.enc.json?t=${Date.now()}`, { cache: 'no-store' }); if (res.ok) env = await res.json(); } catch {}
     if (!env) env = await getJSON(`firms/${f.slug}/data/details.enc.json`);
     if (!env) throw new Error('This firm has no encrypted details file yet.');
     let rec;

@@ -5,6 +5,9 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.17.0 — 16 Nov 2026
+- [internal] The admin page also runs from the team-only admin site **https://lfmp-admin.pages.dev/leadpro-kpi/admin/** (Cloudflare Pages in PJ's account, behind Google sign-in; deployed by the Builder repo's `admin-site.yml`, which copies `admin/`, the 7 browser modules in `scripts/`, `brand/` and `CHANGELOG.md`). There, a firm's live `details.enc.json` is read from the public site (`DATA_ROOT` = `PAGES`), because the sync writes it every 30 minutes and the admin site holds no client data. On github.io and in tests it is still `../firms/…`.
+
 ## v1.16.0 — 16 Nov 2026
 - [internal] New address: peejayedz's Pages sites move to **https://dashboard.lawfirmmarketingpros.com** (custom domain of the GitHub user site; team paths behind Cloudflare Access with Google sign-in). Old `peejayedz.github.io/leadpro-kpi/…` links, including every GHL "KPI Dashboard" menu link with its `#k=` passphrase, keep working through GitHub's redirect and are left as they are (PJ, 16 Nov).
 - [internal] Admin page: dashboard links, Copy GHL link and the new-firm result use the new address (`PAGES` in `admin/index.html`; another owner, as in local `?repo=` testing, keeps its github.io address).

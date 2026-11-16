@@ -1,5 +1,11 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.17.0": {
+    "summary": "The KPI admin is getting a team-only address with Google sign-in.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "The KPI admin can now run from the team's own site behind Google sign-in (lfmp-admin.pages.dev). Client contact details still come from the dashboards, which stay public for clients." }
+    ]
+  },
   "1.16.0": {
     "summary": "The KPI admin moved to dashboard.lawfirmmarketingpros.com. Old links still work.",
     "items": [
