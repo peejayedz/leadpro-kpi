@@ -5,6 +5,9 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.21.2 — 18 Nov 2026
+- [internal] The "We've moved." page (`admin/moved.html`) fits phones: below 880px the top panel is tighter (headline min(56px,14vw), subtitle hidden below 480px, Builder / Scorecards / Review dots kept), so "Open LFMP tools" shows without scrolling even on 360x640; the © / Internal use only footer moved to the very bottom, under the card; at tablet widths the card follows right after the top panel. Desktop unchanged. Still a byte-identical copy of the Builder's `admin-site/moved.html`.
+
 ## v1.21.1 — 17 Nov 2026
 - [internal] The "We've moved." page at the old public admin address (`admin/moved.html`) has the new "Option C refined" look, matching the team sign-in page. It's a byte-identical copy of the Builder's `admin-site/moved.html`. Wording and the "Open LFMP tools →" link are unchanged.
 

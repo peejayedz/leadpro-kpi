@@ -87,17 +87,25 @@
 /* responsive (same breakpoints as the reference) */
 @media (max-width:1360px){.sg-greet{display:none}}
 @media (max-width:1200px){.sg-lp{padding:48px 52px}}
+/* the footer has a second copy at the bottom of the right panel, shown only below 880px (desktop unchanged) */
+.sg-rp>.sg-foot{display:none}
 @media (max-width:880px){
-  .sg{grid-template-columns:1fr}
-  .sg-lp{padding:32px 24px;border-right:0;border-bottom:1px solid var(--line)}
-  .sg-hero{margin-top:44px}
-  .sg-h{font-size:min(64px,15.2vw)}
-  .sg-foot{margin-top:36px;padding-top:0;flex-wrap:wrap}
-  .sg-tools{flex-wrap:wrap;gap:10px 18px}
-  .sg-rp{padding:28px 16px}
-  .sg-card{padding:32px 26px}
+  /* phones/tablets: compact top panel, the card right after it (no empty band), footer at the very bottom */
+  .sg{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .sg-lp{padding:22px 20px 24px;border-right:0;border-bottom:1px solid var(--line)}
+  .sg-hero{margin-top:28px}
+  .sg-h{font-size:min(56px,14vw)}
+  .sg-rule{margin:18px 0 14px}
+  .sg-tools{flex-wrap:wrap;gap:10px 18px;margin-top:14px}
+  .sg-lp>.sg-foot{display:none}
+  .sg-rp{padding:20px 16px 18px;justify-content:flex-start}
+  .sg-card{padding:28px 24px}
   .sg-title{font-size:40px}
+  .sg-go{margin-top:22px}
+  .sg-lock{margin-top:16px}
+  .sg-rp>.sg-foot{display:flex;flex-wrap:wrap;justify-content:center;margin-top:auto;padding-top:28px;width:min(470px,100%)}
 }
+@media (max-width:479px){.sg-sub{display:none}}
 @media (max-width:380px){.sg-go{gap:10px;padding:14px 12px;font-size:14.5px}}
 @media (min-width:2000px){.sg-lp{padding:72px 96px}.sg-card{width:520px}}
 @media (prefers-reduced-motion:reduce){
@@ -134,6 +142,7 @@
       <p class="sg-note">Sign in with your @lawfirmmarketingpros.com Google account. Update any bookmark to <span style="white-space:nowrap">lfmp-admin.pages.dev</span>. Client dashboards and review links aren't affected.</p>
     </div>
     <p class="sg-lock"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="11" width="16" height="10"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Secured with Google sign-in</p>
+    <footer class="sg-foot"><span>© 2026 Law Firm Marketing Pros</span><span>Internal use only</span></footer>
   </main>
 </div>
 <script>
