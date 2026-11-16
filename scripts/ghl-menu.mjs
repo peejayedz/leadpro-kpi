@@ -11,7 +11,7 @@
 
 export const GHL_API = () => process.env.GHL_API_BASE || 'https://services.leadconnectorhq.com';
 export const MENU_TITLE = 'KPI Dashboard';
-export const PAGES = 'https://peejayedz.github.io/leadpro-kpi/';
+export const PAGES = 'https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/';   // v1.16.0: was peejayedz.github.io (old links still redirect)
 const LOC_RE = /^[A-Za-z0-9]{15,30}$/;
 
 export function menuBody({ locationId, url }) {

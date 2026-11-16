@@ -13,8 +13,8 @@
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=1.12.0">
-<link rel="stylesheet" href="admin.css?v=1.15.0">
-<link rel="stylesheet" href="lfmp-login.css?v=1.15.0">
+<link rel="stylesheet" href="admin.css?v=1.16.0">
+<link rel="stylesheet" href="lfmp-login.css?v=1.16.0">
 </head>
 <body>
 
@@ -124,7 +124,10 @@ const { OWNER, REPO } = (() => {
   return { OWNER: 'peejayedz', REPO: 'leadpro-kpi' };
 })();
 const R = `/repos/${OWNER}/${REPO}`;
-const PAGES = `https://${OWNER.toLowerCase()}.github.io/${REPO}/`;
+// v1.16.0: peejayedz's Pages sites are served at dashboard.lawfirmmarketingpros.com (old github.io links redirect there).
+// On that host OWNER/REPO come from the fallback above. Any other owner (local testing with ?repo=) keeps its github.io address.
+const SITE = 'https://dashboard.lawfirmmarketingpros.com/';
+const PAGES = OWNER.toLowerCase() === 'peejayedz' ? `${SITE}${REPO}/` : `https://${OWNER.toLowerCase()}.github.io/${REPO}/`;
 const dashUrl = slug => `${PAGES}firms/${slug}/`;
 const ghlLink = (slug, pass) => `${dashUrl(slug)}#k=${encodeURIComponent(pass)}`;
 $('repoLink').href = `https://github.com/${OWNER}/${REPO}`; $('repoLink').textContent = `${OWNER}/${REPO}`;

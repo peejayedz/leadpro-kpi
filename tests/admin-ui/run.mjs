@@ -138,6 +138,7 @@ try {
   check(await page.$eval('.firm[data-slug="lfmp"] [data-details]:not(.reason)', e => e.classList.contains('p')) && !(await page.$eval('.firm[data-slug="mahdavi"] [data-details]', e => e.classList.contains('p'))), 'Details is gold only on the firm that needs attention');
   check(/OK/.test(await page.textContent('.firm[data-slug="mahdavi"] .fstate')) && /Synced/.test(await page.textContent('.firm[data-slug="mahdavi"] .fstate')), 'Mahdavi: OK · Synced <time>');
   check(await page.$$eval('.firm[data-slug="mahdavi"] .acts .btn', b => b.map(x => x.textContent.trim().replace(/\s+/g, ' ')).join('|')) === 'Dashboard ↗|Details', 'row has two buttons: Dashboard ↗ and Details →');
+  check(await page.$eval('.firm[data-slug="mahdavi"] .acts a.btn', a => a.href) === 'https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/mahdavi/', 'Dashboard ↗ uses the new address (v1.16.0)');
   await shot(page, 'list_1440_dark_main');
   await page.check('#showTests');
   check((await slugs(page)).includes('zz-test-2') && /5 firms/.test(await page.textContent('#statStrip')), 'Show test firms adds ZZ TEST 2');

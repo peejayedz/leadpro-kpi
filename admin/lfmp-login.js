@@ -118,7 +118,7 @@ function screenHtml(tool) {
         <h2 class="lg-title" id="lgHelpTitle" tabindex="-1">Forgot password?</h2>
         <p class="lg-lead">The password is never stored anywhere (only a check value), so it can't be emailed or reset with a link.</p>
         <ol class="lg-steps">
-          <li><b>Check your password manager.</b> Look for the saved login “lfmp-admin” on peejayedz.github.io.</li>
+          <li><b>Check your password manager.</b> Look for the saved login “lfmp-admin” on dashboard.lawfirmmarketingpros.com (older saves may be under peejayedz.github.io).</li>
           <li><b>To set a new password,</b> open Terminal in the leadpro-kpi folder and run <code>node scripts/set-shared-password.mjs</code> (your typing stays hidden). Then publish the new lfmp-lock.json with the three tools.</li>
           <li><b>Sign in with the new password,</b> then reconnect GitHub (paste the token from your password manager) and re-add the Automation Review admin key on the Review page.</li>
         </ol>

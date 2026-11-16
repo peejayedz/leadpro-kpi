@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.16.0": {
+    "summary": "The KPI admin moved to dashboard.lawfirmmarketingpros.com. Old links still work.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "The KPI admin now lives at dashboard.lawfirmmarketingpros.com, behind Google sign-in. Old peejayedz.github.io links forward to the new address." },
+      { "type": "improved", "tag": "internal", "text": "Open dashboard, Copy GHL link and new firms use the new address. Menu links already in GHL keep working and were not changed." }
+    ]
+  },
   "1.15.0": {
     "summary": "The old KPI admin password is gone: sign in with the shared admin password.",
     "items": [

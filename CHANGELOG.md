@@ -5,6 +5,13 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.16.0 — 16 Nov 2026
+- [internal] New address: peejayedz's Pages sites move to **https://dashboard.lawfirmmarketingpros.com** (custom domain of the GitHub user site; team paths behind Cloudflare Access with Google sign-in). Old `peejayedz.github.io/leadpro-kpi/…` links, including every GHL "KPI Dashboard" menu link with its `#k=` passphrase, keep working through GitHub's redirect and are left as they are (PJ, 16 Nov).
+- [internal] Admin page: dashboard links, Copy GHL link and the new-firm result use the new address (`PAGES` in `admin/index.html`; another owner, as in local `?repo=` testing, keeps its github.io address).
+- [internal] `scripts/ghl-menu.mjs`: menu links for new firms use the new address; the guard accepts only `https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/…` (look-alike hosts and http refused, `tests/new-firm`). Existing links are still found by title, so a Retry never makes a second link.
+- [internal] `admin/lfmp-login.js` (shared with the Builder and Review admin): Forgot password names the new site for the saved password-manager login.
+- [internal] Tests: `tests/admin-ui` checks the Dashboard ↗ link uses the new address.
+
 ## v1.15.0 — 15 Nov 2026
 - [internal] Removed the admin page's old lock now that the shared one login is live (PJ signed in on all three tools): the lock screen, `admin/lock.json`, `scripts/set-admin-password.mjs`, the page's own PBKDF2 check, its sessionStorage session (`leadpro-admin-session`) and the `leadpro-admin-gh-token` storage. The page signs in only through `admin/lfmp-login.js` + `admin/lfmp-lock.json`; without `lfmp-lock.json` it shows "Sign-in not ready" with the `set-shared-password.mjs` step. Remembered dashboard passphrases stay sealed with the shared key. Copies of the removed files are in PJ's workspace archive.
 - [internal] `admin/lfmp-login.js` (shared with the Builder and Review admin): a missing `lfmp-lock.json` is an error (no "legacy" mode); every sign-in removes the old per-page token blobs and session; an expired session locks on the next click.

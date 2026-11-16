@@ -197,7 +197,7 @@ test('Menu link: one "KPI Dashboard" link, this sub-account only, new tab; passp
   eq(post[0].version, 'v3', 'Version v3');
   const b = post[0].body;
   eq([b.title, b.showOnCompany, b.showOnLocation, b.showToAllLocations, b.locations, b.openMode, b.userRole], ['KPI Dashboard', false, true, false, [LOC], 'new_tab', 'all'], 'body');
-  eq(b.url, `https://peejayedz.github.io/leadpro-kpi/firms/zz-test-2/#k=${encodeURIComponent(PASS)}`, 'url (passphrase URL-encoded)');
+  eq(b.url, `https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/zz-test-2/#k=${encodeURIComponent(PASS)}`, 'url (passphrase URL-encoded)');
   ok(/menu=created/.test(r.outFile), 'output'); eq(r.cfg.menuLink?.status, 'created', 'recorded in config (no URL)');
   ok(!JSON.stringify(r.cfg).includes('#k='), 'config holds no link with the passphrase');
   noLeak(r);
@@ -216,13 +216,13 @@ test('Menu link: can\'t list existing links → skipped (no duplicate risk); no 
 });
 
 test('Menu guard: refuses every other write', () => {
-  const good = menuBody({ locationId: LOC, url: 'https://peejayedz.github.io/leadpro-kpi/firms/x/#k=a' });
+  const good = menuBody({ locationId: LOC, url: 'https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/x/#k=a' });
   guardMenu('POST', '/custom-menus/', good); guardMenu('GET', '/custom-menus/');
   const bad = [
     ['PUT', '/custom-menus/abc', good], ['DELETE', '/custom-menus/abc', null], ['PATCH', '/custom-menus/', good], ['POST', '/custom-menus/abc', good],
     ['POST', '/custom-menus/', { ...good, showToAllLocations: true }], ['POST', '/custom-menus/', { ...good, locations: [LOC, 'other0000000000000001'] }],
     ['POST', '/custom-menus/', { ...good, showOnCompany: true }], ['POST', '/custom-menus/', { ...good, title: 'Other' }], ['POST', '/custom-menus/', { ...good, openMode: 'iframe' }],
-    ['POST', '/custom-menus/', { ...good, url: 'https://evil.example/' }], ['POST', '/locations/', good], ['GET', '/contacts/', null],
+    ['POST', '/custom-menus/', { ...good, url: 'https://evil.example/' }], ['POST', '/custom-menus/', { ...good, url: 'https://dashboard.lawfirmmarketingpros.com.evil.example/leadpro-kpi/firms/x/' }], ['POST', '/custom-menus/', { ...good, url: 'http://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/x/' }], ['POST', '/locations/', good], ['GET', '/contacts/', null],
   ];
   for (const [m, p, b] of bad) { let threw = false; try { guardMenu(m, p, b); } catch (e) { threw = /Blocked/.test(e.message); } ok(threw, `${m} ${p} ${JSON.stringify(b)?.slice(0, 60)} allowed`); }
 });
