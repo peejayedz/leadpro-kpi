@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-16T20:57:20.793Z",
+  "generatedAt": "2026-11-16T21:50:11.560Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,9 +22,9 @@
     "today": {
       "label": "Today",
       "from": 1794808800000,
-      "to": 1794862640793,
+      "to": 1794865811560,
       "current": {
-        "totalLeads": 12,
+        "totalLeads": 14,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -60,24 +60,24 @@
           ],
           [
             "Website Number Pool - Houston",
-            4,
+            6,
             0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            12,
+            14,
             0
           ]
         ],
-        "attributedLeads": 12,
+        "attributedLeads": 14,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            12,
+            14,
             "newLeads",
             null
           ],
@@ -334,9 +334,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794808800000,
-      "to": 1794862640793,
+      "to": 1794865811560,
       "current": {
-        "totalLeads": 12,
+        "totalLeads": 14,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -372,24 +372,24 @@
           ],
           [
             "Website Number Pool - Houston",
-            4,
+            6,
             0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            12,
+            14,
             0
           ]
         ],
-        "attributedLeads": 12,
+        "attributedLeads": 14,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            12,
+            14,
             "newLeads",
             null
           ],
@@ -697,10 +697,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794257840793,
-      "to": 1794862640793,
+      "from": 1794261011560,
+      "to": 1794865811560,
       "current": {
-        "totalLeads": 80,
+        "totalLeads": 82,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -736,7 +736,7 @@
           ],
           [
             "Website Number Pool - Houston",
-            14,
+            16,
             0
           ],
           [
@@ -763,7 +763,7 @@
         "byChannel": [
           [
             "Third Party",
-            72,
+            74,
             0
           ],
           [
@@ -787,13 +787,13 @@
             0
           ]
         ],
-        "attributedLeads": 80,
+        "attributedLeads": 82,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            80,
+            82,
             "newLeads",
             null
           ],
@@ -905,10 +905,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792270640793,
-      "to": 1794862640793,
+      "from": 1792273811560,
+      "to": 1794865811560,
       "current": {
-        "totalLeads": 81,
+        "totalLeads": 83,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -944,7 +944,7 @@
           ],
           [
             "Website Number Pool - Houston",
-            15,
+            17,
             0
           ],
           [
@@ -971,7 +971,7 @@
         "byChannel": [
           [
             "Third Party",
-            72,
+            74,
             0
           ],
           [
@@ -995,13 +995,13 @@
             0
           ]
         ],
-        "attributedLeads": 81,
+        "attributedLeads": 83,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            81,
+            83,
             "newLeads",
             null
           ],
@@ -1113,10 +1113,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787086640793,
-      "to": 1794862640793,
+      "from": 1787089811560,
+      "to": 1794865811560,
       "current": {
-        "totalLeads": 87,
+        "totalLeads": 89,
         "contacted": 1,
         "contactRatePct": 1.1,
         "speedToLeadAvgMin": null,
@@ -1152,7 +1152,7 @@
           ],
           [
             "Website Number Pool - Houston",
-            15,
+            17,
             0
           ],
           [
@@ -1179,7 +1179,7 @@
         "byChannel": [
           [
             "Third Party",
-            72,
+            74,
             0
           ],
           [
@@ -1203,13 +1203,13 @@
             0
           ]
         ],
-        "attributedLeads": 87,
+        "attributedLeads": 89,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            87,
+            89,
             "newLeads",
             null
           ],
@@ -1332,9 +1332,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1794862640793,
+      "to": 1794865811560,
       "current": {
-        "totalLeads": 81,
+        "totalLeads": 83,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1370,7 +1370,7 @@
           ],
           [
             "Website Number Pool - Houston",
-            15,
+            17,
             0
           ],
           [
@@ -1397,7 +1397,7 @@
         "byChannel": [
           [
             "Third Party",
-            72,
+            74,
             0
           ],
           [
@@ -1421,13 +1421,13 @@
             0
           ]
         ],
-        "attributedLeads": 81,
+        "attributedLeads": 83,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            81,
+            83,
             "newLeads",
             null
           ],
@@ -1696,9 +1696,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1794862640793,
+      "to": 1794865811560,
       "current": {
-        "totalLeads": 82,
+        "totalLeads": 84,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1734,7 +1734,7 @@
           ],
           [
             "Website Number Pool - Houston",
-            15,
+            17,
             0
           ],
           [
@@ -1761,7 +1761,7 @@
         "byChannel": [
           [
             "Third Party",
-            72,
+            74,
             0
           ],
           [
@@ -1785,13 +1785,13 @@
             0
           ]
         ],
-        "attributedLeads": 82,
+        "attributedLeads": 84,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            82,
+            84,
             "newLeads",
             null
           ],
@@ -2101,7 +2101,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-16T20:57:20.793Z",
+    "checkedAt": "2026-11-16T21:50:11.560Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
