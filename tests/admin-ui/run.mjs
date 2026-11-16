@@ -69,6 +69,9 @@ const NIP_ENV = JSON.stringify(await encryptJSON({ generatedAt: new Date().toISO
 
 const server = createServer(async (req, res) => {
   if (new URL(req.url, 'http://x').pathname.startsWith('/api/')) return ACCESS.serve(req, res, { env: T.env, deps: T.deps, email: T.email });
+  // Cloudflare Access: this site's logout (Sign out calls it before the team-wide logout)
+  if (req.url.startsWith('/cdn-cgi/access/logout')) { T.logouts = (T.logouts || 0) + 1; res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<!doctype html><title>Logged out</title>'); }
+  if (req.url.startsWith('/signin/')) { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<!doctype html><title>Sign in</title><h1 id="sgTitle">Sign in (stand-in)</h1>'); }
   const p = normalize(decodeURIComponent(new URL(req.url, 'http://x').pathname)).replace(/^\/+/, '');
   const f = join(ROOT, p.endsWith('/') || p === '' ? `${p}index.html` : p);
   try { const b = await readFile(f); res.writeHead(200, { 'Content-Type': TYPES[extname(f)] || 'application/octet-stream' }); res.end(b); }
@@ -151,13 +154,27 @@ try {
     await p0.goto(BASE); await unlocked(p0); await p0.waitForSelector('.firm');
     check(await p0.evaluate(() => ['lfmp-vault', 'ar_admin_key', 'leadpro-admin-firm-pass', 'lfmp-lock-at'].every(k => localStorage.getItem(k) === null) && sessionStorage.getItem('lfmp-session') === null), 'old password-login leftovers removed from the browser on load');
     check((await p0.textContent('#whoName')).trim() === 'PJ Drozo' && await p0.isVisible('#whoChip [data-act="signout"]'), 'top bar: Google name + Sign out');
+    // "Last signed in …" = the sign-in before this one (a second Google sign-in, then reload)
+    check((await p0.textContent('#whoChip [data-me-last]')).trim() === 'First sign-in on record', 'first sign-in: no earlier one');
+    ACCESS.signIn(EMAIL); await p0.reload(); await unlocked(p0); await p0.waitForSelector('.firm');
+    const LAST = /^Last signed in (Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec), \d{1,2}:\d{2} (AM|PM)$/;
+    check(LAST.test((await p0.textContent('#whoChip [data-me-last]')).trim()), `top bar: ${(await p0.textContent('#whoChip [data-me-last]')).trim()}`);
+    await shot(p0, 'topbar-signed-in_1440_light', false);
+    await p0.click('[data-menu="topMenu"]'); await p0.click('#topMenu [data-act="signins"]');
+    await p0.waitForSelector('#lfmpSignins[open] .lfmp-signins');
+    const row = (await p0.textContent('#lfmpSignins tbody tr')) || '';
+    check(row.includes('PJ Drozo') && row.includes(EMAIL) && !(await p0.isVisible('#topMenu')), `⋯ → Team sign-ins: ${row}`);
+    await shot(p0, 'team-signins_1440_light', false);
+    await p0.keyboard.press('Escape'); check(!(await p0.$('#lfmpSignins[open]')), 'Esc closes Team sign-ins');
     check(!(await p0.$('#lgPw, #tokenIn, #tokenView, input[type="password"]:not(#nipPass)')), 'no password or token box anywhere');
     await p0.click('[data-menu="topMenu"]');
     check(/PJ Drozo/.test(await p0.textContent('#menuWho')) && /pj@lawfirmmarketingpros\.com/.test(await p0.textContent('#menuWho')) && await p0.isVisible('#topMenu [data-act="signout"]') && !(await p0.$('#topMenu [data-act="lock"], #topMenu [data-act="forget"]')), 'top ⋯: name, email and Sign out (no Lock, no Forget token)');
     await p0.keyboard.press('Escape');
     check(await storageClean(p0), 'nothing secret in localStorage / sessionStorage');
-    await p0.click('#whoChip [data-act="signout"]'); await p0.waitForURL('**/cdn-cgi/access/logout');
-    check(true, 'Sign out → Cloudflare Access logout');
+    const team = [], before = T.logouts || 0;
+    await p0.route('https://lfmp.cloudflareaccess.com/cdn-cgi/access/logout*', r => { team.push(r.request().url()); const back = new URL(r.request().url()).searchParams.get('returnTo'); return r.fulfill({ status: 200, contentType: 'text/html', body: `<script>location.replace(${JSON.stringify(back)})</script>` }); });
+    await p0.click('#whoChip [data-act="signout"]'); await p0.waitForURL('**/signin/?out=1');
+    check((T.logouts || 0) > before && team.length === 1 && new URL(team[0]).searchParams.get('returnTo') === `${ORIGIN}/signin/?out=1`, `Sign out → this site's + the team-wide Access logout → /signin/?out=1 (${team})`);
     // signed out (Access sent no sign-in): the page goes to the sign-in page and remembers where it was
     T.email = null;
     await p0.goto(`${BASE}#/firm/lfmp`); await p0.waitForURL('**/signin/**');
@@ -487,7 +504,12 @@ try {
     check(/PJ Drozo/.test(await page.textContent('#topMenu')) && await page.isVisible('#topMenu [data-act="signout"]'), `${tag}: ⋯ menu shows the Google name and Sign out`);
     cf = await contrastFailures(page, '#topMenu'); check(!cf.length, `${tag}: ⋯ menu passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);
     await shot(page, `menu_${tag}`, false);
+    check(/^(Last signed in|First sign-in on record)/.test((await page.textContent('#topMenu [data-me-last]')).trim()), `${tag}: ⋯ menu shows the last sign-in`);
+    await page.click('#topMenu [data-act="signins"]'); await page.waitForSelector('#lfmpSignins[open] .lfmp-signins');
+    cf = await contrastFailures(page, '#lfmpSignins'); check(!cf.length && await noSideScroll(page), `${tag}: Team sign-ins passes AA contrast, no sideways scroll${cf.length ? `: ${cf.join(' | ')}` : ''}`);
+    await shot(page, `team-signins_${tag}`, false);
     await page.keyboard.press('Escape');
+    if (w !== 390) { cf = await contrastFailures(page, '#whoChip'); check(!cf.length, `${tag}: name / Last signed in / Sign out pass AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`); if (SHOTS) await page.locator('header.top').first().screenshot({ path: join(SHOTS, `topbar_${tag}.png`) }); }
     if (w === 390) check(await page.isHidden('#whoChip'), '390: the name + Sign out live in the ⋯ menu (top bar stays one row)');
     else check(await page.isVisible('#whoChip'), `${tag}: name + Sign out in the top bar`);
     if (w === 390) {

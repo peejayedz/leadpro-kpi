@@ -5,6 +5,12 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.20.0 — 17 Nov 2026
+- [internal] **Sign out** is a visible button next to your name in the top bar (phone: in the ⋯ menu). It ends the Google sign-in for all three tools (this site's and the team-wide Cloudflare Access logout) and lands on the sign-in page: "You've been signed out. See you next shift."
+- [internal] Under your name: **Last signed in <day date, time>** (your previous Google sign-in). Sign-ins are recorded on the team site's server only (Cloudflare KV, per email, kept 90 days; never in a repo or a log).
+- [internal] ⋯ → **Team sign-ins**: everyone who signed in in the last 90 days (name, email, last sign-in, sign-ins in 30 days).
+- [internal] PJ shows as "PJ" (name override on the server), also in commit messages.
+
 ## v1.19.0 — 16 Nov 2026
 - [internal] Google sign-in only (like Case-ee): the shared admin password, the browser vault, the 5-try pause, Forgot password, Connect GitHub / Forget token, the 30-minute idle lock and Lock are gone. The page asks the team site's server who is signed in (`admin/lfmp-session.js`, byte-identical with the Builder and the Review admin) and shows the Google name with **Sign out** (Cloudflare Access logout). Signed out → `/signin/?next=…`; a non-LFMP Google account sees a plain message.
 - [internal] Every GitHub call goes through the team site's server (`/api/gh` on lfmp-admin.pages.dev, `admin-site/lib/api.mjs` in the builder repo), which holds the GitHub token and allows only the calls this page makes; the server adds "By <first name> (LFMP tools)" to every commit message here (never an email). The page dropped its token checks (`GET /repos/…`, `GET actions/workflows`). Update token still checks a pasted GHL token in the browser, seals it with the repo key and saves it through the server.

@@ -1,5 +1,13 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.20.0": {
+    "summary": "Sign out next to your name, your last sign-in, and who on the team signed in.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "A Sign out button sits next to your name (on a phone, in the ⋯ menu). It signs you out of all three tools and says \"See you next shift.\"" },
+      { "type": "new", "tag": "internal", "text": "Under your name: when you last signed in." },
+      { "type": "new", "tag": "internal", "text": "⋯ → Team sign-ins lists everyone who signed in in the last 90 days, with their last sign-in and how often in 30 days." }
+    ]
+  },
   "1.19.0": {
     "summary": "Google sign-in only: no admin password, no GitHub token to paste.",
     "items": [

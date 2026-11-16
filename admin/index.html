@@ -14,7 +14,7 @@
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=1.12.0">
-<link rel="stylesheet" href="admin.css?v=1.19.0">
+<link rel="stylesheet" href="admin.css?v=1.20.0">
 </head>
 <body>
 
@@ -50,11 +50,12 @@
       <span class="menuwrap">
         <button class="btn iconbtn" type="button" data-menu="topMenu" aria-haspopup="menu" aria-expanded="false" aria-label="More">⋯</button>
         <div class="menu" id="topMenu" role="menu" hidden>
-          <p class="menuwho" id="menuWho"></p>
+          <p class="menuwho" id="menuWho"><b data-me></b><span data-me-email></span><small class="lfmp-last" data-me-last></small></p>
+          <button type="button" role="menuitem" data-act="signins"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Team sign-ins</button>
           <button type="button" role="menuitem" data-act="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</button>
         </div>
       </span>
-      <span class="who" id="whoChip" title=""><span class="whoname" id="whoName"></span><button class="linkbtn" type="button" data-act="signout">Sign out</button></span>
+      <span class="who lfmp-who" id="whoChip" title=""><span class="lfmp-who-row"><b data-me id="whoName"></b><button class="lfmp-out" type="button" data-act="signout">Sign out</button></span><small data-me-last></small></span>
     </div>
   </header>
   <main id="screen"></main>
@@ -86,7 +87,7 @@ import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
 import { buildCards, filterCards, newer } from './news.mjs';
 import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS } from './firm-details.mjs';
 import { decryptJSON } from '../scripts/kpi-core.mjs';
-import { startSession, ghFetch, api, signOut, ApiError } from './lfmp-session.js';
+import { startSession, ghFetch, api, signOut, ApiError, paintMe } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -233,8 +234,7 @@ async function boot() {
     else if (e instanceof ApiError && e.status === 503) $('setupMsg').textContent = e.message || "The team site isn't fully set up yet.";
     return;
   }
-  $('whoName').textContent = me.name; $('whoChip').title = me.email;
-  $('menuWho').innerHTML = `<b>${esc(me.name)}</b><span>${esc(me.email)}</span>`;
+  paintMe(me); $('whoChip').title = me.email;   // name, email, "Last signed in …" (lfmp-session.js)
   openApp();
 }
 

@@ -97,3 +97,34 @@ input::placeholder{color:var(--mut)}
 .panel{background:var(--panel);border:1px solid var(--line)}
 .wrapx{max-width:1180px;margin:0 auto;padding:0 32px}
 @media (max-width:760px){.wrapx{padding:0 16px}}
+
+/* Signed-in person (all three tools, v2 sign-in): name + "Last signed in …" + Sign out; ⋯ → Team sign-ins dialog */
+/* <span class="lfmp-who"><span class="lfmp-who-row"><b data-me></b><button class="lfmp-out" data-act="signout">Sign out</button></span><small data-me-last></small></span> */
+.lfmp-who{display:inline-flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:4px;min-width:0;text-align:right}
+.lfmp-who-row{display:flex;align-items:center;gap:8px;min-width:0;max-width:100%}
+.lfmp-who-row b{font:700 13px/1.2 var(--b);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.lfmp-who small,.lfmp-last{font:500 11px/1.25 var(--b);color:var(--mut);white-space:nowrap}
+.lfmp-out{flex:none;display:inline-flex;align-items:center;min-height:24px;padding:3px 9px;border:1px solid var(--line);background:transparent;color:var(--ink);font:700 10.5px/1 var(--b);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.lfmp-out:hover{border-color:var(--ink)}
+.lfmp-out:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.lfmp-dlg{border:1px solid var(--line);border-top:3px solid var(--acc);background:var(--panel);color:var(--ink);padding:0;width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 48px);box-shadow:var(--shadow);font:400 14px/1.5 var(--b)}
+.lfmp-dlg::backdrop{background:var(--shade)}
+.lfmp-dlg-h{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 22px 14px;border-bottom:1px solid var(--line)}
+.lfmp-dlg-h h2{margin:4px 0 0;font:700 24px/1.1 var(--d);text-transform:uppercase}
+.lfmp-dlg-b{padding:16px 22px 20px;margin:0;overflow:auto}
+.lfmp-dlg-note{font-size:12.5px;margin:14px 0 0}
+.lfmp-err{color:var(--red)}
+.lfmp-signins{width:100%;border-collapse:collapse;font-size:14px}
+.lfmp-signins th{text-align:left;font:700 11px/1.2 var(--b);letter-spacing:.12em;text-transform:uppercase;color:var(--mut);padding:0 12px 10px 0;border-bottom:1px solid var(--line)}
+.lfmp-signins td{padding:11px 12px 11px 0;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+.lfmp-signins td:last-child,.lfmp-signins th:last-child{text-align:right;padding-right:0}
+@media (max-width:640px){
+  .lfmp-dlg{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}
+  .lfmp-dlg-h,.lfmp-dlg-b{padding-left:16px;padding-right:16px}
+  .lfmp-signins thead{display:none}
+  .lfmp-signins,.lfmp-signins tbody,.lfmp-signins tr,.lfmp-signins td{display:block;width:100%}
+  .lfmp-signins tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .lfmp-signins td{border:0;padding:2px 0;display:flex;justify-content:space-between;gap:12px;text-align:right}
+  .lfmp-signins td:last-child{text-align:right}
+  .lfmp-signins td::before{content:attr(data-l);font:700 10.5px/1.6 var(--b);letter-spacing:.1em;text-transform:uppercase;color:var(--mut);text-align:left;flex:none}
+}
