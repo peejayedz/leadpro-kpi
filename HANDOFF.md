@@ -12,6 +12,12 @@ The README is the full reference and CHANGELOG.md the history. This file covers 
 | Token keeper | Hourly; mints app tokens for `tokenSource: "app"` firms only. |
 | Admin page v1.14.0 | **Live** (4698019, 15 Nov): one login with the Builder + Review admin, red tool colour. v1.13.1 before it (commit 3507479, 15 Nov ~04:45 UTC). Not-in-pipeline rows with email/phone/source, Remember passphrase (encrypted), Copy GHL menu link moved to Setup, local "Copied". Admin files + tests + docs only. Built on v1.13.0 (9e3ed52: simple home + Details panel, no re-login between screens). |
 
+## v1.19.0: Google sign-in only: LIVE 17 Nov 2026
+
+- No admin password, vault or GitHub token in the browser. Cloudflare Access (Google) signs people in; `admin/lfmp-session.js` asks the team site's server (`/api/`, Builder repo `admin-site/lib/api.mjs`) who you are, and every GitHub call goes through `/api/gh` with the server's token and allow-list. The shared-password sections below (One login, sessions, `set-shared-password.mjs`, `lfmp-lock.json`) are history: those files were removed.
+- **Passphrases:** stored on the server, encrypted (AES-GCM, Cloudflare KV `KPI_PASS`, key `PASS_KEY`), one per firm. New firm saves it automatically; Details → "Remember for the team" / "Forget it" for existing firms. On 17 Nov the store was empty (old passphrases lived in each browser's vault).
+- **Commits** made from the admin say the first name only (public repo). Rollback: see the Builder HANDOFF v1.7.0.
+
 ## v1.17.0–v1.18.0: admin on the team site only: LIVE 16 Nov 2026
 
 - The admin runs only at **https://lfmp-admin.pages.dev/leadpro-kpi/admin/** (Cloudflare Pages in PJ's account, behind Access / Google sign-in), deployed by the Builder repo's `admin-site.yml`.
