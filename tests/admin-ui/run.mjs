@@ -2,10 +2,15 @@
 //
 // Needs playwright-core and its Chromium (not a dependency of this repo): set PLAYWRIGHT_CORE to its folder, or keep the
 // Sub-account Builder repo next to this one (../ghl-subaccount-builder/node_modules/playwright-core). Without it, this suite is skipped.
-// Serves the repo folder locally, mocks api.github.com (tests/admin-ui/mock-github.mjs), lfmp-lock.json (the shared one login) and libsodium. Writes nothing in the repo.
+// Serves the repo folder locally and runs the team site's REAL /api/ server (../ghl-subaccount-builder/admin-site/lib/api.mjs)
+// behind a stand-in for Cloudflare Access (test-access.mjs), with GitHub = tests/admin-ui/mock-github.mjs. Also mocks libsodium.
+// Writes nothing in the repo.
 //
-// Checks (v1.13): unlock + token; moving between screens never asks for the password again (New firm → All firms, Edit mapping
-// → All firms, the browser Back / Forward buttons, a reload), Lock and 30 minutes idle do; the simple home (strip, All / Needs
+// Checks (v1.16, Google sign-in): signed in → the page opens with the Google name + Sign out, no password or token screen,
+// nothing secret in browser storage; signed out → /signin/; Sign out → Access logout; remembered passphrases on the server
+// (remember / forget / stale / not set up / New firm saves it); the server never refused a call the page made.
+// Earlier checks kept: moving between screens (New firm → All firms, Edit mapping → All firms, the browser Back / Forward
+// buttons, a reload); the simple home (strip, All / Needs
 // attention, Show test firms, search, a row = name, status + reason link, leads, Dashboard ↗ + Details →, row click); the Details
 // panel (Overview / Performance / Setup, hash links, Esc and ✕, every old row field and button reachable, not-in-pipeline names
 // decrypted in the browser from a saved or typed passphrase, Banner commit, Delete type-to-confirm); the top bar, bell and
@@ -18,7 +23,6 @@ import { readFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, extname, normalize } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { pbkdf2Sync, randomBytes } from 'node:crypto';
 import { createMockGitHub } from './mock-github.mjs';
 import { encryptJSON } from '../../scripts/kpi-core.mjs';
 
@@ -27,10 +31,24 @@ const SHOTS = process.argv[2] || '';
 const pwPath = process.env.PLAYWRIGHT_CORE || join(ROOT, '../ghl-subaccount-builder/node_modules/playwright-core');
 if (!existsSync(join(pwPath, 'package.json'))) { console.log(`Skipped: playwright-core not found (${pwPath}). Set PLAYWRIGHT_CORE.`); process.exit(0); }
 const { chromium } = await import(pathToFileURL(join(pwPath, 'index.mjs')).href);
+// The team site's server + a stand-in for Cloudflare Access (from the builder repo, next to this one).
+const accessPath = process.env.TEST_ACCESS || join(ROOT, '../ghl-subaccount-builder/admin-site/lib/test-access.mjs');
+if (!existsSync(accessPath)) { console.log(`Skipped: the team site's server (test-access.mjs) not found (${accessPath}). Set TEST_ACCESS.`); process.exit(0); }
+const { createTestAccess, TEST_TOKEN, TEST_REVIEW_KEY } = await import(pathToFileURL(accessPath).href);
 
-const PASSWORD = 'test password for the mock';
-const salt = randomBytes(16), iterations = 100000;
-const LOCK = { salt: salt.toString('base64'), iterations, verifier: pbkdf2Sync(PASSWORD, salt, iterations, 64, 'sha256').subarray(0, 32).toString('base64') };
+const EMAIL = 'pj@lawfirmmarketingpros.com';
+const ACCESS = createTestAccess({ names: { [EMAIL]: 'PJ Drozo' } });
+// Swapped per test: who Access says is signed in (null = signed out), the server's settings, and GitHub (the mock).
+const T = { email: EMAIL, env: ACCESS.env(), G: null, deps: null };
+function useGitHub(G) {
+  T.G = G;
+  T.deps = ACCESS.deps({ githubApi: 'https://github.test', github: async (method, path, body) => {
+    const { status, json } = await G.handle(method, `https://api.github.com${path}`, body === undefined ? null : JSON.stringify(body));
+    return { status, body: json === null ? '' : JSON.stringify(json) };
+  } });
+  return G;
+}
+const refusals = () => T.deps.logs.filter(l => l.api === 'refused' || l.api === 'error');
 const SODIUM_STUB = `window.sodium = { ready: Promise.resolve(), from_string: s => new TextEncoder().encode(s),
   from_base64: b => Uint8Array.from(atob(b), c => c.charCodeAt(0)), to_base64: u => btoa(String.fromCharCode(...u)),
   crypto_box_seal: (m, pk) => Uint8Array.from([0xEE, ...m]) };`;
@@ -50,6 +68,7 @@ const NIP = [{ contactId: 'cFixture0001', name: 'Jordan Fixture', email: 'jordan
 const NIP_ENV = JSON.stringify(await encryptJSON({ generatedAt: new Date().toISOString(), notInPipeline: NIP, leads: [] }, NIP_PASS, 1000));
 
 const server = createServer(async (req, res) => {
+  if (new URL(req.url, 'http://x').pathname.startsWith('/api/')) return ACCESS.serve(req, res, { env: T.env, deps: T.deps, email: T.email });
   const p = normalize(decodeURIComponent(new URL(req.url, 'http://x').pathname)).replace(/^\/+/, '');
   const f = join(ROOT, p.endsWith('/') || p === '' ? `${p}index.html` : p);
   try { const b = await readFile(f); res.writeHead(200, { 'Content-Type': TYPES[extname(f)] || 'application/octet-stream' }); res.end(b); }
@@ -65,6 +84,7 @@ const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePa
 
 // LFMP gets 2 "not in a pipeline" contacts in the last 30 days (as in the live data) whatever the repo files say.
 async function withNip(G) {
+  useGitHub(G);
   const k = JSON.parse(await G.fileText('firms/lfmp/data/kpis.json'));
   k.periods.last30.current.notInPipeline = 2;
   G.M.overlay.set('firms/lfmp/data/kpis.json', JSON.stringify(k, null, 2) + '\n');
@@ -74,23 +94,14 @@ async function wire(page, G) {
   page.on('pageerror', e => { failed++; console.log(`✗ page error: ${e.message}`); });
   // The libsodium stub can't match the real file's SRI hash: drop the integrity attribute for cdnjs in this test only.
   await page.addInitScript(() => { const d = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'integrity'); Object.defineProperty(HTMLScriptElement.prototype, 'integrity', { set(v) { if (!String(this.src).includes('cdnjs.cloudflare.com')) d.set.call(this, v); }, get() { return d.get.call(this); } }); });
-  await page.route('**/admin/lfmp-lock.json*', r => r.fulfill({ contentType: 'application/json', body: JSON.stringify(LOCK) }));   // the shared one login (the old page lock is gone since v1.15.0)
   await page.route('**/firms/lfmp/data/details.enc.json*', r => r.fulfill({ contentType: 'application/json', body: NIP_ENV }));
   await page.route('https://cdnjs.cloudflare.com/**', r => r.fulfill({ contentType: 'text/javascript', body: SODIUM_STUB }));
-  await page.route('https://api.github.com/**', async r => {
-    const q = r.request();
-    const { status, json } = await G.handle(q.method(), q.url(), q.postData());
-    await r.fulfill({ status, contentType: 'application/json', body: json === null ? '' : JSON.stringify(json) });
-  });
+  // Nothing may go to GitHub from the browser any more: the server does it.
+  await page.route('https://api.github.com/**', r => { failed++; console.log(`✗ the page called GitHub directly: ${r.request().method()} ${r.request().url()}`); return r.abort(); });
+  void G;
 }
 const unlocked = page => page.waitForFunction(() => !document.getElementById('appView').hidden && document.querySelector('#syncTimes')?.textContent.includes('Next'));
-async function unlock(page) {
-  await page.waitForSelector('#lgPw:visible');
-  await page.fill('#lgPw', PASSWORD); await page.click('#lgGo');
-  await page.waitForSelector('#tokenIn:visible, #appView:not([hidden])');
-  if (await page.isVisible('#tokenIn')) { await page.fill('#tokenIn', 'github_pat_test_token_for_mock'); await page.click('#tokenGo'); }
-  await unlocked(page);
-}
+const unlock = unlocked;   // Google sign-in happens before the page loads (Access): nothing to type
 async function openPage(G, { width = 1440, height = 900, scheme = 'dark', hash = '' } = {}) {
   const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, permissions: ['clipboard-read', 'clipboard-write'] });
   const page = await ctx.newPage();
@@ -120,12 +131,45 @@ const contrastFailures = (page, root = 'body') => page.evaluate(root => {
 }, root);
 const noSideScroll = page => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 const slugs = page => page.$$eval('.firm', els => els.map(e => e.dataset.slug));
-const lockShown = page => page.isVisible('#lfmpLogin');
+// "asked to sign in again": a password box anywhere, or the page left for the sign-in page
+const lockShown = async page => /\/signin\//.test(page.url()) || !!(await page.$('#lgPw, #tokenIn, input[autocomplete="current-password"]'));
+// nothing secret in browser storage: the server's keys, the GitHub token, the Review key, a dashboard passphrase
+const storageClean = page => page.evaluate(bad => { const all = JSON.stringify({ ...localStorage }) + JSON.stringify({ ...sessionStorage }); return bad.every(b => !all.includes(b)); }, [TEST_TOKEN, TEST_REVIEW_KEY, T.env.PASS_KEY, NIP_PASS, 'github_pat']);
+const kvPass = slug => T.env.KPI_PASS?.map.get(`pass:${slug}`) ?? null;
 const hashIs = page => page.evaluate(() => location.hash);
 const panelOpen = page => page.isVisible('#dPanel');
 
 try {
   const G = await withNip(createMockGitHub({ root: ROOT }));
+
+  // ---------------- Google sign-in (v1.16.0) ----------------
+  {
+    // old browser leftovers (the password login's vault, session key, Review key copy, remembered-passphrase vault) are wiped
+    const c0 = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const p0 = await c0.newPage(); await wire(p0, G);
+    await p0.addInitScript(() => { if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('lfmp-vault', '{"v":1,"ct":"old"}'); localStorage.setItem('ar_admin_key', 'old-review-key'); localStorage.setItem('leadpro-admin-firm-pass', '{"ct":"x"}'); localStorage.setItem('lfmp-lock-at', '1'); sessionStorage.setItem('lfmp-session', '{"k":"x"}'); } });
+    await p0.goto(BASE); await unlocked(p0); await p0.waitForSelector('.firm');
+    check(await p0.evaluate(() => ['lfmp-vault', 'ar_admin_key', 'leadpro-admin-firm-pass', 'lfmp-lock-at'].every(k => localStorage.getItem(k) === null) && sessionStorage.getItem('lfmp-session') === null), 'old password-login leftovers removed from the browser on load');
+    check((await p0.textContent('#whoName')).trim() === 'PJ Drozo' && await p0.isVisible('#whoChip [data-act="signout"]'), 'top bar: Google name + Sign out');
+    check(!(await p0.$('#lgPw, #tokenIn, #tokenView, input[type="password"]:not(#nipPass)')), 'no password or token box anywhere');
+    await p0.click('[data-menu="topMenu"]');
+    check(/PJ Drozo/.test(await p0.textContent('#menuWho')) && /pj@lawfirmmarketingpros\.com/.test(await p0.textContent('#menuWho')) && await p0.isVisible('#topMenu [data-act="signout"]') && !(await p0.$('#topMenu [data-act="lock"], #topMenu [data-act="forget"]')), 'top ⋯: name, email and Sign out (no Lock, no Forget token)');
+    await p0.keyboard.press('Escape');
+    check(await storageClean(p0), 'nothing secret in localStorage / sessionStorage');
+    await p0.click('#whoChip [data-act="signout"]'); await p0.waitForURL('**/cdn-cgi/access/logout');
+    check(true, 'Sign out → Cloudflare Access logout');
+    // signed out (Access sent no sign-in): the page goes to the sign-in page and remembers where it was
+    T.email = null;
+    await p0.goto(`${BASE}#/firm/lfmp`); await p0.waitForURL('**/signin/**');
+    check(new URL(p0.url()).searchParams.get('next') === '/admin/?repo=peejayedz/leadpro-kpi#/firm/lfmp', `signed out → /signin/?next=… (${p0.url()})`);
+    // a non-LFMP Google account: a plain message, nothing loaded
+    T.email = 'someone@gmail.com';
+    await p0.goto(BASE); await p0.waitForSelector('#setupView:not([hidden])');
+    check(/lawfirmmarketingpros\.com/.test(await p0.textContent('#setupMsg')) && await p0.isHidden('#appView'), 'non-LFMP Google account: "Only @lawfirmmarketingpros.com…", nothing loaded');
+    T.email = EMAIL;
+    await c0.close();
+    T.deps.logs.length = 0;   // the refusals above were on purpose
+  }
   let { ctx, page } = await openPage(G);
 
   // ---------------- home ----------------
@@ -164,10 +208,10 @@ try {
   const head = (await page.textContent('#dPanel .dphead')).replace(/\s+/g, ' ');
   check(/Law Firm Marketing Pros/i.test(head) && /GHL:/.test(head), `header: name, practice area, GHL name (${head.trim()})`);
   check(await page.isVisible('#dPanel [data-reason="not-in-pipeline"]') && /2 leads not in a pipeline/.test(await page.textContent('#dPanel .abox')), 'needs-attention box first, with the reason');
-  check(await page.isVisible('#nipPass') && await page.isVisible('#nipRemember') && !(await page.isChecked('#nipRemember')), 'no saved passphrase: unlock form with "Remember on this computer" (off by default)');
+  check(await page.isVisible('#nipPass') && await page.isVisible('#nipRemember') && !(await page.isChecked('#nipRemember')), 'no saved passphrase: unlock form with "Remember for the team" (off by default)');
   const firstKid = await page.$eval('#nipList', el => { const k = el.firstElementChild; const a = k?.querySelector('a'); return { cls: k?.className, btn: a?.classList.contains('btn') && !a.classList.contains('p'), text: a?.textContent.trim(), beforeForm: !!(k && el.querySelector('form') && (k.compareDocumentPosition(el.querySelector('form')) & 4)) }; });
   check(firstKid.btn && firstKid.text === 'Open Contacts in GHL ↗' && firstKid.beforeForm, `"Open Contacts in GHL ↗" is an outlined button, first, before the passphrase box (${JSON.stringify(firstKid)})`);
-  check(/Remember on this computer/.test(await page.textContent('#nipList .nipform')), 'Remember checkbox sits with Unlock');
+  check(/Remember for the team/.test(await page.textContent('#nipList .nipform')), 'Remember checkbox sits with Unlock');
   await page.fill('#nipPass', 'wrong passphrase'); await page.press('#nipPass', 'Enter');
   await page.waitForFunction(() => /didn't work/.test(document.querySelector('#nipList')?.textContent || ''));
   check(true, 'wrong passphrase → plain error');
@@ -178,7 +222,7 @@ try {
   check(nipRows.length === 2 && nipRows[0].name === 'Jordan Fixture' && /jordan@example\.test/.test(nipRows[0].t) && /\+15550000001/.test(nipRows[0].t) && /Chat/.test(nipRows[0].t) && nipRows[0].href === `${URL1}cFixture0001`, `row: name, email, phone, source, date, Open in GHL ↗ (${nipRows[0]?.t?.trim()} → ${nipRows[0]?.href})`);
   check(nipRows[1].name === 'noname@example.test' && /\(no name\)/.test(nipRows[1].t) && /\+15550000002/.test(nipRows[1].t) && /Text/.test(nipRows[1].t) && !/Unknown|Unnamed/.test(nipRows[1].t) && nipRows[1].href === `${URL1}cFixture0002`, `no name: the email stands in, never "Unknown" (${nipRows[1]?.t?.trim()})`);
   check(await page.isVisible('#nipList > .nipopen a.btn'), 'after unlock: Open Contacts in GHL ↗ still first, each row has its own Open in GHL ↗');
-  check(await page.evaluate(() => !JSON.stringify(localStorage).includes('Jordan') && !JSON.stringify(sessionStorage).includes('Jordan') && !JSON.stringify(localStorage).includes('example.test') && !JSON.stringify(localStorage).includes('fixture-passphrase') && localStorage.getItem('leadpro-admin-firm-pass') === null), 'not remembered: nothing about the contacts or the passphrase saved in the browser');
+  check(await page.evaluate(() => !JSON.stringify(localStorage).includes('Jordan') && !JSON.stringify(sessionStorage).includes('Jordan') && !JSON.stringify(localStorage).includes('example.test') && !JSON.stringify(localStorage).includes('fixture-passphrase') && localStorage.getItem('leadpro-admin-firm-pass') === null) && kvPass('lfmp') === null, 'not remembered: nothing about the contacts or the passphrase saved in the browser or on the server');
   await shot(page, 'details_overview_names_1440_dark');
   await shot(page, 'details_overview_1440_dark');
   const ov = (await page.innerText('#dPanel')).replace(/\s+/g, ' ');
@@ -292,9 +336,8 @@ try {
   await page.click('.top .mark'); await page.waitForSelector('.firm');
   check(!(await lockShown(page)), 'LFMP mark / KPI admin link: in-page, no password');
   await page.reload(); await page.waitForSelector('.firm');
-  check(!(await lockShown(page)), 'reload: still unlocked');
-  check(await page.evaluate(() => { const s = sessionStorage.getItem('lfmp-session'); return !!s && !s.includes('github_pat') && !s.includes('test password'); }), 'session keeps the unlock key only (no token, no password)');
-  check(await page.evaluate(() => !String(localStorage.getItem('lfmp-vault')).includes('github_pat')), 'the GitHub token stays encrypted in the shared vault');
+  check(!(await lockShown(page)), 'reload: still signed in');
+  check(await storageClean(page) && await page.evaluate(() => localStorage.getItem('lfmp-vault') === null && sessionStorage.getItem('lfmp-session') === null), 'no vault, no session key, no token in the browser (the server holds them)');
 
   // saved dashboard passphrase (as the client dashboard stores it) → names show without typing
   await page.evaluate(p => localStorage.setItem('lfmp-pass-lfmp', p), NIP_PASS);
@@ -302,59 +345,51 @@ try {
   check(/Jordan Fixture/.test(await page.textContent('#nipList')) && !/Old Fixture/.test(await page.textContent('#nipList')), 'saved passphrase: list shows without typing (last 30 days only)');
   await page.evaluate(() => localStorage.removeItem('lfmp-pass-lfmp'));
 
-  // "Remember on this computer": sealed with the admin key, names show straight away next time; idle lock keeps it
+  // "Remember for the team": saved encrypted on the team site's server; names show straight away next time, on any device
   await page.reload(); await page.waitForSelector('#nipPass');
   await page.fill('#nipPass', NIP_PASS); await page.check('#nipRemember'); await page.press('#nipPass', 'Enter');
   await page.waitForSelector('#nipList .nip li');
-  const vault = await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass'));
-  check(!!vault && JSON.parse(vault).alg === 'AES-GCM' && !vault.includes(NIP_PASS) && !vault.includes('lfmp') && !/Jordan|example\.test/.test(vault), 'remembered: stored AES-GCM encrypted (no passphrase, slug or contact in the clear)');
+  const kv = kvPass('lfmp');
+  check(!!kv && !kv.includes(NIP_PASS) && !/Jordan|example\.test/.test(kv) && JSON.parse(kv).by === EMAIL, 'remembered: stored on the server, encrypted (no passphrase or contact in the clear), with who saved it');
+  check(await storageClean(page) && await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass') === null), 'remembered: nothing about it in this browser');
+  check(/remembered for the team/i.test(await page.textContent('#nipList')) && await page.isVisible('#nipList [data-nip-forget]'), 'Details says "remembered for the team" with Forget it');
+  await shot(page, 'details_remembered_1440_dark');
+  { // another person on another computer: opens without typing
+    const c2 = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
+    const p2 = await c2.newPage(); await wire(p2, G);
+    T.email = 'ana.reyes@lawfirmmarketingpros.com';
+    await p2.goto(BASE + '#/firm/lfmp'); await unlocked(p2); await p2.waitForSelector('#nipList .nip li');
+    check(/Jordan Fixture/.test(await p2.textContent('#nipList')) && !(await p2.$('#nipPass')) && (await p2.textContent('#whoName')).trim() === 'Ana', 'another team member, another browser: names show without typing');
+    T.email = EMAIL; await c2.close();
+  }
   await page.reload(); await page.waitForSelector('#nipList .nip li');
   check(/Jordan Fixture/.test(await page.textContent('#nipList')) && !(await page.$('#nipPass')), 'remembered: names show straight away after a reload, no typing');
-  await page.evaluate(() => { const s = JSON.parse(sessionStorage.getItem('lfmp-session')); s.t = Date.now() - 31 * 60e3; sessionStorage.setItem('lfmp-session', JSON.stringify(s)); });
-  await page.reload(); await page.waitForSelector('#lgPw:visible');
-  check(await page.evaluate(() => !!localStorage.getItem('leadpro-admin-firm-pass')), 'idle lock keeps the remembered passphrase (still encrypted)');
-  await unlock(page); await page.goto(BASE + '#/firm/lfmp'); await page.waitForSelector('#nipList .nip li');
-  check(/Jordan Fixture/.test(await page.textContent('#nipList')), 'next unlock: names show straight away');
   // a remembered passphrase that stops working (firm passphrase changed) is forgotten, with a plain message
-  const goodVault = await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass'));
   await page.route('**/firms/lfmp/data/details.enc.json*', async r => r.fulfill({ contentType: 'application/json', body: JSON.stringify(await encryptJSON({ notInPipeline: NIP }, 'a-changed-passphrase', 1000)) }));
   await page.reload(); await page.waitForFunction(() => /no longer works/.test(document.querySelector('#nipList')?.textContent || ''));
-  check(await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass') === null), 'remembered passphrase that no longer works: forgotten, "type the current one"');
+  check(kvPass('lfmp') === null, 'remembered passphrase that no longer works: forgotten on the server, "type the current one"');
   await page.unroute('**/firms/lfmp/data/details.enc.json*');
   await page.route('**/firms/lfmp/data/details.enc.json*', r => r.fulfill({ contentType: 'application/json', body: NIP_ENV }));
-  await page.evaluate(v => localStorage.setItem('leadpro-admin-firm-pass', v), goodVault);
-  await page.reload(); await page.waitForSelector('#nipList .nip li');
-
-  // Lock and idle end the session
-  await page.keyboard.press('Escape');
-  await page.click('[data-menu="topMenu"]'); await page.click('#topMenu [data-act="lock"]');
-  check(await lockShown(page) && await page.evaluate(() => sessionStorage.getItem('lfmp-session') === null), 'Lock: lock screen, session cleared');
-  check(await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass') === null && !!localStorage.getItem('lfmp-vault')), 'Lock clears remembered passphrases (the encrypted GitHub token stays)');
-  await page.reload(); await page.waitForSelector('#lgPw:visible');
-  check(await lockShown(page), 'after Lock, a reload asks for the password');
-  await unlock(page); await page.waitForSelector('.firm');
-  await page.evaluate(() => { const s = JSON.parse(sessionStorage.getItem('lfmp-session')); s.t = Date.now() - 31 * 60e3; sessionStorage.setItem('lfmp-session', JSON.stringify(s)); });
-  await page.reload(); await page.waitForSelector('#lgPw:visible');
-  check(await lockShown(page), '30 minutes idle: the password is asked again');
-  await unlock(page); await page.waitForSelector('.firm');
-  await page.evaluate(() => { const s = JSON.parse(sessionStorage.getItem('lfmp-session')); s.t = Date.now() - 31 * 60e3; sessionStorage.setItem('lfmp-session', JSON.stringify(s)); });
-  await page.mouse.click(5, 5); await page.waitForSelector('#lgPw:visible', { timeout: 5000 });
-  check(/30 minutes/.test(await page.textContent('#lgErr')), 'idle while open: locks on the next click, says why');
-  await unlock(page); await page.waitForSelector('.firm');
-
-  // Forget token also clears remembered passphrases
-  await page.goto(BASE + '#/firm/lfmp'); await page.waitForSelector('#nipPass');
-  await page.fill('#nipPass', NIP_PASS); await page.check('#nipRemember'); await page.press('#nipPass', 'Enter'); await page.waitForSelector('#nipList .nip li');
-  check(await page.evaluate(() => !!localStorage.getItem('leadpro-admin-firm-pass')), 'remembered again (before Forget token)');
-  await page.keyboard.press('Escape');
-  await page.click('[data-menu="topMenu"]'); await page.click('#topMenu [data-act="forget"]'); await page.click('#dlgOk');
-  await page.waitForSelector('#tokenIn:visible');
-  check(await page.evaluate(() => localStorage.getItem('leadpro-admin-firm-pass') === null && localStorage.getItem('lfmp-vault') === null), 'Forget token clears the token and remembered passphrases');
-  await page.fill('#tokenIn', 'github_pat_test_token_for_mock'); await page.click('#tokenGo'); await page.waitForSelector('.firm');
+  // remember again, then Forget it
+  await page.reload(); await page.waitForSelector('#nipPass');
+  await page.fill('#nipPass', NIP_PASS); await page.check('#nipRemember'); await page.press('#nipPass', 'Enter'); await page.waitForSelector('#nipList [data-nip-forget]');
+  await page.click('#nipList [data-nip-forget]'); await page.waitForFunction(() => /Forgotten for the team/.test(document.querySelector('#nipList')?.textContent || ''));
+  check(kvPass('lfmp') === null && /Jordan Fixture/.test(await page.textContent('#nipList')), 'Forget it: removed on the server (the list stays open until you leave)');
+  await page.reload(); await page.waitForSelector('#nipPass');
+  check(true, 'after Forget it: the passphrase is asked again');
+  // the server's passphrase store not set up (no KV / key): typing still works, a quiet note, no Remember box
+  const envBefore = T.env; T.env = { ...envBefore, KPI_PASS: undefined };
+  await page.reload(); await page.waitForSelector('#nipPass');
+  check(!(await page.$('#nipRemember')) && /isn't set up on the team site/.test(await page.textContent('#nipList')), 'store not set up: no Remember box, quiet note');
+  await page.fill('#nipPass', NIP_PASS); await page.press('#nipPass', 'Enter'); await page.waitForSelector('#nipList .nip li');
+  check(true, 'store not set up: typing the passphrase still opens the names');
+  T.env = envBefore;
+  T.deps.logs.length = 0;   // the 503s above were on purpose
 
   // ---------------- top bar, bell, What's new ----------------
+  await page.keyboard.press('Escape');
   await page.click('[data-menu="topMenu"]');
-  check(await page.isVisible('#topMenu [data-act="lock"]') && await page.isVisible('#topMenu [data-act="forget"]'), 'top ⋯ has Forget token and Lock');
+  check(await page.isVisible('#topMenu [data-act="signout"]') && !(await page.$('#topMenu [data-act="lock"], #topMenu [data-act="forget"]')), 'top ⋯ has Sign out (no Lock, no Forget token)');
   await page.keyboard.press('Escape');
   check(await page.isHidden('#topMenu'), 'Esc closes the top menu');
   await page.click('#bellBtn');
@@ -402,6 +437,8 @@ try {
   check(/LeadPro Connector app isn't on this sub-account/.test(err) && !/Error:|undefined|stack/.test(err), `app missing → plain error: ${err}`);
   check(G.M.dispatches.filter(d => d.workflow === 'new-firm.yml').length === 1, 'double click → one dispatch');
   check(G.M.secretPuts.length === 1 && G.M.secretPuts[0].name === 'PASSPHRASE_SMITH_AND_JONES_LAW' && unseal(G.M.secretPuts[0].value) === pass, 'one passphrase secret, sealed, the one in the form');
+  const remembered = await page.evaluate(async () => (await (await fetch('/api/kpi-pass', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"op":"get","slug":"smith-and-jones-law"}' })).json()).pass);
+  check(remembered === pass && !kvPass('smith-and-jones-law').includes(pass), 'New firm: the new passphrase is remembered for the team automatically (encrypted on the server)');
   await shot(page, 'newfirm_app_error_1440_dark');
   G.M.scenario = 'ok';
   await page.click('#appRetry');
@@ -433,6 +470,9 @@ try {
   // nothing written anywhere holds a contact name or ID
   const written = JSON.stringify([...G.M.overlay.entries()].filter(([p]) => p !== 'firms/lfmp/data/kpis.json')) + JSON.stringify(G.M.commits) + JSON.stringify(G.M.dispatches);
   check(!/Jordan|cFixture|Old Fixture/.test(written), 'no contact names or IDs in any commit, file or workflow input');
+  check(G.M.commits.length > 0 && G.M.commits.every(c => /\n\nBy PJ \(LFMP tools\)$/.test(c.message) && !c.message.includes('@')), 'every commit to this public repo is signed with the first name only (added by the server), never an email');
+  check(await storageClean(page), 'after everything: nothing secret in browser storage');
+  { const r = refusals(); check(!r.length, `the server never refused a call this page made${r.length ? `: ${JSON.stringify(r.slice(0, 5))}` : ''}`); }
   await ctx.close();
 
   // ---------------- screenshots + layout: 1440 and 390, light and dark ----------------
@@ -443,6 +483,13 @@ try {
     check(await noSideScroll(page), `${tag}: list has no sideways scroll`);
     let cf = await contrastFailures(page); check(!cf.length, `${tag}: list passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);
     await shot(page, `list_${tag}`);
+    await page.click('[data-menu="topMenu"]');
+    check(/PJ Drozo/.test(await page.textContent('#topMenu')) && await page.isVisible('#topMenu [data-act="signout"]'), `${tag}: ⋯ menu shows the Google name and Sign out`);
+    cf = await contrastFailures(page, '#topMenu'); check(!cf.length, `${tag}: ⋯ menu passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);
+    await shot(page, `menu_${tag}`, false);
+    await page.keyboard.press('Escape');
+    if (w === 390) check(await page.isHidden('#whoChip'), '390: the name + Sign out live in the ⋯ menu (top bar stays one row)');
+    else check(await page.isVisible('#whoChip'), `${tag}: name + Sign out in the top bar`);
     if (w === 390) {
       const box = await page.$eval('.firm[data-slug="lfmp"]', e => { const r = e.getBoundingClientRect(); return { w: r.width }; });
       check(box.w <= 390 - 30 && await page.$$eval('.firm[data-slug="lfmp"] .acts .btn', b => b.every(x => x.getBoundingClientRect().height >= 44)), '390: firm card with two big buttons');

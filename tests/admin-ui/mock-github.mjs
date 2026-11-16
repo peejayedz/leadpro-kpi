@@ -4,6 +4,9 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+// GitHub object ids are 40 hex characters (the team site's server only accepts those).
+const hex = label => createHash('sha1').update(String(label)).digest('hex');
 
 export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kpi', stepMs = 600 }) {
   const P = `/repos/${owner}/${repo}`;
@@ -11,7 +14,7 @@ export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kp
     scenario: 'ok',              // new-firm.yml: 'ok' | 'app-missing'
     overlay: new Map(),          // path -> content (string) | null (deleted)
     secrets: new Map([['GHL_TOKEN_MAHDAVI', '(set)'], ['PASSPHRASE_MAHDAVI', '(set)'], ['GHL_TOKEN_LFMP', '(set)'], ['PASSPHRASE_LFMP', '(set)'], ['GHL_TOKEN_ZZ_TEST_2', '(set)'], ['PASSPHRASE_ZZ_TEST_2', '(set)']]),
-    secretPuts: [], secretDeletes: [], dispatches: [], commits: [], runs: [], blobs: new Map(), trees: new Map(), head: 'c0',
+    secretPuts: [], secretDeletes: [], dispatches: [], commits: [], runs: [], blobs: new Map(), trees: new Map(), head: hex('c0'),
     calls: [],
   };
   // The repo's latest sync (from its status file), moved to "12 minutes ago" so syncs on disk look fresh whatever their date.
@@ -127,22 +130,22 @@ export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kp
     if ((m = /^\/contents\/(.+)$/.exec(p)) && method === 'GET') {
       const fp = decodeURIComponent(m[1]);
       const t = await fileText(fp);
-      if (t !== null) return ok({ type: 'file', path: fp, sha: `sha-${fp}`, content: b64(t), encoding: 'base64' });
+      if (t !== null) return ok({ type: 'file', path: fp, sha: hex(`sha-${fp}`), content: b64(t), encoding: 'base64' });
       try {
         if ((await stat(join(root, fp))).isDirectory()) return ok((await readdir(join(root, fp))).map(n => ({ type: 'file', name: n, path: `${fp}/${n}` })));
       } catch {}
       return { status: 404, json: { message: 'Not Found' } };
     }
     if (p === `/git/ref/heads/main`) return ok({ object: { sha: M.head } });
-    if ((m = /^\/git\/commits\/(\w+)$/.exec(p)) && method === 'GET') return ok({ sha: m[1], tree: { sha: `t-${m[1]}` } });
-    if (p === '/git/blobs' && method === 'POST') { const sha = `b${M.blobs.size}`; M.blobs.set(sha, body.content); return { status: 201, json: { sha } }; }
-    if (p === '/git/trees' && method === 'POST') { const sha = `t${M.trees.size}x`; M.trees.set(sha, body.tree); return { status: 201, json: { sha } }; }
+    if ((m = /^\/git\/commits\/(\w+)$/.exec(p)) && method === 'GET') return ok({ sha: m[1], tree: { sha: hex(`t-${m[1]}`) } });
+    if (p === '/git/blobs' && method === 'POST') { const sha = hex(`b${M.blobs.size}`); M.blobs.set(sha, body.content); return { status: 201, json: { sha } }; }
+    if (p === '/git/trees' && method === 'POST') { const sha = hex(`t${M.trees.size}x`); M.trees.set(sha, body.tree); return { status: 201, json: { sha } }; }
     if ((m = /^\/git\/trees\/([\w-]+)$/.exec(p)) && method === 'GET') {
       const files = new Set(await allFiles());
       for (const [k, v] of M.overlay) v === null ? files.delete(k) : files.add(k);
       return ok({ tree: [...files].map(f => ({ path: f, type: 'blob' })) });
     }
-    if (p === '/git/commits' && method === 'POST') { const sha = `c${M.commits.length + 1}`; M.commits.push({ sha, message: body.message, tree: body.tree, files: [] }); return { status: 201, json: { sha } }; }
+    if (p === '/git/commits' && method === 'POST') { const sha = hex(`c${M.commits.length + 1}`); M.commits.push({ sha, message: body.message, tree: body.tree, files: [] }); return { status: 201, json: { sha } }; }
     if (p === '/git/refs/heads/main' && method === 'PATCH') {
       const c = M.commits.find(x => x.sha === body.sha);
       for (const e of M.trees.get(c.tree)) { const content = e.sha === null ? null : M.blobs.get(e.sha); M.overlay.set(e.path, content); c.files.push({ path: e.path, content }); }

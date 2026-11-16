@@ -31,8 +31,7 @@ firms/<slug>/discovery.json written by the Discover workflow (names and ids only
 .github/workflows/sync.yml      every 30 min + Run workflow (optional slug; empty = all firms)
 .github/workflows/discover.yml  Run workflow with slug + secretKey (and the location ID for a brand-new firm)
 admin/index.html            admin page: firm list, New firm, Edit mapping, banner, delete
-admin/lfmp-lock.json        shared admin password check value (written by scripts/set-shared-password.mjs; no password inside)
-scripts/set-shared-password.mjs  sets the ONE admin password for the KPI admin, Builder and Review admin (prompts in the terminal)
+admin/lfmp-session.js       Google sign-in + calls to the team site's server (/api/); byte-identical in the Builder and Review admin
 ```
 
 ## Shared defaults
@@ -207,9 +206,9 @@ When a sub-account is created in the Sub-account Builder with "Set up KPI dashbo
 
 `https://lfmp-admin.pages.dev/leadpro-kpi/admin/` is a static page that manages this repo through the GitHub API. It is deployed to the team site (Cloudflare Pages, behind Google sign-in) by the Builder repo's `admin-site.yml` from this repo's `admin/` folder; on the public site `admin/index.html` sends visitors to `admin/moved.html`.
 
-**Password (one login).** The admin page signs in with the shared LFMP admin password, the same one as the Sub-account Builder and the Automation Review admin (`admin/lfmp-login.js`, `admin/lfmp-login.css`, `admin/lfmp-lock.json`; keep the three copies byte-identical). Run `node scripts/set-shared-password.mjs` in your own terminal to set or reset it: it asks twice (typing hidden) and writes `lfmp-lock.json` = `{ salt, iterations, verifier }` (PBKDF2-SHA256, 210,000 iterations) into all three tools. The password itself is never stored. A new password makes every browser's vault unreadable: sign in, paste the GitHub token again and re-add the review admin key. (The old page password, `admin/lock.json` + `scripts/set-admin-password.mjs`, was removed in v1.15.0.)
+**Sign-in (v1.19.0: Google only).** Cloudflare Access signs people in with Google before the page loads (only @lawfirmmarketingpros.com accounts). The page asks the team site's server who it is (`admin/lfmp-session.js`, byte-identical with the Builder's `page/` and the Review admin's `admin/`) and shows the name with **Sign out**. There is no admin password, no vault and no token in the browser any more (the shared password, `lfmp-lock.json`, `lfmp-login.js` and `scripts/set-shared-password.mjs` were removed in v1.19.0; `admin/lfmp-login.css` stays for `admin/moved.html`).
 
-**GitHub token.** After unlocking, a device with no saved token asks for a fine-grained token: repository `leadpro-kpi` only, **Contents**, **Actions** and **Secrets** = Read and write, and **Variables** = Read-only (for the sync-issue bell's `SYNC_CHAIN` check). It's saved in this browser's localStorage under `leadpro-admin-gh-token`, encrypted with AES-GCM under a key derived from the admin password. "Forget token" removes it.
+**GitHub calls.** Every GitHub call goes through the team site's server (`/api/gh`, `admin-site/lib/api.mjs` in the builder repo), which holds the GitHub token as a Cloudflare secret and allows only the calls this page makes (contents under `firms/` and `status/`, commits touching only `firms/<slug>/…` and `firms/index.json`, the `GHL_TOKEN_*` / `PASSPHRASE_*` secrets, the five workflows, `SYNC_CHAIN` read-only). It adds "By <first name> (LFMP tools)" to every commit message. Remembered dashboard passphrases are on the server too (`/api/kpi-pass`, encrypted per firm in Cloudflare KV).
 
 **Look (v1.12.0).** The LFMP look shared with the Sub-account Builder. `admin/lfmp-ui.css` holds the shared tokens, fonts and components; the builder copies it unchanged, so keep it generic. `admin/admin.css` holds this page's styles. Fonts are self-hosted in `admin/fonts/` (Inter variable and Barlow Condensed 600/700, latin; SIL OFL 1.1 in `admin/fonts/OFL.txt`). Theme: Auto · Light · Dark; Auto follows the device and saves nothing, while Light and Dark are saved as `lfmp-theme` (the same key the dashboards use).
 

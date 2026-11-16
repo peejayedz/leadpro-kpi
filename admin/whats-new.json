@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.19.0": {
+    "summary": "Google sign-in only: no admin password, no GitHub token to paste.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "Your Google sign-in is all you need. The admin password and the GitHub token screen are gone; the top bar shows your name and Sign out." },
+      { "type": "new", "tag": "internal", "text": "Remember a dashboard passphrase for the whole team: anyone signed in opens the names in Details without typing it. New firms are remembered automatically, and Forget it removes one." }
+    ]
+  },
   "1.18.0": {
     "summary": "The KPI admin now opens only on the team site, behind Google sign-in.",
     "items": [

@@ -102,7 +102,8 @@ for (const p of plainFiles) { const t = JSON.stringify(strip(p, JSON.parse(await
 check(plainFiles.length >= 15 && !pii.length, `no email address or phone number in ${plainFiles.length} unencrypted data files${pii.length ? `: ${pii.slice(0, 5).join(', ')}` : ''}`);
 const admin = await readFile(join(ROOT, 'admin/index.html'), 'utf8');
 check(!/console\.(log|info|warn|error|debug)\([^)]*(nip|notInPipeline|email|phone|\.name\b|pass)/i.test(admin), 'the admin page never logs contacts or passphrases to the console');
-check(/store\.set\(PASS_VAULT_KEY, JSON\.stringify\(\{ v: 1, alg: 'AES-GCM'/.test(admin) && !/store\.set\(PASS_VAULT_KEY, (pass|typed|o\b|JSON\.stringify\(o\))/.test(admin), 'remembered passphrases are only ever stored AES-GCM encrypted');
+// v1.19.0: remembered passphrases live on the team site's server (/api/kpi-pass, encrypted there), never in this browser
+check(/api\('kpi-pass'/.test(admin) && !/PASS_VAULT_KEY|leadpro-admin-firm-pass/.test(admin) && !/(store\.set|localStorage\.setItem|sessionStorage\.setItem)\([^)]*(pass|typed)\b/i.test(admin), 'remembered passphrases go to the server only, never into browser storage');
 check(!/localStorage\.setItem\([^)]*(nip|notInPipeline)/i.test(admin) && !/sessionStorage\.setItem\([^)]*(nip|notInPipeline)/i.test(admin), 'the admin page never stores the decrypted list');
 
 console.log(failed ? `\n${failed} failed, ${passed} passed` : `\nAll ${passed} admin details checks passed`);

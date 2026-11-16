@@ -14,37 +14,18 @@
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=1.12.0">
-<link rel="stylesheet" href="admin.css?v=1.18.0">
-<link rel="stylesheet" href="lfmp-login.css?v=1.18.0">
+<link rel="stylesheet" href="admin.css?v=1.19.0">
 </head>
 <body>
 
-<!-- ================= the one login can't start ================= -->
+<!-- ================= the team site can't be reached (sign-in itself is Google, before this page loads) ================= -->
 <div class="gate" id="setupView" hidden>
   <div class="card">
     <div class="gatehead"><span class="mark" aria-hidden="true">LFMP</span><p class="ey">LeadPro · KPI admin</p></div>
-    <h1 class="disp">Sign-in <span class="g">not ready.</span></h1>
-    <p class="sub" id="setupMsg" role="alert">The shared admin password file (lfmp-lock.json) is missing. In the leadpro-kpi folder, run <code class="mono">node scripts/set-shared-password.mjs</code>, then publish the three tools.</p>
+    <h1 class="disp">Couldn't <span class="g">open.</span></h1>
+    <p class="sub" id="setupMsg" role="alert">The LFMP tools site didn't answer. Check your connection and reload the page.</p>
+    <div class="btnrow" style="margin-top:0"><button type="button" class="btn p big" data-act="reload">Reload</button></div>
   </div>
-</div>
-
-<!-- ================= GitHub token ================= -->
-<div class="gate wide" id="tokenView" hidden>
-  <form class="card" id="tokenForm" autocomplete="off">
-    <div class="gatehead"><span class="mark" aria-hidden="true">LFMP</span><p class="ey">LeadPro · KPI admin</p></div>
-    <div><h1 class="disp">Connect <span class="g">GitHub.</span></h1><p class="sub" id="tokenWhy" style="margin-top:10px">This device has no GitHub token saved yet. It's stored here only, encrypted with your admin password.</p></div>
-    <ol>
-      <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → Fine-grained tokens → Generate new token</a>.</li>
-      <li>Repository access: <b>Only select repositories</b> → <b class="repoName">leadpro-kpi</b> and <b>ghl-subaccount-builder</b> (one token for the Builder and the KPI admin).</li>
-      <li>Permissions: <b>Contents</b>, <b>Actions</b> and <b>Secrets</b> = Read and write; <b>Variables</b> = Read-only.</li>
-      <li>Generate, copy and paste it below.</li>
-    </ol>
-    <label class="f" for="tokenIn">GitHub token
-      <span class="pw"><input type="password" id="tokenIn" autocomplete="off" spellcheck="false" placeholder="github_pat_…" required><button type="button" class="eye" data-eye="tokenIn" aria-label="Show token"></button></span>
-    </label>
-    <div class="ferr" id="tokenErr" role="alert"></div>
-    <div class="btnrow" style="margin-top:0"><button type="submit" class="btn p big" id="tokenGo">Save token</button><button type="button" class="btn big" data-act="lock">Lock</button></div>
-  </form>
 </div>
 
 <!-- ================= app ================= -->
@@ -69,10 +50,11 @@
       <span class="menuwrap">
         <button class="btn iconbtn" type="button" data-menu="topMenu" aria-haspopup="menu" aria-expanded="false" aria-label="More">⋯</button>
         <div class="menu" id="topMenu" role="menu" hidden>
-          <button type="button" role="menuitem" data-act="forget">Forget token on this device</button>
-          <button type="button" role="menuitem" data-act="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Lock</button>
+          <p class="menuwho" id="menuWho"></p>
+          <button type="button" role="menuitem" data-act="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</button>
         </div>
       </span>
+      <span class="who" id="whoChip" title=""><span class="whoname" id="whoName"></span><button class="linkbtn" type="button" data-act="signout">Sign out</button></span>
     </div>
   </header>
   <main id="screen"></main>
@@ -87,10 +69,11 @@
 
 <script type="module">
 // =====================================================================
-// LeadPro admin: a static page that manages the leadpro-kpi repo through
-// the GitHub API with a fine-grained token saved (encrypted) on this device.
-// Nothing here is sent anywhere except api.github.com and this site, plus GHL's API
-// (services.leadconnectorhq.com) when Update token checks a pasted token's scopes.
+// LeadPro admin: a static page that manages the leadpro-kpi repo through the team
+// site's server (/api/, v1.16.0): Google sign-in only, the GitHub token stays on the
+// server, which allows only the calls this page makes. Nothing here is sent anywhere
+// except this site, plus GHL's API (services.leadconnectorhq.com) when Update token
+// checks a pasted token's scopes in the browser.
 // =====================================================================
 import { mergeConfig, practiceSlug } from '../scripts/config-merge.mjs';
 import { parseChangelog, latestVersion, inlineMd } from '../scripts/changelog.mjs';
@@ -103,7 +86,7 @@ import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
 import { buildCards, filterCards, newer } from './news.mjs';
 import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS } from './firm-details.mjs';
 import { decryptJSON } from '../scripts/kpi-core.mjs';
-import { createLogin } from './lfmp-login.js';
+import { startSession, ghFetch, api, signOut, ApiError } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -163,11 +146,9 @@ const slugify = name => String(name || '').normalize('NFKD').replace(/[̀-ͯ]/g,
   .replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48).replace(/-+$/, '');
 const secretKeyFor = slug => slug.toUpperCase().replace(/-/g, '_');
 
-let aesKey = null, ghToken = null;
-// One login (v1.14; the old page lock was removed in v1.15.0): the shared sign-in (lfmp-login.js + lfmp-lock.json) unlocks
-// this page, the Builder and the Automation Review admin together. The GitHub token lives in its shared vault; aesKey is
-// the shared key (it also seals the remembered dashboard passphrases).
-let login = null;
+// Google sign-in (v1.16.0): Cloudflare Access signs people in before this page loads; lfmp-session.js asks the server who
+// it is. `me` = { email, name, first } once the server answered (null before, and the page shows nothing until then).
+let me = null;
 
 // ---------- icons ----------
 const ICON = {
@@ -228,99 +209,55 @@ document.addEventListener('click', e => {
 });
 
 // ---------- views ----------
-function show(view) { for (const v of ['setupView', 'tokenView', 'appView']) $(v).hidden = v !== view; }
+function show(view) { for (const v of ['setupView', 'appView']) $(v).hidden = v !== view; }
 
-const saveToken = token => login.vaultSet({ gh: token });
-
-// ---------- remembered dashboard passphrases (v1.13.1) ----------
-// "Remember on this computer" keeps a firm's dashboard passphrase in localStorage, encrypted with the shared one-login key:
-// one sealed blob { slug: passphrase }. Never stored in the clear. A manual Lock (any tool) and Forget token clear it; a blob
-// sealed under another admin password is dropped.
-const PASS_VAULT_KEY = 'leadpro-admin-firm-pass';
-async function readPassVault() {
-  const raw = store.get(PASS_VAULT_KEY); if (!raw || !aesKey) return {};
-  try { const { iv, ct } = JSON.parse(raw); const o = JSON.parse(dec.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(iv) }, aesKey, fromB64(ct)))); return o && typeof o === 'object' ? o : {}; }
-  catch { store.set(PASS_VAULT_KEY, null); return {}; }
-}
-async function writePassVault(o) {
-  if (!aesKey) return;
-  if (!Object.keys(o).length) { store.set(PASS_VAULT_KEY, null); return; }
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, enc.encode(JSON.stringify(o))));
-  store.set(PASS_VAULT_KEY, JSON.stringify({ v: 1, alg: 'AES-GCM', iv: toB64(iv), ct: toB64(ct) }));
-}
-async function rememberPass(slug, pass) { const o = await readPassVault(); o[slug] = pass; await writePassVault(o); }
-async function forgetPass(slug) { const o = await readPassVault(); if (slug in o) { delete o[slug]; await writePassVault(o); } }
-const rememberedPass = async slug => (await readPassVault())[slug] || null;
-const clearPassVault = () => store.set(PASS_VAULT_KEY, null);
+// ---------- remembered dashboard passphrases (v1.16.0: on the team site's server) ----------
+// "Remember for the team" saves a firm's dashboard passphrase on the server (Cloudflare KV, encrypted per firm); every
+// signed-in team member's Details then opens with it. New firm saves the new passphrase there automatically.
+// passStore: null = not asked yet · false = the server's store isn't set up (503) · true = works.
+let passStore = null;
+const passApi = async (op, slug, pass) => {
+  try { const r = await api('kpi-pass', { op, slug, ...(pass ? { pass } : {}) }); passStore = true; return r; }
+  catch (e) { if (e instanceof ApiError && e.status === 503) { passStore = false; return null; } throw e; }
+};
+const rememberedPass = async slug => (await passApi('get', slug))?.pass || null;
+const rememberPass = (slug, pass) => passApi('set', slug, pass);
+const forgetPass = slug => passApi('forget', slug);
 
 async function boot() {
-  // One message only: the page's own "file is missing" text, or the other reason in its place.
-  const notReady = msg => { show('setupView'); if (msg && !/lfmp-lock\.json is missing/.test(msg)) $('setupMsg').textContent = msg; };
-  if (!window.crypto?.subtle) { notReady("This browser can't run the admin page. Use an up-to-date Chrome, Safari, Edge or Firefox."); return; }
-  login = createLogin({ tool: 'kpi', onUnlock: unlocked, onLock: why => lockNow(why, { fromLogin: true }) });
-  if (await login.start() === 'error') notReady(login.error);
+  try { me = await startSession(); }
+  catch (e) {
+    if (e instanceof ApiError && e.status === 401) return;   // lfmp-session.js is sending this tab to /signin/
+    show('setupView');
+    if (e instanceof ApiError && e.status === 403 && e.code === 'not_lfmp') $('setupMsg').textContent = e.message;
+    else if (e instanceof ApiError && e.status === 503) $('setupMsg').textContent = e.message || "The team site isn't fully set up yet.";
+    return;
+  }
+  $('whoName').textContent = me.name; $('whoChip').title = me.email;
+  $('menuWho').innerHTML = `<b>${esc(me.name)}</b><span>${esc(me.email)}</span>`;
+  openApp();
 }
 
-// Signed in (password typed, or a live session from any of the three tools in this tab).
-async function unlocked({ vault, reset }) {
-  aesKey = login.key();
-  if (vault.gh) { ghToken = vault.gh; return openApp(); }
-  askToken(reset ? 'The saved GitHub token was locked with an older admin password, so it was cleared. Paste the token again.'
-    : 'Connect GitHub once for the Builder and the KPI admin. The token is saved in this browser only, encrypted with the admin password.');
-}
-
-function askToken(why) {
-  show('tokenView'); $('tokenErr').textContent = '';
-  if (why) $('tokenWhy').textContent = why;
-  $('tokenIn').value = ''; $('tokenIn').focus();
-}
-$('tokenForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const t = $('tokenIn').value.trim(); if (!t) return;
-  $('tokenGo').disabled = true; $('tokenGo').textContent = 'Checking…'; $('tokenErr').textContent = '';
-  try {
-    ghToken = t;
-    await gh('GET', R);                                         // can see the repo
-    await gh('GET', `${R}/actions/secrets/public-key`);         // has Secrets access
-    await gh('GET', `${R}/actions/workflows`);                  // has Actions access
-    await saveToken(t); $('tokenIn').value = '';
-    await openApp();
-  } catch (err) { ghToken = null; $('tokenErr').textContent = err.message; }
-  finally { $('tokenGo').disabled = false; $('tokenGo').textContent = 'Save token'; }
-});
-
-function lockNow(why, { fromLogin = false } = {}) {
-  if (!fromLogin) { login.lock(why, { manual: false, broadcast: false }); return; }   // the shared login calls back here
-  aesKey = null; ghToken = null; screenNow = null; for (const s in nip) delete nip[s];   // decrypted names leave memory too
-  cleanupRun(); cleanupAppRun(); stopIssues(); closeMenus(); closeNews(); closeDetails({ keepHash: true });
-  $('screen').innerHTML = ''; closeDialog(); show(null);
-}
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
-  if (a.dataset.act === 'lock') login.lock('');   // Lock (by hand) locks all three tools and forgets remembered passphrases; the 30-minute idle lock keeps them
+  if (a.dataset.act === 'signout') { for (const s in nip) delete nip[s]; signOut(); }   // Google sign-out (Cloudflare Access) for all three tools
+  if (a.dataset.act === 'reload') location.reload();
   if (a.dataset.act === 'news') openNews();
-  if (a.dataset.act === 'forget') openDialog({
-    title: 'Forget token on this device?', body: `<p class="sub">The saved GitHub token (shared with the Builder) and any remembered dashboard passphrases are removed from this browser. You will need to paste a token again next time. The token itself stays valid on GitHub; revoke it there if this device is lost.</p>`,
-    ok: 'Forget token', danger: true, onOk: async () => { await login.vaultSet({ gh: null }); clearPassVault(); for (const s in nip) delete nip[s]; ghToken = null; closeDialog(); askToken('Token removed from this device. Paste a token to continue.'); },
-  });
 });
 
 // =====================================================================
-// GitHub API
+// GitHub API (through the team site's server: ghFetch in lfmp-session.js; same status codes and bodies as GitHub)
 // =====================================================================
 function ghError(status, msg, path) {
-  if (status === 401) return 'GitHub rejected the token (expired, revoked or mistyped). Use "Forget token" and paste a new one.';
+  if (status === 401) return "GitHub rejected the team site's GitHub token (expired or revoked). Tell PJ: it's renewed in Cloudflare (lfmp-admin → Variables and Secrets → GITHUB_TOKEN).";
   if (status === 403 && /rate limit/i.test(msg)) return 'GitHub rate limit reached. Wait a few minutes and try again.';
-  if (status === 403 || (status === 404 && path.startsWith(R))) return `The token can't do this (${msg || status}). It needs repository "${REPO}" with Contents, Actions and Secrets set to Read and write.`;
+  if (status === 403 || (status === 404 && path.startsWith(R))) return `The team site's GitHub token can't do this (${msg || status}). It needs repository "${REPO}" with Contents, Actions and Secrets set to Read and write. Tell PJ.`;
   return `GitHub ${status}: ${msg || 'request failed'}`;
 }
 async function gh(method, path, body, { allow404 = false } = {}) {
-  const r = await fetch(`https://api.github.com${path}`, {
-    method, cache: 'no-store',
-    headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${ghToken}`, 'X-GitHub-Api-Version': '2022-11-28', ...(body ? { 'Content-Type': 'application/json' } : {}) },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let r;
+  try { r = await ghFetch(method, path, body); }
+  catch (e) { if (e instanceof ApiError && e.status !== 401) { const x = new Error(e.message); x.status = e.status; x.code = e.code; throw x; } throw e; }
   if (r.status === 404 && allow404) return null;
   if (!r.ok) { let m = ''; try { m = (await r.json()).message; } catch {} const e = new Error(ghError(r.status, m, path)); e.status = r.status; throw e; }
   const text = r.status === 204 ? '' : await r.text();     // some successes (e.g. secret created) have an empty body
@@ -460,7 +397,7 @@ function go(hash, flash) {
   if (flash) pendingFlash = flash;
   if (location.hash === hash || (hash === '#/' && !location.hash)) route(); else location.hash = hash;
 }
-window.addEventListener('hashchange', () => { if (ghToken) route(); });
+window.addEventListener('hashchange', () => { if (me) route(); });
 async function route() {
   const r = parseHash();
   if (r.screen === 'new') { closeDetails({ keepHash: true }); screenNow = 'new'; return renderNewFirm(); }
@@ -474,7 +411,7 @@ async function route() {
   // firm list, with or without the Details panel
   const flash = pendingFlash; pendingFlash = null;
   if (screenNow !== 'list' || flash || !$('firmList')) { screenNow = 'list'; await renderList(flash); }
-  if (!ghToken || parseHash().screen !== 'list') return;
+  if (!me || parseHash().screen !== 'list') return;
   const now = parseHash();
   if (now.slug && firmOf(now.slug)) openDetails(now.slug, now.tab); else closeDetails({ keepHash: true });
 }
@@ -656,7 +593,7 @@ async function resyncFirm(f) {
   try {
     const t0 = await dispatch('sync.yml', { slug: f.slug });
     const before = kpis[f.slug]?.generatedAt || '';
-    const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Sync', limitMs: 8 * 60e3, say, stop: () => !ghToken,
+    const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Sync', limitMs: 8 * 60e3, say, stop: () => !me,
       // a held sync leaves generatedAt alone and only updates sync.checkedAt
       check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return (k?.generatedAt && k.generatedAt !== before && Date.parse(k.generatedAt) > t0 - 60e3) || Date.parse(k?.sync?.checkedAt) > t0 - 60e3 ? k : null; } });
     kpis[f.slug] = kpiSummary(value); kpiFull[f.slug] = value;
@@ -775,7 +712,7 @@ async function refreshIssues({ reloadKpis = false } = {}) {
       trackLive(); lastCheck = Date.now(); checkErr = null;
     } catch (e) { checkErr = e.message; }
     finally { checking = null; }
-    if (!ghToken) return;
+    if (!me) return;
     paintBell(); paintRows(); paintStrip(); paintSyncInfo(); if (!$('nPanel').hidden) paintPanel();
   })();
   return checking;
@@ -888,7 +825,7 @@ document.addEventListener('keydown', e => {
   if (!$('nPanel').hidden) { closePanel(); $('bellBtn').focus(); return; }
   if (!$('dPanel').hidden) closeDetails();
 });
-document.addEventListener('visibilitychange', () => { if (!document.hidden && ghToken && Date.now() - lastCheck > CHECK_MS) refreshIssues({ reloadKpis: true }); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && me && Date.now() - lastCheck > CHECK_MS) refreshIssues({ reloadKpis: true }); });
 $('nPanel').addEventListener('click', async e => {
   const b = e.target.closest('[data-n]'); if (!b) return;
   const art = b.closest('.issue'), id = art?.dataset.issue, i = issues.find(x => x.id === id), f = i?.slug ? firmOf(i.slug) : null;
@@ -1038,6 +975,13 @@ $('dPanel').addEventListener('click', e => {
   if (e.target.closest('[data-dp-close]')) return closeDetails();
   const p = e.target.closest('[data-perf]');
   if (p) { perfKey = p.dataset.perf; store.set(PERF_KEY, perfKey === 'last30' ? null : perfKey); paintDetails({ soft: true }); $('dPanel').querySelector(`[data-perf="${perfKey}"]`)?.focus(); return; }
+  if (e.target.closest('[data-nip-forget]')) {
+    const f = firmOf(dpSlug), b = e.target.closest('[data-nip-forget]'); if (!f) return;
+    b.disabled = true;
+    forgetPass(f.slug).then(() => { if (nip[f.slug]) { nip[f.slug].team = false; nip[f.slug].forgot = true; } const el = $('nipList'); if (el) { el.innerHTML = nipHtml(f); wireEyes(el); } })
+      .catch(err => { b.disabled = false; b.insertAdjacentHTML('afterend', ` <span class="ferr">Couldn't forget it: ${esc(err.message)}</span>`); });
+    return;
+  }
   const a = e.target.closest('[data-dpa]'); if (!a) return;
   const f = firmOf(dpSlug); if (!f) return;
   const say = h => firmSay(f.slug, h);
@@ -1099,21 +1043,24 @@ function nipRow(c, f) {
 function nipHtml(f) {
   const s = nip[f.slug], contacts = contactsUrl(f.slug);
   const listBtn = contacts ? `<div class="btnrow nipopen"><a class="btn" href="${esc(contacts)}" target="_blank" rel="noopener">Open Contacts in GHL ↗</a></div>` : '';
+  const teamLine = s?.team ? `<p class="meta niprem">Passphrase remembered for the team. <button class="linkbtn" type="button" data-nip-forget>Forget it</button></p>`
+    : s?.forgot ? '<p class="meta niprem" role="status">Forgotten for the team. Next time it has to be typed.</p>' : '';
   if (s?.state === 'ok') {
-    if (!s.list.length) return `${listBtn}<p class="meta">The encrypted details have no contacts from the last 30 days (they may have been added to a pipeline since the last sync).</p>`;
-    return `${listBtn}<ul class="nip">${s.list.map(c => nipRow(c, f)).join('')}</ul>`;
+    if (!s.list.length) return `${listBtn}<p class="meta">The encrypted details have no contacts from the last 30 days (they may have been added to a pipeline since the last sync).</p>${teamLine}`;
+    return `${listBtn}<ul class="nip">${s.list.map(c => nipRow(c, f)).join('')}</ul>${teamLine}`;
   }
   if (s?.state === 'loading') return `${listBtn}<p class="meta">Unlocking the names…</p>`;
   const err = s?.state === 'error' ? `<div class="ferr">${esc(s.err)}</div>` : '';
+  const noStore = passStore === false;
   return `${listBtn}<p class="meta">Unlock to see who (newest first):</p>
     <form class="nipform" data-nip-unlock autocomplete="off"><label class="sr" for="nipPass">Dashboard passphrase for ${esc(f.name)}</label>
       <span class="pw"><input type="password" id="nipPass" placeholder="Dashboard passphrase" spellcheck="false"><button type="button" class="eye" data-eye="nipPass" aria-label="Show passphrase"></button></span>
       <button class="btn" type="submit">Unlock</button>
-      <label class="check nipremember"><input type="checkbox" id="nipRemember"><span>Remember on this computer</span></label></form>${err}
-    <p class="hint">Names are decrypted in this browser from the dashboard's encrypted file and kept only until you leave this page. "Remember" keeps the passphrase locked with your admin password (like the GitHub token); Lock or Forget token clears it.</p>`;
+      ${noStore ? '' : '<label class="check nipremember"><input type="checkbox" id="nipRemember"><span>Remember for the team</span></label>'}</form>${err}
+    <p class="hint">Names are decrypted in this browser from the dashboard's encrypted file and kept only until you leave this page.${noStore ? ' Remembering passphrases isn\'t set up on the team site yet, so type it each time.' : ' "Remember for the team" saves the passphrase encrypted on the team site, so anyone signed in with an LFMP Google account opens this list without typing it.'}</p>`;
 }
 // Decrypts the firm's details.enc.json (same file the client dashboard opens) with, in order: a passphrase typed here,
-// one remembered by this admin page (encrypted, see readPassVault), or the one the client dashboard saved on this device.
+// one remembered for the team (the team site's server, /api/kpi-pass), or the one the client dashboard saved on this device.
 // Shows names and links only; the list itself is never saved or sent anywhere.
 async function loadNip(f, typed, remember = false) {
   const r = reasonsOf(f).find(x => x.kind === 'not-in-pipeline'); if (!r) return;
@@ -1121,7 +1068,8 @@ async function loadNip(f, typed, remember = false) {
   const repaint = () => { const el = $('nipList'); if (el && dpSlug === f.slug) { el.innerHTML = nipHtml(f); wireEyes(el); } };
   if (!typed && (s?.state === 'ok' || s?.state === 'loading' || s?.state === 'error')) { repaint(); return; }
   nip[f.slug] = { state: 'loading' };
-  const mine = typed ? null : await rememberedPass(f.slug);
+  let mine = null;
+  if (!typed) { try { mine = await rememberedPass(f.slug); } catch {} }
   const pass = typed || mine || savedPass(f.slug);
   if (!pass) { delete nip[f.slug]; repaint(); return; }
   repaint();
@@ -1133,11 +1081,12 @@ async function loadNip(f, typed, remember = false) {
     let rec;
     try { rec = await decryptJSON(env, pass); }
     catch {
-      if (mine) await forgetPass(f.slug);     // the firm's passphrase changed: drop the stale one
+      if (mine) { try { await forgetPass(f.slug); } catch {} }     // the firm's passphrase changed: drop the stale one
       throw new Error(typed ? 'That passphrase didn\'t work.' : mine ? 'The remembered passphrase no longer works, so it was forgotten. Type the current one below.' : 'The passphrase saved in this browser didn\'t work. Type it below.');
     }
-    if (typed && remember) await rememberPass(f.slug, typed);
-    nip[f.slug] = { state: 'ok', list: notInPipelineList(rec) };
+    let team = !!mine;
+    if (typed && remember) { try { team = !!(await rememberPass(f.slug, typed)); } catch { team = false; } }
+    nip[f.slug] = { state: 'ok', list: notInPipelineList(rec), team };
   } catch (e) { nip[f.slug] = { state: 'error', err: e.message }; }
   repaint();
 }
@@ -1515,6 +1464,8 @@ function startAppRun(ctx) {
       live();
       if (!/^[A-Z0-9_]{1,80}$/.test(key)) throw new Error('Blocked: not a dashboard passphrase name.');
       await putSecret(`PASSPHRASE_${key}`, value);
+      // v1.16.0: also remembered for the team (Details opens the names without typing). Never blocks the setup.
+      try { await rememberPass(key.toLowerCase().replace(/_/g, '-'), value); } catch {}
     },
     dispatchNewFirm: async inputs => { live(); return dispatch('new-firm.yml', inputs); },
     listNewFirmRuns: async () => { live(); return (await gh('GET', `${R}/actions/workflows/new-firm.yml/runs?event=workflow_dispatch&per_page=20`)).workflow_runs || []; },
@@ -1644,6 +1595,7 @@ const STEP_FNS = [
     say('Encrypting with the repo key and saving 2 secrets…');
     await putSecret(`GHL_TOKEN_${ctx.secretKey}`, ctx.token);
     await putSecret(`PASSPHRASE_${ctx.secretKey}`, ctx.passphrase);
+    try { await rememberPass(ctx.slug, ctx.passphrase); } catch {}   // v1.16.0: remembered for the team too (never blocks)
     say(`Saved <span class="mono">GHL_TOKEN_${esc(ctx.secretKey)}</span> and <span class="mono">PASSPHRASE_${esc(ctx.secretKey)}</span>.`);
   },
   // 2. Read the firm's GHL setup
