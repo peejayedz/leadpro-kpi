@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-16T18:07:34.929Z",
+  "generatedAt": "2026-11-16T18:37:23.308Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,11 +22,11 @@
     "today": {
       "label": "Today",
       "from": 1794805200000,
-      "to": 1794852454929,
+      "to": 1794854243308,
       "current": {
-        "totalLeads": 3,
-        "contacted": 1,
-        "contactRatePct": 33.3,
+        "totalLeads": 8,
+        "contacted": 6,
+        "contactRatePct": 75,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -34,25 +34,45 @@
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
-        "qualified": 1,
+        "qualified": 6,
         "qualifiedPct": 100,
         "turnedAway": 0,
         "turnedAwayReasons": [],
-        "consultBooked": 1,
-        "bookRatePct": 100,
-        "bookedPast": 1,
-        "consultHeld": 1,
+        "consultBooked": 5,
+        "bookRatePct": 83.3,
+        "bookedPast": 4,
+        "consultHeld": 4,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 1,
-        "sentRatePct": 100,
+        "agreementSent": 2,
+        "sentRatePct": 50,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
         "bySource": [
+          [
+            "Unknown",
+            3,
+            0
+          ],
+          [
+            "Referral",
+            1,
+            0
+          ],
+          [
+            "Calendly",
+            1,
+            0
+          ],
+          [
+            "MDB Small and Solo Firm Summit 2026",
+            1,
+            0
+          ],
           [
             "Email Outreach",
             1,
@@ -62,17 +82,17 @@
             "[DLF] 2027 AI Ready Growth Kit",
             1,
             0
-          ],
-          [
-            "Unknown",
-            1,
-            0
           ]
         ],
         "byChannel": [
           [
             "Unknown source",
-            1,
+            4,
+            0
+          ],
+          [
+            "CRM UI",
+            2,
             0
           ],
           [
@@ -86,43 +106,43 @@
             0
           ]
         ],
-        "attributedLeads": 2,
-        "stageMoved": 1,
-        "attributionPct": 66.7,
+        "attributedLeads": 4,
+        "stageMoved": 6,
+        "attributionPct": 50,
         "funnel": [
           [
             "New leads",
-            3,
+            8,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            1,
+            6,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            1,
+            6,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            1,
+            5,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            1,
+            4,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            1,
+            2,
             "agreementSent",
             "of held"
           ],
@@ -446,11 +466,11 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1794852454929,
+      "to": 1794854243308,
       "current": {
-        "totalLeads": 3,
-        "contacted": 1,
-        "contactRatePct": 33.3,
+        "totalLeads": 8,
+        "contacted": 6,
+        "contactRatePct": 75,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -458,25 +478,45 @@
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
-        "qualified": 1,
+        "qualified": 6,
         "qualifiedPct": 100,
         "turnedAway": 0,
         "turnedAwayReasons": [],
-        "consultBooked": 1,
-        "bookRatePct": 100,
-        "bookedPast": 1,
-        "consultHeld": 1,
+        "consultBooked": 5,
+        "bookRatePct": 83.3,
+        "bookedPast": 4,
+        "consultHeld": 4,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 1,
-        "sentRatePct": 100,
+        "agreementSent": 2,
+        "sentRatePct": 50,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
         "bySource": [
+          [
+            "Unknown",
+            3,
+            0
+          ],
+          [
+            "Referral",
+            1,
+            0
+          ],
+          [
+            "Calendly",
+            1,
+            0
+          ],
+          [
+            "MDB Small and Solo Firm Summit 2026",
+            1,
+            0
+          ],
           [
             "Email Outreach",
             1,
@@ -486,17 +526,17 @@
             "[DLF] 2027 AI Ready Growth Kit",
             1,
             0
-          ],
-          [
-            "Unknown",
-            1,
-            0
           ]
         ],
         "byChannel": [
           [
             "Unknown source",
-            1,
+            4,
+            0
+          ],
+          [
+            "CRM UI",
+            2,
             0
           ],
           [
@@ -510,43 +550,43 @@
             0
           ]
         ],
-        "attributedLeads": 2,
-        "stageMoved": 1,
-        "attributionPct": 66.7,
+        "attributedLeads": 4,
+        "stageMoved": 6,
+        "attributionPct": 50,
         "funnel": [
           [
             "New leads",
-            3,
+            8,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            1,
+            6,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            1,
+            6,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            1,
+            5,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            1,
+            4,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            1,
+            2,
             "agreementSent",
             "of held"
           ],
@@ -644,8 +684,8 @@
       "to": 1794805200000,
       "current": {
         "totalLeads": 31,
-        "contacted": 0,
-        "contactRatePct": 0,
+        "contacted": 9,
+        "contactRatePct": 29,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -653,21 +693,21 @@
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
-        "qualified": 0,
-        "qualifiedPct": null,
+        "qualified": 8,
+        "qualifiedPct": 88.9,
         "turnedAway": 0,
         "turnedAwayReasons": [],
-        "consultBooked": 0,
-        "bookRatePct": null,
-        "bookedPast": 0,
-        "consultHeld": 0,
-        "showRatePct": null,
+        "consultBooked": 8,
+        "bookRatePct": 100,
+        "bookedPast": 3,
+        "consultHeld": 3,
+        "showRatePct": 100,
         "noShows": 0,
-        "noShowPct": null,
-        "agreementSent": 0,
-        "sentRatePct": null,
+        "noShowPct": 0,
+        "agreementSent": 2,
+        "sentRatePct": 66.7,
         "signed": 0,
-        "signRatePct": null,
+        "signRatePct": 0,
         "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
@@ -731,7 +771,7 @@
           ]
         ],
         "attributedLeads": 31,
-        "stageMoved": 0,
+        "stageMoved": 9,
         "attributionPct": 100,
         "funnel": [
           [
@@ -742,31 +782,31 @@
           ],
           [
             "Contacted",
-            0,
+            9,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            0,
+            8,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            0,
+            8,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            0,
+            3,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            0,
+            2,
             "agreementSent",
             "of held"
           ],
@@ -872,12 +912,12 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794247654929,
-      "to": 1794852454929,
+      "from": 1794249443308,
+      "to": 1794854243308,
       "current": {
-        "totalLeads": 34,
-        "contacted": 1,
-        "contactRatePct": 2.9,
+        "totalLeads": 39,
+        "contacted": 15,
+        "contactRatePct": 38.5,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -885,19 +925,19 @@
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
-        "qualified": 1,
-        "qualifiedPct": 100,
+        "qualified": 14,
+        "qualifiedPct": 93.3,
         "turnedAway": 0,
         "turnedAwayReasons": [],
-        "consultBooked": 1,
-        "bookRatePct": 100,
-        "bookedPast": 1,
-        "consultHeld": 1,
+        "consultBooked": 13,
+        "bookRatePct": 92.9,
+        "bookedPast": 7,
+        "consultHeld": 7,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 1,
-        "sentRatePct": 100,
+        "agreementSent": 4,
+        "sentRatePct": 57.1,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
@@ -906,12 +946,12 @@
         "bySource": [
           [
             "Unknown",
-            18,
+            20,
             0
           ],
           [
             "Referral",
-            7,
+            8,
             0
           ],
           [
@@ -922,6 +962,16 @@
           [
             "2027 AI-Ready Marketing Growth Kit DLF",
             2,
+            0
+          ],
+          [
+            "Calendly",
+            1,
+            0
+          ],
+          [
+            "MDB Small and Solo Firm Summit 2026",
+            1,
             0
           ],
           [
@@ -948,7 +998,12 @@
           ],
           [
             "CRM UI",
-            10,
+            12,
+            0
+          ],
+          [
+            "Unknown source",
+            4,
             0
           ],
           [
@@ -962,53 +1017,48 @@
             0
           ],
           [
-            "Unknown source",
-            1,
-            0
-          ],
-          [
             "Social media",
             1,
             0
           ]
         ],
-        "attributedLeads": 33,
-        "stageMoved": 1,
-        "attributionPct": 97.1,
+        "attributedLeads": 35,
+        "stageMoved": 15,
+        "attributionPct": 89.7,
         "funnel": [
           [
             "New leads",
-            34,
+            39,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            1,
+            15,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            1,
+            14,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            1,
+            13,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            1,
+            7,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            1,
+            4,
             "agreementSent",
             "of held"
           ],
@@ -1114,12 +1164,12 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792260454929,
-      "to": 1794852454929,
+      "from": 1792262243308,
+      "to": 1794854243308,
       "current": {
-        "totalLeads": 40,
-        "contacted": 2,
-        "contactRatePct": 5,
+        "totalLeads": 45,
+        "contacted": 16,
+        "contactRatePct": 35.6,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1127,19 +1177,19 @@
         "missedCalls": 1,
         "missedNotReturned": 1,
         "notInPipeline": 1,
-        "qualified": 1,
-        "qualifiedPct": 50,
+        "qualified": 14,
+        "qualifiedPct": 87.5,
         "turnedAway": 0,
         "turnedAwayReasons": [],
-        "consultBooked": 1,
-        "bookRatePct": 100,
-        "bookedPast": 1,
-        "consultHeld": 1,
+        "consultBooked": 13,
+        "bookRatePct": 92.9,
+        "bookedPast": 7,
+        "consultHeld": 7,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 1,
-        "sentRatePct": 100,
+        "agreementSent": 4,
+        "sentRatePct": 57.1,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
@@ -1148,12 +1198,17 @@
         "bySource": [
           [
             "Unknown",
-            19,
+            21,
             0
           ],
           [
             "Referral",
-            7,
+            8,
+            0
+          ],
+          [
+            "Calendly",
+            5,
             0
           ],
           [
@@ -1162,13 +1217,13 @@
             0
           ],
           [
-            "Calendly",
-            4,
+            "2027 AI-Ready Marketing Growth Kit DLF",
+            2,
             0
           ],
           [
-            "2027 AI-Ready Marketing Growth Kit DLF",
-            2,
+            "MDB Small and Solo Firm Summit 2026",
+            1,
             0
           ],
           [
@@ -1200,12 +1255,12 @@
           ],
           [
             "CRM UI",
-            12,
+            14,
             0
           ],
           [
             "Unknown source",
-            5,
+            8,
             0
           ],
           [
@@ -1224,43 +1279,43 @@
             0
           ]
         ],
-        "attributedLeads": 35,
-        "stageMoved": 1,
-        "attributionPct": 87.5,
+        "attributedLeads": 37,
+        "stageMoved": 15,
+        "attributionPct": 82.2,
         "funnel": [
           [
             "New leads",
-            40,
+            45,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            2,
+            16,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            1,
+            14,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            1,
+            13,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            1,
+            7,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            1,
+            4,
             "agreementSent",
             "of held"
           ],
@@ -1366,12 +1421,12 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787076454929,
-      "to": 1794852454929,
+      "from": 1787078243308,
+      "to": 1794854243308,
       "current": {
-        "totalLeads": 46,
-        "contacted": 2,
-        "contactRatePct": 4.3,
+        "totalLeads": 51,
+        "contacted": 16,
+        "contactRatePct": 31.4,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1379,19 +1434,19 @@
         "missedCalls": 10,
         "missedNotReturned": 10,
         "notInPipeline": 17,
-        "qualified": 1,
-        "qualifiedPct": 50,
+        "qualified": 14,
+        "qualifiedPct": 87.5,
         "turnedAway": 0,
         "turnedAwayReasons": [],
-        "consultBooked": 1,
-        "bookRatePct": 100,
-        "bookedPast": 1,
-        "consultHeld": 1,
+        "consultBooked": 13,
+        "bookRatePct": 92.9,
+        "bookedPast": 7,
+        "consultHeld": 7,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 1,
-        "sentRatePct": 100,
+        "agreementSent": 4,
+        "sentRatePct": 57.1,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
@@ -1400,17 +1455,17 @@
         "bySource": [
           [
             "Unknown",
-            20,
+            22,
             0
           ],
           [
             "Calendly",
-            9,
+            10,
             0
           ],
           [
             "Referral",
-            7,
+            8,
             0
           ],
           [
@@ -1421,6 +1476,11 @@
           [
             "2027 AI-Ready Marketing Growth Kit DLF",
             2,
+            0
+          ],
+          [
+            "MDB Small and Solo Firm Summit 2026",
+            1,
             0
           ],
           [
@@ -1451,13 +1511,13 @@
             0
           ],
           [
-            "CRM UI",
-            12,
+            "Unknown source",
+            14,
             0
           ],
           [
-            "Unknown source",
-            11,
+            "CRM UI",
+            14,
             0
           ],
           [
@@ -1476,43 +1536,43 @@
             0
           ]
         ],
-        "attributedLeads": 35,
-        "stageMoved": 1,
-        "attributionPct": 76.1,
+        "attributedLeads": 37,
+        "stageMoved": 15,
+        "attributionPct": 72.5,
         "funnel": [
           [
             "New leads",
-            46,
+            51,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            2,
+            16,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            1,
+            14,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            1,
+            13,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            1,
+            7,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            1,
+            4,
             "agreementSent",
             "of held"
           ],
@@ -1607,11 +1667,11 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1794852454929,
+      "to": 1794854243308,
       "current": {
-        "totalLeads": 36,
-        "contacted": 1,
-        "contactRatePct": 2.8,
+        "totalLeads": 41,
+        "contacted": 15,
+        "contactRatePct": 36.6,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1619,19 +1679,19 @@
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
-        "qualified": 1,
-        "qualifiedPct": 100,
+        "qualified": 14,
+        "qualifiedPct": 93.3,
         "turnedAway": 0,
         "turnedAwayReasons": [],
-        "consultBooked": 1,
-        "bookRatePct": 100,
-        "bookedPast": 1,
-        "consultHeld": 1,
+        "consultBooked": 13,
+        "bookRatePct": 92.9,
+        "bookedPast": 7,
+        "consultHeld": 7,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 1,
-        "sentRatePct": 100,
+        "agreementSent": 4,
+        "sentRatePct": 57.1,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
@@ -1640,12 +1700,12 @@
         "bySource": [
           [
             "Unknown",
-            18,
+            20,
             0
           ],
           [
             "Referral",
-            7,
+            8,
             0
           ],
           [
@@ -1654,13 +1714,18 @@
             0
           ],
           [
+            "Calendly",
+            3,
+            0
+          ],
+          [
             "2027 AI-Ready Marketing Growth Kit DLF",
             2,
             0
           ],
           [
-            "Calendly",
-            2,
+            "MDB Small and Solo Firm Summit 2026",
+            1,
             0
           ],
           [
@@ -1687,12 +1752,12 @@
           ],
           [
             "CRM UI",
-            10,
+            12,
             0
           ],
           [
             "Unknown source",
-            3,
+            6,
             0
           ],
           [
@@ -1711,43 +1776,43 @@
             0
           ]
         ],
-        "attributedLeads": 33,
-        "stageMoved": 1,
-        "attributionPct": 91.7,
+        "attributedLeads": 35,
+        "stageMoved": 15,
+        "attributionPct": 85.4,
         "funnel": [
           [
             "New leads",
-            36,
+            41,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            1,
+            15,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            1,
+            14,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            1,
+            13,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            1,
+            7,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            1,
+            4,
             "agreementSent",
             "of held"
           ],
@@ -2061,11 +2126,11 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1794852454929,
+      "to": 1794854243308,
       "current": {
-        "totalLeads": 42,
-        "contacted": 2,
-        "contactRatePct": 4.8,
+        "totalLeads": 47,
+        "contacted": 16,
+        "contactRatePct": 34,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -2073,19 +2138,19 @@
         "missedCalls": 1,
         "missedNotReturned": 1,
         "notInPipeline": 2,
-        "qualified": 1,
-        "qualifiedPct": 50,
+        "qualified": 14,
+        "qualifiedPct": 87.5,
         "turnedAway": 0,
         "turnedAwayReasons": [],
-        "consultBooked": 1,
-        "bookRatePct": 100,
-        "bookedPast": 1,
-        "consultHeld": 1,
+        "consultBooked": 13,
+        "bookRatePct": 92.9,
+        "bookedPast": 7,
+        "consultHeld": 7,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 1,
-        "sentRatePct": 100,
+        "agreementSent": 4,
+        "sentRatePct": 57.1,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
@@ -2094,17 +2159,17 @@
         "bySource": [
           [
             "Unknown",
-            19,
+            21,
             0
           ],
           [
             "Referral",
-            7,
+            8,
             0
           ],
           [
             "Calendly",
-            6,
+            7,
             0
           ],
           [
@@ -2115,6 +2180,11 @@
           [
             "2027 AI-Ready Marketing Growth Kit DLF",
             2,
+            0
+          ],
+          [
+            "MDB Small and Solo Firm Summit 2026",
+            1,
             0
           ],
           [
@@ -2146,12 +2216,12 @@
           ],
           [
             "CRM UI",
-            12,
+            14,
             0
           ],
           [
             "Unknown source",
-            7,
+            10,
             0
           ],
           [
@@ -2170,43 +2240,43 @@
             0
           ]
         ],
-        "attributedLeads": 35,
-        "stageMoved": 1,
-        "attributionPct": 83.3,
+        "attributedLeads": 37,
+        "stageMoved": 15,
+        "attributionPct": 78.7,
         "funnel": [
           [
             "New leads",
-            42,
+            47,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            2,
+            16,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            1,
+            14,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            1,
+            13,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            1,
+            7,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            1,
+            4,
             "agreementSent",
             "of held"
           ],
@@ -2483,7 +2553,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-16T18:07:34.929Z",
+    "checkedAt": "2026-11-16T18:37:23.308Z",
     "counts": {
       "Call": 63,
       "SMS": 1,
