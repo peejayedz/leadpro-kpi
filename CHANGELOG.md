@@ -6,7 +6,7 @@ Every line is tagged **[client]** (shows on the dashboards, and in their "What's
 Syncs and firm add/edit actions are not listed.
 
 ## v1.20.0 — 17 Nov 2026
-- [internal] **Sign out** is a visible button next to your name in the top bar (phone: in the ⋯ menu). It ends the Google sign-in for all three tools (this site's and the team-wide Cloudflare Access logout) and lands on the sign-in page: "You've been signed out. See you next shift."
+- [internal] **Sign out** is a visible button next to your name in the top bar (phone: in the ⋯ menu). It ends the Google sign-in for all three tools (Cloudflare Access logout) and lands on the sign-in page: "You've been signed out. See you next shift."
 - [internal] Under your name: **Last signed in <day date, time>** (your previous Google sign-in). Sign-ins are recorded on the team site's server only (Cloudflare KV, per email, kept 90 days; never in a repo or a log).
 - [internal] ⋯ → **Team sign-ins**: everyone who signed in in the last 90 days (name, email, last sign-in, sign-ins in 30 days).
 - [internal] PJ shows as "PJ" (name override on the server), also in commit messages.

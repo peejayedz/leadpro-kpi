@@ -174,7 +174,7 @@ try {
     const team = [], before = T.logouts || 0;
     await p0.route('https://lfmp.cloudflareaccess.com/cdn-cgi/access/logout*', r => { team.push(r.request().url()); const back = new URL(r.request().url()).searchParams.get('returnTo'); return r.fulfill({ status: 200, contentType: 'text/html', body: `<script>location.replace(${JSON.stringify(back)})</script>` }); });
     await p0.click('#whoChip [data-act="signout"]'); await p0.waitForURL('**/signin/?out=1');
-    check((T.logouts || 0) > before && team.length === 1 && new URL(team[0]).searchParams.get('returnTo') === `${ORIGIN}/signin/?out=1`, `Sign out → this site's + the team-wide Access logout → /signin/?out=1 (${team})`);
+    check((T.logouts || 0) > before && team.length === 0, `Sign out → Access logout → /signin/?out=1, never the team-domain logout (${team})`);
     // signed out (Access sent no sign-in): the page goes to the sign-in page and remembers where it was
     T.email = null;
     await p0.goto(`${BASE}#/firm/lfmp`); await p0.waitForURL('**/signin/**');

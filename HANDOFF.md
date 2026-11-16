@@ -12,9 +12,9 @@ The README is the full reference and CHANGELOG.md the history. This file covers 
 | Token keeper | Hourly; mints app tokens for `tokenSource: "app"` firms only. |
 | Admin page v1.14.0 | **Live** (4698019, 15 Nov): one login with the Builder + Review admin, red tool colour. v1.13.1 before it (commit 3507479, 15 Nov ~04:45 UTC). Not-in-pipeline rows with email/phone/source, Remember passphrase (encrypted), Copy GHL menu link moved to Setup, local "Copied". Admin files + tests + docs only. Built on v1.13.0 (9e3ed52: simple home + Details panel, no re-login between screens). |
 
-## v1.20.0: Sign out button, Last signed in, Team sign-ins: built 17 Nov 2026 (not pushed yet)
+## v1.20.0: Sign out button, Last signed in, Team sign-ins: 17 Nov 2026
 
-- Sign out sits next to the name (`#whoChip`, phone: ⋯) and ends the Google sign-in for all three tools (`signOut()` in the shared `lfmp-session.js`: this site's + the team-wide Access logout → `/signin/?out=1`). "Last signed in …" under the name (`[data-me-last]`); ⋯ → Team sign-ins. Sign-ins are kept on the team site's server only (KV, 90 days). admin-ui 220/220. Details: Builder HANDOFF v1.8.0.
+- Sign out sits next to the name (`#whoChip`, phone: ⋯) and ends the Google sign-in for all three tools (`signOut()` in the shared `lfmp-session.js`: Cloudflare Access logout → `/signin/?out=1`; never the team-domain logout, which answered "Failed to log out." live). "Last signed in …" under the name (`[data-me-last]`); ⋯ → Team sign-ins. Sign-ins are kept on the team site's server only (KV, 90 days). admin-ui 220/220. Details: Builder HANDOFF v1.8.0.
 
 ## v1.19.0: Google sign-in only: LIVE 17 Nov 2026
 

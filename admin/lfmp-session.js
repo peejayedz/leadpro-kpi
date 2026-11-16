@@ -18,8 +18,7 @@ export const TOOLS = [
   { id: 'review', name: 'Review', path: '/automation-review/admin/' },
 ];
 export const SIGNIN = '/signin/';
-export const LOGOUT = '/cdn-cgi/access/logout';                                   // this site's Access session
-export const TEAM_LOGOUT = 'https://lfmp.cloudflareaccess.com/cdn-cgi/access/logout';   // the Google sign-in for every LFMP app
+export const LOGOUT = '/cdn-cgi/access/logout';   // Cloudflare Access logout (ends the Access session)
 export const SIGNED_OUT = '/signin/?out=1';
 const API_BASE = '/api/';
 
@@ -43,12 +42,13 @@ export function toSignIn() {
   leaving = true;
   location.assign(`${SIGNIN}?next=${encodeURIComponent(location.pathname + location.search + location.hash)}`);
 }
-// Sign out: end this site's Access session (the cookie is cleared by that response), then the team-wide Access session,
-// which sends the browser back to /signin/?out=1 ("You've been signed out. See you next shift.").
+// Sign out: Cloudflare Access logout on this site (that response ends the Access session and clears its cookie), then
+// /signin/?out=1 ("You've been signed out. See you next shift."). Not the team-domain logout as well: live (17 Nov) it
+// answered "Failed to log out." right after this one, because the session was already gone.
 export async function signOut() {
   clearLegacy(); leaving = true;
   try { await fetch(LOGOUT, { credentials: 'same-origin', redirect: 'manual', cache: 'no-store' }); } catch {}
-  location.assign(`${TEAM_LOGOUT}?returnTo=${encodeURIComponent(location.origin + SIGNED_OUT)}`);
+  location.assign(SIGNED_OUT);
 }
 
 // "Sun 16 Nov, 11:37 PM" in the viewer's own time zone.
