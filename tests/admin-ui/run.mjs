@@ -213,7 +213,10 @@ try {
   check((await page.textContent('#screen .lv-h1')).trim() === 'Scorecards' && await page.getAttribute('#firmSearch', 'placeholder') === 'Search 4 firms', 'title "Scorecards" + "Search 4 firms" (real count)');
   const segs = await page.$$eval('#screen [data-lv-seg]', b => b.map(x => `${x.dataset.lvSeg}=${x.querySelector('.lv-d').textContent}`).join('|'));
   check(/^all=All 4\|attention=Needs attention · \d+\|test=Test firms$/.test(segs), `filter: All 4 · Needs attention · n · Test firms (${segs})`);
-  check(await page.$eval('#screen [data-lv-seg="attention"]', b => !!b.querySelector('.lv-red')) === /Needs attention · [1-9]/.test(segs), '"Needs attention" is red only when n > 0');
+  // v1.25.0: coloured only when n > 0: red if any firm has an alert, amber if they are all notices (same rule as the bell)
+  { const t = await page.$eval('#screen [data-lv-seg="attention"]', b => (b.querySelector('.lv-red') ? 'red' : b.querySelector('.lv-amber') ? 'amber' : ''));
+    const red = await page.$$eval('#firmRows .lv-row .lv-c [data-state="status"]', a => a.some(e => e.classList.contains('red')));
+    check(/Needs attention · [1-9]/.test(segs) ? t === (red ? 'red' : 'amber') : t === '', `"Needs attention": red if any alert, amber if only notices, plain at 0 (${t || 'plain'})`); }
   const lf = (await page.textContent(rowOf('lfmp'))).replace(/\s+/g, ' ');
   check(/2 leads not in a pipeline/.test(lf) && new RegExp(`(^|\\D)${LFMP_LEADS90}\\s*leads · 90 days`).test(lf), `LFMP row: reason + leads (${lf.slice(0, 140)})`);
   check(await page.$eval(`${rowOf('lfmp')} .lv-c [data-state="status"]`, e => e.classList.contains('amber')), 'LFMP row: amber status (needs attention, not a sync failure)');

@@ -464,4 +464,5 @@ input[readonly]{color:var(--mut)}
   .dphead .ey{display:none}
   .dphead{padding-top:14px}
   .drawer#newsPanel{z-index:46}
+  .drawer-shade#newsShade{z-index:45}   /* v1.25.0 fix: the shade (48) sat on top of the phone panel (46): dimmed, every tap closed it */
 }

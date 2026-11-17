@@ -5,7 +5,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { firmReasons, notInPipelineList, ghlContactUrl, perfView, GOALS, SYNC_PROBLEMS } from '../../admin/firm-details.mjs';
+import { firmReasons, notInPipelineList, ghlContactUrl, perfView, GOALS, SYNC_PROBLEMS, severity, leadTrend } from '../../admin/firm-details.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 let failed = 0, passed = 0;
@@ -23,6 +23,31 @@ const rs = firmReasons('a', k2, [
 check(JSON.stringify(rs.map(r => r.kind)) === '["failed","held","mapping-review","not-in-pipeline"]', `order: most urgent first, only this firm (${rs.map(r => r.kind).join(', ')})`);
 check(rs[3].short === '2 leads not in a pipeline' && firmReasons('a', { periods: { last30: { current: { notInPipeline: 1 } } } }).at(0).short === '1 lead not in a pipeline', 'reason wording: "1 lead / 2 leads not in a pipeline"');
 check(SYNC_PROBLEMS.has('failed') && SYNC_PROBLEMS.has('stale') && !SYNC_PROBLEMS.has('not-in-pipeline') && !SYNC_PROBLEMS.has('held'), 'sync problems: failed/stale/token/no data, not pipeline or holds');
+
+// ---- v1.25.0: one colour per meaning (bell, row, details, filter) ----
+const ALERTS = ['failed', 'app-missing', 'app-token', 'stale', 'no-sync', 'chain-off', 'no-link', 'keeper-failed', 'keeper-reconnect', 'keeper-stale'];
+const NOTICES = ['held', 'incomplete', 'mapping-review', 'nodata', 'not-in-pipeline'];
+check(ALERTS.every(k => severity(k) === 'alert'), `alerts (red): ${ALERTS.join(', ')}`);
+check(NOTICES.every(k => severity(k) === 'notice'), `notices (amber): ${NOTICES.join(', ')}`);
+check(severity('something-new') === 'alert', 'an unknown kind is an alert (safer)');
+// every kind the bell can raise has a severity on purpose (the lists above cover all of them)
+{
+  const srcs = await Promise.all(['scripts/sync-status.mjs', 'scripts/keeper-status.mjs'].map(p => readFile(join(ROOT, p), 'utf8')));
+  const kinds = new Set(srcs.flatMap(s => [...s.matchAll(/kind: '([a-z-]+)'/g)].map(m => m[1])));
+  const missing = [...kinds].filter(k => !ALERTS.includes(k) && !NOTICES.includes(k));
+  check(kinds.size >= 12 && !missing.length, `every bell kind is listed as alert or notice (${kinds.size} kinds${missing.length ? `; missing ${missing.join(', ')}` : ''})`);
+}
+// ---- v1.25.0: leads trend, last 90 days vs the 90 days before ----
+const kt = (cur, prev) => ({ periods: { last90: { current: { totalLeads: cur }, previous: prev === undefined ? undefined : { totalLeads: prev } } } });
+check(JSON.stringify(leadTrend(kt(112, 100))) === JSON.stringify({ dir: 'up', text: '▲ 12%', label: 'up 12% on the 90 days before' }), 'trend up: ▲ 12%');
+check(leadTrend(kt(92, 100)).text === '▼ 8%' && leadTrend(kt(92, 100)).dir === 'down', 'trend down: ▼ 8%');
+check(leadTrend(kt(50, 50)).text === '— same' && leadTrend(kt(1001, 1000)).text === '— same', 'trend same (also under 0.5%): — same');
+check(leadTrend(kt(5, 0)).text === '▲ from 0', 'from nothing: ▲ from 0 (no made-up %)');
+check(leadTrend(kt(5)) === null && leadTrend(null) === null && leadTrend({ periods: {} }) === null, 'no previous number in the data: no trend');
+{
+  const m = await json('firms/mahdavi/data/kpis.json'), t = leadTrend(m), c = m.periods.last90.current.totalLeads, p = m.periods.last90.previous.totalLeads;
+  check(t && t.text === (c === p ? '— same' : p === 0 ? '▲ from 0' : `${c > p ? '▲' : '▼'} ${Math.round(Math.abs(c - p) / p * 100)}%`), `real data (Mahdavi): ${c} vs ${p} → ${t?.text}`);
+}
 
 // ---- not in pipeline list ----
 const now = Date.parse('2026-11-15T12:00:00Z');

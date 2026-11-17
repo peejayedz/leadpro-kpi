@@ -11,6 +11,30 @@ const SHORT = {
 };
 // Kinds that mean the numbers aren't syncing cleanly (the strip's "N sync problems").
 export const SYNC_PROBLEMS = new Set(['failed', 'app-missing', 'app-token', 'stale', 'nodata']);
+
+// ---------- one colour per meaning (v1.25.0, PJ 18 Nov) ----------
+// red = ALERT: the numbers stopped updating or will, and someone has to act (sync failed, app missing, token problem, no
+//   recent sync, no sync at all, SYNC_CHAIN off, chain stopped, token keeper failed / reconnect / not running).
+// amber = NOTICE: the numbers still update, worth a look (holding previous numbers, may be incomplete, review mapping,
+//   no data yet, leads not in a pipeline). Anything new or unknown is an alert (safer).
+// The bell's items, the firm row's status dot and number, the details' boxes and the "Needs attention" filter all use this.
+export const NOTICE_KINDS = new Set(['held', 'incomplete', 'mapping-review', 'nodata', 'not-in-pipeline']);
+export const severity = kind => (NOTICE_KINDS.has(kind) ? 'notice' : 'alert');
+export const isAlert = kind => severity(kind) === 'alert';
+
+// ---------- leads trend on the firm row (v1.25.0) ----------
+// Last 90 days vs the 90 days before (days 91–180), both already in the synced kpis.json (periods.last90.current /
+// .previous.totalLeads). null = no trend (no data, or no previous number): the row keeps "leads · 90 days".
+// → { dir: 'up' | 'down' | 'same', text: '▲ 12%' | '▼ 8%' | '— same' | '▲ from 0', label } (label = words for screen readers)
+export function leadTrend(k) {
+  const cur = k?.periods?.last90?.current?.totalLeads, prev = k?.periods?.last90?.previous?.totalLeads;
+  if (!Number.isFinite(cur) || !Number.isFinite(prev)) return null;
+  if (cur === prev) return { dir: 'same', text: '— same', label: 'the same as the 90 days before' };
+  if (prev === 0) return { dir: 'up', text: '▲ from 0', label: 'up from 0 in the 90 days before' };
+  const pct = Math.round(Math.abs(cur - prev) / prev * 100);
+  if (pct === 0) return { dir: 'same', text: '— same', label: 'about the same as the 90 days before' };
+  return cur > prev ? { dir: 'up', text: `▲ ${pct}%`, label: `up ${pct}% on the 90 days before` } : { dir: 'down', text: `▼ ${pct}%`, label: `down ${pct}% on the 90 days before` };
+}
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 // k: the firm's kpis.json (or null). issues: every open bell issue (any firm). Returns the firm's reasons, most urgent first.

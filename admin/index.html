@@ -13,8 +13,8 @@
 <script>/* apply the saved theme before first paint so the page and logo don't flash */ try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="lfmp-ui.css?v=2.1.0">
-<link rel="stylesheet" href="admin.css?v=1.24.0">
+<link rel="stylesheet" href="lfmp-ui.css?v=2.2.0">
+<link rel="stylesheet" href="admin.css?v=1.25.0">
 </head>
 <body>
 
@@ -62,9 +62,9 @@ import { checkScopes } from '../scripts/scope-check.mjs';
 import { pipelineNotices } from '../scripts/not-in-pipeline.mjs';
 import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
 import { buildCards, filterCards, newer } from './news.mjs';
-import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS } from './firm-details.mjs';
+import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS, severity, isAlert, leadTrend } from './firm-details.mjs';
 import { decryptJSON } from '../scripts/kpi-core.mjs';
-import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose } from './lfmp-session.js';
+import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -363,7 +363,7 @@ const bannerOn = (firmCfg, base) => mergeConfig(base, null, firmCfg || {}).notic
 const bases = {};
 async function openApp() {
   show('appView');
-  loadChangelog().then(v => { const x = latestVersion(v); if (shell) shell.cfg.version = x || ''; paintNewsDot(); }).catch(() => {});   // Me → What's new · vX
+  loadChangelog().then(v => { const x = latestVersion(v); if (shell) shell.cfg.version = x || ''; paintNewsDot(); showNewsToast(); }).catch(() => {});   // Me → What's new · vX + the card
   clearInterval(checkTimer); checkTimer = setInterval(() => refreshIssues({ reloadKpis: true }), CHECK_MS);   // re-check every 5 minutes while open
   await route();
 }
@@ -412,7 +412,20 @@ const ago = iso => {
 };
 const fmtTime = iso => iso ? new Date(iso).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '';
 
+// v1.25.0: one display name per client in all three tools: the Builder record's name (matched by KPI slug or GHL location)
+// when there is one, otherwise firms/index.json's name. Display only: index.json, slugs and commit messages keep their name.
+const builderNames = {};
+const fname = f => displayName(builderNames[f.slug] || f.name);
+function applyNames(recs) {
+  for (const k of Object.keys(builderNames)) delete builderNames[k];
+  for (const f of firms) {
+    const loc = configs[f.slug]?.locationId || f.locationId || '';
+    const r = recs.find(x => x.kpiSlug === f.slug) || (loc ? recs.find(x => x.locationId === loc) : null);
+    if (r) builderNames[f.slug] = r.name;
+  }
+}
 async function loadFirms() {
+  const recsP = loadBuilderRecords({ fresh: true });   // alongside the firm files (never fails: [] = keep index.json's names)
   firms = (await getJSON('firms/index.json')) || [];
   await loadShared();
   await Promise.all(firms.map(async f => {
@@ -420,8 +433,9 @@ async function loadFirms() {
     try { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); kpis[f.slug] = k ? kpiSummary(k) : null; kpiFull[f.slug] = k; } catch { kpis[f.slug] = null; kpiFull[f.slug] = null; }
     try { subNames[f.slug] = (await getJSON(`firms/${f.slug}/discovery.json`))?.locationName || null; } catch { subNames[f.slug] = null; }   // the GHL sub-account's name
   }));
+  applyNames(await recsP);
 }
-const kpiSummary = k => ({ generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null, sync: k.sync || null,
+const kpiSummary = k => ({ generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null, sync: k.sync || null, trend: leadTrend(k),
   notInPipeline30: k.periods?.last30?.current?.notInPipeline ?? null });   // null until the firm's first sync with the contact check
 const contactsUrl = slug => { const loc = configs[slug]?.locationId || firmOf(slug)?.locationId || ''; return validLoc(loc) ? `${configs[slug]?.ghlAppBase || 'https://app.lawfirmmarketingpros.com'}/v2/location/${loc}/contacts/smart_list/All` : ''; };
 const isStale = k => !!(k?.generatedAt && Date.now() - Date.parse(k.generatedAt) > 2 * 3600e3);   // syncs run every 30 minutes
@@ -439,7 +453,7 @@ let showTests = store.get(TESTS_KEY) === '1';                 // test firms are 
 const visibleFirms = () => firms.filter(f => showTests || !isTest(f));
 const effCfg = f => mergeConfig(bases[f.slug] || shared.defaults, null, configs[f.slug] || {});
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
-const matchesQuery = f => { const q = norm(listQuery); return !q || [f.name, f.slug, subNames[f.slug]].some(s => norm(s).includes(q)); };
+const matchesQuery = f => { const q = norm(listQuery); return !q || [f.name, fname(f), f.slug, subNames[f.slug]].some(s => norm(s).includes(q)); };
 const clock = iso => (iso ? new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—');
 const lastSyncIso = () => firms.map(f => kpis[f.slug]?.generatedAt).filter(Boolean).sort().pop() || null;
 // Next scheduled sync: the next :07 or :37 (cron 7,37 plus the sync chain).
@@ -453,7 +467,7 @@ function nextSync(now = new Date()) {
 // Red = a sync problem; amber = anything else that needs attention (held numbers, mapping to review, not in a pipeline, no data
 // yet); green = synced. The whole row opens the Details panel (Open dashboard ↗ and every action live there).
 const LIST_COLS = '1.5fr 200px 260px 70px';
-const isBad = r => SYNC_PROBLEMS.has(r.kind) && r.kind !== 'nodata';
+const isBad = r => isAlert(r.kind);   // v1.25.0: red = alert, amber = notice (firm-details.mjs severity)
 const reasonTitle = r => (r.issue ? issueText(r.issue).title : r.short);
 function firmRow(f) {
   const k = kpis[f.slug], rs = reasonsOf(f), r = rs[0], bad = !!r && isBad(r);
@@ -462,10 +476,15 @@ function firmRow(f) {
   const sub = [f.practiceArea || 'No practice area', test, r ? `${reasonTitle(r)}${r.issue ? ` ${ago(r.issue.firstSeen)}` : ''}` : ''].filter(Boolean).join(' · ');
   const subPhone = [test, r ? `${r.short}${r.issue ? ` · ${ago(r.issue.firstSeen)}` : ''}` : `Synced ${clock(k?.generatedAt)}`].filter(Boolean).join(' · ');
   const status = r ? lvStatus(bad ? 'red' : 'amber', `${r.short}${more}`) : lvStatus('green', `Synced ${clock(k?.generatedAt)}`);
-  const n = k?.leads90 != null ? String(k.leads90) : '—', noun = `lead${k?.leads90 === 1 ? '' : 's'}`;
-  return lvRow({ name: f.name, sub, subPhone, label: `Open ${f.name}`,
+  // v1.25.0: 0 leads → a muted "No leads yet"; under the number, on the same small line, the trend vs the 90 days before
+  // (when the synced data has it): "leads · 90 days ▼ 19%" (rows keep one height)
+  const n = k?.leads90, noun = `lead${n === 1 ? '' : 's'}`, tr = n > 0 ? k?.trend : null;
+  const leads = phone => (n === 0 ? '<span class="lv-big lv-none" data-leads="none">No leads yet</span>'
+    : n == null ? bigHtml('—', `${noun} · ${phone ? '90 d' : '90 days'}`, bad)
+    : `<span class="lv-big${bad ? ' red' : ''}" data-leads="${n}"${tr ? ` title="${esc(`${n} ${noun} in the last 90 days, ${tr.label}`)}"` : ''}>${n}<small>${noun} · ${phone ? '90 d' : '90 days'}${tr ? ` <span class="lv-tr ${tr.dir}" data-trend="${tr.dir}">${esc(tr.text)}</span>` : ''}</small></span>`);
+  return lvRow({ name: fname(f), sub, subPhone, label: `Open ${fname(f)}`,
     attrs: `data-slug="${esc(f.slug)}" data-row${dpSlug === f.slug ? ' data-sel' : ''} title="${esc(k?.generatedAt ? `Last sync ${fmtTime(k.generatedAt)}` : 'No data yet')}"`,
-    cells: [status.replace('<span class="lv-st', '<span data-state="status" class="lv-st'), bigHtml(n, `${noun} · 90 days`, bad)], phoneRight: bigHtml(n, `${noun} · 90 d`, bad) });
+    cells: [status.replace('<span class="lv-st', '<span data-state="status" class="lv-st'), leads(false)], phoneRight: leads(true) });
 }
 // Summary line (desktop): "4 firms · all synced 4:37 PM" (or "1 sync problem").
 function paintStrip() {
@@ -479,8 +498,9 @@ function paintStrip() {
 // The bell panel's top block: sync schedule and token keeper (were the top bar's "Sync every 30 min · Last · Next").
 function paintSyncInfo() { const el = $('nSync'); if (el) el.outerHTML = syncInfoHtml(); }
 const kpiSegs = () => {
-  const vis = visibleFirms(), att = vis.filter(needsAttention).length;
-  return [{ key: 'all', label: `All ${vis.length}`, phone: 'All' }, { key: 'attention', label: `Needs attention · ${att}`, red: att > 0 }, { key: 'test', label: 'Test firms', phone: 'Test' }];
+  const vis = visibleFirms(), atts = vis.filter(needsAttention), att = atts.length;
+  const alert = atts.some(f => reasonsOf(f).some(r => isAlert(r.kind)));   // red if any alert, amber if only notices (as the bell)
+  return [{ key: 'all', label: `All ${vis.length}`, phone: 'All' }, { key: 'attention', label: `Needs attention · ${att}`, red: att > 0 && alert, amber: att > 0 && !alert }, { key: 'test', label: 'Test firms', phone: 'Test' }];
 };
 function paintFilters() {
   const seg = document.querySelector('#screen .lv-seg'); if (!seg) return;
@@ -554,7 +574,7 @@ function flashCopied(btn) {
 function copyLinkDialog(f, btn) {
   openDialog({
     title: 'Copy GHL menu link', okIcon: ICON.copy, ok: 'Copy link',
-    body: `<p class="sub">The scorecard link to paste into the sub-account's Custom Menu Link. Type <b>${esc(f.name)}</b>'s dashboard passphrase; it's only used to build the link and isn't saved.</p>
+    body: `<p class="sub">The scorecard link to paste into the sub-account's Custom Menu Link. Type <b>${esc(fname(f))}</b>'s dashboard passphrase; it's only used to build the link and isn't saved.</p>
       <label class="f" for="dlgPass">Passphrase<span class="pw"><input type="password" id="dlgPass" autocomplete="off" spellcheck="false"><button type="button" class="eye" data-eye="dlgPass" aria-label="Show passphrase"></button></span></label>
       <div class="ferr" id="dlgErr"></div>`,
     onOk: async () => {
@@ -618,7 +638,7 @@ async function toggleBanner(f) {
 // ---------- delete ----------
 function deleteDialog(f) {
   openDialog({
-    title: `Delete ${esc(f.name)}?`, ok: 'Delete firm', danger: true,
+    title: `Delete ${esc(fname(f))}?`, ok: 'Delete firm', danger: true,
     body: `<p class="sub">This removes <span class="mono">firms/${esc(f.slug)}/</span> (dashboard, config and data), its entry in the firm list, and the secrets <span class="mono">GHL_TOKEN_${esc(f.secretKey)}</span> and <span class="mono">PASSPHRASE_${esc(f.secretKey)}</span>. The dashboard link stops working. This can't be undone from here.</p>
       <label class="f" for="dlgConfirm">Type <span class="mono">${esc(f.slug)}</span> to confirm<input type="text" id="dlgConfirm" autocomplete="off" spellcheck="false"></label>
       <div class="ferr" id="dlgErr"></div>`,
@@ -737,7 +757,7 @@ const COUNT = {
 function issueHtml(i, seen) {
   const f = i.slug ? firmOf(i.slug) : null, d = issueText(i);
   const open = expanded.has(i.id), isNew = !seen.has(seenKey(i));
-  const sev = ['held', 'incomplete', 'stale'].includes(i.kind) ? 'warn' : 'bad';
+  const sev = severity(i.kind) === 'alert' ? 'bad' : 'warn';   // v1.25.0: one rule (firm-details.mjs)
   const loc = f ? locOf(f) : '';
   const count = COUNT[i.kind]?.(i);
   const btn = (code, html, primary) => code === 'ghl' ? (validLoc(loc) ? `<a class="btn${primary ? ' primary' : ''}" href="${esc(piUrl(loc))}" target="_blank" rel="noopener">${ICON.ext}Fix in GHL</a>` : '')
@@ -748,10 +768,10 @@ function issueHtml(i, seen) {
   const strong = !['held', 'incomplete'].includes(i.kind);
   return `<article class="issue" data-issue="${esc(i.id)}">
     <button class="ihead" type="button" aria-expanded="${open}" data-n="toggle"><span class="sev ${sev}" aria-hidden="true"></span>
-      <span><span class="ititle">${esc(d.title)}</span><span class="imeta">${f ? esc(f.name) : 'System'} · since ${esc(ago(i.firstSeen))}${isNew ? ' · <span class="newtag">New</span>' : ''}</span></span>${ICON.chev}</button>
+      <span><span class="ititle">${esc(d.title)}</span><span class="imeta">${f ? esc(fname(f)) : 'System'} · since ${esc(ago(i.firstSeen))}${isNew ? ' · <span class="newtag">New</span>' : ''}</span></span>${ICON.chev}</button>
     <div class="ibody"${open ? '' : ' hidden'}>
       <dl class="facts">
-        <dt>Firm</dt><dd>${f ? esc(f.name) : 'System (all firms)'}</dd>
+        <dt>Firm</dt><dd>${f ? esc(fname(f)) : 'System (all firms)'}</dd>
         ${f ? `<dt>GHL sub-account</dt><dd>${esc(subNames[f.slug] || 'not recorded yet (re-read GHL in Edit mapping)')}</dd><dt>Location ID</dt><dd class="mono">${esc(loc || '—')}</dd>` : ''}
         <dt>First seen</dt><dd>${esc(when(i.firstSeen))}</dd>
         <dt>Last seen</dt><dd>${esc(when(i.lastSeen))}</dd>
@@ -781,7 +801,7 @@ function paintPanel() {
       : `<div class="nempty"><span class="okic">${ICON.tick}</span><b>No open issues</b><p>Every firm synced in the last ${STALE_MIN} minutes and the sync chain is running.</p></div>`}
     <details class="nresolved"${resolved.length ? '' : ' hidden'}><summary>Recently resolved (${resolved.length})</summary><ul>${resolved.map(r => {
       const f = r.slug ? firmOf(r.slug) : null;
-      return `<li><span>${esc(resolvedTitle(r))}<span class="rwho"> · ${f ? esc(f.name) : 'System'}${lasted(r) ? ` · lasted ${lasted(r)}` : ''}</span></span><time datetime="${esc(r.resolvedAt)}" title="${esc(fmtTime(r.resolvedAt))}">Resolved ${esc(ago(r.resolvedAt))}</time></li>`;
+      return `<li><span>${esc(resolvedTitle(r))}<span class="rwho"> · ${f ? esc(fname(f)) : 'System'}${lasted(r) ? ` · lasted ${lasted(r)}` : ''}</span></span><time datetime="${esc(r.resolvedAt)}" title="${esc(fmtTime(r.resolvedAt))}">Resolved ${esc(ago(r.resolvedAt))}</time></li>`;
     }).join('')}</ul></details>`;
 }
 const resolvedTitle = r => (r.kind === 'stale' ? `No successful sync for ${STALE_MIN}+ min` : r.kind === 'no-sync' ? `No firm synced for ${STALE_MIN}+ min` : issueText(r).title);
@@ -872,7 +892,7 @@ const scopeResult = sc => `<ul class="scopelist scoperes">${SCOPES.map(([k, name
 // sent only to GitHub's Secrets API), then re-syncs.
 function tokenDialog(f, say) {
   openDialog({
-    title: `Update GHL token for ${esc(f.name)}`, ok: 'Save token and re-sync', okIcon: ICON.key,
+    title: `Update GHL token for ${esc(fname(f))}`, ok: 'Save token and re-sync', okIcon: ICON.key,
     body: `<p class="sub">Paste the private integration token from <b>${esc(subNames[f.slug] || f.name)}</b> (location <span class="mono">${esc(locOf(f))}</span>). It's checked against GHL first; only if all 9 scopes pass does it replace the secret <span class="mono">GHL_TOKEN_${esc(f.secretKey)}</span> on GitHub. It isn't kept on this page.</p>
       <label class="f" for="dlgTok">GHL token<span class="pw"><input type="password" id="dlgTok" autocomplete="off" spellcheck="false" placeholder="pit-…"><button type="button" class="eye" data-eye="dlgTok" aria-label="Show token"></button></span></label>
       <div class="ferr" id="dlgErr"></div>`,
@@ -952,10 +972,10 @@ function paintDetails({ soft = false } = {}) {
   const scroll = P.scrollTop;
   P.dataset.slug = f.slug;
   P.innerHTML = `<button type="button" class="lv-back lv-p dpback" data-dp-close><span aria-hidden="true">‹</span>Scorecards</button>
-    <div class="dphead"><div class="dptitles"><p class="ey">Firm details</p><h2 class="disp" id="dpTitle">${esc(f.name)}</h2>
+    <div class="dphead"><div class="dptitles"><p class="ey">Firm details</p><h2 class="disp" id="dpTitle">${esc(fname(f))}</h2>
       <p class="sub">${esc(f.practiceArea || 'No practice area')}${subNames[f.slug] ? ` · GHL: ${esc(subNames[f.slug])}` : ''}</p></div>
       <button class="xbtn lv-d" type="button" data-dp-close aria-label="Close details">${ICON.cross}</button></div>
-    <div class="dptabs" role="tablist" aria-label="${esc(f.name)}">${TABS.map(([k, l]) => `<a role="tab" href="${esc(hashFor('list', f.slug, k))}" data-dp-tab="${k}" aria-selected="${k === dpTab}"${k === dpTab ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</div>
+    <div class="dptabs" role="tablist" aria-label="${esc(fname(f))}">${TABS.map(([k, l]) => `<a role="tab" href="${esc(hashFor('list', f.slug, k))}" data-dp-tab="${k}" aria-selected="${k === dpTab}"${k === dpTab ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</div>
     <div class="dpmsg" data-msg="${esc(f.slug)}" aria-live="polite">${firmMsg[f.slug] || ''}</div>
     <div class="dpbody" role="tabpanel" data-tab="${dpTab}">${tabBody}</div>`;
   if (soft) P.scrollTop = scroll;
@@ -1015,7 +1035,7 @@ function reasonBox(r, f) {
       <div class="niplist" id="nipList">${nipHtml(f)}</div></section>`;
   }
   if (r.kind === 'nodata') return `<section class="abox warn" data-reason="nodata"><h3>No data yet</h3><p>This firm has no published numbers: the first sync hasn't finished, or it failed. Re-sync to try again.</p><div class="btnrow">${ACTION_BTN.resync()}</div></section>`;
-  const i = r.issue, d = issueText(i), sev = ['failed', 'app-missing', 'app-token', 'stale'].includes(i.kind) ? 'bad' : 'warn';
+  const i = r.issue, d = issueText(i), sev = severity(i.kind) === 'alert' ? 'bad' : 'warn';
   const acts = d.actions.filter(a => a !== 'firm' && a !== 'variables').map(a => ACTION_BTN[a]?.(i, f) || '').join('');
   return `<section class="abox ${sev}" data-reason="${esc(i.kind)}"><h3>${sev === 'bad' ? '' : 'Needs attention · '}${esc(d.title)}</h3>
     <p>${d.what}</p>${d.steps.length ? `<ol>${d.steps.map(s => `<li>${s}</li>`).join('')}</ol>` : ''}
@@ -1044,7 +1064,7 @@ function nipHtml(f) {
   const err = s?.state === 'error' ? `<div class="ferr">${esc(s.err)}</div>` : '';
   const noStore = passStore === false;
   return `${listBtn}<p class="meta">Unlock to see who (newest first):</p>
-    <form class="nipform" data-nip-unlock autocomplete="off"><label class="sr" for="nipPass">Dashboard passphrase for ${esc(f.name)}</label>
+    <form class="nipform" data-nip-unlock autocomplete="off"><label class="sr" for="nipPass">Dashboard passphrase for ${esc(fname(f))}</label>
       <span class="pw"><input type="password" id="nipPass" placeholder="Dashboard passphrase" spellcheck="false"><button type="button" class="eye" data-eye="nipPass" aria-label="Show passphrase"></button></span>
       <button class="btn" type="submit">Unlock</button>
       ${noStore ? '' : '<label class="check nipremember"><input type="checkbox" id="nipRemember"><span>Remember for the team</span></label>'}</form>${err}
@@ -1170,6 +1190,15 @@ async function loadPlainNews() {
   return plainNews;
 }
 function paintNewsDot() { const v = changelog && latestVersion(changelog); shell?.setNewsDot(!!v && newer(v, store.get(NEWS_SEEN) || '0.0.0')); }   // dot on the avatar + Me → What's new
+// v1.25.0: the shared What's new card (same as the Builder and Review admin), once per version: whats-new.json's title
+// (or summary) and one short line; a version without plain words shows no card (the dot in Me still does).
+async function showNewsToast() {
+  const v = changelog && latestVersion(changelog);
+  if (!v || !newer(v, store.get(NEWS_SEEN) || '0.0.0')) return;
+  const p = (await loadPlainNews())[v]; if (!p || !newer(v, store.get(NEWS_SEEN) || '0.0.0')) return;
+  showNewsCard({ version: v, title: p.title || p.summary, line: p.title ? newsLine(p) : newsLine({ items: p.items }),
+    onSee: () => openNews(), onGot: () => { store.set(NEWS_SEEN, v); paintNewsDot(); } });
+}
 const TYPE_LABEL = { new: 'New', improved: 'Improved', fixed: 'Fixed' };
 function newsCardHtml(c, i) {
   return `<details class="vcard"${i === 0 ? ' open' : ''}><summary><span class="vt"><b>v${esc(c.version)}</b>${i === 0 && newsFilter === 'all' ? '<span class="pill">Latest</span>' : ''}<span class="vdate">${esc(c.date)}</span>${c.tags.map(t => `<span class="tag ${t === 'client' ? 'tg-green' : ''}">${t}</span>`).join('')}</span>${ICON.chev}<p class="vsum">${esc(c.summary)}</p></summary>
@@ -1186,7 +1215,7 @@ async function paintNews() {
   } catch (e) { body.innerHTML = `<div class="errbox">${esc(e.message)}</div>`; }
 }
 async function openNews() {
-  closeMenus(); closePanel();
+  closeMenus(); closePanel(); hideNewsCard();
   newsReturn = document.activeElement;
   $('newsPanel').innerHTML = `<div class="dhead"><div class="row"><div><p class="ey">LeadPro · KPI admin</p><h2 class="disp" id="newsTitle">What's <span class="g">new.</span></h2></div><button class="xbtn" type="button" data-news-close aria-label="Close What's new">${ICON.cross}</button></div>
       <div class="seg" role="group" aria-label="Show">${[['all', 'All'], ['client', 'Client'], ['internal', 'Internal']].map(([k, l]) => `<button type="button" data-news-filter="${k}" aria-pressed="${k === newsFilter}">${l}</button>`).join('')}</div>

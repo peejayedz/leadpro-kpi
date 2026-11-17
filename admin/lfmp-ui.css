@@ -131,8 +131,8 @@ input::placeholder{color:var(--mut)}
 
 /* =====================================================================================================================
    v2 SHELL (redesign v2, Nov 2026): one top bar, Me menu, bottom tabs, list look and colours for all three tools.
-   Only pages that set <html class="lfmp-v2"> get any of this (the Builder, KPI admin, Review admin). The sign-in,
-   signed-out, Moved, offline and reset pages don't, so they look exactly as before. Built by lfmp-session.js
+   Only pages that set <html class="lfmp-v2"> get any of this (the Builder, KPI admin, Review admin and, since v1.16.0,
+   the app's offline and reset pages). The sign-in, signed-out and Moved pages don't. Built by lfmp-session.js
    (mountShell, pageHeadHtml, rowHtml). Phone = below 880px. Spec: Claude outputs/design-v2/ (PJ, 17 Nov 2026).
    Colours: the reference's, with PJ's AA fixes (light muted #6b6861, light search/tab text #6a6863, light gold text
    #8e621a, chevron #949494 (#959595 was 2.995:1, one shade short of 3:1), near-black text on gold). Every text pair passes WCAG AA.
@@ -146,7 +146,7 @@ input::placeholder{color:var(--mut)}
   --red:#b8322b; --green:#2e8a58; --blue:#3c6fb5; --amber:#c58a1c; --chip:#efece6;
   --soft:#efece6; --seg:#ebe8e1; --segon:#ffffff; --sub:#6a6863; --chev:#949494; --red-soft:#f8e7e4;
   /* green / amber as TEXT (AA on white and the page); dots, squares and icons keep --green / --amber */
-  --green-ink:#2a7f51; --amber-ink:#956815;
+  --green-ink:#2a7f51; --amber-ink:#956815; --amber-seg:#8a5f12;   /* v1.16.0: amber text on the grey filter (#956815 is 4.02:1 there) */
   --shade:rgba(20,17,10,.45); --shadow:0 18px 50px rgba(20,17,10,.18);
   --lv-tabs-h:84px;
   color-scheme:light;
@@ -157,7 +157,7 @@ input::placeholder{color:var(--mut)}
   --acc:#f2f1ee; --acc-ink:#f2f1ee; --acc-on:#16161a; --acc-soft:#1d1d22;
   --red:#ef5a52; --green:#46b37f; --blue:#7aa7e6; --amber:#e0a43a; --chip:#1d1d22;
   --soft:#1d1d22; --seg:#1d1d22; --segon:#2a2a30; --sub:#9a978f; --chev:#bbbbbb; --red-soft:#2a1716;
-  --green-ink:#46b37f; --amber-ink:#e0a43a;
+  --green-ink:#46b37f; --amber-ink:#e0a43a; --amber-seg:#e0a43a;
   --shade:rgba(0,0,0,.6); --shadow:0 18px 50px rgba(0,0,0,.6);
   color-scheme:dark;}}
 :root.lfmp-v2[data-theme="dark"]{
@@ -166,7 +166,7 @@ input::placeholder{color:var(--mut)}
   --acc:#f2f1ee; --acc-ink:#f2f1ee; --acc-on:#16161a; --acc-soft:#1d1d22;
   --red:#ef5a52; --green:#46b37f; --blue:#7aa7e6; --amber:#e0a43a; --chip:#1d1d22;
   --soft:#1d1d22; --seg:#1d1d22; --segon:#2a2a30; --sub:#9a978f; --chev:#bbbbbb; --red-soft:#2a1716;
-  --green-ink:#46b37f; --amber-ink:#e0a43a;
+  --green-ink:#46b37f; --amber-ink:#e0a43a; --amber-seg:#e0a43a;
   --shade:rgba(0,0,0,.6); --shadow:0 18px 50px rgba(0,0,0,.6);
   color-scheme:dark;}
 .lfmp-v2 body{background:var(--bg);color:var(--ink);-webkit-font-smoothing:auto}   /* text drawn as in the reference */
@@ -216,10 +216,9 @@ button.lv-plain{border:0;background:none;padding:0;font:inherit;color:inherit;cu
 .lv-hrow{display:flex;align-items:flex-end;gap:20px}
 .lv-h1{font:700 40px/1 var(--d);text-transform:uppercase;margin:0;letter-spacing:0;color:var(--ink)}
 .lv-sum{color:var(--mut);font:400 14px/normal var(--b);margin-top:6px}
-/* desktop: "⌕  Search …" as drawn in the desktop reference; phone: the magnifier icon (phone reference) */
-.lv-search .lv-sg{white-space:pre;flex:none}
-.lv-search > .lv-p{display:none}
-.lv-search{margin-left:auto;width:340px;display:flex;align-items:center;gap:0;padding:0 14px;border-radius:10px;background:var(--seg);color:var(--mut);font:400 14px/normal var(--b)}
+/* the same SVG magnifier on desktop and phone (v1.16.0; desktop had a "⌕" character) */
+.lv-search{margin-left:auto;width:340px;display:flex;align-items:center;gap:8px;padding:0 14px;border-radius:10px;background:var(--seg);color:var(--mut);font:400 14px/normal var(--b)}
+.lv-search .lv-ico{width:16px;height:16px}
 .lv-search input{flex:1;min-width:0;min-height:0;height:auto;border:0;background:transparent;padding:11px 0;font:400 14px/normal var(--b);color:var(--ink);border-radius:0}
 .lv-search input::placeholder{color:var(--mut);opacity:1}
 .lv-search input:focus{outline:none}
@@ -229,6 +228,7 @@ button.lv-plain{border:0;background:none;padding:0;font:inherit;color:inherit;cu
 .lv-seg button{border:0;background:transparent;padding:7px 16px;font:600 13px/normal var(--b);color:var(--mut);border-radius:8px;cursor:pointer;white-space:nowrap}
 .lv-seg button[aria-pressed="true"]{background:var(--segon);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .lv-seg .lv-red{color:var(--red);padding:7px 16px}   /* the reference's nested span gets the padding twice on desktop */
+.lv-seg .lv-amber{color:var(--amber-seg);padding:7px 16px}   /* only notices (KPI: same colour as the bell's amber notices) */
 .lv-list{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;line-height:normal}
 .lv-row{display:grid;grid-template-columns:var(--lv-cols,1.5fr 200px 260px 70px);align-items:center;padding:15px 22px;border-top:1px solid var(--line);cursor:pointer;color:var(--ink);text-decoration:none;width:100%;text-align:left;background:none;border-left:0;border-right:0;border-bottom:0;font:400 16px/normal var(--b)}   /* 16px base as the reference page: same line boxes */
 .lv-row:first-child{border-top:0}
@@ -250,6 +250,9 @@ button.lv-plain{border:0;background:none;padding:0;font:inherit;color:inherit;cu
 .lv-big{font:700 26px/1 var(--d);display:inline-block;text-align:right;color:var(--ink)}
 .lv-big.red{color:var(--red)}
 .lv-big small{display:block;font:500 11px/normal var(--b);color:var(--mut);margin-top:3px}
+.lv-big.lv-none{font:500 13px/normal var(--b);color:var(--mut)}   /* "No leads yet" instead of a bold 0 */
+.lv-big .lv-tr{font-weight:600;white-space:nowrap}
+.lv-tr.up{color:var(--green-ink)} .lv-tr.down{color:var(--red)} .lv-tr.same{color:var(--mut)}
 .lv-chev{display:none}
 .lv-row > .lv-pr{display:none}
 .lv-row > .lv-c0{min-width:0}
@@ -311,10 +314,10 @@ div.lv-mi{cursor:default} div.lv-mi:hover{background:none}
   .lv-in{width:auto;max-width:none;padding:0 0 24px}
   .lv-hrow{display:block}
   .lv-search{margin:12px 16px 0;width:auto;border-radius:12px;padding:0 14px;color:var(--sub);font-size:15px;gap:8px}
-  .lv-search > .lv-p{display:flex}
+  .lv-search .lv-ico{width:17px;height:17px}
   .lv-search input{font-size:15px;padding:11px 0}
   .lv-search input::placeholder{color:var(--sub)}
-  .lv-seg .lv-red{padding:0}
+  .lv-seg .lv-red,.lv-seg .lv-amber{padding:0}
   .lv-search.lv-hit::after,.lv-seg button.lv-hit::after{width:100%}
   .lv-seg{display:flex;margin:12px 16px 0;padding:3px}
   .lv-seg button{flex:1;text-align:center;padding:7px 0;font-size:12.5px}
@@ -335,15 +338,21 @@ div.lv-mi{cursor:default} div.lv-mi:hover{background:none}
   .lv-sheet-h{padding:6px 16px;min-height:56px}
 }
 
-/* motion (Nov 2026): loading mark (PJ's preview option B) and the details panel (option A, 0.50 s). Shell helpers:
-   loadingHtml / withLoadLimit / fadeIn / panelOpen / panelClose / panelFinish in lfmp-session.js. */
+/* motion (Nov 2026): the details panel (option A, 0.50 s). Shell helpers:
+   loadingHtml / withLoadLimit / fadeIn / panelOpen / panelClose / panelFinish in lfmp-session.js.
+   Loading mark v1.16.0 (PJ: "Claude outputs/LFMP_Loading_v2_Preview.html" option A): no tile, three blocks 56px wide
+   (top 55%, middle 80%, base 100%), 9px tall, radius 3, gap 5, in the page text colour with a gold base. Each drops in
+   from -14px (base 0 s, middle 0.18 s, top 0.36 s, 0.4 s each), holds, then all three fade together (70% → 88% of a
+   2.2 s loop), cubic-bezier(.2,.8,.2,1). One keyframe set per block on the same clock, so the fade is shared. */
 .lv-load{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;min-height:250px;padding:24px 16px;text-align:center}
-.lv-load-mk{box-sizing:border-box;width:58px;height:58px;background:#111;border-radius:13px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;padding:10px;box-shadow:0 0 0 1px var(--line)}
-.lv-load-mk i{display:block;height:7px;border-radius:2px;background:#f2f1ee;opacity:0;animation:lv-bl 1.6s ease-in-out infinite}
-.lv-load-mk i:nth-child(1){width:55%;animation-delay:.4s}
-.lv-load-mk i:nth-child(2){width:80%;animation-delay:.2s}
-.lv-load-mk i:nth-child(3){width:100%;background:#d9a64e;animation-delay:0s}
-@keyframes lv-bl{0%{opacity:0;transform:translateY(-6px)}25%,70%{opacity:1;transform:none}100%{opacity:0}}
+.lv-load-mk{display:flex;flex-direction:column;align-items:center;gap:5px;width:56px}
+.lv-load-mk i{display:block;height:9px;border-radius:3px;background:var(--ink,#f2f1ee);opacity:0;animation:2.2s cubic-bezier(.2,.8,.2,1) infinite}
+.lv-load-mk i:nth-child(1){width:55%;animation-name:lv-bl-top}
+.lv-load-mk i:nth-child(2){width:80%;animation-name:lv-bl-mid}
+.lv-load-mk i:nth-child(3){width:100%;background:var(--gold,#d9a64e);animation-name:lv-bl-base}
+@keyframes lv-bl-base{0%{opacity:0;transform:translateY(-14px)}18.18%,70%{opacity:1;transform:none}88%,100%{opacity:0;transform:none}}
+@keyframes lv-bl-mid{0%,8.18%{opacity:0;transform:translateY(-14px)}26.36%,70%{opacity:1;transform:none}88%,100%{opacity:0;transform:none}}
+@keyframes lv-bl-top{0%,16.36%{opacity:0;transform:translateY(-14px)}34.55%,70%{opacity:1;transform:none}88%,100%{opacity:0;transform:none}}
 .lv-load-t{color:var(--mut);font:400 13px/1.4 var(--b)}
 .lv-dots{display:inline-block;width:1.1em;text-align:left}
 .lv-dots::after{content:"…"}
@@ -370,8 +379,83 @@ div.lv-mi{cursor:default} div.lv-mi:hover{background:none}
 .lfmp-v2 .lv-pm-now,.lfmp-v2 .lv-pm-now > *{transition:none !important;animation:none !important}
 @media (prefers-reduced-motion:reduce){
   .lv-load-mk i{animation:none;opacity:1}
+  .lv-load-mk i:nth-child(n){animation-name:none}   /* each block names its own keyframes (same specificity, later wins) */
   .lv-dots.lv-dots::after{animation:none;content:"…"}
   .lv-fadein{animation:none}
   .lfmp-v2 .lv-pm,.lfmp-v2 .lv-pm-sh{transition:none !important}
   .lfmp-v2 .lv-pm.lv-pm-enter > *{animation:none}
 }
+
+/* What's new card (v1.16.0, all three tools; newsCardHtml / showNewsCard in lfmp-session.js): one rounded card like the
+   list, small gold dot + "What's new · v…", the title in sentence case, one short line, "See what's new" (gold) and
+   "Got it" (like Sign out). Bottom right; on a phone above the tabs. No top bar, no ALL CAPS. */
+.lv-note{position:fixed;right:24px;bottom:24px;z-index:44;width:min(380px,calc(100vw - 32px));background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.14);padding:16px 18px;display:flex;flex-direction:column;gap:6px;line-height:normal;overflow-wrap:anywhere}
+.lv-note p{margin:0}
+.lv-note-meta{display:flex;align-items:center;gap:8px;color:var(--mut);font:500 12.5px/normal var(--b)}
+.lv-note-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex:none}
+.lv-note-t{font:600 15.5px/1.35 var(--b);color:var(--ink);margin-top:2px !important}
+.lv-note-l{font:400 13.5px/1.45 var(--b);color:var(--mut)}
+.lv-note-b{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.lv-note-go{font:600 13px/normal var(--b);background:var(--gold);color:var(--gold-on);border:0;padding:8px 14px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.lv-note-go:hover{filter:brightness(1.06)}
+.lv-note-ok{font:600 13px/normal var(--b);color:var(--mut);border:1px solid var(--line);padding:7px 12px;border-radius:8px;background:none;cursor:pointer;white-space:nowrap}
+.lv-note-ok:hover{color:var(--ink)}
+@media (max-width:879.98px){
+  .lv-note{left:16px;right:16px;width:auto;bottom:calc(var(--lv-tabs-h,0px) + 12px + env(safe-area-inset-bottom))}
+  .lv-note-go,.lv-note-ok{min-height:44px;padding:0 16px}
+}
+.lv-has-upd .lv-note{bottom:88px}   /* the "Update available" bar sits under it */
+@media (max-width:879.98px){.lv-has-upd .lv-note{bottom:calc(var(--lv-tabs-h,0px) + 88px + env(safe-area-inset-bottom))}}
+
+/* =====================================================================================================================
+   v2 COMPONENTS (v1.16.0, 18 Nov 2026): the older pieces inside the tools (buttons, chips and tags, filters, tabs, cards,
+   dialogs, inputs, small labels) in the v2 look of the lists: rounded, sentence case, no gold or red top bars.
+   ALL CAPS stays only where the reference has it: page and panel titles (display font) and the small group labels
+   (like Me → SETTINGS). Only under <html class="lfmp-v2">; ":root.lfmp-v2" wins over each tool's own older rules.
+   ===================================================================================================================== */
+/* buttons: like Sign out (secondary) / the list's ink (primary) */
+:root.lfmp-v2 .btn,:root.lfmp-v2 .lfmp-out{border-radius:8px;font:600 13px/1.2 var(--b);letter-spacing:0;text-transform:none;min-height:36px;padding:8px 14px;border:1px solid var(--line);color:var(--ink);background:transparent}
+:root.lfmp-v2 .btn:hover,:root.lfmp-v2 .lfmp-out:hover{border-color:var(--mut)}
+:root.lfmp-v2 .btn.p,:root.lfmp-v2 .btn.primary{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+:root.lfmp-v2 .btn.p:hover,:root.lfmp-v2 .btn.primary:hover{filter:none;opacity:.88;border-color:var(--ink)}
+:root.lfmp-v2 .btn.sm{min-height:32px;padding:6px 11px;font-size:12.5px}
+:root.lfmp-v2 .btn.big{min-height:44px;padding:10px 20px;font-size:14px}
+:root.lfmp-v2 .btn.icon{padding:0 9px;min-width:36px}
+:root.lfmp-v2 .btn.danger{color:var(--red)}
+:root.lfmp-v2 .btn.danger:not([disabled]):hover{border-color:var(--red);background:transparent;color:var(--red)}
+:root.lfmp-v2 .btn.on{border-color:var(--ink)}
+:root.lfmp-v2 .btn.lnkbtn{border-color:transparent}
+:root.lfmp-v2 .xbtn,:root.lfmp-v2 .iconbtn,:root.lfmp-v2 .dclose,:root.lfmp-v2 .lfmp-dlg-h .btn{border-radius:8px}
+:root.lfmp-v2 .back{font:600 14px/normal var(--b);letter-spacing:0;text-transform:none;color:var(--ink)}
+/* chips, tags, pills: rounded, sentence case */
+:root.lfmp-v2 .chip,:root.lfmp-v2 .tag,:root.lfmp-v2 .pill,:root.lfmp-v2 .stag,:root.lfmp-v2 .ftag,:root.lfmp-v2 .edtag,:root.lfmp-v2 .newtag,:root.lfmp-v2 .rvmh .kind{border-radius:99px;font:500 12px/1.35 var(--b);letter-spacing:0;text-transform:none;padding:2px 9px}
+:root.lfmp-v2 .chip .dot{border-radius:50%}
+:root.lfmp-v2 .pill{background:var(--soft);color:var(--ink)}
+:root.lfmp-v2 .ghlmark,:root.lfmp-v2 label.f.fromghl>span:first-child::after{border-radius:99px;letter-spacing:0;text-transform:none;font-weight:600}
+/* segmented filters (old .seg) = the list's filter */
+:root.lfmp-v2 .seg{border:0;background:var(--seg);border-radius:10px;padding:3px;gap:2px}
+:root.lfmp-v2 .seg button{border:0;border-radius:8px;padding:7px 14px;font:600 13px/normal var(--b);letter-spacing:0;text-transform:none;color:var(--mut);background:transparent}
+:root.lfmp-v2 .seg button[aria-pressed="true"]{background:var(--segon);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+/* tabs in the details panels */
+:root.lfmp-v2 .dtabs button,:root.lfmp-v2 .dtabs a,:root.lfmp-v2 .dptabs a{font:600 14px/1 var(--b);letter-spacing:0;text-transform:none}
+/* small section labels = the Me group labels (.lv-gl) */
+:root.lfmp-v2 .lbl,:root.lfmp-v2 .ey,:root.lfmp-v2 .dinfo dt,:root.lfmp-v2 .lfmp-signins th,:root.lfmp-v2 .lfmp-signins td::before,:root.lfmp-v2 .tile .tl,:root.lfmp-v2 .rv h4,:root.lfmp-v2 .recinfo h4,:root.lfmp-v2 .ibody h4,:root.lfmp-v2 .rvh,:root.lfmp-v2 .axfound h4,:root.lfmp-v2 .kprog .lbl2,:root.lfmp-v2 .sectionlabel,:root.lfmp-v2 .tokhelp h3,:root.lfmp-v2 .map section>h4,:root.lfmp-v2 .lfmp-inst h3,:root.lfmp-v2 .axform legend,:root.lfmp-v2 .chead,:root.lfmp-v2 .fhead{font:600 12px/1.3 var(--b);letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+/* form labels and fold-outs: sentence case */
+:root.lfmp-v2 label.f,:root.lfmp-v2 .f.static>span:first-child,:root.lfmp-v2 .axform div.f{font:600 13.5px/1.3 var(--b);letter-spacing:0;text-transform:none;color:var(--ink)}
+:root.lfmp-v2 .recinfo>summary,:root.lfmp-v2 .rvsub>summary{font:600 14px/1.3 var(--b);letter-spacing:0;text-transform:none}
+:root.lfmp-v2 .startopt b{font:600 16px/1.3 var(--b);text-transform:none}
+:root.lfmp-v2 fieldset.connect>legend{font:600 14px/1.3 var(--b);letter-spacing:0;text-transform:none;color:var(--ink)}
+/* inputs */
+:root.lfmp-v2 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),:root.lfmp-v2 select,:root.lfmp-v2 textarea{border-radius:8px}
+/* cards and boxes: rounded like the list */
+:root.lfmp-v2 .panel,:root.lfmp-v2 .dset,:root.lfmp-v2 .gw section,:root.lfmp-v2 .nfmain,:root.lfmp-v2 .nfside,:root.lfmp-v2 .opt-card,:root.lfmp-v2 .startopt,:root.lfmp-v2 .fcpanel,:root.lfmp-v2 .vcard,:root.lfmp-v2 .npanel,:root.lfmp-v2 .abox,:root.lfmp-v2 .okmsg,:root.lfmp-v2 .errbox,:root.lfmp-v2 .warnbox,:root.lfmp-v2 .note{border-radius:12px}
+:root.lfmp-v2 .rvmsgs>li,:root.lfmp-v2 .rvdiffs>li,:root.lfmp-v2 .rvwfs>li,:root.lfmp-v2 .rvhist>li,:root.lfmp-v2 .rvnew,:root.lfmp-v2 .axpick,:root.lfmp-v2 .axpicked,:root.lfmp-v2 .axform{border-radius:10px}
+:root.lfmp-v2 .tiles{border-radius:12px;overflow:hidden}
+:root.lfmp-v2 .startopt .sic{border-radius:8px}
+:root.lfmp-v2 .nfside li .k,:root.lfmp-v2 .nempty .okic{border-radius:50%}
+:root.lfmp-v2 .panel.attnbox,:root.lfmp-v2 .panel.attention{border-top-width:1px;border-color:color-mix(in srgb,var(--red) 40%,var(--line))}
+/* dialogs: rounded, no gold top bar, sentence-case titles */
+:root.lfmp-v2 .dlg:not(.side),:root.lfmp-v2 .lfmp-dlg{border-radius:14px;border:1px solid var(--line)}
+:root.lfmp-v2 .dlg h3,:root.lfmp-v2 .lfmp-dlg-h h2,:root.lfmp-v2 .nhead h3{font:600 20px/1.25 var(--b);text-transform:none;letter-spacing:0}
+:root.lfmp-v2 .lfmp-dlg-h .ey{display:none}
+:root.lfmp-v2 .lfmp-dlg-h{align-items:center}

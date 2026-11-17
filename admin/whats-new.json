@@ -1,5 +1,15 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.25.0": {
+    "title": "Numbers with meaning",
+    "summary": "Leads trend, \"No leads yet\" and one colour per meaning.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "Under each firm's leads you now see the trend against the 90 days before: ▲ green, ▼ red, — same." },
+      { "type": "improved", "tag": "internal", "text": "A firm with no leads in 90 days shows \"No leads yet\" instead of a bold 0." },
+      { "type": "improved", "tag": "internal", "text": "Red always means an alert (numbers stopped updating) and amber a notice, in the bell, the firm list and the Needs attention filter." },
+      { "type": "improved", "tag": "internal", "text": "Pop-ups, buttons and boxes are rounded and in normal sentence case, like the list; each firm has one name in all three tools." }
+    ]
+  },
   "1.24.0": {
     "summary": "Smoother loading and firm details, the same in all three tools.",
     "items": [

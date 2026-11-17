@@ -105,7 +105,11 @@ test('page head: title + summary (desktop), search, filter; the "Needs …" labe
   assert.match(h, /id="q" placeholder="Search 12 clients"/);
   assert.match(h, /data-lv-seg="all" aria-pressed="true"><span class="lv-d">All 12<\/span><span class="lv-p">All<\/span>/);
   assert.equal((h.match(/lv-red/g) || []).length, 1);
-  assert.match(h, /<label class="lv-search lv-hit">/, 'the whole search box (44px with its margin) focuses the input');
+  assert.match(h, /<label class="lv-search lv-hit"><svg class="lv-ico"/, 'the whole search box (44px with its margin) focuses the input; one SVG magnifier first');
+  assert.ok(!h.includes('⌕') && (h.match(/<svg/g) || []).length === 1, 'v1.16.0: the same SVG magnifier on desktop and phone, no "⌕" character');
+  const a = S.pageHeadHtml({ title: 'T', segs: [{ key: 'x', label: 'Needs attention · 2', amber: true }], active: 'all' });
+  assert.match(a, /<span class="lv-amber"><span class="lv-d">Needs attention · 2<\/span>/, 'amber = only notices');
+  assert.ok(!a.includes('lv-red'));
   assert.match(S.pageHeadHtml({ title: 'Clients' }), /<div class="lv-sum" data-lv-sum><\/div>/, 'empty summary while loading: the element is there for the tool to fill');
 });
 
@@ -138,7 +142,7 @@ const lum = h => { const c = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) 
 const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
 test('AA contrast: every text pair the shell uses passes 4.5:1 (icons 3:1)', () => {
   for (const [T, name] of [[LIGHT, 'light'], [DARK, 'dark']]) {
-    const pairs = [['ink', 'bg'], ['ink', 'panel'], ['mut', 'panel'], ['mut', 'bg'], ['mut', 'seg'], ['sub', 'seg'], ['sub', 'panel'], ['gold-ink', 'panel'], ['gold-ink', 'soft'], ['red', 'panel'], ['red', 'seg'], ['gold-on', 'gold'], ['ink', 'segon']];
+    const pairs = [['ink', 'bg'], ['ink', 'panel'], ['mut', 'panel'], ['mut', 'bg'], ['mut', 'seg'], ['sub', 'seg'], ['sub', 'panel'], ['gold-ink', 'panel'], ['gold-ink', 'soft'], ['red', 'panel'], ['red', 'seg'], ['gold-on', 'gold'], ['ink', 'segon'], ['amber-seg', 'seg'], ['amber-seg', 'segon']];
     for (const [f, b] of pairs) assert.ok(ratio(T[f], T[b]) >= 4.5, `${name}: ${f} ${T[f]} on ${b} ${T[b]} = ${ratio(T[f], T[b]).toFixed(2)}`);
     assert.ok(ratio(T.chev, T.panel) >= 3, `${name}: chevron`);
   }
@@ -146,7 +150,8 @@ test('AA contrast: every text pair the shell uses passes 4.5:1 (icons 3:1)', () 
 
 test('gold only on: + button, current tab/nav, top line, initials, on-switches', () => {
   const rules = [...V2.matchAll(/([^{}]+)\{([^{}]*var\(--gold[^{}]*)\}/g)].map(m => m[1].trim().replace(/^.*\*\/\s*/s, ''));
-  const allowed = [/^\.lv-av$/, /^\.lv-top$/, /^\.lv-plus$/, /^\.lv-tg\[aria-checked="true"\]$/, /^\.lv-band$/, /^\.lv-pplus$/, /^\.lv-tab\[aria-current="page"\]( svg)?$/];
+  // v1.16.0: + the What's new card's small dot and its "See what's new" button (PJ: gold, primary)
+  const allowed = [/^\.lv-av$/, /^\.lv-top$/, /^\.lv-plus$/, /^\.lv-tg\[aria-checked="true"\]$/, /^\.lv-band$/, /^\.lv-pplus$/, /^\.lv-tab\[aria-current="page"\]( svg)?$/, /^\.lv-note-dot$/, /^\.lv-note-go$/, /^\.lv-load-mk i:nth-child\(3\)$/];
   assert.ok(rules.length >= 7);
   for (const r of rules) assert.ok(allowed.some(a => a.test(r)), `gold used on ${r}`);
 });
@@ -156,6 +161,52 @@ test('scoped: v2 rules only touch pages with <html class="lfmp-v2"> or the shell
   const sels = [...body.matchAll(/([^{}]+)\{[^{}]*\}/g)].flatMap(m => m[1].split(',').map(s => s.trim())).filter(Boolean);
   assert.ok(sels.length > 80);
   for (const s of sels) assert.ok(/^(:root\.lfmp-v2|\.lfmp-v2 |\.lv-|(body|div|a|button)\.lv-)/.test(s), `unscoped selector: ${s}`);
+});
+
+// ---------------------------------------------------------------- v1.16.0
+test('What\'s new card: dot + "What\'s new · v1.16.0", title, one short line, See what\'s new · Got it; escaped; no ALL CAPS', () => {
+  const h = S.newsCardHtml({ version: 'v1.16.0', title: 'A <calmer> look', line: 'Pop-ups match the lists.' });
+  assert.match(h, /^<aside class="lv-note" role="status" aria-live="polite" aria-label="What's new" data-lv-news>/);
+  assert.match(h, /<b class="lv-note-dot" aria-hidden="true"><\/b>What's new · v1\.16\.0<\/p>/);
+  assert.match(h, /<p class="lv-note-t">A &lt;calmer&gt; look<\/p><p class="lv-note-l">Pop-ups match the lists\.<\/p>/);
+  assert.match(h, /<button type="button" class="lv-note-go" data-lv-news-go>See what's new<\/button><button type="button" class="lv-note-ok" data-lv-news-ok>Got it<\/button>/);
+  const rule = sel => (V2.match(new RegExp(`(^|\\n)${sel.replace(/[.[\]]/g, '\\$&')}\\{([^}]*)\\}`)) || [])[2] || '';
+  for (const sel of ['.lv-note', '.lv-note-meta', '.lv-note-t', '.lv-note-go', '.lv-note-ok']) { assert.ok(rule(sel), `${sel} has a rule`); assert.ok(!/uppercase/.test(rule(sel)), `${sel}: no ALL CAPS`); }
+  assert.match(rule('.lv-note'), /border-radius:14px/); assert.ok(!/border-top:3px/.test(rule('.lv-note')), 'no top bar');
+  assert.ok(!/var\(--d\)/.test(rule('.lv-note-t')), 'title not in the display font');
+  assert.equal(rule('.lv-note-ok').replace(/;$/, ''), rule('.lv-retry').replace(/;$/, ''), 'Got it looks like Sign out / Try again');
+});
+test('What\'s new one short line: own line > summary > first item, cut at a word', () => {
+  assert.equal(S.newsLine({ line: 'L', summary: 'S', items: [{ text: 'I' }] }), 'L');
+  assert.equal(S.newsLine({ summary: 'S', items: [{ text: 'I' }] }), 'S');
+  assert.equal(S.newsLine({ items: [{ text: 'First item.' }] }), 'First item.');
+  const long = S.newsLine({ items: [{ text: 'word '.repeat(60) }] });
+  assert.ok(long.length <= 120 && long.endsWith('…') && !/\s…$/.test(long), long);
+  assert.equal(S.newsLine(null), '');
+});
+test('display names: a lost last dot comes back (P.C / P.A / L.L.C / P.L.L.C); other names unchanged', () => {
+  assert.equal(S.displayName('Hedayati Law Group, P.C'), 'Hedayati Law Group, P.C.');
+  assert.equal(S.displayName('Hedayati Law Group, P.C.'), 'Hedayati Law Group, P.C.');
+  assert.equal(S.displayName('Pardy & Rodriguez, P.A'), 'Pardy & Rodriguez, P.A.');
+  assert.equal(S.displayName('Acme L.L.C'), 'Acme L.L.C.');
+  assert.equal(S.displayName('Sralla Family Law, PLLC'), 'Sralla Family Law, PLLC');
+  assert.equal(S.displayName('ZZ TEST 2'), 'ZZ TEST 2');
+  assert.equal(S.displayName('  The   Mahdavi Law Firm '), 'The Mahdavi Law Firm');
+  assert.equal(S.displayName('Plan B'), 'Plan B');
+  assert.equal(S.displayName(null), '');
+});
+test('v2 components: buttons, chips, tags, filters, tabs, dialogs and form labels are sentence case and rounded (only under .lfmp-v2)', () => {
+  const block = V2.slice(V2.indexOf('*/', V2.indexOf('v2 COMPONENTS')) + 2);
+  const rules = [...block.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(m => [m[1].replace(/\/\*[\s\S]*?\*\//g, '').trim(), m[2]]);
+  const find = sel => rules.find(([s]) => s.split(',').map(x => x.trim()).includes(sel))?.[1] || '';
+  for (const sel of [':root.lfmp-v2 .btn', ':root.lfmp-v2 .lfmp-out', ':root.lfmp-v2 .chip', ':root.lfmp-v2 .tag', ':root.lfmp-v2 .pill', ':root.lfmp-v2 .seg button', ':root.lfmp-v2 .dtabs button', ':root.lfmp-v2 .dptabs a', ':root.lfmp-v2 label.f', ':root.lfmp-v2 .dlg h3', ':root.lfmp-v2 .lfmp-dlg-h h2', ':root.lfmp-v2 .startopt b', ':root.lfmp-v2 .back']) {
+    const r = find(sel); assert.ok(r, `${sel} has a rule`); assert.match(r, /text-transform:none/, `${sel}: sentence case`);
+  }
+  for (const sel of [':root.lfmp-v2 .btn', ':root.lfmp-v2 .chip', ':root.lfmp-v2 .seg', ':root.lfmp-v2 .panel', ':root.lfmp-v2 .dset', ':root.lfmp-v2 .vcard', ':root.lfmp-v2 .lfmp-dlg', ':root.lfmp-v2 select', ':root.lfmp-v2 .xbtn'])
+    assert.match(find(sel), /border-radius:(8|10|12|14|99)px/, `${sel}: rounded`);
+  assert.ok(!/border-top:3px/.test(block), 'no top bars in the components');
+  // small group labels stay ALL CAPS like Me → SETTINGS (.lv-gl): same size, weight and spacing
+  assert.match(find(':root.lfmp-v2 .lbl'), /font:600 12px\/1\.3 var\(--b\);letter-spacing:\.08em;text-transform:uppercase;color:var\(--mut\)/);
 });
 
 test('motion helpers: loading mark markup (escaped), 20 s limit, all keyframes are lv-*, reduced motion turns every animation off', async () => {
@@ -173,18 +224,27 @@ test('motion helpers: loading mark markup (escaped), 20 s limit, all keyframes a
   await assert.rejects(S.withLoadLimit(new Promise(() => {}), 30), e => e.code === 'slow' && /20 seconds/.test(e.message));
   assert.equal(await S.withLoadLimit(Promise.resolve(7), 30), 7);
   await assert.rejects(S.withLoadLimit(Promise.reject(new Error('boom')), 30), /boom/);
-  // CSS: the preview's values
-  assert.match(CSS, /\.lv-load-mk\{[^}]*width:58px;height:58px;background:#111;border-radius:13px/);
-  assert.match(CSS, /\.lv-load-mk i:nth-child\(1\)\{width:55%;animation-delay:\.4s\}/);
-  assert.match(CSS, /\.lv-load-mk i:nth-child\(3\)\{width:100%;background:#d9a64e;animation-delay:0s\}/);
-  assert.match(CSS, /animation:lv-bl 1\.6s ease-in-out infinite/);
+  // CSS: v1.16.0 loading mark = "LFMP_Loading_v2_Preview.html" option A (no tile; text-colour blocks, gold base)
+  assert.match(CSS, /\.lv-load-mk\{display:flex;flex-direction:column;align-items:center;gap:5px;width:56px\}/, 'no tile: no background, no radius');
+  assert.match(CSS, /\.lv-load-mk i\{display:block;height:9px;border-radius:3px;background:var\(--ink,#f2f1ee\);opacity:0;animation:2\.2s cubic-bezier\(\.2,\.8,\.2,1\) infinite\}/);
+  assert.match(CSS, /\.lv-load-mk i:nth-child\(1\)\{width:55%;animation-name:lv-bl-top\}/);
+  assert.match(CSS, /\.lv-load-mk i:nth-child\(3\)\{width:100%;background:var\(--gold,#d9a64e\);animation-name:lv-bl-base\}/);
+  // drops start at 0 / 0.18 / 0.36 s of 2.2 s and last 0.4 s; all three hold to 70% and fade out together by 88%
+  const kfs = Object.fromEntries([...CSS.matchAll(/@keyframes (lv-bl-\w+)\{(.*)\}\n/g)].map(m => [m[1], m[2]]));
+  for (const [k, start] of [['lv-bl-base', 0], ['lv-bl-mid', 0.18], ['lv-bl-top', 0.36]]) {
+    const b = kfs[k]; assert.ok(b, k);
+    assert.match(b, /translateY\(-14px\)/, `${k} from -14px`);
+    const pct = start ? Number(b.match(/0%,([\d.]+)%\{opacity:0/)[1]) : 0, inAt = Number(b.match(/([\d.]+)%,70%\{opacity:1;transform:none\}/)[1]);
+    assert.ok(Math.abs(pct / 100 * 2.2 - start) < 0.005 && Math.abs((inAt - pct) / 100 * 2.2 - 0.4) < 0.005, `${k}: starts ${pct}% ends ${inAt}%`);
+    assert.match(b, /88%,100%\{opacity:0;transform:none\}$/, `${k} fades with the others`);
+  }
   assert.match(CSS, /\.lfmp-v2 \.lv-pm\.lv-pm-on\{transform:none;transition:transform \.5s cubic-bezier\(\.16,1,\.3,1\)/);
   assert.match(CSS, /\.lfmp-v2 \.lv-pm\{transform:translateX\(100%\);transition:transform \.4s cubic-bezier\(\.4,0,1,1\)/);
   assert.match(CSS, /\.lv-pm-sh\.lv-pm-on\{background-color:rgba\(0,0,0,\.55\);transition-duration:\.42s\}/);
   assert.match(CSS, /animation:lv-rise \.2s ease \.22s both/);
   assert.match(CSS, /animation:lv-fade \.3s ease both/);
   const kf = [...CSS.matchAll(/@keyframes\s+([\w-]+)/g)].map(m => m[1]);
-  for (const k of kf.filter(k => ['lv-bl', 'lv-dt', 'lv-fade', 'lv-rise'].includes(k))) assert.ok(k.startsWith('lv-'));
+  for (const k of kf.filter(k => /^lv-bl|^(lv-dt|lv-fade|lv-rise)$/.test(k))) assert.ok(k.startsWith('lv-'));
   const rm = CSS.slice(CSS.lastIndexOf('@media (prefers-reduced-motion:reduce){'));
   for (const sel of ['.lv-load-mk i{animation:none;opacity:1}', '.lv-fadein{animation:none}', '.lfmp-v2 .lv-pm,.lfmp-v2 .lv-pm-sh{transition:none !important}', '.lfmp-v2 .lv-pm.lv-pm-enter > *{animation:none}']) assert.ok(rm.includes(sel), `reduced motion: ${sel}`);
 });
@@ -315,11 +375,11 @@ window.close1 = () => S.panelClose(pn, sh, () => { pn.hidden = true; sh.hidden =
       const page = await ctx.newPage(); await page.goto(base); await page.waitForSelector('.lv-load');
       const mk = await page.evaluate(() => { const i = document.querySelectorAll('.lv-load-mk i'); const cs = [...i].map(x => getComputedStyle(x)); const m = getComputedStyle(document.querySelector('.lv-load-mk'));
         return { names: cs.map(c => c.animationName), delays: cs.map(c => c.animationDelay), widths: [...i].map(x => Math.round(x.getBoundingClientRect().width)), bg: [m.backgroundColor, cs[0].backgroundColor, cs[2].backgroundColor], size: [m.width, m.borderRadius], label: document.querySelector('.lv-load').getAttribute('aria-label'), dots: getComputedStyle(document.querySelector('.lv-dots'), '::after').animationName }; });
-      assert.deepEqual(mk.bg, ['rgb(17, 17, 17)', 'rgb(242, 241, 238)', 'rgb(217, 166, 78)']);
-      assert.deepEqual(mk.size, ['58px', '13px']); assert.equal(mk.label, 'Loading clients…');
-      assert.deepEqual(mk.widths, [21, 30, 38], 'top 55% · middle 80% · base 100% of the 38px inside');
+      assert.deepEqual(mk.bg, ['rgba(0, 0, 0, 0)', 'rgb(21, 21, 21)', 'rgb(168, 116, 31)'], 'no tile; page text colour; gold base (light)');
+      assert.deepEqual(mk.size, ['56px', '0px']); assert.equal(mk.label, 'Loading clients…');
+      assert.deepEqual(mk.widths, [31, 45, 56], 'top 55% · middle 80% · base 100% of 56px');
       if (motion === 'reduce') { assert.deepEqual(mk.names, ['none', 'none', 'none'], 'icon still'); assert.equal(mk.dots, 'none'); }
-      else { assert.deepEqual(mk.names, ['lv-bl', 'lv-bl', 'lv-bl']); assert.deepEqual(mk.delays, ['0.4s', '0.2s', '0s'], 'base first, then middle, then top'); assert.equal(mk.dots, 'lv-dt'); }
+      else { assert.deepEqual(mk.names, ['lv-bl-top', 'lv-bl-mid', 'lv-bl-base']); assert.deepEqual(mk.delays, ['0s', '0s', '0s'], 'one clock: the order is in the keyframes'); assert.equal(mk.dots, 'lv-dt'); }
       // panel
       assert.equal(await page.evaluate(() => open1()), true);
       if (motion === 'reduce') {

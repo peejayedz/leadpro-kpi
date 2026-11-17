@@ -230,13 +230,75 @@ export function meHtml(cfg, st = {}) {
 <div class="lv-mlist lv-me-out"><button type="button" class="lv-mi out" data-lv="signout" role="menuitem">Sign out</button></div>`;
 }
 
-// Page head: title + summary (desktop), search (always), segmented filter. segs: [{ key, label, phone, red }]
+// Page head: title + summary (desktop), search (always), segmented filter. segs: [{ key, label, phone, red, amber }]
+// red = something is an alert, amber = only notices (the same colours as the KPI bell). The search icon is the same
+// SVG magnifier on desktop and phone (v1.16.0; was a "⌕" character on desktop).
 export function pageHeadHtml({ title, summary = '', search = {}, segs = [], active }) {
-  const seg = s => `<button type="button" class="lv-hit" data-lv-seg="${escH(s.key)}" aria-pressed="${s.key === active}">${s.red ? `<span class="lv-red">` : ''}<span class="lv-d">${escH(s.label)}</span><span class="lv-p">${escH(s.phone ?? s.label)}</span>${s.red ? '</span>' : ''}</button>`;
+  const tone = s => (s.red ? 'lv-red' : s.amber ? 'lv-amber' : '');
+  const seg = s => `<button type="button" class="lv-hit" data-lv-seg="${escH(s.key)}" aria-pressed="${s.key === active}">${tone(s) ? `<span class="${tone(s)}">` : ''}<span class="lv-d">${escH(s.label)}</span><span class="lv-p">${escH(s.phone ?? s.label)}</span>${tone(s) ? '</span>' : ''}</button>`;
   return `<div class="lv-hrow"><div class="lv-d"><h1 class="lv-h1">${escH(title)}</h1><div class="lv-sum" data-lv-sum>${escH(summary)}</div></div>
-<label class="lv-search lv-hit"><span class="lv-p">${SEARCH_ICON}</span><span class="lv-d lv-sg" aria-hidden="true">⌕ &nbsp;</span><input type="search" id="${escH(search.id || 'lvSearch')}" placeholder="${escH(search.placeholder || 'Search')}" value="${escH(search.value || '')}" autocomplete="off" spellcheck="false" aria-label="${escH(search.placeholder || 'Search')}"></label></div>
+<label class="lv-search lv-hit">${SEARCH_ICON}<input type="search" id="${escH(search.id || 'lvSearch')}" placeholder="${escH(search.placeholder || 'Search')}" value="${escH(search.value || '')}" autocomplete="off" spellcheck="false" aria-label="${escH(search.placeholder || 'Search')}"></label></div>
 ${segs.length ? `<div class="lv-seg" role="group" aria-label="Filter">${segs.map(seg).join('')}</div>` : ''}`;
 }
+
+// ---------------------------------------------------------------- client names (v1.16.0)
+// One display name per client in all three tools: the Builder record's name when there is one, otherwise the tool's
+// own name. Display only: files, codes and slugs never change. A company ending that lost its last dot gets it back
+// ("Hedayati Law Group, P.C" → "Hedayati Law Group, P.C.", also P.A / L.L.C / P.L.L.C).
+export function displayName(name) {
+  const s = String(name ?? '').replace(/\s+/g, ' ').trim();
+  return s.replace(/(?:^|[\s,])((?:[A-Z]\.){1,3}[A-Z])$/, m => `${m}.`);
+}
+// The Builder's client records (private repo, records/<id>.json) through the team site, read only:
+// [{ id, name, locationId, reviewCode, kpiSlug, linkSent }]. Never throws: any failure = [] (tools keep their own names).
+let recordsPromise = null;
+export function loadBuilderRecords({ fresh = false } = {}) {
+  if (recordsPromise && !fresh) return recordsPromise;
+  const REPO = '/repos/peejayedz/ghl-subaccount-builder';
+  recordsPromise = (async () => {
+    try {
+      const r = await ghFetch('GET', `${REPO}/contents/records?ref=main`);
+      if (!r.ok) return [];
+      const files = (await r.json()).filter(f => f && f.type === 'file' && /^[a-z0-9-]{1,60}\.json$/.test(f.name));
+      const recs = await Promise.all(files.map(f => ghFetch('GET', `${REPO}/contents/records/${f.name}?ref=main`, null, { raw: true })
+        .then(x => (x.ok ? x.text() : null)).then(t => (t ? JSON.parse(t) : null)).catch(() => null)));
+      return recs.filter(x => x && x.id && x.businessName).map(x => ({ id: x.id, name: displayName(x.businessName), locationId: x.locationId || '',
+        reviewCode: x.review?.code || '', kpiSlug: x.kpi?.slug || '', linkSent: x.review?.linkSent || null }));
+    } catch { return []; }
+  })();
+  return recordsPromise;
+}
+
+// ---------------------------------------------------------------- What's new card (v1.16.0, all three tools)
+// Shown once per version, bottom right (phone: above the tabs): a rounded card, small gold dot + "What's new · v1.16.0",
+// the title in sentence case, one short line, "See what's new" (gold) and "Got it" (like Sign out).
+export function newsCardHtml({ version, title, line }) {
+  const v = String(version || '').replace(/^v/, '');
+  return `<aside class="lv-note" role="status" aria-live="polite" aria-label="What's new" data-lv-news>
+<p class="lv-note-meta"><b class="lv-note-dot" aria-hidden="true"></b>What's new · v${escH(v)}</p>
+${title ? `<p class="lv-note-t">${escH(title)}</p>` : ''}${line ? `<p class="lv-note-l">${escH(line)}</p>` : ''}
+<div class="lv-note-b"><button type="button" class="lv-note-go" data-lv-news-go>See what's new</button><button type="button" class="lv-note-ok" data-lv-news-ok>Got it</button></div></aside>`;
+}
+// The card's one short line: the version's own "line" (or "summary"), else its first item, cut at a word near 120 chars.
+export function newsLine(v) {
+  const t = String(v?.line || v?.summary || v?.items?.[0]?.text || '').replace(/\s+/g, ' ').trim();
+  if (t.length <= 120) return t;
+  return `${t.slice(0, 118).replace(/\s+\S*$/, '')}…`;
+}
+// Mount it (replaces an open one). onSee: open the tool's What's new; onGot: mark this version seen. Returns close().
+export function showNewsCard({ version, title, line, onSee, onGot }) {
+  if (typeof document === 'undefined') return () => {};
+  document.querySelector('[data-lv-news]')?.remove();
+  document.body.insertAdjacentHTML('beforeend', newsCardHtml({ version, title, line }));
+  const el = document.querySelector('[data-lv-news]');
+  const close = () => el.remove();
+  el.addEventListener('click', e => {
+    if (e.target.closest('[data-lv-news-go]')) { close(); onGot?.(); onSee?.(); }
+    else if (e.target.closest('[data-lv-news-ok]')) { close(); onGot?.(); }
+  });
+  return close;
+}
+export const hideNewsCard = () => { if (typeof document !== 'undefined') document.querySelector('[data-lv-news]')?.remove(); };
 
 // One list row. cells: desktop columns after the name (HTML strings); phone: phoneRight (default: the first cell) + ›.
 export function rowHtml({ name, sub = '', subPhone, cells = [], phoneRight, open = 'Open ›', attrs = '', label }) {

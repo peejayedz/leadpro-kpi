@@ -2,6 +2,14 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.25.0 Numbers with meaning + v2 pop-ups: COMMITTED LOCALLY 18 Nov 2026, NOT pushed (waiting for PJ's OK); with Builder v1.16.0, Review admin v1.9.0
+
+- Full notes: Builder HANDOFF v1.16.0. Here: `admin/firm-details.mjs` `leadTrend(k)` (last 90 vs days 91–180 from `periods.last90.previous.totalLeads`, already in kpis.json) and `severity(kind)` / `NOTICE_KINDS` (red alert vs amber notice; `tests/admin-details` fails if a bell kind is missing from the lists).
+- Row: 0 leads → muted "No leads yet"; trend on the small line ("leads · 90 days ▼ 19%"); no previous number → "leads · 90 days". Bell items, row, details boxes and the "Needs attention" filter use `severity`. Changes: "No recent sync" is red in the bell; "Review mapping" is amber in the bell.
+- Names: Builder record's name (by kpi slug or location ID) via shared `loadBuilderRecords()`, loaded alongside the firm files; `fname(f)` for display, `f.name` stays for index.json and commit messages.
+- Phone fix: What's new panel above its shade (`.drawer-shade#newsShade{z-index:45}` below 880px); was dimmed and closed on any tap since v1.23.0.
+- Shared What's new card on first visit of v1.25.0 (`whats-new.json` "1.25.0" has `title` + `summary`). Cache `lfmp-ui.css?v=2.2.0`, `admin.css?v=1.25.0`.
+
 ## v1.24.0 Admin motion: LIVE 18 Nov 2026 (`87f0717`; with Builder v1.15.0 `b51e558`, Review admin v1.8.0)
 
 - Shared shell (`admin/lfmp-session.js` + `admin/lfmp-ui.css`, byte-identical in the 3 repos; full notes in the Builder HANDOFF v1.15.0): firm list shows the LFMP loading mark + "Loading scorecards…" (summary empty) → list fades in; 20 s or a load error → the v2 error card with "Try again" (`renderList`). Details slide in/out (0.50 s / 0.40 s); ✕, Esc, ‹ Scorecards and a click on the dim close; "Unlocking the names…" uses the mark.
