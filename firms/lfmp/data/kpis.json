@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-17T19:07:32.530Z",
+  "generatedAt": "2026-11-17T19:37:28.993Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794891600000,
-      "to": 1794942452530,
+      "to": 1794944248993,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -112,7 +112,7 @@
         "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
-        "notInPipeline": 1,
+        "notInPipeline": 2,
         "qualified": 11,
         "qualifiedPct": 21.6,
         "turnedAway": 1,
@@ -604,7 +604,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1794942452530,
+      "to": 1794944248993,
       "current": {
         "totalLeads": 57,
         "contacted": 51,
@@ -1132,8 +1132,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794337652530,
-      "to": 1794942452530,
+      "from": 1794339448993,
+      "to": 1794944248993,
       "current": {
         "totalLeads": 85,
         "contacted": 59,
@@ -1474,8 +1474,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792350452530,
-      "to": 1794942452530,
+      "from": 1792352248993,
+      "to": 1794944248993,
       "current": {
         "totalLeads": 93,
         "contacted": 60,
@@ -1806,8 +1806,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787166452530,
-      "to": 1794942452530,
+      "from": 1787168248993,
+      "to": 1794944248993,
       "current": {
         "totalLeads": 99,
         "contacted": 60,
@@ -2127,7 +2127,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1794942452530,
+      "to": 1794944248993,
       "current": {
         "totalLeads": 89,
         "contacted": 59,
@@ -2661,7 +2661,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1794942452530,
+      "to": 1794944248993,
       "current": {
         "totalLeads": 95,
         "contacted": 60,
@@ -3163,7 +3163,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-17T19:07:32.530Z",
+    "checkedAt": "2026-11-17T19:37:28.993Z",
     "counts": {
       "Call": 63,
       "SMS": 1,
