@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-17T20:07:26.940Z",
+  "generatedAt": "2026-11-17T20:37:23.297Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794891600000,
-      "to": 1794946046940,
+      "to": 1794947843297,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -604,7 +604,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1794946046940,
+      "to": 1794947843297,
       "current": {
         "totalLeads": 57,
         "contacted": 51,
@@ -1132,8 +1132,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794341246940,
-      "to": 1794946046940,
+      "from": 1794343043297,
+      "to": 1794947843297,
       "current": {
         "totalLeads": 85,
         "contacted": 59,
@@ -1474,12 +1474,12 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792354046940,
-      "to": 1794946046940,
+      "from": 1792355843297,
+      "to": 1794947843297,
       "current": {
-        "totalLeads": 93,
-        "contacted": 60,
-        "contactRatePct": 64.5,
+        "totalLeads": 91,
+        "contacted": 59,
+        "contactRatePct": 64.8,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1488,7 +1488,7 @@
         "missedNotReturned": 1,
         "notInPipeline": 3,
         "qualified": 18,
-        "qualifiedPct": 30,
+        "qualifiedPct": 30.5,
         "turnedAway": 1,
         "turnedAwayReasons": [
           [
@@ -1513,7 +1513,7 @@
         "bySource": [
           [
             "Unknown",
-            27,
+            26,
             0
           ],
           [
@@ -1620,17 +1620,12 @@
             "leads4you",
             1,
             0
-          ],
-          [
-            "[IN USE] V2 - LFMP Client Intake Form",
-            1,
-            0
           ]
         ],
         "byChannel": [
           [
             "CRM UI",
-            57,
+            55,
             0
           ],
           [
@@ -1664,19 +1659,19 @@
             0
           ]
         ],
-        "attributedLeads": 80,
+        "attributedLeads": 78,
         "stageMoved": 60,
-        "attributionPct": 86,
+        "attributionPct": 85.7,
         "funnel": [
           [
             "New leads",
-            93,
+            91,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            60,
+            59,
             "contacted",
             "of leads"
           ],
@@ -1806,12 +1801,12 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787170046940,
-      "to": 1794946046940,
+      "from": 1787171843297,
+      "to": 1794947843297,
       "current": {
-        "totalLeads": 99,
-        "contacted": 60,
-        "contactRatePct": 60.6,
+        "totalLeads": 97,
+        "contacted": 59,
+        "contactRatePct": 60.8,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1820,7 +1815,7 @@
         "missedNotReturned": 10,
         "notInPipeline": 19,
         "qualified": 18,
-        "qualifiedPct": 30,
+        "qualifiedPct": 30.5,
         "turnedAway": 1,
         "turnedAwayReasons": [
           [
@@ -1845,7 +1840,7 @@
         "bySource": [
           [
             "Unknown",
-            28,
+            27,
             0
           ],
           [
@@ -1952,17 +1947,12 @@
             "leads4you",
             1,
             0
-          ],
-          [
-            "[IN USE] V2 - LFMP Client Intake Form",
-            1,
-            0
           ]
         ],
         "byChannel": [
           [
             "CRM UI",
-            57,
+            55,
             0
           ],
           [
@@ -1996,19 +1986,19 @@
             0
           ]
         ],
-        "attributedLeads": 80,
+        "attributedLeads": 78,
         "stageMoved": 60,
-        "attributionPct": 80.8,
+        "attributionPct": 80.4,
         "funnel": [
           [
             "New leads",
-            99,
+            97,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            60,
+            59,
             "contacted",
             "of leads"
           ],
@@ -2127,7 +2117,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1794946046940,
+      "to": 1794947843297,
       "current": {
         "totalLeads": 89,
         "contacted": 59,
@@ -2456,9 +2446,9 @@
       "from": 1790827200000,
       "to": 1793505600000,
       "current": {
-        "totalLeads": 6,
-        "contacted": 1,
-        "contactRatePct": 16.7,
+        "totalLeads": 4,
+        "contacted": 0,
+        "contactRatePct": 0,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -2467,7 +2457,7 @@
         "missedNotReturned": 1,
         "notInPipeline": 2,
         "qualified": 0,
-        "qualifiedPct": 0,
+        "qualifiedPct": null,
         "turnedAway": 0,
         "turnedAwayReasons": [],
         "consultBooked": 0,
@@ -2489,16 +2479,6 @@
             "Calendly",
             4,
             0
-          ],
-          [
-            "Unknown",
-            1,
-            0
-          ],
-          [
-            "[IN USE] V2 - LFMP Client Intake Form",
-            1,
-            0
           ]
         ],
         "byChannel": [
@@ -2506,26 +2486,21 @@
             "Unknown source",
             4,
             0
-          ],
-          [
-            "CRM UI",
-            2,
-            0
           ]
         ],
-        "attributedLeads": 2,
+        "attributedLeads": 0,
         "stageMoved": 0,
-        "attributionPct": 33.3,
+        "attributionPct": 0,
         "funnel": [
           [
             "New leads",
-            6,
+            4,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            1,
+            0,
             "contacted",
             "of leads"
           ],
@@ -2661,11 +2636,11 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1794946046940,
+      "to": 1794947843297,
       "current": {
-        "totalLeads": 95,
-        "contacted": 60,
-        "contactRatePct": 63.2,
+        "totalLeads": 93,
+        "contacted": 59,
+        "contactRatePct": 63.4,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -2674,7 +2649,7 @@
         "missedNotReturned": 1,
         "notInPipeline": 4,
         "qualified": 18,
-        "qualifiedPct": 30,
+        "qualifiedPct": 30.5,
         "turnedAway": 1,
         "turnedAwayReasons": [
           [
@@ -2699,7 +2674,7 @@
         "bySource": [
           [
             "Unknown",
-            27,
+            26,
             0
           ],
           [
@@ -2806,17 +2781,12 @@
             "leads4you",
             1,
             0
-          ],
-          [
-            "[IN USE] V2 - LFMP Client Intake Form",
-            1,
-            0
           ]
         ],
         "byChannel": [
           [
             "CRM UI",
-            57,
+            55,
             0
           ],
           [
@@ -2850,19 +2820,19 @@
             0
           ]
         ],
-        "attributedLeads": 80,
+        "attributedLeads": 78,
         "stageMoved": 60,
-        "attributionPct": 84.2,
+        "attributionPct": 83.9,
         "funnel": [
           [
             "New leads",
-            95,
+            93,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            60,
+            59,
             "contacted",
             "of leads"
           ],
@@ -3163,7 +3133,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-17T20:07:26.940Z",
+    "checkedAt": "2026-11-17T20:37:23.297Z",
     "counts": {
       "Call": 63,
       "SMS": 1,
