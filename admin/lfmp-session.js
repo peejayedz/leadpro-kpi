@@ -162,9 +162,10 @@ export const THEMES = [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']];
 export const esc = escH;
 const toolOf = id => SHELL_TOOLS.find(t => t.id === id) || SHELL_TOOLS[0];
 
-// "Pee Jay Edrozo" → "PJ", "PJ Tester" → "PT", "pj@x.com" → "P"
+// "Pee Jay Edrozo" → "PJ", "PJ Tester" → "PT", a one-word name that is already initials ("PJ") → "PJ", "pj@x.com" → "P"
 export function initials(me) {
   const words = String(me?.name || me?.email || '').replace(/@.*/, '').trim().split(/\s+/).filter(Boolean);
+  if (me?.name && words.length === 1 && /^[A-Z]{2,3}$/.test(words[0])) return words[0].slice(0, 2);
   return words.slice(0, 2).map(w => w[0]).join('').toUpperCase() || '·';
 }
 

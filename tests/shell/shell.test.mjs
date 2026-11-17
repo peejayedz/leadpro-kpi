@@ -39,6 +39,8 @@ test('the three copies of lfmp-session.js, lfmp-ui.css and this test are byte-id
 test('initials: first letters of the first two words (the reference shows PJ for Pee Jay Edrozo)', () => {
   assert.equal(S.initials(me), 'PJ');
   assert.equal(S.initials({ name: 'PJ Tester' }), 'PT');
+  assert.equal(S.initials({ name: 'PJ', email: 'pj@x.com' }), 'PJ');   // the live Google name is just "PJ"
+  assert.equal(S.initials({ name: 'Sam' }), 'S');
   assert.equal(S.initials({ email: 'sam@x.com' }), 'S');
   assert.equal(S.initials({}), '·');
 });
