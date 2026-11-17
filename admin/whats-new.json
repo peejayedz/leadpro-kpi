@@ -1,5 +1,13 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.24.0": {
+    "summary": "Smoother loading and firm details, the same in all three tools.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "While the firm list loads you see the LFMP blocks and \"Loading scorecards…\", then the list fades in. After 20 seconds without an answer you get Try again." },
+      { "type": "improved", "tag": "internal", "text": "Firm details slide in from the right and the list dims behind them; ✕, Esc, a click on the dim or ‹ Scorecards slides them away. While details are open, click the dim to get back to the list." },
+      { "type": "improved", "tag": "internal", "text": "If your device is set to reduce motion, nothing moves." }
+    ]
+  },
   "1.23.0": {
     "summary": "A new, simpler look, the same in the Builder, Scorecards and Reviews.",
     "items": [

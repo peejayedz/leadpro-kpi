@@ -106,6 +106,7 @@ test('page head: title + summary (desktop), search, filter; the "Needs …" labe
   assert.match(h, /data-lv-seg="all" aria-pressed="true"><span class="lv-d">All 12<\/span><span class="lv-p">All<\/span>/);
   assert.equal((h.match(/lv-red/g) || []).length, 1);
   assert.match(h, /<label class="lv-search lv-hit">/, 'the whole search box (44px with its margin) focuses the input');
+  assert.match(S.pageHeadHtml({ title: 'Clients' }), /<div class="lv-sum" data-lv-sum><\/div>/, 'empty summary while loading: the element is there for the tool to fill');
 });
 
 test('row: name + sub-line · cells · Open › (desktop) / phone right + ›; text is escaped', () => {
@@ -151,10 +152,41 @@ test('gold only on: + button, current tab/nav, top line, initials, on-switches',
 });
 
 test('scoped: v2 rules only touch pages with <html class="lfmp-v2"> or the shell\'s own .lv-* elements (sign-in / Moved pages unchanged)', () => {
-  const body = V2.replace(/\/\*[\s\S]*?\*\//g, '').replace(/@media[^{]+\{/g, '');
+  const body = V2.replace(/\/\*[\s\S]*?\*\//g, '').replace(/@keyframes\s+lv-[\w-]+\{(?:[^{}]*\{[^{}]*\})+\}/g, '').replace(/@media[^{]+\{/g, '');
   const sels = [...body.matchAll(/([^{}]+)\{[^{}]*\}/g)].flatMap(m => m[1].split(',').map(s => s.trim())).filter(Boolean);
   assert.ok(sels.length > 80);
   for (const s of sels) assert.ok(/^(:root\.lfmp-v2|\.lfmp-v2 |\.lv-|(body|div|a|button)\.lv-)/.test(s), `unscoped selector: ${s}`);
+});
+
+test('motion helpers: loading mark markup (escaped), 20 s limit, all keyframes are lv-*, reduced motion turns every animation off', async () => {
+  const h = S.loadingHtml('reviews');
+  assert.match(h, /role="status"/); assert.match(h, /aria-label="Loading reviews…"/);
+  assert.equal((h.match(/<i><\/i>/g) || []).length, 3, 'three blocks');
+  assert.match(text(h), /^Loading reviews$/, 'visible text (the dots are CSS)');
+  assert.ok(!S.loadingHtml('<b>').includes('<b>'), 'escaped');
+  assert.equal(S.LOAD_LIMIT_MS, 20000);
+  const er = S.loadErrorHtml('Couldn\'t load <x>.', { attrs: 'data-act="reload"' });
+  assert.match(er, /^<div class="lv-err" role="alert" data-lv-error><p class="lv-err-t"><b class="lv-err-dot" aria-hidden="true"><\/b><span>Couldn&#39;t load &lt;x&gt;\.<\/span><\/p><button type="button" class="lv-retry" data-lv-retry data-act="reload">Try again<\/button><\/div>$/);
+  assert.match(CSS, /\.lv-retry\{font:600 13px\/normal var\(--b\);color:var\(--mut\);border:1px solid var\(--line\);padding:7px 12px;border-radius:8px;background:none;cursor:pointer/, 'Try again = Sign out style');
+  assert.match(CSS, /\.lv-so\{font:600 13px\/normal var\(--b\);color:var\(--mut\);border:1px solid var\(--line\);padding:7px 12px;border-radius:8px;background:none;cursor:pointer/);
+  assert.match(CSS, /\.lv-err\{margin-top:16px;background:var\(--panel\);border:1px solid var\(--line\);border-radius:14px/, 'card like the list');
+  await assert.rejects(S.withLoadLimit(new Promise(() => {}), 30), e => e.code === 'slow' && /20 seconds/.test(e.message));
+  assert.equal(await S.withLoadLimit(Promise.resolve(7), 30), 7);
+  await assert.rejects(S.withLoadLimit(Promise.reject(new Error('boom')), 30), /boom/);
+  // CSS: the preview's values
+  assert.match(CSS, /\.lv-load-mk\{[^}]*width:58px;height:58px;background:#111;border-radius:13px/);
+  assert.match(CSS, /\.lv-load-mk i:nth-child\(1\)\{width:55%;animation-delay:\.4s\}/);
+  assert.match(CSS, /\.lv-load-mk i:nth-child\(3\)\{width:100%;background:#d9a64e;animation-delay:0s\}/);
+  assert.match(CSS, /animation:lv-bl 1\.6s ease-in-out infinite/);
+  assert.match(CSS, /\.lfmp-v2 \.lv-pm\.lv-pm-on\{transform:none;transition:transform \.5s cubic-bezier\(\.16,1,\.3,1\)/);
+  assert.match(CSS, /\.lfmp-v2 \.lv-pm\{transform:translateX\(100%\);transition:transform \.4s cubic-bezier\(\.4,0,1,1\)/);
+  assert.match(CSS, /\.lv-pm-sh\.lv-pm-on\{background-color:rgba\(0,0,0,\.55\);transition-duration:\.42s\}/);
+  assert.match(CSS, /animation:lv-rise \.2s ease \.22s both/);
+  assert.match(CSS, /animation:lv-fade \.3s ease both/);
+  const kf = [...CSS.matchAll(/@keyframes\s+([\w-]+)/g)].map(m => m[1]);
+  for (const k of kf.filter(k => ['lv-bl', 'lv-dt', 'lv-fade', 'lv-rise'].includes(k))) assert.ok(k.startsWith('lv-'));
+  const rm = CSS.slice(CSS.lastIndexOf('@media (prefers-reduced-motion:reduce){'));
+  for (const sel of ['.lv-load-mk i{animation:none;opacity:1}', '.lv-fadein{animation:none}', '.lfmp-v2 .lv-pm,.lfmp-v2 .lv-pm-sh{transition:none !important}', '.lfmp-v2 .lv-pm.lv-pm-enter > *{animation:none}']) assert.ok(rm.includes(sel), `reduced motion: ${sel}`);
 });
 
 // ---------------------------------------------------------------- part 2: in a browser
@@ -254,6 +286,68 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
         await page.waitForURL(`${base}/signin/?out=1`); assert.equal(server.logouts, before + 1, 'Access logout called');
         await page.close();
       }
+    }
+  } finally { await browser.close(); server.close(); }
+});
+
+tb('in Chromium: loading mark animates (still with reduced motion); panel slides in 0.50 s / out 0.40 s, shade dims, content rises, a press finishes the move, reopening swaps without a slide', { timeout: 120000 }, async () => {
+  const { chromium } = createRequire(path.join(pwDir, 'package.json'))('./index.js');
+  const PAGE = `<!doctype html><html lang="en" class="lfmp-v2"><head><meta charset="utf-8"><link rel="stylesheet" href="/lfmp-ui.css"><style>#sh{position:fixed;inset:0}#pn{position:fixed;top:0;right:0;bottom:0;width:400px;background:#fff}</style></head><body>
+<div id="list">${'x'}</div><div id="sh" hidden></div><aside id="pn" hidden><h2>One</h2><p>Body</p></aside>
+<script type="module">import * as S from '/lfmp-session.js'; window.S = S; document.getElementById('list').innerHTML = S.loadingHtml('clients');
+const pn = document.getElementById('pn'), sh = document.getElementById('sh'); window.log = [];
+window.open1 = () => { pn.hidden = false; sh.hidden = false; return S.panelOpen(pn, sh); };
+window.close1 = () => S.panelClose(pn, sh, () => { pn.hidden = true; sh.hidden = true; log.push('done'); });</script></body></html>`;
+  const server = http.createServer((req, res) => {
+    const u = new URL(req.url, 'http://x');
+    if (u.pathname === '/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(PAGE); }
+    if (u.pathname === '/lfmp-session.js' || u.pathname === '/lfmp-ui.css') { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
+    res.writeHead(404); res.end();
+  });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const tx = p => p.evaluate(() => new DOMMatrix(getComputedStyle(document.getElementById('pn')).transform).m41);
+  try {
+    for (const motion of ['no-preference', 'reduce']) {
+      const ctx = await browser.newContext({ reducedMotion: motion, viewport: { width: 1000, height: 700 } });
+      const page = await ctx.newPage(); await page.goto(base); await page.waitForSelector('.lv-load');
+      const mk = await page.evaluate(() => { const i = document.querySelectorAll('.lv-load-mk i'); const cs = [...i].map(x => getComputedStyle(x)); const m = getComputedStyle(document.querySelector('.lv-load-mk'));
+        return { names: cs.map(c => c.animationName), delays: cs.map(c => c.animationDelay), widths: [...i].map(x => Math.round(x.getBoundingClientRect().width)), bg: [m.backgroundColor, cs[0].backgroundColor, cs[2].backgroundColor], size: [m.width, m.borderRadius], label: document.querySelector('.lv-load').getAttribute('aria-label'), dots: getComputedStyle(document.querySelector('.lv-dots'), '::after').animationName }; });
+      assert.deepEqual(mk.bg, ['rgb(17, 17, 17)', 'rgb(242, 241, 238)', 'rgb(217, 166, 78)']);
+      assert.deepEqual(mk.size, ['58px', '13px']); assert.equal(mk.label, 'Loading clients…');
+      assert.deepEqual(mk.widths, [21, 30, 38], 'top 55% · middle 80% · base 100% of the 38px inside');
+      if (motion === 'reduce') { assert.deepEqual(mk.names, ['none', 'none', 'none'], 'icon still'); assert.equal(mk.dots, 'none'); }
+      else { assert.deepEqual(mk.names, ['lv-bl', 'lv-bl', 'lv-bl']); assert.deepEqual(mk.delays, ['0.4s', '0.2s', '0s'], 'base first, then middle, then top'); assert.equal(mk.dots, 'lv-dt'); }
+      // panel
+      assert.equal(await page.evaluate(() => open1()), true);
+      if (motion === 'reduce') {
+        assert.equal(await tx(page), 0, 'instant open'); await page.evaluate(() => close1());
+        assert.deepEqual(await page.evaluate(() => [log, document.getElementById('pn').hidden]), [['done'], true], 'instant close');
+      } else {
+        await wait(120); const mid = await tx(page); assert.ok(mid > 5 && mid < 400, `sliding in (${mid})`);
+        const tr = await page.evaluate(() => [getComputedStyle(pn).transitionDuration, getComputedStyle(pn).transitionTimingFunction, getComputedStyle(sh).backgroundColor]);
+        assert.match(tr[0], /^0\.5s/); assert.match(tr[1], /cubic-bezier\(0\.16, 1, 0\.3, 1\)/);
+        assert.equal(await page.evaluate(() => getComputedStyle(pn.firstElementChild).animationName), 'lv-rise', 'content rises in');
+        await wait(600); assert.equal(await tx(page), 0, 'open');
+        assert.equal(await page.evaluate(() => getComputedStyle(sh).backgroundColor), 'rgba(0, 0, 0, 0.55)', 'dimmed');
+        assert.equal(await page.evaluate(() => { pn.innerHTML = '<h2>Two</h2>'; return open1(); }), false, 'open again = swap, no slide');
+        assert.equal(await tx(page), 0);
+        await page.evaluate(() => close1()); await wait(100);
+        const out = await page.evaluate(() => [getComputedStyle(pn).transitionDuration, getComputedStyle(pn).transitionTimingFunction, log.length]);
+        assert.match(out[0], /^0\.4s/); assert.match(out[1], /cubic-bezier\(0\.4, 0, 1, 1\)/); assert.equal(out[2], 0, 'still closing');
+        await wait(450); assert.deepEqual(await page.evaluate(() => [log.splice(0), pn.hidden]), [['done'], true], 'closed after 0.40 s');
+        // a press while it moves finishes the move at once (input never blocked)
+        await page.evaluate(() => open1()); await wait(60); await page.mouse.down(); await page.mouse.up();
+        assert.equal(await tx(page), 0, 'press finished the slide in');
+        await page.evaluate(() => close1()); await wait(60); await page.mouse.down(); await page.mouse.up();
+        assert.deepEqual(await page.evaluate(() => [log.splice(0), pn.hidden]), [['done'], true], 'press finished the slide out');
+        // reopen while closing: no done(), slides back
+        await page.evaluate(() => open1()); await wait(600); await page.evaluate(() => close1()); await wait(80); await page.evaluate(() => open1());
+        await wait(700); assert.deepEqual(await page.evaluate(() => [log.splice(0), pn.hidden]), [[], false], 'reopened while closing'); assert.equal(await tx(page), 0);
+      }
+      await ctx.close();
     }
   } finally { await browser.close(); server.close(); }
 });

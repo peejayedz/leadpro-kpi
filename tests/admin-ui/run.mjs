@@ -112,7 +112,8 @@ const rowOf = slug => `${ROW}[data-slug="${slug}"]`;
 const openMe = async page => { const phone = await page.evaluate(() => innerWidth < 880); await page.click(phone ? '[data-lv-ptop] [data-lv="me"]' : '[data-lv-top] [data-lv="me"]'); await page.waitForSelector(phone ? '[data-lv-me]:not([hidden])' : '[data-lv-pop]:not([hidden])'); return phone ? '[data-lv-me]' : '[data-lv-pop]'; };
 const unlock = unlocked;   // Google sign-in happens before the page loads (Access): nothing to type
 async function openPage(G, { width = 1440, height = 900, scheme = 'dark', hash = '' } = {}) {
-  const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, permissions: ['clipboard-read', 'clipboard-write'] });
+  // Motion (Nov 2026): reduced motion here, so panels open/close at once and these checks see the end state; the slide itself is tested in ghl-subaccount-builder tests/e2e/motion.mjs.
+  const ctx = await browser.newContext({ reducedMotion: 'reduce', viewport: { width, height }, colorScheme: scheme, permissions: ['clipboard-read', 'clipboard-write'] });
   const page = await ctx.newPage();
   await wire(page, G);
   await page.goto(BASE + hash);
@@ -155,7 +156,7 @@ try {
   // ---------------- Google sign-in (v1.16.0) ----------------
   {
     // old browser leftovers (the password login's vault, session key, Review key copy, remembered-passphrase vault) are wiped
-    const c0 = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const c0 = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 900 } });
     const p0 = await c0.newPage(); await wire(p0, G);
     await p0.addInitScript(() => { if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('lfmp-vault', '{"v":1,"ct":"old"}'); localStorage.setItem('ar_admin_key', 'old-review-key'); localStorage.setItem('leadpro-admin-firm-pass', '{"ct":"x"}'); localStorage.setItem('lfmp-lock-at', '1'); sessionStorage.setItem('lfmp-session', '{"k":"x"}'); } });
     await p0.goto(BASE); await unlocked(p0); await p0.waitForSelector(ROW);
@@ -398,7 +399,7 @@ try {
   check(/remembered for the team/i.test(await page.textContent('#nipList')) && await page.isVisible('#nipList [data-nip-forget]'), 'Details says "remembered for the team" with Forget it');
   await shot(page, 'details_remembered_1440_dark');
   { // another person on another computer: opens without typing
-    const c2 = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
+    const c2 = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
     const p2 = await c2.newPage(); await wire(p2, G);
     T.email = 'ana.reyes@lawfirmmarketingpros.com';
     await p2.goto(BASE + '#/firm/lfmp'); await unlocked(p2); await p2.waitForSelector('#nipList .nip li');

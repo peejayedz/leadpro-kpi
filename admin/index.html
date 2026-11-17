@@ -13,8 +13,8 @@
 <script>/* apply the saved theme before first paint so the page and logo don't flash */ try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="lfmp-ui.css?v=2.0.0">
-<link rel="stylesheet" href="admin.css?v=1.23.0">
+<link rel="stylesheet" href="lfmp-ui.css?v=2.1.0">
+<link rel="stylesheet" href="admin.css?v=1.24.0">
 </head>
 <body>
 
@@ -64,7 +64,7 @@ import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
 import { buildCards, filterCards, newer } from './news.mjs';
 import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS } from './firm-details.mjs';
 import { decryptJSON } from '../scripts/kpi-core.mjs';
-import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml } from './lfmp-session.js';
+import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -502,20 +502,21 @@ const setFilter = k => { listFilter = k; store.set(FILTER_KEY, k === 'all' ? nul
 async function renderList(flash) {
   cleanupRun(); cleanupAppRun(); closeMenus();
   for (const k of Object.keys(firmMsg)) if (!busy.has(`${k}:sync`) && !busy.has(`${k}:banner`)) delete firmMsg[k];
-  $('screen').innerHTML = `${pageHeadHtml({ title: 'Scorecards', summary: 'Loading firms…', search: { id: 'firmSearch', placeholder: 'Search firms', value: listQuery }, segs: kpiSegs(), active: listFilter })}
+  $('screen').innerHTML = `${pageHeadHtml({ title: 'Scorecards', summary: '', search: { id: 'firmSearch', placeholder: 'Search firms', value: listQuery }, segs: kpiSegs(), active: listFilter })}
     ${flash ? `<div class="okmsg listmsg" role="status">${flash}</div>` : ''}
-    <div id="firmList"></div>`;
+    <div id="firmList">${loadingHtml('scorecards')}</div>`;
   $('firmSearch').addEventListener('input', e => { listQuery = e.target.value; paintList(); });
   const host = $('firmList');
-  try { await loadFirms(); }
-  catch (e) { if (!document.body.contains(host)) return; $('firmList').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; const s = document.querySelector('#screen [data-lv-sum]'); if (s) s.textContent = ''; return; }
+  try { await withLoadLimit(loadFirms()); }   // the LFMP blocks until the data arrives; never more than 20 s
+  catch (e) { if (!document.body.contains(host)) return; $('firmList').innerHTML = loadErrorHtml(e.message, { attrs: 'data-list-retry' }); const s = document.querySelector('#screen [data-lv-sum]'); if (s) s.textContent = ''; return; }
   if (!document.body.contains(host)) return;     // the user moved on while the list was loading
-  paintList(); paintStrip(); paintSyncInfo();
+  paintList(); paintStrip(); paintSyncInfo(); fadeIn(host);
   shell?.setUpdated(clock(new Date().toISOString()));
   refreshIssues();
 }
 document.addEventListener('click', e => {
   if (e.target.closest('[data-new-firm]')) go('#/new');
+  if (e.target.closest('[data-list-retry]')) renderList();
   const sg = e.target.closest('#screen [data-lv-seg]'); if (sg) setFilter(sg.dataset.lvSeg);
   if (e.target.closest('[data-clear-filter]')) { listFilter = 'all'; listQuery = ''; store.set(FILTER_KEY, null); if ($('firmSearch')) $('firmSearch').value = ''; paintList(); }
   if (e.target.closest('[data-filter-att]')) { setFilter('attention'); $('firmList')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
@@ -915,6 +916,7 @@ function openDetails(slug, tab = 'overview') {
   dpSlug = slug; dpTab = tab;
   closeMenus(); closePanel(); shell?.closeMe();
   $('dPanel').hidden = false; $('dpShade').hidden = false; document.body.classList.add('dp-open');
+  panelOpen($('dPanel'), $('dpShade'));   // slides in (shared shell); an open panel only swaps its content
   document.querySelectorAll('#firmRows .lv-row[data-sel]').forEach(r => r.removeAttribute('data-sel'));
   document.querySelector(`#firmRows .lv-row[data-slug="${CSS.escape(slug)}"]`)?.setAttribute('data-sel', '');
   paintDetails();
@@ -925,7 +927,8 @@ function closeDetails({ keepHash = false } = {}) {
   const was = dpSlug; dpSlug = null;
   document.querySelectorAll('#firmRows .lv-row[data-sel]').forEach(r => r.removeAttribute('data-sel'));
   if ($('dPanel').hidden) return;
-  $('dPanel').hidden = true; $('dpShade').hidden = true; $('dPanel').innerHTML = ''; document.body.classList.remove('dp-open');
+  document.body.classList.remove('dp-open');
+  panelClose($('dPanel'), $('dpShade'), () => { if (dpSlug) return; $('dPanel').hidden = true; $('dpShade').hidden = true; $('dPanel').innerHTML = ''; });   // slides out, then hides
   if (!keepHash && parseHash().slug) go('#/');
   const back = dpReturn && document.body.contains(dpReturn) ? dpReturn : was && document.querySelector(`#firmRows .lv-row[data-slug="${CSS.escape(was)}"]`);
   back?.focus?.({ preventScroll: true }); dpReturn = null;
@@ -1037,7 +1040,7 @@ function nipHtml(f) {
     if (!s.list.length) return `${listBtn}<p class="meta">The encrypted details have no contacts from the last 30 days (they may have been added to a pipeline since the last sync).</p>${teamLine}`;
     return `${listBtn}<ul class="nip">${s.list.map(c => nipRow(c, f)).join('')}</ul>${teamLine}`;
   }
-  if (s?.state === 'loading') return `${listBtn}<p class="meta">Unlocking the names…</p>`;
+  if (s?.state === 'loading') return `${listBtn}${loadingHtml('the names')}`;
   const err = s?.state === 'error' ? `<div class="ferr">${esc(s.err)}</div>` : '';
   const noStore = passStore === false;
   return `${listBtn}<p class="meta">Unlock to see who (newest first):</p>

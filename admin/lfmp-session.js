@@ -233,7 +233,7 @@ export function meHtml(cfg, st = {}) {
 // Page head: title + summary (desktop), search (always), segmented filter. segs: [{ key, label, phone, red }]
 export function pageHeadHtml({ title, summary = '', search = {}, segs = [], active }) {
   const seg = s => `<button type="button" class="lv-hit" data-lv-seg="${escH(s.key)}" aria-pressed="${s.key === active}">${s.red ? `<span class="lv-red">` : ''}<span class="lv-d">${escH(s.label)}</span><span class="lv-p">${escH(s.phone ?? s.label)}</span>${s.red ? '</span>' : ''}</button>`;
-  return `<div class="lv-hrow"><div class="lv-d"><h1 class="lv-h1">${escH(title)}</h1>${summary ? `<div class="lv-sum" data-lv-sum>${escH(summary)}</div>` : ''}</div>
+  return `<div class="lv-hrow"><div class="lv-d"><h1 class="lv-h1">${escH(title)}</h1><div class="lv-sum" data-lv-sum>${escH(summary)}</div></div>
 <label class="lv-search lv-hit"><span class="lv-p">${SEARCH_ICON}</span><span class="lv-d lv-sg" aria-hidden="true">⌕ &nbsp;</span><input type="search" id="${escH(search.id || 'lvSearch')}" placeholder="${escH(search.placeholder || 'Search')}" value="${escH(search.value || '')}" autocomplete="off" spellcheck="false" aria-label="${escH(search.placeholder || 'Search')}"></label></div>
 ${segs.length ? `<div class="lv-seg" role="group" aria-label="Filter">${segs.map(seg).join('')}</div>` : ''}`;
 }
@@ -249,6 +249,83 @@ export const statusHtml = (tone, label) => `<span class="lv-st ${escH(tone)}"><b
 export const bigHtml = (n, small, red = false) => `<span class="lv-big${red ? ' red' : ''}">${escH(n)}<small>${escH(small)}</small></span>`;
 export const squaresHtml = (tones, em = 'KPI · Review · Forms') => `<span class="lv-sq">${tones.map(t => `<i class="${t ? escH(t) : 'o'}"></i>`).join('')}<em>${escH(em)}</em></span>`;
 export const sheetHeadHtml = (back, title = '') => `<div class="lv-sheet-h"><button type="button" class="lv-back" data-lv-back><span aria-hidden="true">‹</span>${escH(back)}</button>${title ? `<b class="lv-sheet-t">${escH(title)}</b>` : ''}</div>`;
+
+// ---------------------------------------------------------------- motion (Nov 2026): loading mark + details panel
+// PJ's previews "Claude outputs/LFMP_Loading_Preview.html" (option B) and "LFMP_Panel_Animation_Preview.html" (option A,
+// 0.50 s). prefers-reduced-motion: no motion at all (the mark stands still, panels open and close at once).
+export const reducedMotion = () => { try { return !!globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
+export const LOAD_LIMIT_MS = 20000;
+export const LOAD_SLOW_TEXT = 'This is taking longer than 20 seconds. Check your connection, then try again.';
+// The 3-block LFMP mark rising in a loop + "Loading clients…" (animated dots), centred where the list will be.
+export function loadingHtml(what = 'clients') {
+  const t = `Loading ${escH(what)}`;
+  return `<div class="lv-load" role="status" aria-label="${t}…" data-lv-loading><span class="lv-load-mk" aria-hidden="true"><i></i><i></i><i></i></span><span class="lv-load-t" aria-hidden="true">${t}<span class="lv-dots"></span></span></div>`;
+}
+// Never spin forever: rejects after 20 s (error.code "slow"), so the tool shows its own error / Retry state.
+export function withLoadLimit(promise, ms = LOAD_LIMIT_MS) {
+  let t;
+  const slow = new Promise((_, reject) => { t = setTimeout(() => reject(Object.assign(new Error(LOAD_SLOW_TEXT), { code: 'slow' })), ms); });
+  return Promise.race([promise, slow]).finally(() => clearTimeout(t));
+}
+// The list couldn't load (or took over 20 s): a rounded card like the list, a small red dot + the message (sentence
+// case) and a "Try again" button styled like Sign out. attrs = the tool's own retry hook (e.g. 'data-act="reload"').
+export function loadErrorHtml(message, { attrs = '' } = {}) {
+  return `<div class="lv-err" role="alert" data-lv-error><p class="lv-err-t"><b class="lv-err-dot" aria-hidden="true"></b><span>${escH(message)}</span></p><button type="button" class="lv-retry" data-lv-retry ${attrs}>Try again</button></div>`;
+}
+// The list fades in (0.3 s) when the data arrives.
+export function fadeIn(el) {
+  if (!el || reducedMotion()) return;
+  el.classList.remove('lv-fadein'); void el.offsetWidth; el.classList.add('lv-fadein');
+  setTimeout(() => el.classList.remove('lv-fadein'), 400);
+}
+// Details panel: slides in from the right (0.50 s, cubic-bezier(.16,1,.3,1)) while the shade dims (0.42 s); the content
+// rises 6px into place from 0.22 s. Closing slides out (0.40 s, cubic-bezier(.4,0,1,1)). Input is never blocked: any
+// pointer press while a panel moves finishes the move at once. Opening an already open panel only swaps its content.
+const PM = new Map();   // panel -> { dir: 'in' | 'out', shade, t, done }
+const pmEls = (panel, shade) => [panel, shade].filter(Boolean);
+function pmEnd(panel, { cancelled = false } = {}) {
+  const s = PM.get(panel); if (!s) return;
+  clearTimeout(s.t); PM.delete(panel);
+  panel.classList.remove('lv-pm-enter');
+  if (!cancelled && s.done) s.done();
+}
+export function panelOpen(panel, shade) {
+  if (!panel) return false;
+  panel.classList.add('lv-pm'); shade?.classList.add('lv-pm-sh');
+  const s = PM.get(panel);
+  if (s?.dir === 'in') return false;                                   // already sliding in
+  if (s?.dir === 'out') { pmEnd(panel, { cancelled: true }); pmEls(panel, shade).forEach(e => e.classList.add('lv-pm-on')); return false; }   // reopened while closing: slide back, keep the DOM
+  if (panel.classList.contains('lv-pm-on')) return false;              // open: the caller just swaps the content
+  if (reducedMotion()) { pmEls(panel, shade).forEach(e => e.classList.add('lv-pm-on')); return true; }
+  pmEls(panel, shade).forEach(e => { e.classList.remove('lv-pm-on'); void e.offsetWidth; });
+  panel.classList.add('lv-pm-enter');
+  pmEls(panel, shade).forEach(e => e.classList.add('lv-pm-on'));
+  PM.set(panel, { dir: 'in', shade, t: setTimeout(() => pmEnd(panel), 520) });
+  return true;
+}
+// done() runs when the panel is out of sight (at once with reduced motion): hide it / empty it there.
+export function panelClose(panel, shade, done) {
+  if (!panel) { done?.(); return; }
+  const s = PM.get(panel); if (s?.dir === 'out') { s.done = done; return; }
+  if (s) pmEnd(panel, { cancelled: true });
+  const shown = panel.classList.contains('lv-pm-on') && !panel.hidden;
+  pmEls(panel, shade).forEach(e => e.classList.remove('lv-pm-on'));
+  panel.classList.remove('lv-pm-enter');
+  if (!shown || reducedMotion()) { done?.(); return; }
+  PM.set(panel, { dir: 'out', shade, done, t: setTimeout(() => pmEnd(panel), 420) });
+}
+// Ends any move at once (same end state, done() runs now).
+export function panelFinish(panel) {
+  const list = panel ? [panel] : [...PM.keys()];
+  for (const p of list) {
+    const s = PM.get(p); if (!s) continue;
+    pmEls(p, s.shade).forEach(e => e.classList.add('lv-pm-now'));
+    pmEnd(p);
+    requestAnimationFrame(() => pmEls(p, s.shade).forEach(e => e.classList.remove('lv-pm-now')));
+  }
+}
+export const panelMoving = panel => (panel ? PM.has(panel) : PM.size > 0);
+if (typeof document !== 'undefined') document.addEventListener('pointerdown', () => { if (PM.size) panelFinish(); }, true);
 
 // Mount the shell on a page. root: the app container (the desktop top bar goes first inside it).
 export function mountShell(cfg) {

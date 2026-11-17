@@ -127,7 +127,7 @@ input[readonly]{color:var(--mut)}
 .listmsg{margin:16px 0 0}
 
 /* ---------- Details panel (v1.13) ---------- */
-.dshade{display:none !important}
+.drawer-shade.dshade{z-index:43}   /* motion (Nov 2026): the list dims behind the details panel (shared .lv-pm-sh); clicking it closes */
 .drawer.dpanel{width:min(660px,100%);z-index:44;background:var(--panel);display:block;overflow:auto;overscroll-behavior:contain;padding:0 32px 40px}
 .dphead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:28px 0 16px}
 .dptitles{min-width:0;display:flex;flex-direction:column;gap:8px}
