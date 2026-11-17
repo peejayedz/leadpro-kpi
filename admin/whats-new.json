@@ -1,5 +1,14 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.23.0": {
+    "summary": "A new, simpler look, the same in the Builder, Scorecards and Reviews.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "One top bar for all three tools; on a phone, tabs at the bottom (Clients, Scorecards, Reviews, Me) and the gold + for a new firm." },
+      { "type": "improved", "tag": "internal", "text": "Theme, Show test clients, Refresh, Team sign-ins, What's new, Install the app and Sign out are all under your initials (Me)." },
+      { "type": "improved", "tag": "internal", "text": "The sync times and the token keeper are at the top of the bell. The repo link is at the foot of What's new." },
+      { "type": "improved", "tag": "internal", "text": "One calm list of firms: status, leads in the last 90 days, and the whole row opens the firm's details." }
+    ]
+  },
   "1.22.0": {
     "summary": "Sync problems now also reach PJ as a Slack message.",
     "items": [

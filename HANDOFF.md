@@ -2,6 +2,12 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.23.0 Redesign v2 admin: BUILT 18 Nov 2026, NOT PUSHED (waiting for PJ's OK)
+
+- The admin page uses the shared v2 shell (Builder HANDOFF v1.13.0): `admin/lfmp-session.js` + `admin/lfmp-ui.css` are byte-identical copies of the Builder's `page/` files (copy, never edit); `tests/shell/shell.test.mjs` identical too.
+- Moved: sync times + token keeper → top of the bell panel (always shown); repo link → foot of What's new; theme / test firms / Team sign-ins / Sign out → Me; + New firm → the gold +; stats strip → summary + "Needs attention · n" filter; row buttons → the whole row opens Details (Open dashboard ↗ there). New "Test firms" filter.
+- Client dashboards (`app/`, `firms/`) and `admin/moved.html` unchanged. Tests: every suite + admin-ui 243.
+
 ## State (15 Nov 2026)
 
 | Area | State |
@@ -16,7 +22,7 @@ The README is the full reference and CHANGELOG.md the history. This file covers 
 
 - **What:** KPI sync problems → one Slack DM when a bell issue starts, one "Resolved" DM when it clears (`scripts/kpi-alerts.mjs`, `alerts.yml`, state in `status/alerts.json`). A failed or stopped KPI setup from the Builder → one DM (`new-firm.yml` job `alert`, `scripts/setup-alert.mjs`). Part of PJ's Slack alerts (Builder v1.12.0 has the morning summary and the "Send test alert" workflow; the Review DMs are in Code.gs v11).
 - **Same as the bell:** `bellIssues()` calls the admin page's functions with the same inputs and filters with `inBadge`. `tests/alerts/run.mjs` fails if the admin page's `refreshIssues` / `listed` / `kpiSummary` stop matching, so change both together.
-- **Secret:** `SLACK_WEBHOOK_URL` (new repo secret, PJ's DM only; the same webhook as the Builder's secret and the Apps Script's `SLACK_DM_WEBHOOK_URL`). Without it nothing is sent and nothing fails; the DMs start (for anything still open) once it is set.
+- **Secret:** `SLACK_WEBHOOK_URL` (LIVE: set 17 Nov 2026 09:53Z; PJ's DM only; the same webhook as the Builder's secret and the Apps Script's `SLACK_DM_WEBHOOK_URL`). Without it nothing is sent and nothing fails; the DMs start (for anything still open) once it is set.
 - **When it checks:** at the end of every sync (`sync.yml` job `alerts` starts `alerts.yml`), plus `:22` / `:52` as a backup. Concurrency `slack-alerts` (one at a time). Test DM: Actions → Slack alerts → Run workflow → test = yes.
 - **Known behaviour (same as the bell):** "No successful sync in 45 min" for one firm appears when GitHub skips a slot and clears on the next good sync, so a skipped slot can mean one alert DM and one Resolved DM about 30 minutes apart.
 - **Stop the DMs:** delete the `SLACK_WEBHOOK_URL` secret (or disable `alerts.yml` in Actions). Nothing else depends on them.

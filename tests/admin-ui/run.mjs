@@ -103,7 +103,13 @@ async function wire(page, G) {
   await page.route('https://api.github.com/**', r => { failed++; console.log(`✗ the page called GitHub directly: ${r.request().method()} ${r.request().url()}`); return r.abort(); });
   void G;
 }
-const unlocked = page => page.waitForFunction(() => !document.getElementById('appView').hidden && document.querySelector('#syncTimes')?.textContent.includes('Next'));
+// v2 shell: signed in = the app is showing with the shell's top bar; on the firm list, once the summary has its numbers.
+const unlocked = page => page.waitForFunction(() => !document.getElementById('appView').hidden && document.querySelector('[data-lv-top]')
+  && (!document.querySelector('#screen.kpi-list') || / · /.test(document.querySelector('#screen [data-lv-sum]')?.textContent || '')));
+const ROW = '#firmRows .lv-row';
+const rowOf = slug => `${ROW}[data-slug="${slug}"]`;
+// Me (v2): the avatar opens it: a popover on desktop, the Me screen on a phone
+const openMe = async page => { const phone = await page.evaluate(() => innerWidth < 880); await page.click(phone ? '[data-lv-ptop] [data-lv="me"]' : '[data-lv-top] [data-lv="me"]'); await page.waitForSelector(phone ? '[data-lv-me]:not([hidden])' : '[data-lv-pop]:not([hidden])'); return phone ? '[data-lv-me]' : '[data-lv-pop]'; };
 const unlock = unlocked;   // Google sign-in happens before the page loads (Access): nothing to type
 async function openPage(G, { width = 1440, height = 900, scheme = 'dark', hash = '' } = {}) {
   const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, permissions: ['clipboard-read', 'clipboard-write'] });
@@ -111,7 +117,7 @@ async function openPage(G, { width = 1440, height = 900, scheme = 'dark', hash =
   await wire(page, G);
   await page.goto(BASE + hash);
   await unlock(page);
-  if (!hash || hash === '#/') await page.waitForSelector('.firm');
+  if (!hash || hash === '#/') await page.waitForSelector(ROW);
   await page.waitForTimeout(400);
   return { ctx, page };
 }
@@ -127,13 +133,14 @@ const contrastFailures = (page, root = 'body') => page.evaluate(root => {
     if (!['SVG', 'svg', 'path', 'INPUT', 'SELECT', 'OPTION'].includes(el.tagName) && ![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
     const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || Number(cs.opacity) < 0.6 || el.closest('[disabled]')) continue;
     const a = lum(rgb(cs.color)), b = lum(bgOf(el)), ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-    const size = parseFloat(cs.fontSize), large = size >= 24 || (size >= 18.66 && Number(cs.fontWeight) >= 700);
+    // the list's › chevron is an icon (WCAG non-text contrast, 3:1), like the bell and the other icons
+    const size = parseFloat(cs.fontSize), large = size >= 24 || (size >= 18.66 && Number(cs.fontWeight) >= 700) || el.classList.contains('lv-chev');
     if (ratio < (large ? 3 : 4.5)) out.push(`${el.tagName}.${el.className} "${el.textContent.trim().slice(0, 30)}" ${ratio.toFixed(2)}`);
   }
   return [...new Set(out)].slice(0, 12);
 }, root);
 const noSideScroll = page => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
-const slugs = page => page.$$eval('.firm', els => els.map(e => e.dataset.slug));
+const slugs = page => page.$$eval(ROW, els => els.map(e => e.dataset.slug));
 // "asked to sign in again": a password box anywhere, or the page left for the sign-in page
 const lockShown = async page => /\/signin\//.test(page.url()) || !!(await page.$('#lgPw, #tokenIn, input[autocomplete="current-password"]'));
 // nothing secret in browser storage: the server's keys, the GitHub token, the Review key, a dashboard passphrase
@@ -151,29 +158,38 @@ try {
     const c0 = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const p0 = await c0.newPage(); await wire(p0, G);
     await p0.addInitScript(() => { if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('lfmp-vault', '{"v":1,"ct":"old"}'); localStorage.setItem('ar_admin_key', 'old-review-key'); localStorage.setItem('leadpro-admin-firm-pass', '{"ct":"x"}'); localStorage.setItem('lfmp-lock-at', '1'); sessionStorage.setItem('lfmp-session', '{"k":"x"}'); } });
-    await p0.goto(BASE); await unlocked(p0); await p0.waitForSelector('.firm');
+    await p0.goto(BASE); await unlocked(p0); await p0.waitForSelector(ROW);
     check(await p0.evaluate(() => ['lfmp-vault', 'ar_admin_key', 'leadpro-admin-firm-pass', 'lfmp-lock-at'].every(k => localStorage.getItem(k) === null) && sessionStorage.getItem('lfmp-session') === null), 'old password-login leftovers removed from the browser on load');
-    check((await p0.textContent('#whoName')).trim() === 'PJ Drozo' && await p0.isVisible('#whoChip [data-act="signout"]'), 'top bar: Google name + Sign out');
+    check((await p0.textContent('[data-lv-top] .lv-n')).trim() === 'PJ Drozo' && await p0.isVisible('[data-lv-top] .lv-so'), 'top bar: Google name + Sign out');
+    // v2 shell: one top bar (icon + LFMP · Clients / Scorecards / Reviews with Scorecards active · bell · + New firm · name · avatar · Sign out)
+    const nav = await p0.$$eval('[data-lv-top] .lv-nav a', a => a.map(x => `${x.textContent}${x.getAttribute('aria-current') ? '*' : ''}`).join('|'));
+    check(nav === 'Clients|Scorecards*|Reviews' && await p0.isVisible('[data-lv-top] .lv-brand') && await p0.isVisible('[data-lv-top] [data-lv="bell"]') && (await p0.textContent('[data-lv-top] [data-lv="plus"]')).trim() === '+ New firm' && (await p0.textContent('[data-lv-top] .lv-av')).trim().startsWith('PD'), `v2 shell top bar: ${nav}`);
+    check(!(await p0.$('.toolchip, header.top, .foot, #statStrip, .strip')), 'old header, KPI chip, stats strip and footer are gone');
     // "Last signed in …" = the sign-in before this one (a second Google sign-in, then reload)
-    check((await p0.textContent('#whoChip [data-me-last]')).trim() === 'First sign-in on record', 'first sign-in: no earlier one');
-    ACCESS.signIn(EMAIL); await p0.reload(); await unlocked(p0); await p0.waitForSelector('.firm');
+    check((await p0.textContent('[data-lv-top] .lv-l')).trim() === 'First sign-in on record', 'first sign-in: no earlier one');
+    ACCESS.signIn(EMAIL); await p0.reload(); await unlocked(p0); await p0.waitForSelector(ROW);
     const LAST = /^Last signed in (Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec), \d{1,2}:\d{2} (AM|PM)$/;
-    check(LAST.test((await p0.textContent('#whoChip [data-me-last]')).trim()), `top bar: ${(await p0.textContent('#whoChip [data-me-last]')).trim()}`);
+    check(LAST.test((await p0.textContent('[data-lv-top] .lv-l')).trim()), `top bar: ${(await p0.textContent('[data-lv-top] .lv-l')).trim()}`);
     await shot(p0, 'topbar-signed-in_1440_light', false);
-    await p0.click('[data-menu="topMenu"]'); await p0.click('#topMenu [data-act="signins"]');
+    let me0 = await openMe(p0); await p0.click(`${me0} [data-lv="signins"]`);
     await p0.waitForSelector('#lfmpSignins[open] .lfmp-signins');
     const row = (await p0.textContent('#lfmpSignins tbody tr')) || '';
-    check(row.includes('PJ Drozo') && row.includes(EMAIL) && !(await p0.isVisible('#topMenu')), `⋯ → Team sign-ins: ${row}`);
+    check(row.includes('PJ Drozo') && row.includes(EMAIL) && !(await p0.isVisible('[data-lv-pop]')), `Me → Team sign-ins: ${row}`);
     await shot(p0, 'team-signins_1440_light', false);
     await p0.keyboard.press('Escape'); check(!(await p0.$('#lfmpSignins[open]')), 'Esc closes Team sign-ins');
     check(!(await p0.$('#lgPw, #tokenIn, #tokenView, input[type="password"]:not(#nipPass)')), 'no password or token box anywhere');
-    await p0.click('[data-menu="topMenu"]');
-    check(/PJ Drozo/.test(await p0.textContent('#menuWho')) && /pj@lawfirmmarketingpros\.com/.test(await p0.textContent('#menuWho')) && await p0.isVisible('#topMenu [data-act="signout"]') && !(await p0.$('#topMenu [data-act="lock"], #topMenu [data-act="forget"]')), 'top ⋯: name, email and Sign out (no Lock, no Forget token)');
+    me0 = await openMe(p0);
+    const meText = (await p0.innerText(me0)).replace(/\s+/g, ' ');
+    check(/PJ Drozo/.test(meText) && /Last signed in/.test(meText) && await p0.isVisible(`${me0} [data-lv="signout"]`) && !/Lock|Forget token/.test(meText), 'Me: name, last sign-in and Sign out (no Lock, no Forget token)');
+    // Me: SETTINGS (Theme, Show test clients, Refresh now) · TEAM (Team sign-ins, What's new + version, Install the app) · SCORECARDS extras
+    const groups = await p0.$$eval(`${me0} .lv-gl`, g => g.map(x => x.textContent.trim()));
+    check(JSON.stringify(groups) === '["Settings","Team"]' && /Theme Auto Light Dark/.test(meText) && /Show test clients/.test(meText) && /Refresh now/.test(meText) && /Team sign-ins/.test(meText) && new RegExp(`What's new v${LATEST.replace(/\./g, '\\.')}`).test(meText) && /Install the app/.test(meText), `Me: the same Settings + Team as every tool, no tool extras (${groups.join(' · ')})`);
     await p0.keyboard.press('Escape');
+    check(await p0.isHidden('[data-lv-pop]'), 'Esc closes Me');
     check(await storageClean(p0), 'nothing secret in localStorage / sessionStorage');
     const team = [], before = T.logouts || 0;
     await p0.route('https://lfmp.cloudflareaccess.com/cdn-cgi/access/logout*', r => { team.push(r.request().url()); const back = new URL(r.request().url()).searchParams.get('returnTo'); return r.fulfill({ status: 200, contentType: 'text/html', body: `<script>location.replace(${JSON.stringify(back)})</script>` }); });
-    await p0.click('#whoChip [data-act="signout"]'); await p0.waitForURL('**/signin/?out=1');
+    await p0.click('[data-lv-top] .lv-so'); await p0.waitForURL('**/signin/?out=1');
     check((T.logouts || 0) > before && team.length === 0, `Sign out → Access logout → /signin/?out=1, never the team-domain logout (${team})`);
     // signed out (Access sent no sign-in): the page goes to the sign-in page and remembers where it was
     T.email = null;
@@ -191,24 +207,29 @@ try {
 
   // ---------------- home ----------------
   check(JSON.stringify(await slugs(page)) === '["mahdavi","lfmp","hedayati-law-group-p-c","emery-law-office"]', `home: the 4 firms, test firms hidden (${(await slugs(page)).join(', ')})`);
-  const strip = (await page.textContent('#statStrip')).replace(/\s+/g, ' ');
-  check(/4 firms/i.test(strip) && /(All synced \d|sync problem)/i.test(strip) && /needs attention/i.test(strip) && !/leads · 90/i.test(strip) && !/outside a pipeline/i.test(strip), `strip: ${strip}`);
-  check(JSON.stringify(await page.$$eval('#firmFilters [data-filter]', b => b.map(x => x.dataset.filter))) === '["all","attention"]', 'filters: All · Needs attention only');
-  const lf = (await page.textContent('.firm[data-slug="lfmp"]')).replace(/\s+/g, ' ');
-  check(/Needs attention/.test(lf) && /2 leads not in a pipeline/.test(lf) && new RegExp(`(^|\\D)${LFMP_LEADS90}\\s*leads · 90 days`).test(lf) && /leads · 90 days/.test(lf), `LFMP row: needs attention + reason + leads (${lf.slice(0, 120)})`);
-  check(await page.$eval('.firm[data-slug="lfmp"] [data-details]:not(.reason)', e => e.classList.contains('p')) && !(await page.$eval('.firm[data-slug="mahdavi"] [data-details]', e => e.classList.contains('p'))), 'Details is gold only on the firm that needs attention');
-  check(/OK/.test(await page.textContent('.firm[data-slug="mahdavi"] .fstate')) && /Synced/.test(await page.textContent('.firm[data-slug="mahdavi"] .fstate')), 'Mahdavi: OK · Synced <time>');
-  check(await page.$$eval('.firm[data-slug="mahdavi"] .acts .btn', b => b.map(x => x.textContent.trim().replace(/\s+/g, ' ')).join('|')) === 'Dashboard ↗|Details', 'row has two buttons: Dashboard ↗ and Details →');
-  check(await page.$eval('.firm[data-slug="mahdavi"] .acts a.btn', a => a.href) === 'https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/mahdavi/', 'Dashboard ↗ uses the new address (v1.16.0)');
+  const strip = (await page.textContent('#screen [data-lv-sum]')).replace(/\s+/g, ' ');
+  check(/^4 firms · (all synced \d{1,2}:\d{2} (AM|PM)|\d+ sync problems?)$/i.test(strip), `summary line: ${strip}`);
+  check((await page.textContent('#screen .lv-h1')).trim() === 'Scorecards' && await page.getAttribute('#firmSearch', 'placeholder') === 'Search 4 firms', 'title "Scorecards" + "Search 4 firms" (real count)');
+  const segs = await page.$$eval('#screen [data-lv-seg]', b => b.map(x => `${x.dataset.lvSeg}=${x.querySelector('.lv-d').textContent}`).join('|'));
+  check(/^all=All 4\|attention=Needs attention · \d+\|test=Test firms$/.test(segs), `filter: All 4 · Needs attention · n · Test firms (${segs})`);
+  check(await page.$eval('#screen [data-lv-seg="attention"]', b => !!b.querySelector('.lv-red')) === /Needs attention · [1-9]/.test(segs), '"Needs attention" is red only when n > 0');
+  const lf = (await page.textContent(rowOf('lfmp'))).replace(/\s+/g, ' ');
+  check(/2 leads not in a pipeline/.test(lf) && new RegExp(`(^|\\D)${LFMP_LEADS90}\\s*leads · 90 days`).test(lf), `LFMP row: reason + leads (${lf.slice(0, 140)})`);
+  check(await page.$eval(`${rowOf('lfmp')} .lv-c [data-state="status"]`, e => e.classList.contains('amber')), 'LFMP row: amber status (needs attention, not a sync failure)');
+  check(/Synced \d{1,2}:\d{2} (AM|PM)/.test(await page.textContent(`${rowOf('mahdavi')} .lv-c [data-state="status"]`)) && await page.$eval(`${rowOf('mahdavi')} .lv-c [data-state="status"]`, e => e.classList.contains('green')), 'Mahdavi: green "Synced <time>"');
+  check((await page.textContent(`${rowOf('mahdavi')} .lv-op`)).trim() === 'Open ›' && !(await page.$(`${rowOf('mahdavi')} a, ${rowOf('mahdavi')} button`)), 'row: Open › and no buttons (the whole row opens Details)');
+  check(await page.$$eval(ROW, r => r.every(x => x.getBoundingClientRect().height >= 44)), 'rows are at least 44px tall');
   await shot(page, 'list_1440_dark_main');
-  await page.check('#showTests');
-  check((await slugs(page)).includes('zz-test-2') && /5 firms/.test(await page.textContent('#statStrip')), 'Show test firms adds ZZ TEST 2');
-  await page.reload(); await unlocked(page); await page.waitForSelector('.firm');
-  check(!(await lockShown(page)) && (await slugs(page)).includes('zz-test-2'), 'reload: still unlocked, Show test firms remembered');
-  await page.uncheck('#showTests');
-  await page.click('[data-filter-att]');
-  check(await page.getAttribute('[data-filter="attention"]', 'aria-pressed') === 'true' && (await slugs(page)).includes('lfmp') && !(await slugs(page)).includes('mahdavi'), `"needs attention →" in the strip sets the filter (${(await slugs(page)).join(', ')})`);
-  await page.click('[data-filter="all"]');
+  let mx = await openMe(page); await page.click(`${mx} [data-lv="tests"]`); await page.keyboard.press('Escape');
+  check((await slugs(page)).includes('zz-test-2') && /^5 firms/.test(await page.textContent('#screen [data-lv-sum]')), 'Me → Show test clients adds ZZ TEST 2');
+  await page.reload(); await unlocked(page); await page.waitForSelector(ROW);
+  check(!(await lockShown(page)) && (await slugs(page)).includes('zz-test-2'), 'reload: still unlocked, Show test clients remembered');
+  mx = await openMe(page); check(await page.getAttribute(`${mx} [data-lv="tests"]`, 'aria-checked') === 'true', 'Me shows the switch on'); await page.click(`${mx} [data-lv="tests"]`); await page.keyboard.press('Escape');
+  await page.click('#screen [data-lv-seg="test"]');
+  check(JSON.stringify(await slugs(page)) === '["zz-test-2"]', `Test filter: the test firms only, even with the switch off (${(await slugs(page)).join(', ')})`);
+  await page.click('#screen [data-lv-seg="attention"]');
+  check(await page.getAttribute('#screen [data-lv-seg="attention"]', 'aria-pressed') === 'true' && (await slugs(page)).includes('lfmp') && !(await slugs(page)).includes('mahdavi'), `Needs attention filter (${(await slugs(page)).join(', ')})`);
+  await page.click('#screen [data-lv-seg="all"]');
   await page.fill('#firmSearch', 'emery');
   check(JSON.stringify(await slugs(page)) === '["emery-law-office"]', 'search by name');
   await page.fill('#firmSearch', 'hedayati-law');
@@ -219,9 +240,10 @@ try {
   check((await slugs(page)).length === 4, 'Show all firms clears the search');
 
   // ---------------- Details: Overview ----------------
-  await page.click('.firm[data-slug="lfmp"] .reason');
+  await page.click(`${rowOf('lfmp')} .lv-mt`);
   await page.waitForSelector('#dPanel:not([hidden]) .dpbody');
-  check(await hashIs(page) === '#/firm/lfmp', `reason link opens Details with a hash (${await hashIs(page)})`);
+  check(await hashIs(page) === '#/firm/lfmp', `the row (its reason line) opens Details with a hash (${await hashIs(page)})`);
+  check(await page.$eval(rowOf('lfmp'), r => r.hasAttribute('data-sel')), 'the open firm\'s row is marked');
   const head = (await page.textContent('#dPanel .dphead')).replace(/\s+/g, ' ');
   check(/Law Firm Marketing Pros/i.test(head) && /GHL:/.test(head), `header: name, practice area, GHL name (${head.trim()})`);
   check(await page.isVisible('#dPanel [data-reason="not-in-pipeline"]') && /2 leads not in a pipeline/.test(await page.textContent('#dPanel .abox')), 'needs-attention box first, with the reason');
@@ -249,11 +271,11 @@ try {
   check(JSON.stringify(acts) === JSON.stringify(['Open dashboard ↗ (gold)', 'Re-sync', 'Edit mapping']), `Overview actions: Open dashboard ↗ (gold), Re-sync, Edit mapping (${acts.join(' · ')})`);
   await page.keyboard.press('Escape');
   check(!(await panelOpen(page)) && await hashIs(page) === '#/', 'Esc closes Details and the hash');
-  await page.click('.firm[data-slug="mahdavi"] .fname');
+  await page.click(`${rowOf('mahdavi')} .lv-nm`);
   await page.waitForSelector('#dPanel:not([hidden])');
   check(await hashIs(page) === '#/firm/mahdavi', 'clicking a row opens Details');
   check(/Nothing needs attention/.test(await page.textContent('#dPanel')), 'OK firm: no attention box');
-  await page.click('[data-dp-close]');
+  await page.click('#dPanel .xbtn[data-dp-close]');
   check(!(await panelOpen(page)), '✕ closes Details');
   await page.goBack(); await page.waitForSelector('#dPanel:not([hidden])');
   check(!(await lockShown(page)) && await hashIs(page) === '#/firm/mahdavi', 'Back reopens the Details (no password)');
@@ -261,7 +283,7 @@ try {
   check(!(await lockShown(page)), 'Back again: firm list, still unlocked');
 
   // ---------------- Details: Setup (Copy GHL menu link lives here since v1.13.1) ----------------
-  await page.click('.firm[data-slug="emery-law-office"] [data-details]');
+  await page.click(rowOf('emery-law-office'));
   await page.waitForSelector('#dPanel:not([hidden])');
   check(!(await page.$('#dPanel [data-f="link"]')), 'Overview has no copy-link button');
   await page.click('[data-dp-tab="performance"]'); await page.waitForSelector('#dPanel .tiles, #dPanel .perfhead');
@@ -281,7 +303,7 @@ try {
   await page.fill('#dlgPass', 'some-pass phrase#1'); await page.click('#dlgOk');
   check(/#k=some-pass%20phrase%231$/.test(await page.evaluate(() => navigator.clipboard.readText())), 'Copy GHL menu link: URL-encoded passphrase on the clipboard');
   check(await page.isVisible('#dPanel [data-sec="menu-link"] [data-f="link"] + .copied') && /Copied/.test(await page.textContent('#dPanel [data-sec="menu-link"] .copied')), '"Copied" shows right next to the clicked button');
-  check(!/Copied/.test(await page.textContent('#dPanel .dpmsg')) && !/Copied/.test(await page.textContent('.firm[data-slug="emery-law-office"] .fstatus')), '"Copied" is not in the message line or on the firm row');
+  check(!/Copied/.test(await page.textContent('#dPanel .dpmsg')) && !/Copied/.test(await page.textContent(rowOf('emery-law-office'))), '"Copied" is not in the message line or on the firm row');
   { const cfc = await contrastFailures(page, '#dPanel [data-sec="menu-link"]'); check(!cfc.length, `"Copied" passes AA contrast${cfc.length ? `: ${cfc.join(' | ')}` : ''}`); }
   await shot(page, 'setup_copied_1440_dark');
   await page.waitForFunction(() => !document.querySelector('#dPanel .copied'), null, { timeout: 7000 });
@@ -331,28 +353,32 @@ try {
 
   // ---------------- no re-login: New firm / Edit mapping → All firms, Back / Forward, reload ----------------
   await page.keyboard.press('Escape');
-  await page.click('#newFirmBtn'); await page.waitForSelector('#nfForm');
-  check(await hashIs(page) === '#/new', 'New firm has its own hash');
-  await page.click('#backBtn'); await page.waitForSelector('.firm');
+  await page.click('[data-lv-top] [data-lv="plus"]'); await page.waitForSelector('#nfForm');
+  check(await hashIs(page) === '#/new', 'the gold + New firm opens New firm (own hash)');
+  await page.click('#backBtn'); await page.waitForSelector(ROW);
   check(!(await lockShown(page)), 'New firm → All firms: no password');
-  await page.click('#newFirmBtn'); await page.waitForSelector('#nfForm');
-  await page.goBack(); await page.waitForSelector('.firm');
+  await page.click('[data-lv-top] [data-lv="plus"]'); await page.waitForSelector('#nfForm');
+  await page.goBack(); await page.waitForSelector(ROW);
   check(!(await lockShown(page)) && !(await page.isVisible('#nfForm')), 'New firm → browser Back: firm list, no password');
   await page.goForward(); await page.waitForSelector('#nfForm');
   check(!(await lockShown(page)), 'Forward: New firm again, no password');
-  await page.click('#nfCancel'); await page.waitForSelector('.firm');
+  await page.click('#nfCancel'); await page.waitForSelector(ROW);
   check(!(await lockShown(page)), 'Cancel: firm list, no password');
-  await page.click('.firm[data-slug="hedayati-law-group-p-c"] [data-details]'); await page.waitForSelector('#dPanel:not([hidden])');
+  await page.click(rowOf('hedayati-law-group-p-c')); await page.waitForSelector('#dPanel:not([hidden])');
   await page.click('#dPanel .dpacts [data-f="map"]'); await page.waitForSelector('#emSave');
   check(await hashIs(page) === '#/map/hedayati-law-group-p-c' && !(await panelOpen(page)), 'Details → Edit mapping (own hash, panel closed)');
   await page.goBack(); await page.waitForSelector('#dPanel:not([hidden])');
   check(!(await lockShown(page)), 'Edit mapping → Back: Details again, no password');
   await page.click('#dPanel .dpacts [data-f="map"]'); await page.waitForSelector('#emSave');
-  await page.click('#backBtn'); await page.waitForSelector('.firm');
+  await page.click('#backBtn'); await page.waitForSelector(ROW);
   check(!(await lockShown(page)), 'Edit mapping → All firms: no password');
-  await page.click('.top .mark'); await page.waitForSelector('.firm');
-  check(!(await lockShown(page)), 'LFMP mark / KPI admin link: in-page, no password');
-  await page.reload(); await page.waitForSelector('.firm');
+  await page.click('[data-lv-top] [data-lv="plus"]'); await page.waitForSelector('#nfForm');
+  await page.click('[data-lv-top] .lv-mk'); await page.waitForSelector(ROW);
+  check(!(await lockShown(page)) && await hashIs(page) === '#/', 'LFMP icon: back to the firm list in-page, no password');
+  await page.click('[data-lv-top] [data-lv="plus"]'); await page.waitForSelector('#nfForm');
+  await page.click('[data-lv-top] .lv-nav a[aria-current="page"]'); await page.waitForSelector(ROW);
+  check(!(await lockShown(page)) && await hashIs(page) === '#/', 'Scorecards in the top bar: firm list in-page, no reload');
+  await page.reload(); await page.waitForSelector(ROW);
   check(!(await lockShown(page)), 'reload: still signed in');
   check(await storageClean(page) && await page.evaluate(() => localStorage.getItem('lfmp-vault') === null && sessionStorage.getItem('lfmp-session') === null), 'no vault, no session key, no token in the browser (the server holds them)');
 
@@ -376,7 +402,7 @@ try {
     const p2 = await c2.newPage(); await wire(p2, G);
     T.email = 'ana.reyes@lawfirmmarketingpros.com';
     await p2.goto(BASE + '#/firm/lfmp'); await unlocked(p2); await p2.waitForSelector('#nipList .nip li');
-    check(/Jordan Fixture/.test(await p2.textContent('#nipList')) && !(await p2.$('#nipPass')) && (await p2.textContent('#whoName')).trim() === 'Ana', 'another team member, another browser: names show without typing');
+    check(/Jordan Fixture/.test(await p2.textContent('#nipList')) && !(await p2.$('#nipPass')) && (await p2.textContent('[data-lv-top] .lv-n')).trim() === 'Ana', 'another team member, another browser: names show without typing');
     T.email = EMAIL; await c2.close();
   }
   await page.reload(); await page.waitForSelector('#nipList .nip li');
@@ -405,35 +431,51 @@ try {
 
   // ---------------- top bar, bell, What's new ----------------
   await page.keyboard.press('Escape');
-  await page.click('[data-menu="topMenu"]');
-  check(await page.isVisible('#topMenu [data-act="signout"]') && !(await page.$('#topMenu [data-act="lock"], #topMenu [data-act="forget"]')), 'top ⋯ has Sign out (no Lock, no Forget token)');
+  let mm = await openMe(page);
+  check(await page.isVisible(`${mm} [data-lv="signout"]`) && !/Lock|Forget token/.test(await page.innerText(mm)), 'Me has Sign out (no Lock, no Forget token)');
   await page.keyboard.press('Escape');
-  check(await page.isHidden('#topMenu'), 'Esc closes the top menu');
-  await page.click('#bellBtn');
-  check(await page.isVisible('#nPanel'), 'bell panel opens');
+  check(await page.isHidden('[data-lv-pop]'), 'Esc closes Me');
+  // bell: red count = new issues (same as the tab title); the panel hangs under the bell
+  const badge = await page.$eval('[data-lv-top] [data-lv-badge]', b => ({ hidden: b.hidden, n: b.textContent, bg: getComputedStyle(b).backgroundColor }));
+  const titleN = (await page.title()).match(/^\((\d+)\)/)?.[1] || '0';
+  check((badge.hidden ? '0' : badge.n) === titleN && (badge.hidden || /rgb\((184, 50, 43|239, 90, 82)\)/.test(badge.bg)), `bell count ${badge.hidden ? 'hidden' : badge.n} = tab title (${titleN}), red`);
+  await page.click('[data-lv-top] [data-lv="bell"]');
+  check(await page.isVisible('#nPanel') && await page.$eval('#nPanel', p => !!p.closest('[data-lv-top] [data-lv-bellwrap]')) && await page.getAttribute('[data-lv-top] [data-lv="bell"]', 'aria-expanded') === 'true', 'bell panel opens under the top bar\'s bell');
+  const sync = (await page.innerText('#nPanel #nSync')).replace(/\s+/g, ' ');
+  check(/^Sync every 30 min · last \d{1,2}:\d{2} (AM|PM) · next \d{1,2}:\d{2} (AM|PM) Token keeper/.test(sync) && await page.$eval('#nPanel', p => p.querySelector('#nSync') === p.querySelector('.nhead').firstElementChild), `bell panel starts with the sync schedule + token keeper (were the top bar): ${sync}`);
   await shot(page, 'bell_1440_dark');
   const goFirm = await page.$('#nPanel [data-n="firm"][data-slug="lfmp"]');
   if (goFirm) { await goFirm.click(); await page.waitForSelector('#dPanel:not([hidden])'); check(await hashIs(page) === '#/firm/lfmp', 'bell "Go to firm" opens its Details'); await page.keyboard.press('Escape'); }
   else { await page.keyboard.press('Escape'); check(await page.isHidden('#nPanel'), 'Esc closes the bell panel'); }
-  check(await page.isVisible('#newsDot'), 'version chip shows the gold dot (unseen)');
-  await page.click('#newsBtn');
+  check(!(await page.$('[data-lv-top] [data-lv-dot], [data-lv-top] .lv-av .lv-dot')), 'no dot on the avatar (v2)');
+  mm = await openMe(page);
+  check(new RegExp(`What's new v${LATEST.replace(/\./g, '\\.')}`).test((await page.innerText(mm)).replace(/\s+/g, ' ')) && !!(await page.$(`${mm} .lv-ndot`)), 'Me → What\'s new shows the version and the dot');
+  await page.click(`${mm} [data-lv="news"]`);
   await page.waitForSelector('.vcard');
   const cards = await page.$$eval('.vcard', els => els.map(e => ({ open: e.open, v: e.querySelector('.vt b').textContent })));
   check(cards[0].v === `v${LATEST}` && cards[0].open && cards.slice(1).every(c => !c.open), `newest card (${cards[0].v}) open, older collapsed`);
   await page.click('.vcard[open] [data-tech]');
   check(await page.isVisible('.vcard[open] .tech'), 'Technical details shows the developer text');
+  check(await page.getAttribute('#newsPanel .newsrepo a', 'href') === 'https://github.com/peejayedz/leadpro-kpi' && /peejayedz\/leadpro-kpi/.test(await page.textContent('#newsPanel .newsrepo')), 'What\'s new ends with the repo link (was the page footer)');
   await shot(page, 'whatsnew_1440_dark');
   await page.keyboard.press('Escape');
-  check(await page.isHidden('#newsPanel') && await page.isHidden('#newsDot'), 'Esc closes What\'s new; dot cleared');
-  await page.click('[data-theme-set="light"]');
-  check(await page.evaluate(() => document.documentElement.dataset.theme === 'light' && localStorage.getItem('lfmp-theme') === 'light'), 'Light: data-theme + saved lfmp-theme');
-  await page.reload(); await page.waitForSelector('.firm');
+  mm = await openMe(page);
+  check(await page.isHidden('#newsPanel') && !(await page.$(`${mm} .lv-ndot`)), 'Esc closes What\'s new; Me\'s dot cleared');
+  await page.keyboard.press('Escape');
+  mm = await openMe(page); await page.click(`${mm} [data-lv="theme"][data-v="light"]`);
+  check(await page.evaluate(() => document.documentElement.dataset.theme === 'light' && localStorage.getItem('lfmp-theme') === 'light'), 'Me → Light: data-theme + saved lfmp-theme');
+  await page.reload(); await page.waitForSelector(ROW);
   check(await page.evaluate(() => document.documentElement.dataset.theme === 'light'), 'Light remembered after reload');
-  await page.click('[data-theme-set="auto"]');
-  check(await page.evaluate(() => !document.documentElement.hasAttribute('data-theme') && localStorage.getItem('lfmp-theme') === null), 'Auto: follows the system, nothing saved');
+  mm = await openMe(page); await page.click(`${mm} [data-lv="theme"][data-v="auto"]`); await page.keyboard.press('Escape');
+  check(await page.evaluate(() => !document.documentElement.hasAttribute('data-theme') && localStorage.getItem('lfmp-theme') === null), 'Me → Auto: follows the system, nothing saved');
+  // Me → Refresh now: reloads the list in place and says when
+  mm = await openMe(page); await page.click(`${mm} [data-lv="refresh"]`); await page.waitForSelector(ROW);
+  mm = await openMe(page);
+  check(/Refresh now updated \d{1,2}:\d{2} (AM|PM)/.test((await page.innerText(mm)).replace(/\s+/g, ' ')), 'Me → Refresh now reloads and shows "updated <time>"');
+  await page.keyboard.press('Escape');
 
   // ---------------- New firm: both options; app path ----------------
-  await page.click('#newFirmBtn');
+  await page.click('[data-lv-top] [data-lv="plus"]');
   await page.waitForSelector('#nfForm');
   await page.waitForFunction(() => document.querySelector('#nfPreset option')?.textContent.includes('ACME'));
   check(await page.isChecked('input[name="nfMode"][value="app"]') && await page.isHidden('#nfTok'), 'Use the LeadPro app is the default (no token field)');
@@ -466,7 +508,7 @@ try {
   check(JSON.parse(await G.fileText('firms/index.json')).filter(f => f.locationId === 'TestLoc000000000001').length === 1, 'one firm in the list');
   check(!(await page.textContent('#runHost')).includes(pass), 'the passphrase is not shown in the progress text');
   await page.click('#toList');
-  await page.waitForSelector('.firm[data-slug="smith-and-jones-law"]');
+  await page.waitForSelector(rowOf('smith-and-jones-law'));
   check(!(await lockShown(page)) && /Added Smith/.test(await page.textContent('.listmsg')), 'Back to all firms after a new firm: listed, no password');
 
   // ---------------- Edit mapping ----------------
@@ -500,23 +542,31 @@ try {
     check(await noSideScroll(page), `${tag}: list has no sideways scroll`);
     let cf = await contrastFailures(page); check(!cf.length, `${tag}: list passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);
     await shot(page, `list_${tag}`);
-    await page.click('[data-menu="topMenu"]');
-    check(/PJ Drozo/.test(await page.textContent('#topMenu')) && await page.isVisible('#topMenu [data-act="signout"]'), `${tag}: ⋯ menu shows the Google name and Sign out`);
-    cf = await contrastFailures(page, '#topMenu'); check(!cf.length, `${tag}: ⋯ menu passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);
+    const me1 = await openMe(page);
+    check(/PJ Drozo/.test(await page.textContent(me1)) && await page.isVisible(`${me1} [data-lv="signout"]`), `${tag}: Me shows the Google name and Sign out`);
+    cf = await contrastFailures(page, me1); check(!cf.length, `${tag}: Me passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);
     await shot(page, `menu_${tag}`, false);
-    check(/^(Last signed in|First sign-in on record)/.test((await page.textContent('#topMenu [data-me-last]')).trim()), `${tag}: ⋯ menu shows the last sign-in`);
-    await page.click('#topMenu [data-act="signins"]'); await page.waitForSelector('#lfmpSignins[open] .lfmp-signins');
+    check(/^(Last signed in|First sign-in on record)/.test((await page.textContent(`${me1} .lv-me-who .lv-l`)).trim()), `${tag}: Me shows the last sign-in`);
+    await page.click(`${me1} [data-lv="signins"]`); await page.waitForSelector('#lfmpSignins[open] .lfmp-signins');
     cf = await contrastFailures(page, '#lfmpSignins'); check(!cf.length && await noSideScroll(page), `${tag}: Team sign-ins passes AA contrast, no sideways scroll${cf.length ? `: ${cf.join(' | ')}` : ''}`);
     await shot(page, `team-signins_${tag}`, false);
     await page.keyboard.press('Escape');
-    if (w !== 390) { cf = await contrastFailures(page, '#whoChip'); check(!cf.length, `${tag}: name / Last signed in / Sign out pass AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`); if (SHOTS) await page.locator('header.top').first().screenshot({ path: join(SHOTS, `topbar_${tag}.png`) }); }
-    if (w === 390) check(await page.isHidden('#whoChip'), '390: the name + Sign out live in the ⋯ menu (top bar stays one row)');
-    else check(await page.isVisible('#whoChip'), `${tag}: name + Sign out in the top bar`);
+    if (w !== 390) { cf = await contrastFailures(page, '[data-lv-top]'); check(!cf.length, `${tag}: top bar (name, Last signed in, + New firm, Sign out) passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`); if (SHOTS) await page.locator('[data-lv-top]').first().screenshot({ path: join(SHOTS, `topbar_${tag}.png`) }); }
     if (w === 390) {
-      const box = await page.$eval('.firm[data-slug="lfmp"]', e => { const r = e.getBoundingClientRect(); return { w: r.width }; });
-      check(box.w <= 390 - 30 && await page.$$eval('.firm[data-slug="lfmp"] .acts .btn', b => b.every(x => x.getBoundingClientRect().height >= 44)), '390: firm card with two big buttons');
+      // phone: top bar = icon · SCORECARDS · bell · gold + · avatar; bottom tabs; no desktop top bar
+      check(await page.isHidden('[data-lv-top]') && (await page.textContent('[data-lv-ptop] h2')).trim() === 'Scorecards' && await page.isVisible('[data-lv-ptop] [data-lv="bell"]') && await page.isVisible('[data-lv-ptop] [data-lv="plus"]'), '390: phone top bar (title, bell, +, avatar)');
+      const tabs = await page.$$eval('[data-lv-tabs] .lv-tab', t => t.map(x => `${x.textContent.trim()}${x.getAttribute('aria-current') ? '*' : ''}`).join('|'));
+      check(tabs === 'Clients|Scorecards*|Reviews|Me', `390: bottom tabs (${tabs})`);
+      const small = await page.$$eval('[data-lv-ptop] button, [data-lv-tabs] .lv-tab, #screen [data-lv-seg], #screen .lv-search, #firmRows .lv-row', els => els.filter(e => { const r = e.getBoundingClientRect(), a = getComputedStyle(e, '::after'); const h = Math.max(r.height, a.content !== 'none' ? parseFloat(a.height) || 0 : 0), wd = Math.max(r.width, a.content !== 'none' ? parseFloat(a.width) || 0 : 0); return h < 44 || wd < 44; }).map(e => e.className || e.tagName));
+      check(!small.length, `390: tap targets at least 44px${small.length ? `: ${small.join(', ')}` : ''}`);
+      const box = await page.$eval(rowOf('lfmp'), e => { const r = e.getBoundingClientRect(); return { w: r.width, n: e.querySelector('.lv-pr .lv-big')?.textContent }; });
+      check(box.w <= 390 - 30 && /leads · 90 d/.test(box.n || ''), `390: one list row with the leads number (${box.n})`);
+      await page.click('[data-lv-ptop] [data-lv="bell"]');
+      check(await page.isVisible('#nPanel') && await page.$eval('#nPanel', p => !!p.closest('[data-lv-ptop]')), '390: the bell panel opens from the phone bell');
+      await page.keyboard.press('Escape');
     }
-    await page.click('.firm[data-slug="lfmp"] [data-details]:not(.reason)'); await page.waitForSelector('#dPanel:not([hidden]) .dpbody');
+    await page.click(rowOf('lfmp')); await page.waitForSelector('#dPanel:not([hidden]) .dpbody');
+    if (w === 390) check(await page.isVisible('#dPanel .dpback') && (await page.textContent('#dPanel .dpback')).includes('Scorecards') && await page.isHidden('#dPanel .xbtn'), '390: Details has "‹ Scorecards"');
     await page.waitForSelector('#nipPass');
     check(await noSideScroll(page), `${tag}: Details (before unlock) has no sideways scroll`);
     let cfl = await contrastFailures(page, '#dPanel'); check(!cfl.length, `${tag}: Details before unlock passes AA contrast${cfl.length ? `: ${cfl.join(' | ')}` : ''}`);
@@ -535,18 +585,19 @@ try {
     await shot(page, `setup_${tag}`);
     await page.keyboard.press('Escape');
     check(!(await panelOpen(page)), `${tag}: Esc closes Details`);
-    await page.click('#newsBtn'); await page.waitForSelector('.vcard');
+    { const m2 = await openMe(page); await page.click(`${m2} [data-lv="news"]`); } await page.waitForSelector('.vcard');
     cf = await contrastFailures(page); check(!cf.length, `${tag}: What's new passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);
     await shot(page, `whatsnew_${tag}`);
     await page.keyboard.press('Escape');
-    await page.click('#newFirmBtn'); await page.waitForSelector('#nfForm');
+    await page.click(w === 390 ? '[data-lv-ptop] [data-lv="plus"]' : '[data-lv-top] [data-lv="plus"]'); await page.waitForSelector('#nfForm');
+    if (w === 390) check((await page.textContent('[data-lv-ptop] h2')).trim() === 'New firm', '390: the phone title says New firm');
     await page.waitForFunction(() => document.querySelector('#nfPreset option')?.textContent.includes('ACME'));
     check(await noSideScroll(page), `${tag}: New firm has no sideways scroll`);
     cf = await contrastFailures(page); check(!cf.length, `${tag}: New firm passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);
     await shot(page, `newfirm_app_${tag}`);
     await page.check('input[name="nfMode"][value="pi"]');
     await shot(page, `newfirm_pi_${tag}`);
-    await page.click('#backBtn'); await page.waitForSelector('.firm');
+    await page.click('#backBtn'); await page.waitForSelector(ROW);
     check(!(await lockShown(page)), `${tag}: New firm → All firms without the password`);
     await page.goto(BASE + '#/map/zz-test-2'); await page.waitForSelector('.opt');
     check(await noSideScroll(page), `${tag}: Edit mapping has no sideways scroll`);

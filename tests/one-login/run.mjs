@@ -26,12 +26,15 @@ await t('admin/index.html: signs in with lfmp-session.js; no password, token scr
   for (const [what, re] of [['lfmp-login', /lfmp-login\.js|createLogin/], ['token screen', /id="tokenView"|id="tokenIn"|Connect GitHub/], ['vault', /vaultSet|lfmp-vault|leadpro-admin-firm-pass|PASS_VAULT/],
     ['GitHub from the browser', /https:\/\/api\.github\.com/], ['the old token variable', /\bghToken\b/], ['Lock / Forget token', /data-act="lock"|data-act="forget"|Forget token/]])
     ok(!re.test(html), `still has: ${what}`);
-  ok(/data-act="signout"/.test(html) && /id="whoName"/.test(html), 'no Sign out or name in the top bar');
+  // v2 (redesign): the top bar, with the name and Sign out, is the shared shell's (lfmp-session.js mountShell)
+  ok(/mountShell\(\{[\s\S]*?tool: 'kpi'/.test(html) && /data-lv="signout"/.test(session) && /class="lv-n" data-me>/.test(session), 'no Sign out or name in the top bar (mountShell)');
 });
 
 await t('lfmp-session.js: /api/ only, no secrets, wipes the old browser keys', () => {
   ok(/const API_BASE = '\/api\/'/.test(session), 'API base is not /api/');
-  ok(!/fetch\(\s*['`"]https?:|Authorization|github_pat|localStorage\.setItem/.test(session), 'session module talks to GitHub or stores something');
+  ok(!/fetch\(\s*['`"]https?:|Authorization|github_pat/.test(session), 'session module talks to GitHub');
+  // the only thing it saves is the theme choice (v2 shell: Me → Theme), never a key or a token
+  ok([...session.matchAll(/localStorage\.setItem\(([^,]+),/g)].every(m => m[1].trim() === "'lfmp-theme'"), 'session module stores something other than the theme');
   for (const k of ['lfmp-vault', 'ar_admin_key', 'leadpro-admin-firm-pass', 'lfmp-session']) ok(session.includes(`'${k}'`), `does not wipe ${k}`);
 });
 

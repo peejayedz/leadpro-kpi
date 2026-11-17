@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="lfmp-v2">
 <head>
 <meta charset="utf-8">
 <script>/* The tool runs only on the team site (lfmp-admin.pages.dev, behind Google sign-in). On the public site (github.io, lawfirmmarketingpros.com) this address shows the "Moved" page instead. */ if (/(^|\.)(github\.io|lawfirmmarketingpros\.com)$/.test(location.hostname)) location.replace('moved.html' + location.search);</script>
@@ -13,8 +13,8 @@
 <script>/* apply the saved theme before first paint so the page and logo don't flash */ try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="lfmp-ui.css?v=1.12.0">
-<link rel="stylesheet" href="admin.css?v=1.20.0">
+<link rel="stylesheet" href="lfmp-ui.css?v=2.0.0">
+<link rel="stylesheet" href="admin.css?v=1.23.0">
 </head>
 <body>
 
@@ -29,38 +29,15 @@
 </div>
 
 <!-- ================= app ================= -->
-<div class="wrap" id="appView" hidden>
-  <header class="top">
-    <a class="mark" href="#/" title="LFMP · KPI admin">LFMP</a>
-    <span class="toolchip" aria-label="You are in: KPI admin">KPI</span>
-    <nav class="nav" aria-label="LFMP tools">
-      <a href="/ghl-subaccount-builder-page/">Clients</a>
-      <a href="#/" aria-current="page">KPI admin</a>
-      <a href="/automation-review/admin/">Review</a>
-    </nav>
-    <div class="topr">
-      <div class="upd" id="syncInfo" aria-live="polite">Sync every 30 min<b id="syncTimes">…</b><span class="kept" id="keeperLine"></span></div>
-      <span class="bellwrap" id="bellWrap">
-        <button class="btn iconbtn bellbtn" type="button" id="bellBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="nPanel" aria-label="Sync issues" title="Sync issues">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="badge" id="bellBadge" hidden></span></button>
-        <div class="npanel" id="nPanel" role="dialog" aria-label="Sync issues" hidden></div>
-      </span>
-      <button class="btn ver" type="button" data-act="news" id="newsBtn" aria-label="What's new"><span id="adminVersion">v…</span><span class="dot" id="newsDot" hidden></span></button>
-      <div class="themeseg" id="themeSeg" role="group" aria-label="Theme"></div>
-      <span class="menuwrap">
-        <button class="btn iconbtn" type="button" data-menu="topMenu" aria-haspopup="menu" aria-expanded="false" aria-label="More">⋯</button>
-        <div class="menu" id="topMenu" role="menu" hidden>
-          <p class="menuwho" id="menuWho"><b data-me></b><span data-me-email></span><small class="lfmp-last" data-me-last></small></p>
-          <button type="button" role="menuitem" data-act="signins"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Team sign-ins</button>
-          <button type="button" role="menuitem" data-act="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</button>
-        </div>
-      </span>
-      <span class="who lfmp-who" id="whoChip" title=""><span class="lfmp-who-row"><b data-me id="whoName"></b><button class="lfmp-out" type="button" data-act="signout">Sign out</button></span><small data-me-last></small></span>
-    </div>
-  </header>
-  <main id="screen"></main>
-  <footer class="foot"><span>Repo <a id="repoLink" target="_blank" rel="noopener"></a></span><span>Internal tool · changes are commits to the repo · <span id="footVersion"></span></span></footer>
+<!-- v2 (redesign v2): the top bar (bell, + New firm, name, avatar, Sign out), the Me menu (theme, test clients, refresh,
+     team sign-ins, what's new, install; the same in all three tools) and the phone's bottom tabs. The sync schedule and
+     token keeper status head the bell's panel; the repo link is at the foot of What's new
+     are added by lfmp-session.js mountShell(), the same in all three tools. -->
+<div id="appView" hidden>
+  <main class="lv-in" id="screen"></main>
 </div>
+<!-- the bell's panel; mountShell's bell holds it (moved next to the bell that was pressed) -->
+<div class="npanel" id="nPanel" role="dialog" aria-label="Sync issues" hidden></div>
 
 <div class="drawer-shade dshade" id="dpShade" hidden></div>
 <aside class="drawer dpanel" id="dPanel" role="dialog" aria-labelledby="dpTitle" hidden></aside>
@@ -87,7 +64,7 @@ import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
 import { buildCards, filterCards, newer } from './news.mjs';
 import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS } from './firm-details.mjs';
 import { decryptJSON } from '../scripts/kpi-core.mjs';
-import { startSession, ghFetch, api, signOut, ApiError, paintMe } from './lfmp-session.js';
+import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -119,7 +96,7 @@ const ADMIN_SITE = /(^|\.)lfmp-admin\.pages\.dev$/.test(location.hostname);
 const DATA_ROOT = ADMIN_SITE ? PAGES : '../';
 const dashUrl = slug => `${PAGES}firms/${slug}/`;
 const ghlLink = (slug, pass) => `${dashUrl(slug)}#k=${encodeURIComponent(pass)}`;
-$('repoLink').href = `https://github.com/${OWNER}/${REPO}`; $('repoLink').textContent = `${OWNER}/${REPO}`;
+const REPO_URL = `https://github.com/${OWNER}/${REPO}`;   // What's new panel footer (was the page footer)
 document.querySelectorAll('.repoName').forEach(e => { e.textContent = REPO; });
 
 const SODIUM = { src: 'https://cdnjs.cloudflare.com/ajax/libs/libsodium-wrappers/0.5.4/sodium.min.js', integrity: 'sha384-wwHUJSIg+zP+JE6uHrrp1XCv4UtKW9xE4+LO+lwfrocCav+zHsDN57+5bvmKRCnu' };
@@ -182,21 +159,9 @@ function wireEyes(root = document) {
   });
 }
 
-// ---------- theme (same control and saved choice as the dashboards) ----------
-const THEMES = [
-  ['auto', 'Auto', '<circle cx="12" cy="12" r="8"/><path d="M12 4v16" /><path d="M12 4a8 8 0 0 1 0 16" fill="currentColor" stroke="none"/>'],
-  ['light', 'Light', '<circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/>'],
-  ['dark', 'Dark', '<path d="M20 13.5A8.5 8.5 0 1 1 10.5 4a7 7 0 0 0 9.5 9.5Z"/>'],
-];
-// Auto · Light · Dark: Auto = no data-theme (follows the system) and nothing saved; Light / Dark are saved under "lfmp-theme".
-function applyTheme(mode) {
-  if (!THEMES.some(t => t[0] === mode)) mode = 'auto';
-  if (mode === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', mode);
-  $('themeSeg').innerHTML = THEMES.map(([k, label], i) => `${i ? '<span class="sep" aria-hidden="true">·</span>' : ''}<button type="button" data-theme-set="${k}" aria-pressed="${k === mode}" title="${k === 'auto' ? 'Follow this device\'s setting' : `Always ${label.toLowerCase()}`}">${label}</button>`).join('');
-  store.set('lfmp-theme', mode === 'auto' ? null : mode);
-}
-applyTheme(store.get('lfmp-theme') || 'auto');
-$('themeSeg').addEventListener('click', e => { const b = e.target.closest('[data-theme-set]'); if (b) { applyTheme(b.dataset.themeSet); $('themeSeg').querySelector(`[data-theme-set="${b.dataset.themeSet}"]`)?.focus(); } });
+// ---------- v2 shell (lfmp-session.js mountShell) ----------
+// Theme Auto · Light · Dark (saved as "lfmp-theme", same as the dashboards) now lives in Me, built by the shell.
+let shell = null;
 
 // ---------- small menus (⋯): one open at a time; outside click or Esc closes ----------
 function closeMenus(except) {
@@ -234,9 +199,31 @@ async function boot() {
     else if (e instanceof ApiError && e.status === 503) $('setupMsg').textContent = e.message || "The team site isn't fully set up yet.";
     return;
   }
-  paintMe(me); $('whoChip').title = me.email;   // name, email, "Last signed in …" (lfmp-session.js)
+  shell = mountShell({
+    tool: 'kpi', me, root: $('appView'), version: '', newsDot: false,
+    plus: { label: 'New firm', onClick: () => go('#/new') },
+    bell: { onClick: () => ($('nPanel').hidden ? openPanel() : closePanel()) },
+    showTests: { on: showTests, label: 'Show test clients', onChange: on => setShowTests(on) },
+    onRefresh: () => { shell.closeMe(); refreshAll(); },
+    onNews: () => openNews(),
+    onHome: () => { closeDialog(); go('#/'); window.scrollTo(0, 0); },
+  });
+  paintMe(me);   // name, email, "Last signed in …" (lfmp-session.js)
   openApp();
 }
+// The bell panel's top block (v2: was the top bar's "Sync every 30 min · Last · Next · Token keeper OK"), always shown.
+function syncInfoHtml() {
+  const kp = issues.some(i => String(i.kind).startsWith('keeper'));
+  return `<div class="nsync" id="nSync"><span>Sync every 30 min${firms.length ? ` · last ${esc(clock(lastSyncIso()))} · next ${esc(clock(nextSync()))}` : ''}</span>
+    <span>${kp ? 'Token keeper: see the issue below' : keeperStatus ? 'Token keeper OK' : 'Token keeper: checking…'}</span></div>`;
+}
+// Me → Refresh now: re-reads the firms, their numbers and the bell's issues (no page reload, so nothing typed is lost).
+async function refreshAll() {
+  if (parseHash().screen !== 'list') { await refreshIssues({ reloadKpis: true }); return; }
+  screenNow = null; await route();
+  shell?.setUpdated(clock(new Date().toISOString()));
+}
+function setShowTests(on) { showTests = on; store.set(TESTS_KEY, showTests ? '1' : null); shell?.setShowTests(on); paintList(); paintStrip(); }
 
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
@@ -376,7 +363,7 @@ const bannerOn = (firmCfg, base) => mergeConfig(base, null, firmCfg || {}).notic
 const bases = {};
 async function openApp() {
   show('appView');
-  loadChangelog().then(v => { const x = latestVersion(v); $('adminVersion').textContent = x ? `v${x}` : 'What\'s new'; $('footVersion').textContent = x ? `v${x}` : ''; paintNewsDot(); }).catch(() => { $('adminVersion').textContent = 'What\'s new'; });
+  loadChangelog().then(v => { const x = latestVersion(v); if (shell) shell.cfg.version = x || ''; paintNewsDot(); }).catch(() => {});   // Me → What's new · vX
   clearInterval(checkTimer); checkTimer = setInterval(() => refreshIssues({ reloadKpis: true }), CHECK_MS);   // re-check every 5 minutes while open
   await route();
 }
@@ -400,6 +387,9 @@ function go(hash, flash) {
 window.addEventListener('hashchange', () => { if (me) route(); });
 async function route() {
   const r = parseHash();
+  // v2: the firm list uses the shell's full-width phone list; New firm and Edit mapping keep a 16px phone margin
+  $('screen').classList.toggle('kpi-list', r.screen === 'list');
+  shell?.setTitle(r.screen === 'new' ? 'New firm' : r.screen === 'map' ? 'Edit mapping' : 'Scorecards');
   if (r.screen === 'new') { closeDetails({ keepHash: true }); screenNow = 'new'; return renderNewFirm(); }
   if (r.screen === 'map') {
     closeDetails({ keepHash: true });
@@ -440,7 +430,9 @@ const isTest = f => /(^|[-\s])test\b|^zz[-\s]/i.test(f.slug) || /\btest\b|^zz\b/
 // incomplete" numbers, mapping to review, no data yet, or new contacts outside a pipeline. Most urgent first.
 const reasonsOf = f => firmReasons(f.slug, kpiFull[f.slug], issues);
 const needsAttention = f => reasonsOf(f).length > 0;
-const FILTERS = [['all', 'All', () => true], ['attention', 'Needs attention', needsAttention]];
+// v2 filter (reference wording): desktop "All 4 · Needs attention · 1 · Test firms", phone "All · Needs attention · 1 · Test".
+// Test = the test firms only (shown there even when "Show test clients" is off).
+const FILTERS = [['all', 'All', () => true], ['attention', 'Needs attention', needsAttention], ['test', 'Test firms', f => isTest(f)]];
 const FILTER_KEY = 'leadpro-admin-filter', TESTS_KEY = 'leadpro-admin-tests';
 let listFilter = FILTERS.some(x => x[0] === store.get(FILTER_KEY)) ? store.get(FILTER_KEY) : 'all', listQuery = '';
 let showTests = store.get(TESTS_KEY) === '1';                 // test firms are hidden unless "Show test firms" is ticked
@@ -457,89 +449,79 @@ function nextSync(now = new Date()) {
   d.setMinutes(next); return d.toISOString();
 }
 
-// Status cell: green "OK · Synced 2:07 AM", or gold/red "Needs attention" + the most urgent reason as a link to Details.
-function statusHtml(f) {
-  const k = kpis[f.slug], rs = reasonsOf(f);
-  if (!rs.length) return `<span class="st ok"><span class="sdot" aria-hidden="true"></span><b>OK</b><span class="muted" title="${esc(fmtTime(k?.generatedAt))}">Synced ${esc(clock(k?.generatedAt))}</span></span>`;
-  const sev = rs.some(r => SYNC_PROBLEMS.has(r.kind) && r.kind !== 'nodata') ? 'bad' : 'warn';
-  return `<span class="st ${sev}"><span class="sdot" aria-hidden="true"></span><b>Needs attention</b></span>
-    <a class="reason" href="${esc(hashFor('list', f.slug))}" data-details="${esc(f.slug)}">${esc(rs[0].short)}${rs.length > 1 ? ` <span class="more">+${rs.length - 1} more</span>` : ''} ${ICON.arrow}</a>`;
-}
-const leadsHtml = k => `<span class="n">${k?.leads90 != null ? k.leads90 : '—'}</span><span class="l">lead${k?.leads90 === 1 ? '' : 's'} · 90 days</span>`;
-// One row (a card on phones): name + practice area · status · leads (90 days) · Dashboard ↗ and Details →.
-// Clicking anywhere else on the row opens Details too. Everything else lives in the Details panel.
+// v2 row (reference): name + one muted line · status dot + word · leads (90 days) · Open ›. Phone: name + line · leads · ›.
+// Red = a sync problem; amber = anything else that needs attention (held numbers, mapping to review, not in a pipeline, no data
+// yet); green = synced. The whole row opens the Details panel (Open dashboard ↗ and every action live there).
+const LIST_COLS = '1.5fr 200px 260px 70px';
+const isBad = r => SYNC_PROBLEMS.has(r.kind) && r.kind !== 'nodata';
+const reasonTitle = r => (r.issue ? issueText(r.issue).title : r.short);
 function firmRow(f) {
-  const att = needsAttention(f);
-  return `<article class="firm" data-slug="${esc(f.slug)}" data-row>
-    <div class="fname"><h3>${esc(f.name)}</h3><p class="pa">${esc(f.practiceArea || 'No practice area')}${isTest(f) ? ' · <span class="tag">Test</span>' : ''}</p></div>
-    <div class="fstate">${statusHtml(f)}</div>
-    <div class="fleads">${leadsHtml(kpis[f.slug])}</div>
-    <div class="acts">
-      <a class="btn" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener" aria-label="Open ${esc(f.name)}'s dashboard (new tab)">Dashboard ↗</a>
-      <a class="btn${att ? ' p' : ''}" href="${esc(hashFor('list', f.slug))}" data-details="${esc(f.slug)}" aria-label="Details for ${esc(f.name)}">Details ${ICON.arrow}</a>
-    </div>
-    <div class="fstatus" data-msg="${esc(f.slug)}" aria-live="polite">${firmMsg[f.slug] || ''}</div>
-  </article>`;
+  const k = kpis[f.slug], rs = reasonsOf(f), r = rs[0], bad = !!r && isBad(r);
+  const more = rs.length > 1 ? ` +${rs.length - 1}` : '';
+  const test = isTest(f) ? 'Test' : '';
+  const sub = [f.practiceArea || 'No practice area', test, r ? `${reasonTitle(r)}${r.issue ? ` ${ago(r.issue.firstSeen)}` : ''}` : ''].filter(Boolean).join(' · ');
+  const subPhone = [test, r ? `${r.short}${r.issue ? ` · ${ago(r.issue.firstSeen)}` : ''}` : `Synced ${clock(k?.generatedAt)}`].filter(Boolean).join(' · ');
+  const status = r ? lvStatus(bad ? 'red' : 'amber', `${r.short}${more}`) : lvStatus('green', `Synced ${clock(k?.generatedAt)}`);
+  const n = k?.leads90 != null ? String(k.leads90) : '—', noun = `lead${k?.leads90 === 1 ? '' : 's'}`;
+  return lvRow({ name: f.name, sub, subPhone, label: `Open ${f.name}`,
+    attrs: `data-slug="${esc(f.slug)}" data-row${dpSlug === f.slug ? ' data-sel' : ''} title="${esc(k?.generatedAt ? `Last sync ${fmtTime(k.generatedAt)}` : 'No data yet')}"`,
+    cells: [status.replace('<span class="lv-st', '<span data-state="status" class="lv-st'), bigHtml(n, `${noun} · 90 days`, bad)], phoneRight: bigHtml(n, `${noun} · 90 d`, bad) });
 }
+// Summary line (desktop): "4 firms · all synced 4:37 PM" (or "1 sync problem").
 function paintStrip() {
-  const el = $('statStrip'); if (!el) return;
+  const el = document.querySelector('#screen [data-lv-sum]'); if (!el) return;
   const vis = visibleFirms(), last = lastSyncIso();
   const syncBad = vis.filter(f => reasonsOf(f).some(r => SYNC_PROBLEMS.has(r.kind))).length;
-  const att = vis.filter(needsAttention).length;
-  el.innerHTML = `<span>${plural(vis.length, 'firm')}</span><span title="${esc(fmtTime(last))}">${syncBad ? `${plural(syncBad, 'sync problem')}` : `All synced ${esc(clock(last))}`}</span>${att
-    ? `<button type="button" class="stripbtn" data-filter-att>${att} need${att === 1 ? 's' : ''} attention ${ICON.arrow}</button>` : '<span>Nothing needs attention</span>'}`;
+  el.textContent = `${plural(vis.length, 'firm')} · ${syncBad ? plural(syncBad, 'sync problem') : `all synced ${clock(last)}`}`;
+  el.title = fmtTime(last);
+  const q = $('firmSearch'); if (q) { q.placeholder = `Search ${plural(vis.length, 'firm')}`; q.setAttribute('aria-label', `${q.placeholder} by name, slug or GHL name`); }
 }
-function paintSyncInfo() {
-  if (!$('syncTimes')) return;
-  $('syncTimes').textContent = `Last ${clock(lastSyncIso())} · Next ${clock(nextSync())}`;
-  const kp = issues.some(i => String(i.kind).startsWith('keeper'));
-  $('keeperLine').textContent = kp ? 'Token keeper: see the bell' : keeperStatus ? 'Token keeper OK' : '';
-}
+// The bell panel's top block: sync schedule and token keeper (were the top bar's "Sync every 30 min · Last · Next").
+function paintSyncInfo() { const el = $('nSync'); if (el) el.outerHTML = syncInfoHtml(); }
+const kpiSegs = () => {
+  const vis = visibleFirms(), att = vis.filter(needsAttention).length;
+  return [{ key: 'all', label: `All ${vis.length}`, phone: 'All' }, { key: 'attention', label: `Needs attention · ${att}`, red: att > 0 }, { key: 'test', label: 'Test firms', phone: 'Test' }];
+};
 function paintFilters() {
-  const seg = $('firmFilters'); if (!seg) return;
-  const vis = visibleFirms();
-  seg.innerHTML = FILTERS.map(([k, label, fn]) => `<button type="button" data-filter="${k}" aria-pressed="${k === listFilter}">${label}<span class="n">${vis.filter(fn).length}</span></button>`).join('');
+  const seg = document.querySelector('#screen .lv-seg'); if (!seg) return;
+  const t = document.createElement('template'); t.innerHTML = pageHeadHtml({ title: '', segs: kpiSegs(), active: listFilter });
+  seg.replaceWith(t.content.querySelector('.lv-seg'));
 }
 function paintList() {
   const host = $('firmList'); if (!host) return;
   const fn = FILTERS.find(x => x[0] === listFilter)[2];
-  const shown = visibleFirms().filter(f => fn(f) && matchesQuery(f));
-  const hiddenTests = !showTests ? firms.filter(f => isTest(f) && fn(f) && matchesQuery(f)).length : 0;
-  host.innerHTML = !firms.length ? `<div class="empty"><p>No firms yet.</p><button class="btn p big" type="button" data-new-firm>${ICON.plus}Add the first firm</button></div>`
-    : shown.length ? `<div class="ftable"><div class="fhead" aria-hidden="true"><span>Firm</span><span>Status</span><span>Leads</span><span></span></div>${shown.map(firmRow).join('')}</div>`
-    : `<div class="empty panel"><p>${listFilter === 'attention' && !listQuery ? 'Nothing needs attention. Every firm synced cleanly.' : `No firms match${listQuery ? ` “${esc(listQuery)}”` : ''}${listFilter !== 'all' ? ` in ${esc(FILTERS.find(x => x[0] === listFilter)[1])}` : ''}.`}${hiddenTests ? ` ${plural(hiddenTests, 'test firm')} hidden.` : ''}</p><button class="btn" type="button" data-clear-filter>Show all firms</button></div>`;
+  const pool = listFilter === 'test' ? firms : visibleFirms();
+  const shown = pool.filter(f => fn(f) && matchesQuery(f));
+  const hiddenTests = !showTests && listFilter !== 'test' ? firms.filter(f => isTest(f) && fn(f) && matchesQuery(f)).length : 0;
+  host.innerHTML = !firms.length ? `<div class="lv-list lv-empty"><p>No firms yet.</p><button class="lv-plus" type="button" data-new-firm>+ Add the first firm</button></div>`
+    : shown.length ? `<div class="lv-list" id="firmRows" style="--lv-cols:${LIST_COLS}">${shown.map(firmRow).join('')}</div>`
+    : `<div class="lv-list lv-empty"><p>${listFilter === 'attention' && !listQuery ? 'Nothing needs attention. Every firm synced cleanly.' : `No firms match${listQuery ? ` “${esc(listQuery)}”` : ''}${listFilter !== 'all' ? ` in ${esc(FILTERS.find(x => x[0] === listFilter)[1])}` : ''}.`}${hiddenTests ? ` ${plural(hiddenTests, 'test firm')} hidden.` : ''}</p><button class="btn" type="button" data-clear-filter>Show all firms</button></div>`;
   paintFilters();
-  if (dpSlug) document.querySelector(`.firm[data-slug="${CSS.escape(dpSlug)}"]`)?.classList.add('sel');
 }
 const setFilter = k => { listFilter = k; store.set(FILTER_KEY, k === 'all' ? null : k); paintList(); };
 async function renderList(flash) {
   cleanupRun(); cleanupAppRun(); closeMenus();
   for (const k of Object.keys(firmMsg)) if (!busy.has(`${k}:sync`) && !busy.has(`${k}:banner`)) delete firmMsg[k];
-  $('screen').innerHTML = `<header class="head"><div class="titles"><p class="ey">LeadPro · KPI admin</p><h1 class="disp">Law firm <span class="g">scorecards.</span></h1></div>
-    <div class="controls"><a class="btn p big" href="#/new" id="newFirmBtn">${ICON.plus}New firm ${ICON.arrow}</a></div></header>
-    <div class="strip" id="statStrip" aria-label="Summary"><span>Loading firms…</span></div>
+  $('screen').innerHTML = `${pageHeadHtml({ title: 'Scorecards', summary: 'Loading firms…', search: { id: 'firmSearch', placeholder: 'Search firms', value: listQuery }, segs: kpiSegs(), active: listFilter })}
     ${flash ? `<div class="okmsg listmsg" role="status">${flash}</div>` : ''}
-    <div class="listtools"><div class="lt-left"><div class="segscroll"><div class="seg" id="firmFilters" role="group" aria-label="Filter firms"></div></div>
-      <label class="check showtests"><input type="checkbox" id="showTests"${showTests ? ' checked' : ''}><span>Show test firms</span></label></div>
-      <input type="search" id="firmSearch" placeholder="Search firms…" aria-label="Search firms by name, slug or GHL name" value="${esc(listQuery)}"></div>
     <div id="firmList"></div>`;
   $('firmSearch').addEventListener('input', e => { listQuery = e.target.value; paintList(); });
-  $('firmFilters').addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if (b) setFilter(b.dataset.filter); });
-  $('showTests').addEventListener('change', e => { showTests = e.target.checked; store.set(TESTS_KEY, showTests ? '1' : null); paintList(); paintStrip(); });
   const host = $('firmList');
   try { await loadFirms(); }
-  catch (e) { if (!document.body.contains(host)) return; $('firmList').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; $('statStrip').innerHTML = ''; return; }
+  catch (e) { if (!document.body.contains(host)) return; $('firmList').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; const s = document.querySelector('#screen [data-lv-sum]'); if (s) s.textContent = ''; return; }
   if (!document.body.contains(host)) return;     // the user moved on while the list was loading
   paintList(); paintStrip(); paintSyncInfo();
+  shell?.setUpdated(clock(new Date().toISOString()));
   refreshIssues();
 }
 document.addEventListener('click', e => {
   if (e.target.closest('[data-new-firm]')) go('#/new');
+  const sg = e.target.closest('#screen [data-lv-seg]'); if (sg) setFilter(sg.dataset.lvSeg);
   if (e.target.closest('[data-clear-filter]')) { listFilter = 'all'; listQuery = ''; store.set(FILTER_KEY, null); if ($('firmSearch')) $('firmSearch').value = ''; paintList(); }
   if (e.target.closest('[data-filter-att]')) { setFilter('attention'); $('firmList')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-  // a click on a row (not on its buttons or links) opens Details
-  const row = e.target.closest('.firm[data-row]');
-  if (row && !e.target.closest('a,button,input,label,.fstatus')) go(hashFor('list', row.dataset.slug));
+  // the whole row opens Details
+  const row = e.target.closest('.lv-row[data-row]');
+  if (row && !e.target.closest('a,button,input,label')) go(hashFor('list', row.dataset.slug));
 });
 // Firm actions, from a row or the Details panel (both carry data-slug).
 document.addEventListener('click', e => {
@@ -552,8 +534,8 @@ const firmMsg = {}, busy = new Set();
 function firmSay(slug, html) { firmMsg[slug] = html; document.querySelectorAll(`[data-msg="${CSS.escape(slug)}"]`).forEach(el => { el.innerHTML = html; }); }
 function repaintFirm(slug) {
   const f = firmOf(slug); if (!f) return;
-  const row = document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"]`);
-  if (row) { row.outerHTML = firmRow(f); if (dpSlug === slug) document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"]`)?.classList.add('sel'); }
+  const row = document.querySelector(`#firmRows .lv-row[data-slug="${CSS.escape(slug)}"]`);
+  if (row) row.outerHTML = firmRow(f);
   if (dpSlug === slug) paintDetails();
   paintStrip(); paintFilters();
 }
@@ -722,11 +704,15 @@ function trackLive() {
   if (gone.length) store.set(LOCAL_RESOLVED, JSON.stringify([...gone.map(g => ({ ...g, resolvedAt: new Date().toISOString() })), ...readStore(LOCAL_RESOLVED, [])].slice(0, 20)));
   store.set(LIVE_KEY, JSON.stringify(now));
 }
+// v2: the shell draws the bell (desktop top bar + phone top bar); its red count = new issues, as before.
+const bells = () => [...document.querySelectorAll('[data-lv="bell"]')];
+const visibleBell = () => bells().find(b => b.offsetParent) || bells()[0];
 function paintBell() {
   const n = unseen().length;
-  $('bellBadge').hidden = !n; $('bellBadge').textContent = n > 99 ? '99+' : String(n);
+  shell?.setBell(n);
+  document.querySelectorAll('[data-lv-badge]').forEach(b => { b.textContent = n > 99 ? '99+' : String(n); });
   const label = listed().length ? `Sync issues: ${listed().length} open${n ? `, ${n} new` : ''}` : 'Sync issues: none';
-  $('bellBtn').setAttribute('aria-label', label); $('bellBtn').title = label;
+  bells().forEach(b => { b.setAttribute('aria-label', label); b.title = label; b.setAttribute('aria-controls', 'nPanel'); });
   document.title = n ? `(${n}) ${BASE_TITLE}` : BASE_TITLE;
 }
 // Redraw firm rows (and the open Details panel) with the latest status. Messages and busy states are kept.
@@ -737,7 +723,7 @@ function paintRows() {
 }
 function stopIssues() {
   clearInterval(checkTimer); checkTimer = null; issues = []; syncStatus = null; closePanel();
-  $('bellBadge').hidden = true; document.title = BASE_TITLE;
+  shell?.setBell(0); document.title = BASE_TITLE;
 }
 
 const COUNT = {
@@ -783,7 +769,7 @@ function paintPanel() {
   const resolved = [...(syncStatus?.resolved || []), ...readStore(LOCAL_RESOLVED, [])]
     .filter(r => (!r.slug || firmOf(r.slug)) && inBadge(r)).sort((a, b) => Date.parse(b.resolvedAt) - Date.parse(a.resolvedAt)).slice(0, 20);
   const lasted = r => { const m = Math.round((Date.parse(r.resolvedAt) - Date.parse(r.firstSeen)) / 60e3); return m >= 0 ? (m < 120 ? `${m} min` : m < 2880 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} days`) : ''; };
-  $('nPanel').innerHTML = `<div class="nhead">
+  $('nPanel').innerHTML = `<div class="nhead">${syncInfoHtml()}
       <div class="nrow"><h3>Sync issues</h3><button class="xbtn" type="button" data-n="close" aria-label="Close">${ICON.cross}</button></div>
       <p class="nsub"><span>${open.length ? `<b>${open.length} open</b>${n ? ` · ${n} new` : ''}` : 'All clear'}</span><span>Checked ${lastCheck ? esc(ago(new Date(lastCheck).toISOString())) : '…'} · every 5 min</span>
         <button class="linkbtn" type="button" data-n="check">Check now</button>${n ? '<button class="linkbtn" type="button" data-n="seen-all">Mark all as seen</button>' : ''}</p>
@@ -800,27 +786,30 @@ function paintPanel() {
 const resolvedTitle = r => (r.kind === 'stale' ? `No successful sync for ${STALE_MIN}+ min` : r.kind === 'no-sync' ? `No firm synced for ${STALE_MIN}+ min` : issueText(r).title);
 function openPanel(focusId) {
   if (focusId) expanded.add(focusId);
-  $('nPanel').hidden = false; $('bellBtn').setAttribute('aria-expanded', 'true'); paintPanel();
+  shell?.closeMe();
+  const wrap = shell?.bellWrap(); if (wrap && $('nPanel').parentElement !== wrap) wrap.append($('nPanel'));   // anchored to the bell you can see
+  $('nPanel').hidden = false; bells().forEach(b => b.setAttribute('aria-expanded', 'true')); paintPanel();
   if (focusId) $('nPanel').querySelector(`[data-issue="${CSS.escape(focusId)}"]`)?.scrollIntoView({ block: 'nearest' });
   if (Date.now() - lastCheck > 60e3) refreshIssues();
 }
-function closePanel() { $('nPanel').hidden = true; $('bellBtn').setAttribute('aria-expanded', 'false'); }
+function closePanel() { $('nPanel').hidden = true; bells().forEach(b => b.setAttribute('aria-expanded', 'false')); }
 // "Go to firm" (bell): opens the firm's Details panel.
 function goToFirm(slug) { closePanel(); if (firmOf(slug)) go(hashFor('list', slug)); }
-$('bellBtn').addEventListener('click', () => ($('nPanel').hidden ? openPanel() : closePanel()));
+// (the bell's click is wired by mountShell: bell.onClick in boot)
 document.addEventListener('click', e => {
   const o = e.target.closest('[data-open-issue]'); if (o) { e.stopPropagation(); return openPanel(o.dataset.openIssue); }
   // composedPath: the panel may have redrawn (and dropped) the clicked element by now
   const path = e.composedPath();
-  if (!$('nPanel').hidden && !path.includes($('bellWrap')) && !path.includes($('ovl'))) closePanel();
+  const inBell = path.some(n => n?.matches?.('[data-lv-bellwrap]'));
+  if (!$('nPanel').hidden && !inBell && !path.includes($('nPanel')) && !path.includes($('ovl'))) closePanel();
 });
 // Esc closes the topmost thing: a dialog (handled below), then a ⋯ menu, What's new, the bell panel.
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape' || !$('ovl').hidden) return;
   const menu = document.querySelector('.menu:not([hidden])');
   if (menu) { closeMenus(); document.querySelector(`[data-menu="${menu.id}"]`)?.focus(); return; }
-  if (!$('newsPanel').hidden) { closeNews(); $('newsBtn').focus(); return; }
-  if (!$('nPanel').hidden) { closePanel(); $('bellBtn').focus(); return; }
+  if (!$('newsPanel').hidden) { closeNews(); return; }   // closeNews() puts the focus back where it was
+  if (!$('nPanel').hidden) { closePanel(); visibleBell()?.focus(); return; }
   if (!$('dPanel').hidden) closeDetails();
 });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && me && Date.now() - lastCheck > CHECK_MS) refreshIssues({ reloadKpis: true }); });
@@ -829,7 +818,7 @@ $('nPanel').addEventListener('click', async e => {
   const art = b.closest('.issue'), id = art?.dataset.issue, i = issues.find(x => x.id === id), f = i?.slug ? firmOf(i.slug) : null;
   const say = html => { if (id) issueMsg[id] = html; const s = art?.querySelector('.istatus'); if (s) s.innerHTML = html; };
   switch (b.dataset.n) {
-    case 'close': closePanel(); $('bellBtn').focus(); break;
+    case 'close': closePanel(); visibleBell()?.focus(); break;
     case 'check': b.textContent = 'Checking…'; await refreshIssues({ reloadKpis: true }); paintPanel(); break;
     case 'seen-all': markSeen(listed()); paintBell(); paintPanel(); break;
     case 'seen': markSeen([i]); paintBell(); paintPanel(); break;
@@ -924,21 +913,21 @@ function openDetails(slug, tab = 'overview') {
   const fresh = $('dPanel').hidden || dpSlug !== slug;
   if ($('dPanel').hidden) dpReturn = document.activeElement?.closest?.('#dPanel') ? null : document.activeElement;
   dpSlug = slug; dpTab = tab;
-  closeMenus(); closePanel();
+  closeMenus(); closePanel(); shell?.closeMe();
   $('dPanel').hidden = false; $('dpShade').hidden = false; document.body.classList.add('dp-open');
-  document.querySelectorAll('.firm.sel').forEach(r => r.classList.remove('sel'));
-  document.querySelector(`.firm[data-slug="${CSS.escape(slug)}"]`)?.classList.add('sel');
+  document.querySelectorAll('#firmRows .lv-row[data-sel]').forEach(r => r.removeAttribute('data-sel'));
+  document.querySelector(`#firmRows .lv-row[data-slug="${CSS.escape(slug)}"]`)?.setAttribute('data-sel', '');
   paintDetails();
-  if (fresh) { $('dPanel').scrollTop = 0; $('dPanel').querySelector('[data-dp-close]')?.focus({ preventScroll: true }); }
+  if (fresh) { $('dPanel').scrollTop = 0; [...$('dPanel').querySelectorAll('[data-dp-close]')].find(b => b.offsetParent)?.focus({ preventScroll: true }); }
   else $('dPanel').querySelector(`[data-dp-tab="${tab}"]`)?.focus({ preventScroll: true });
 }
 function closeDetails({ keepHash = false } = {}) {
   const was = dpSlug; dpSlug = null;
-  document.querySelectorAll('.firm.sel').forEach(r => r.classList.remove('sel'));
+  document.querySelectorAll('#firmRows .lv-row[data-sel]').forEach(r => r.removeAttribute('data-sel'));
   if ($('dPanel').hidden) return;
   $('dPanel').hidden = true; $('dpShade').hidden = true; $('dPanel').innerHTML = ''; document.body.classList.remove('dp-open');
   if (!keepHash && parseHash().slug) go('#/');
-  const back = dpReturn && document.body.contains(dpReturn) ? dpReturn : was && document.querySelector(`.firm[data-slug="${CSS.escape(was)}"] [data-details]:not(.reason)`);
+  const back = dpReturn && document.body.contains(dpReturn) ? dpReturn : was && document.querySelector(`#firmRows .lv-row[data-slug="${CSS.escape(was)}"]`);
   back?.focus?.({ preventScroll: true }); dpReturn = null;
 }
 $('dpShade').addEventListener('click', () => closeDetails());
@@ -959,9 +948,10 @@ function paintDetails({ soft = false } = {}) {
   const tabBody = dpTab === 'performance' ? perfHtml(f) : dpTab === 'setup' ? setupHtml(f) : overviewHtml(f);
   const scroll = P.scrollTop;
   P.dataset.slug = f.slug;
-  P.innerHTML = `<div class="dphead"><div class="dptitles"><p class="ey">Firm details</p><h2 class="disp" id="dpTitle">${esc(f.name)}</h2>
+  P.innerHTML = `<button type="button" class="lv-back lv-p dpback" data-dp-close><span aria-hidden="true">‹</span>Scorecards</button>
+    <div class="dphead"><div class="dptitles"><p class="ey">Firm details</p><h2 class="disp" id="dpTitle">${esc(f.name)}</h2>
       <p class="sub">${esc(f.practiceArea || 'No practice area')}${subNames[f.slug] ? ` · GHL: ${esc(subNames[f.slug])}` : ''}</p></div>
-      <button class="xbtn" type="button" data-dp-close aria-label="Close details">${ICON.cross}</button></div>
+      <button class="xbtn lv-d" type="button" data-dp-close aria-label="Close details">${ICON.cross}</button></div>
     <div class="dptabs" role="tablist" aria-label="${esc(f.name)}">${TABS.map(([k, l]) => `<a role="tab" href="${esc(hashFor('list', f.slug, k))}" data-dp-tab="${k}" aria-selected="${k === dpTab}"${k === dpTab ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</div>
     <div class="dpmsg" data-msg="${esc(f.slug)}" aria-live="polite">${firmMsg[f.slug] || ''}</div>
     <div class="dpbody" role="tabpanel" data-tab="${dpTab}">${tabBody}</div>`;
@@ -1176,7 +1166,7 @@ async function loadPlainNews() {
   try { const r = await fetch(`./whats-new.json?t=${Date.now()}`, { cache: 'no-store' }); plainNews = r.ok ? await r.json() : {}; } catch { plainNews = {}; }
   return plainNews;
 }
-function paintNewsDot() { const v = changelog && latestVersion(changelog); $('newsDot').hidden = !v || !newer(v, store.get(NEWS_SEEN) || '0.0.0'); $('newsBtn').setAttribute('aria-label', `What's new${$('newsDot').hidden ? '' : ' (something you haven\'t seen)'}`); }
+function paintNewsDot() { const v = changelog && latestVersion(changelog); shell?.setNewsDot(!!v && newer(v, store.get(NEWS_SEEN) || '0.0.0')); }   // dot on the avatar + Me → What's new
 const TYPE_LABEL = { new: 'New', improved: 'Improved', fixed: 'Fixed' };
 function newsCardHtml(c, i) {
   return `<details class="vcard"${i === 0 ? ' open' : ''}><summary><span class="vt"><b>v${esc(c.version)}</b>${i === 0 && newsFilter === 'all' ? '<span class="pill">Latest</span>' : ''}<span class="vdate">${esc(c.date)}</span>${c.tags.map(t => `<span class="tag ${t === 'client' ? 'tg-green' : ''}">${t}</span>`).join('')}</span>${ICON.chev}<p class="vsum">${esc(c.summary)}</p></summary>
@@ -1198,7 +1188,8 @@ async function openNews() {
   $('newsPanel').innerHTML = `<div class="dhead"><div class="row"><div><p class="ey">LeadPro · KPI admin</p><h2 class="disp" id="newsTitle">What's <span class="g">new.</span></h2></div><button class="xbtn" type="button" data-news-close aria-label="Close What's new">${ICON.cross}</button></div>
       <div class="seg" role="group" aria-label="Show">${[['all', 'All'], ['client', 'Client'], ['internal', 'Internal']].map(([k, l]) => `<button type="button" data-news-filter="${k}" aria-pressed="${k === newsFilter}">${l}</button>`).join('')}</div>
       <p class="sub small">Client: also on the dashboards' own What's new. Internal: this admin page, scripts and workflows.</p></div>
-    <div class="dbody" id="newsBody"><p class="sub">Loading…</p></div>`;
+    <div class="dbody" id="newsBody"><p class="sub">Loading…</p></div>
+    <p class="newsrepo sub small">Repo <a href="${esc(REPO_URL)}" target="_blank" rel="noopener">${esc(OWNER)}/${esc(REPO)}</a> · internal tool, changes are commits to the repo</p>`;
   $('newsPanel').hidden = false; $('newsShade').hidden = false;
   $('newsPanel').querySelector('[data-news-close]').focus();
   await paintNews();

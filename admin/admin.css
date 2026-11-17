@@ -415,21 +415,53 @@ input[readonly]{color:var(--mut)}
   .menu button,.menu a{padding:15px 18px;font-size:15px}
 }
 
-/* ---------- tool colour (v1.14): KPI admin = red. Only the top band, the KPI chip, the menu underline and the
-   headline eyebrow + accent use it. Main buttons stay gold; status colours stay the same (lfmp-ui.css). ---------- */
-:root{--tool:#b8262c;--tool-ink:#b8262c;--bg:#f7efee}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--tool:#e5484d;--tool-ink:#e5484d;--bg:#120a0b}}
-:root[data-theme="dark"]{--tool:#e5484d;--tool-ink:#e5484d;--bg:#120a0b}
-body:has(#appView:not([hidden]))::before{content:"";display:block;height:4px;background:var(--tool)}
-.toolchip{display:inline-flex;align-items:center;height:24px;padding:0 9px;border:1px solid var(--tool);color:var(--tool-ink);font:700 10.5px/1 var(--b);letter-spacing:.14em;text-transform:uppercase;text-decoration:none;flex:0 0 auto;margin-left:-14px}
-.nav a[aria-current="page"]{border-bottom-color:var(--tool)}
-.head .titles .ey,.head .titles .disp .g{color:var(--tool-ink)}
+/* (v2: the per-tool red tint — top band, KPI chip, pink page — is gone; the shell in lfmp-ui.css draws the top bar.) */
 /* Red also means "problem", so on this page every problem shows an icon + words, never colour alone. */
 .st.bad .sdot,.st.warn .sdot{width:auto;height:auto;border-radius:0;background:none;font:800 13px/1 var(--b)}
 .st.bad .sdot::before{content:"✕"} .st.warn .sdot::before{content:"!"}
 .chip.bad::before{content:"✕";margin-right:5px} .chip.warn::before{content:"!";margin-right:5px}
 .abox.bad h3::before{content:"✕ "} .abox.warn h3::before{content:"! "}
 .errbox::before{content:"✕";color:var(--red);font-weight:800;margin-right:7px}
-.sev{display:grid;place-items:center;width:16px;height:16px;margin-top:3px;background:none;border:1.5px solid var(--acc);color:var(--acc-ink);font:800 10px/1 var(--b)}
+.sev{display:grid;place-items:center;width:16px;height:16px;margin-top:3px;background:none;border:1.5px solid var(--amber);color:var(--amber);font:800 10px/1 var(--b)}
 .sev::before{content:"!"} .sev.bad{background:none;border-color:var(--red);color:var(--red)} .sev.bad::before{content:"✕"}
-@media (max-width:760px){.toolchip{margin-left:0}}
+
+/* ---------- v2 (redesign v2, Nov 2026): the KPI admin inside the shared shell (lfmp-ui.css) ----------
+   Colours: red = needs you / failed, amber = waiting / warning, green = OK, blue = setting up. No gold except the shell.
+   Phone = below 880px, as in the shell. */
+/* Amber / green TEXT uses the shell's AA text tokens (--amber-ink, --green-ink); amber / green fills, lines and dots stay
+   --amber / --green. Section labels that were gold are ink. Red text passes and stays red. */
+.lfmp-v2 .chip.warn,.lfmp-v2 .st.warn,.lfmp-v2 .reason,.lfmp-v2 .scoperes .unk,.lfmp-v2 .abox h3{color:var(--amber-ink)}
+.lfmp-v2 .dset .lbl,.lfmp-v2 .map section>h4,.lfmp-v2 .tokhelp h3{color:var(--ink)}
+.lfmp-v2 .warnbox,.lfmp-v2 .abox{border-left-color:var(--amber)}
+.lfmp-v2 .abox.bad{border-left-color:var(--red)} .lfmp-v2 .abox.bad h3{color:var(--red)}
+.lfmp-v2 .step.warn .ic{border-color:var(--amber);color:var(--amber-ink)}
+.lfmp-v2 .chip.good,.lfmp-v2 .okline,.lfmp-v2 .gw .good h3,.lfmp-v2 .scoperes .ok,.lfmp-v2 .tg-new{color:var(--green-ink)}
+.lfmp-v2 .gw .good .sdot{background:var(--green)} .lfmp-v2 .gw .bad .sdot{background:var(--red)}
+/* the bell panel's top block (sync schedule + token keeper) and What's new's repo line */
+.nsync{display:flex;flex-direction:column;gap:2px;font:500 12.5px/1.4 var(--b);color:var(--mut);padding:0 0 10px;margin:0 0 4px;border-bottom:1px solid var(--line)}
+.nsync span:first-child{color:var(--ink);font-weight:600}
+.newsrepo{padding:12px 24px 18px;border-top:1px solid var(--line);margin:0}
+.newsrepo a{color:var(--ink)}
+#screen .listmsg{margin:16px 0 0}
+#firmList .lv-empty{display:flex;flex-direction:column;align-items:center;gap:12px}
+#firmList .lv-empty p{margin:0}
+#firmRows .lv-row[data-sel]{background:var(--soft)}
+#screen:not(.kpi-list) .head{padding-top:0}
+#screen:not(.kpi-list) .head .disp{font:700 40px/1 var(--d)}
+/* the bell's panel hangs under the shell's bell */
+.lv-bellwrap .npanel{top:calc(100% + 14px);text-align:left;font:400 15px/1.5 var(--b)}
+/* Details: right-side panel on desktop; full screen with "‹ Scorecards" on a phone */
+.dpback{display:none}
+.drawer.dpanel{top:0}
+@media (max-width:879.98px){
+  #screen:not(.kpi-list){padding:12px 16px 24px}
+  #screen .listmsg{margin:12px 16px 0}
+  #screen:not(.kpi-list) .head .ey{display:none}
+  #screen:not(.kpi-list) .head .disp{font-size:32px}
+  .lv-bellwrap .npanel{position:fixed;left:8px;right:8px;top:62px;width:auto;max-height:calc(100dvh - 74px - var(--lv-tabs-h))}
+  .drawer.dpanel{width:100%;border-left:0;padding:0 16px 32px;z-index:44}
+  .dpback.lv-p{display:inline-flex;position:sticky;top:0;z-index:3;width:calc(100% + 32px);margin:0 -16px;padding:6px 16px;background:var(--panel);border-bottom:1px solid var(--line);min-height:56px}
+  .dphead .ey{display:none}
+  .dphead{padding-top:14px}
+  .drawer#newsPanel{z-index:46}
+}
