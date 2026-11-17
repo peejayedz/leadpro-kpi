@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.25.1": {
+    "title": "Small fix on phones",
+    "summary": "On a phone, \"No leads yet\" is small text again.",
+    "items": [
+      { "type": "fixed", "tag": "internal", "text": "On a phone, \"No leads yet\" showed in the big number font; it is small text again." }
+    ]
+  },
   "1.25.0": {
     "title": "Numbers with meaning",
     "summary": "Leads trend, \"No leads yet\" and one colour per meaning.",

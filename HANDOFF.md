@@ -2,7 +2,11 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
-## v1.25.0 Numbers with meaning + v2 pop-ups: COMMITTED LOCALLY 18 Nov 2026, NOT pushed (waiting for PJ's OK); with Builder v1.16.0, Review admin v1.9.0
+## v1.25.1 Fix: phone "No leads yet" size: COMMITTED LOCALLY 18 Nov 2026, waiting for PJ's OK to push (shared lfmp-ui.css; Builder HANDOFF v1.16.1)
+
+## v1.25.0 Numbers with meaning + v2 pop-ups: LIVE 18 Nov 2026 (`a20b1cb`; deploy 44174855128, fingerprint e01ae930a42cd7e2; live check in the Builder HANDOFF v1.16.0)
+
+- Live (real data): Mahdavi 100 "▲ 809%", LFMP 97 "▲ from 0", Hedayati / Emery "No leads yet"; "Needs attention · 1" amber (notice only); bell: no alerts, one amber notice; phone What's new panel above its shade. PJ approved `--amber-seg` #8a5f12.
 
 - Full notes: Builder HANDOFF v1.16.0. Here: `admin/firm-details.mjs` `leadTrend(k)` (last 90 vs days 91–180 from `periods.last90.previous.totalLeads`, already in kpis.json) and `severity(kind)` / `NOTICE_KINDS` (red alert vs amber notice; `tests/admin-details` fails if a bell kind is missing from the lists).
 - Row: 0 leads → muted "No leads yet"; trend on the small line ("leads · 90 days ▼ 19%"); no previous number → "leads · 90 days". Bell items, row, details boxes and the "Needs attention" filter use `severity`. Changes: "No recent sync" is red in the bell; "Review mapping" is amber in the bell.

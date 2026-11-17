@@ -331,6 +331,7 @@ div.lv-mi{cursor:default} div.lv-mi:hover{background:none}
   .lv-row .lv-mt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .lv-row .lv-st{font-size:12.5px;gap:6px}
   .lv-row .lv-big{font-size:22px}
+  .lv-row .lv-big.lv-none{font-size:13px}   /* v1.16.1: "No leads yet" stays small text on phones (live check 18 Nov) */
   .lv-chev{display:inline;color:var(--chev);margin-left:10px;font-size:18px;line-height:normal}
   .lv-op{display:none}
   .lv-sheet{inset:0;width:auto;border-left:0;box-shadow:none;z-index:26}
