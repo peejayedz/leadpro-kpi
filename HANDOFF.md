@@ -2,7 +2,7 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
-## v1.25.1 Fix: phone "No leads yet" size: COMMITTED LOCALLY 18 Nov 2026, waiting for PJ's OK to push (shared lfmp-ui.css; Builder HANDOFF v1.16.1)
+## v1.25.1 Fix: phone "No leads yet" size: LIVE 18 Nov 2026 (Builder `f42bdf6`, KPI `8d37f1d`, Review `5bcc965`; admin-site.yml run 44186335198 green, "Changed: deploying admin-site e41d91c8b689d668" = local build of the 3 pushed commits). Live at 390 px: "No leads yet" 13px muted, counts 22px (details: Builder HANDOFF v1.16.1)
 
 ## v1.25.0 Numbers with meaning + v2 pop-ups: LIVE 18 Nov 2026 (`a20b1cb`; deploy 44174855128, fingerprint e01ae930a42cd7e2; live check in the Builder HANDOFF v1.16.0)
 
