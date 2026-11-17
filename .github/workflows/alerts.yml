@@ -1,0 +1,56 @@
+name: Slack alerts
+# KPI sync problems → Slack DM to PJ (scripts/kpi-alerts.mjs). Same issues as the admin bell: one DM when an issue
+# starts, one "Resolved" DM when it clears, never repeated. Sent DMs are remembered in status/alerts.json.
+# Started at the end of every sync (sync.yml), with a backup schedule because GitHub skips scheduled runs.
+# Slack trouble or a missing SLACK_WEBHOOK_URL is logged and never fails anything. PUBLIC LOGS: ids and counts only.
+run-name: "Slack alerts${{ inputs.test == 'yes' && ' (test DM)' || '' }}"
+
+on:
+  schedule:
+    - cron: "22,52 * * * *" # backup: halfway between the :07 / :37 syncs (UTC)
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "yes = send one test DM only (checks SLACK_WEBHOOK_URL)"
+        required: false
+        default: "no"
+
+permissions:
+  contents: write # commits status/alerts.json
+  actions: read   # the bell's "sync chain stopped" check reads recent runs
+
+# One check at a time, so a DM is never sent twice. A waiting check is replaced by a newer one (it re-reads everything).
+concurrency:
+  group: slack-alerts
+  cancel-in-progress: false
+
+jobs:
+  alerts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Check the bell and send DMs
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_TEST: ${{ inputs.test }}
+          GH_TOKEN: ${{ github.token }}
+          SYNC_CHAIN: ${{ vars.SYNC_CHAIN }}
+        run: node scripts/kpi-alerts.mjs
+      - name: Save what was sent
+        if: ${{ inputs.test != 'yes' }}
+        run: |
+          git config user.name "kpi-sync-bot"
+          git config user.email "kpi-sync-bot@users.noreply.github.com"
+          git add status/alerts.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "No change"; exit 0; fi
+          git commit -m "Slack alerts $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            sleep $((i * 5))
+          done
+          echo "Push failed after 3 tries" >&2
+          exit 1

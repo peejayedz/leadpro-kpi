@@ -232,6 +232,8 @@ test('Repo: GHL writes only in ghl-app.mjs (/oauth token calls) and ghl-menu.mjs
   for (const f of (await readdir(join(ROOT, 'scripts'))).filter(f => f.endsWith('.mjs'))) {
     const t = await readFile(join(ROOT, 'scripts', f), 'utf8');
     if (f !== 'ghl-menu.mjs') ok(!/custom-menus/.test(t), `${f} mentions custom-menus`);
+    // v1.22.0: slack.mjs's one POST goes only to a Slack webhook address (WEBHOOK_RE), never to GHL.
+    if (f === 'slack.mjs') { ok(!/leadconnectorhq|gohighlevel|lawfirmmarketingpros/i.test(t) && /WEBHOOK_RE\.test\(url\)/.test(t), 'slack.mjs may only post to a Slack webhook'); continue; }
     for (const m of t.matchAll(/method:\s*'(POST|PUT|PATCH|DELETE)'[^\n]*|ghl\(\s*'[^']*',\s*\{\s*method:\s*'(POST|PUT|PATCH|DELETE)'/g)) {
       const line = m[0];
       ok(/\/contacts\/search/.test(t.slice(Math.max(0, m.index - 120), m.index + 40)) || f === 'sync-chain.mjs', `${f}: unexpected write ${line.slice(0, 60)}`);

@@ -196,3 +196,19 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run sync-chain.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME"
+
+  # 5. Slack DMs for the admin bell's issues (alerts.yml, its own run and concurrency group). Every sync starts one,
+  #    whatever happened above. It can never fail or slow the sync: continue-on-error, and alerts.yml runs separately.
+  alerts:
+    needs: commit
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Start the Slack alerts check
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run alerts.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME"

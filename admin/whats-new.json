@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.22.0": {
+    "summary": "Sync problems now also reach PJ as a Slack message.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "When the bell gets a new sync issue, PJ gets one Slack message about it, and one more when it clears. Same issues as the bell, never repeated while still open. \"Holding previous numbers\" stays a bell notice only." },
+      { "type": "new", "tag": "internal", "text": "If a KPI dashboard set up from the Builder fails or stops, PJ gets a Slack message with the firm and the step, and a link to Retry in the Builder." }
+    ]
+  },
   "1.21.0": {
     "summary": "Steadier syncs: no more out-of-memory failures, fewer false \"chain stopped\" alerts.",
     "items": [

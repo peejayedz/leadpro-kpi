@@ -12,6 +12,15 @@ The README is the full reference and CHANGELOG.md the history. This file covers 
 | Token keeper | Hourly; mints app tokens for `tokenSource: "app"` firms only. |
 | Admin page v1.14.0 | **Live** (4698019, 15 Nov): one login with the Builder + Review admin, red tool colour. v1.13.1 before it (commit 3507479, 15 Nov ~04:45 UTC). Not-in-pipeline rows with email/phone/source, Remember passphrase (encrypted), Copy GHL menu link moved to Setup, local "Copied". Admin files + tests + docs only. Built on v1.13.0 (9e3ed52: simple home + Details panel, no re-login between screens). |
 
+## v1.22.0: Slack DMs to PJ: BUILT 18 Nov 2026, NOT PUSHED (waiting for PJ's OK)
+
+- **What:** KPI sync problems → one Slack DM when a bell issue starts, one "Resolved" DM when it clears (`scripts/kpi-alerts.mjs`, `alerts.yml`, state in `status/alerts.json`). A failed or stopped KPI setup from the Builder → one DM (`new-firm.yml` job `alert`, `scripts/setup-alert.mjs`). Part of PJ's Slack alerts (Builder v1.12.0 has the morning summary and the "Send test alert" workflow; the Review DMs are in Code.gs v11).
+- **Same as the bell:** `bellIssues()` calls the admin page's functions with the same inputs and filters with `inBadge`. `tests/alerts/run.mjs` fails if the admin page's `refreshIssues` / `listed` / `kpiSummary` stop matching, so change both together.
+- **Secret:** `SLACK_WEBHOOK_URL` (new repo secret, PJ's DM only; the same webhook as the Builder's secret and the Apps Script's `SLACK_DM_WEBHOOK_URL`). Without it nothing is sent and nothing fails; the DMs start (for anything still open) once it is set.
+- **When it checks:** at the end of every sync (`sync.yml` job `alerts` starts `alerts.yml`), plus `:22` / `:52` as a backup. Concurrency `slack-alerts` (one at a time). Test DM: Actions → Slack alerts → Run workflow → test = yes.
+- **Known behaviour (same as the bell):** "No successful sync in 45 min" for one firm appears when GitHub skips a slot and clears on the next good sync, so a skipped slot can mean one alert DM and one Resolved DM about 30 minutes apart.
+- **Stop the DMs:** delete the `SLACK_WEBHOOK_URL` secret (or disable `alerts.yml` in Actions). Nothing else depends on them.
+
 ## v1.21.0: sync memory fix + "chain stopped" hold: LIVE 17 Nov 2026 (082da14)
 
 - **Why:** LFMP's sync failed 5 times on 15–16 Nov with "JavaScript heap out of memory" (~2 GB). Its Email export returns ~6,300 mostly outbound campaign emails with full HTML bodies per pull, and the sync kept 2–3 full pulls of every channel in memory. Only ~55 inbound emails are used.

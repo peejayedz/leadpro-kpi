@@ -175,6 +175,8 @@ The admin page's **bell** (top right) shows sync problems without opening GitHub
 
 Client dashboards don't show any of this. They keep only the "may be incomplete" note.
 
+**Slack DMs to PJ (v1.22.0).** Every bell issue that counts in the badge also reaches PJ as a Slack DM: one when it starts, one "Resolved" when it clears, never repeated while it stays open ("Holding previous numbers" is a notice and sends nothing). `scripts/kpi-alerts.mjs` builds the list with the bell's own functions (`keeperIssues`, `reviewIssues`, `openIssues`, `inBadge`) and the same chain check, so the two always agree. It runs in `alerts.yml`, which every sync starts at its end (and `:22`/`:52` as a backup), and keeps what it sent in `status/alerts.json` (public: issue ids, kinds, slugs, firm names, titles and times). A KPI setup from the Builder that fails or stops sends one DM too (`new-firm.yml` job `alert`). The webhook is the repo secret `SLACK_WEBHOOK_URL`; without it nothing is sent and nothing fails. Test DM: Actions → Slack alerts → Run workflow → test = yes.
+
 ## Mapping a firm's pipeline (`firms/<slug>/config.json`)
 
 Run **Discover a firm's GHL setup** to (re)write `firms/<slug>/discovery.json`, then set:
@@ -257,6 +259,8 @@ The page finds the workflow run it started by its title (`run-name`: "Sync <slug
 `node tests/keeper/run.mjs` runs the real token keeper against a mock GHL and a fake `gh` (refresh due / not due, the new refresh token saved before anything new is used, a failed save, a refused refresh, app missing, Private Integration firms never written, a new firm, dry run, check mode) and checks no secret reaches the log or `status/token-keeper.json`.
 
 `node tests/status/run.mjs` runs the real sync against a mock GHL that fails in every way the bell reports (token rejected, missing scopes, server error, rate limit, unreachable, config errors, missing token secret, a crash) and checks the category, that nothing is published, and that the result file holds no secrets or contact data. It also checks how runs open and resolve issues, the system-wide states (chain off, chain stopped, no sync at all, stale firms), the wording and buttons for each issue type, and that nothing outside the allow-list reaches `status/sync-status.json`.
+
+`node tests/alerts/run.mjs` checks the Slack DMs: the sender (missing or wrong webhook, Slack down, timeout; never throws, never logs the URL), that the alert list is still the bell's, one DM per new issue, no repeats, one Resolved, failed DMs retried, the KPI setup DM's step numbers against the Builder, and the real script end to end against a mock Slack and GitHub.
 
 `node tests/admin-app/run.mjs` checks the admin page's "Use the LeadPro app" path (`admin/app-path.mjs`) against a mock GitHub: a clean run, the app missing (plain error), a double Create (one dispatch, one firm), a location that already has a firm (refused, nothing written), Retry finishing only what's missing, a run already going being followed instead of started again, a leftover passphrase secret never overwritten, and no passphrase in any step text, dispatch input or run title.
 

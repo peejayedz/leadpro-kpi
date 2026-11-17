@@ -213,3 +213,26 @@ jobs:
             sleep $((i * 5))
           done
           exit 1
+
+  # Slack DM to PJ when the setup failed, timed out or was cancelled (scripts/setup-alert.mjs): firm name, the
+  # failed step as the Builder numbers it, "Nothing is lost — Retry in the Builder". Once per failed run.
+  # The Builder's progress view ignores this job (its job name isn't one of the five steps).
+  alert:
+    needs: [prepare, token, setup, first-sync, menu-link]
+    if: ${{ failure() || cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Slack DM
+        continue-on-error: true
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/setup-alert.mjs
