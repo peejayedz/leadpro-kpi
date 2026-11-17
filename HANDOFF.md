@@ -2,7 +2,10 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
-## v1.23.0 Redesign v2 admin: BUILT 18 Nov 2026, NOT PUSHED (waiting for PJ's OK)
+## v1.23.0 Redesign v2 admin: LIVE 17 Nov 2026 (`e90a85a`)
+
+- **Live:** Pushed + team site deployed 17 Nov 2026 ~10:07 PM Manila (deploy run 44099661971, success). Live check on lfmp-admin.pages.dev, signed in, real data: Clients (2 test records), Scorecards (4 firms · all synced 10:07 PM) + bell top block (Sync every 30 min · last · next, Token keeper OK), Reviews (7 clients · 2 need you · All submissions ›); no sideways scroll, no console errors; the one-time "Update available" bar after the deploy cleared after one Refresh. Screenshots: `assets/images/2026-11-18_redesign-v2/live/`. Phone layout not seen live (Chrome window couldn't be resized and the site refuses framing); proven locally on real data with the same files (`…/real/`). **Follow-up, committed locally, NOT PUSHED:** avatar showed "P" live because the Google name is just "PJ"; shared `initials()` now keeps a one-word all-caps name of 2–3 letters ("PJ" → "PJ"); same file in all 3 repos.
+- **PJ 17 Nov:** summary keeps "N firms · N sync problem(s)" (the reference's "all synced" was wrong when a firm shows Sync failed).
 
 - The admin page uses the shared v2 shell (Builder HANDOFF v1.13.0): `admin/lfmp-session.js` + `admin/lfmp-ui.css` are byte-identical copies of the Builder's `page/` files (copy, never edit); `tests/shell/shell.test.mjs` identical too.
 - Moved: sync times + token keeper → top of the bell panel (always shown); repo link → foot of What's new; theme / test firms / Team sign-ins / Sign out → Me; + New firm → the gold +; stats strip → summary + "Needs attention · n" filter; row buttons → the whole row opens Details (Open dashboard ↗ there). New "Test firms" filter.
@@ -18,7 +21,7 @@ The README is the full reference and CHANGELOG.md the history. This file covers 
 | Token keeper | Hourly; mints app tokens for `tokenSource: "app"` firms only. |
 | Admin page v1.14.0 | **Live** (4698019, 15 Nov): one login with the Builder + Review admin, red tool colour. v1.13.1 before it (commit 3507479, 15 Nov ~04:45 UTC). Not-in-pipeline rows with email/phone/source, Remember passphrase (encrypted), Copy GHL menu link moved to Setup, local "Copied". Admin files + tests + docs only. Built on v1.13.0 (9e3ed52: simple home + Details panel, no re-login between screens). |
 
-## v1.22.0: Slack DMs to PJ: BUILT 18 Nov 2026, NOT PUSHED (waiting for PJ's OK)
+## v1.22.0: Slack DMs to PJ: LIVE 17 Nov 2026 (`9080da6`; secret SLACK_WEBHOOK_URL set by PJ 17 Nov ~5:51 PM, Builder "Send test alert" run #1 logged "Slack: sent")
 
 - **What:** KPI sync problems → one Slack DM when a bell issue starts, one "Resolved" DM when it clears (`scripts/kpi-alerts.mjs`, `alerts.yml`, state in `status/alerts.json`). A failed or stopped KPI setup from the Builder → one DM (`new-firm.yml` job `alert`, `scripts/setup-alert.mjs`). Part of PJ's Slack alerts (Builder v1.12.0 has the morning summary and the "Send test alert" workflow; the Review DMs are in Code.gs v11).
 - **Same as the bell:** `bellIssues()` calls the admin page's functions with the same inputs and filters with `inBadge`. `tests/alerts/run.mjs` fails if the admin page's `refreshIssues` / `listed` / `kpiSummary` stop matching, so change both together.
