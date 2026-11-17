@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-17T17:37:27.970Z",
+  "generatedAt": "2026-11-17T18:07:26.004Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794895200000,
-      "to": 1794937047970,
+      "to": 1794938846004,
       "current": {
         "totalLeads": 7,
         "contacted": 0,
@@ -351,7 +351,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794808800000,
-      "to": 1794937047970,
+      "to": 1794938846004,
       "current": {
         "totalLeads": 23,
         "contacted": 0,
@@ -437,7 +437,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 10,
+        "totalLeads": 12,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -473,7 +473,7 @@
           ],
           [
             "Google Business Profile - Houston",
-            2,
+            4,
             0
           ],
           [
@@ -485,7 +485,7 @@
         "byChannel": [
           [
             "Third Party",
-            3,
+            5,
             0
           ],
           [
@@ -504,13 +504,13 @@
             0
           ]
         ],
-        "attributedLeads": 10,
+        "attributedLeads": 12,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            10,
+            12,
             "newLeads",
             null
           ],
@@ -751,10 +751,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794332247970,
-      "to": 1794937047970,
+      "from": 1794334046004,
+      "to": 1794938846004,
       "current": {
-        "totalLeads": 81,
+        "totalLeads": 79,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -785,7 +785,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            57,
+            55,
             0
           ],
           [
@@ -812,7 +812,7 @@
         "byChannel": [
           [
             "Third Party",
-            80,
+            78,
             0
           ],
           [
@@ -821,13 +821,13 @@
             0
           ]
         ],
-        "attributedLeads": 81,
+        "attributedLeads": 79,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            81,
+            79,
             "newLeads",
             null
           ],
@@ -858,7 +858,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 11,
+        "totalLeads": 13,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -894,7 +894,7 @@
           ],
           [
             "Google Business Profile - Houston",
-            2,
+            4,
             0
           ],
           [
@@ -911,7 +911,7 @@
         "byChannel": [
           [
             "Third Party",
-            3,
+            5,
             0
           ],
           [
@@ -930,13 +930,13 @@
             0
           ]
         ],
-        "attributedLeads": 11,
+        "attributedLeads": 13,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            11,
+            13,
             "newLeads",
             null
           ],
@@ -969,8 +969,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792345047970,
-      "to": 1794937047970,
+      "from": 1792346846004,
+      "to": 1794938846004,
       "current": {
         "totalLeads": 92,
         "contacted": 0,
@@ -1177,10 +1177,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787161047970,
-      "to": 1794937047970,
+      "from": 1787162846004,
+      "to": 1794938846004,
       "current": {
-        "totalLeads": 98,
+        "totalLeads": 97,
         "contacted": 1,
         "contactRatePct": 1,
         "speedToLeadAvgMin": null,
@@ -1221,7 +1221,7 @@
           ],
           [
             "Chat",
-            14,
+            13,
             0
           ],
           [
@@ -1253,7 +1253,7 @@
           ],
           [
             "Google Organic Search",
-            5,
+            4,
             0
           ],
           [
@@ -1267,13 +1267,13 @@
             0
           ]
         ],
-        "attributedLeads": 98,
+        "attributedLeads": 97,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            98,
+            97,
             "newLeads",
             null
           ],
@@ -1304,7 +1304,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 10,
+        "totalLeads": 11,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1335,14 +1335,14 @@
         "bySource": [
           [
             "Chat",
-            10,
+            11,
             0
           ]
         ],
         "byChannel": [
           [
             "Google Organic Search",
-            5,
+            6,
             0
           ],
           [
@@ -1356,13 +1356,13 @@
             0
           ]
         ],
-        "attributedLeads": 10,
+        "attributedLeads": 11,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            10,
+            11,
             "newLeads",
             null
           ],
@@ -1396,7 +1396,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1794937047970,
+      "to": 1794938846004,
       "current": {
         "totalLeads": 92,
         "contacted": 0,
@@ -1772,7 +1772,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1794937047970,
+      "to": 1794938846004,
       "current": {
         "totalLeads": 93,
         "contacted": 0,
@@ -2177,7 +2177,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-17T17:37:27.970Z",
+    "checkedAt": "2026-11-17T18:07:26.004Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
