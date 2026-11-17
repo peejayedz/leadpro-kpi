@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-17T13:18:13.141Z",
-  "lastRunAt": "2026-11-17T13:18:13.141Z",
-  "lastOkAt": "2026-11-17T13:18:13.141Z",
-  "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44091347041",
+  "updatedAt": "2026-11-17T14:37:13.204Z",
+  "lastRunAt": "2026-11-17T14:37:13.204Z",
+  "lastOkAt": "2026-11-17T14:37:13.204Z",
+  "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44105067130",
   "lastRefreshAt": "2026-11-17T13:18:14.732Z",
   "agencyExpiresAt": "2026-11-18T13:18:13.732Z",
   "appInstalls": 25,
@@ -11,7 +11,7 @@
   "problem": null,
   "firms": {
     "zz-test-2": {
-      "lastMintAt": "2026-11-17T13:18:13.141Z",
+      "lastMintAt": "2026-11-17T14:37:13.204Z",
       "problem": null,
       "since": null
     }
