@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-18T18:13:27.123Z",
+  "updatedAt": "2026-11-18T21:30:50.983Z",
   "open": {
     "boca-dental:mapping-review": {
       "kind": "mapping-review",
@@ -16,22 +16,6 @@
       "name": "All firms",
       "title": "Token keeper hasn't run in 4 hours",
       "firstSeen": "2026-11-18T17:16:25.635Z",
-      "sentAt": "2026-11-18T18:13:27.123Z"
-    },
-    "system:no-sync": {
-      "kind": "no-sync",
-      "slug": null,
-      "name": "All firms",
-      "title": "No firm has synced in 5 hours",
-      "firstSeen": "2026-11-18T13:48:10.581Z",
-      "sentAt": "2026-11-18T18:13:27.123Z"
-    },
-    "system:no-link": {
-      "kind": "no-link",
-      "slug": null,
-      "name": "All firms",
-      "title": "Sync chain has stopped",
-      "firstSeen": "2026-11-18T13:07:06Z",
       "sentAt": "2026-11-18T18:13:27.123Z"
     }
   }
