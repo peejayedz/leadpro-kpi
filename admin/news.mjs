@@ -28,4 +28,9 @@ export function filterCards(cards, f) {
 
 // Unseen: the latest version is newer than the one this browser last opened.
 const num = v => String(v || '0.0.0').split('.').map(Number);
+// v1.26.0 (PJ, 19 Nov): a What's new CARD only for minor releases (x.Y.0). A patch (x.y.Z, Z > 0) gets a CHANGELOG line
+// only and never pops a card, not even with wording made from CHANGELOG.md. On a patch, the card (if still unseen) is the
+// one of its minor release: cardVersion('1.26.2') = '1.26.0'.
+export const isMinor = v => /^\d+\.\d+\.0$/.test(String(v || ''));
+export const cardVersion = v => { const m = String(v || '').match(/^(\d+)\.(\d+)\.\d+$/); return m ? `${m[1]}.${m[2]}.0` : null; };
 export const newer = (a, b) => { const x = num(a), y = num(b); for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); return false; };

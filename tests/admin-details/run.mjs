@@ -5,7 +5,8 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { firmReasons, notInPipelineList, ghlContactUrl, perfView, GOALS, SYNC_PROBLEMS, severity, leadTrend } from '../../admin/firm-details.mjs';
+import { firmReasons, notInPipelineList, ghlContactUrl, perfView, GOALS, SYNC_PROBLEMS, severity, leadTrend, sortFirms, staleLine, forDuration } from '../../admin/firm-details.mjs';
+import { isMinor, cardVersion } from '../../admin/news.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 let failed = 0, passed = 0;
@@ -38,15 +39,63 @@ check(severity('something-new') === 'alert', 'an unknown kind is an alert (safer
   check(kinds.size >= 12 && !missing.length, `every bell kind is listed as alert or notice (${kinds.size} kinds${missing.length ? `; missing ${missing.join(', ')}` : ''})`);
 }
 // ---- v1.25.0: leads trend, last 90 days vs the 90 days before ----
-const kt = (cur, prev) => ({ periods: { last90: { current: { totalLeads: cur }, previous: prev === undefined ? undefined : { totalLeads: prev } } } });
-check(JSON.stringify(leadTrend(kt(112, 100))) === JSON.stringify({ dir: 'up', text: '▲ 12%', label: 'up 12% on the 90 days before' }), 'trend up: ▲ 12%');
-check(leadTrend(kt(92, 100)).text === '▼ 8%' && leadTrend(kt(92, 100)).dir === 'down', 'trend down: ▼ 8%');
-check(leadTrend(kt(50, 50)).text === '— same' && leadTrend(kt(1001, 1000)).text === '— same', 'trend same (also under 0.5%): — same');
-check(leadTrend(kt(5, 0)).text === '▲ from 0', 'from nothing: ▲ from 0 (no made-up %)');
-check(leadTrend(kt(5)) === null && leadTrend(null) === null && leadTrend({ periods: {} }) === null, 'no previous number in the data: no trend');
+// v1.26.0: only when the 90 days before (days 91–180) are fully covered: the firm's start (index.json createdAt) at or before
+// periods.last90.from − 90 days. Never "▲ from 0", never a % from a partial period.
+const NOW90 = Date.parse('2026-11-19T00:00:00Z'), FROM90 = NOW90 - 90 * 864e5, PREV_START = FROM90 - 90 * 864e5;
+const kt = (cur, prev) => ({ periods: { last90: { from: FROM90, to: NOW90, current: { totalLeads: cur }, previous: prev === undefined ? undefined : { totalLeads: prev } } } });
+const OLD = { since: '2025-01-01T00:00:00Z' };   // a firm on the scorecards long before day 180 = covered
+check(JSON.stringify(leadTrend(kt(112, 100), OLD)) === JSON.stringify({ dir: 'up', text: '▲ 12%', label: 'up 12% on the 90 days before' }), 'covered, trend up: ▲ 12%');
+check(leadTrend(kt(92, 100), OLD).text === '▼ 8%' && leadTrend(kt(92, 100), OLD).dir === 'down', 'covered, trend down: ▼ 8%');
+check(leadTrend(kt(50, 50), OLD).text === '— same' && leadTrend(kt(1001, 1000), OLD).text === '— same', 'covered, trend same (also under 0.5%): — same');
+check(leadTrend(kt(5, 0), OLD) === null, 'covered but the 90 days before had 0: no trend (never "▲ from 0")');
+check(leadTrend(kt(5), OLD) === null && leadTrend(null, OLD) === null && leadTrend({ periods: {} }, OLD) === null, 'no previous number in the data: no trend');
+check(leadTrend(kt(100, 11), { since: new Date(PREV_START).toISOString() })?.text === '▲ 809%', 'start exactly at day 180 = covered (▲ 809% for 100 vs 11)');
+check(leadTrend(kt(100, 11), { since: new Date(PREV_START + 60e3).toISOString() }) === null, 'start one minute after day 180 = partial: no trend');
+check(leadTrend(kt(100, 11), { since: '2026-11-02T00:00:00.000Z' }) === null, 'Mahdavi-like (started 2 Nov 2026, 100 vs 11): no trend, no "▲ 809%"');
+check(leadTrend(kt(100, 11)) === null && leadTrend(kt(100, 11), { since: 'not a date' }) === null, 'no start date (or not a date) = not covered: no trend');
+check(leadTrend({ periods: { last90: { current: { totalLeads: 9 }, previous: { totalLeads: 10 } } } }, OLD) === null, 'no period start in the data = not covered');
+check(leadTrend({ periods: { last90: { ...kt(9, 10).periods.last90, from: new Date(FROM90).toISOString() } } }, OLD)?.text === '▼ 10%', 'period start as an ISO date works too');
 {
-  const m = await json('firms/mahdavi/data/kpis.json'), t = leadTrend(m), c = m.periods.last90.current.totalLeads, p = m.periods.last90.previous.totalLeads;
-  check(t && t.text === (c === p ? '— same' : p === 0 ? '▲ from 0' : `${c > p ? '▲' : '▼'} ${Math.round(Math.abs(c - p) / p * 100)}%`), `real data (Mahdavi): ${c} vs ${p} → ${t?.text}`);
+  // The real files: every firm today started in Nov 2026, so none is covered → the rows show just "leads · 90 days".
+  const firmsIdx = await json('firms/index.json');
+  for (const slug of ['mahdavi', 'lfmp']) {
+    const m = await json(`firms/${slug}/data/kpis.json`), f = firmsIdx.find(x => x.slug === slug), c = m.periods.last90.current.totalLeads, p = m.periods.last90.previous.totalLeads;
+    const covered = Date.parse(f.createdAt) <= m.periods.last90.from - 90 * 864e5, t = leadTrend(m, { since: f.createdAt });
+    check(covered ? (p > 0 ? !!t && !/from 0/.test(t.text) : t === null) : t === null, `real data (${slug}): ${c} vs ${p}, scorecard since ${f.createdAt.slice(0, 10)} → ${t?.text || `no trend (${covered ? 'previous 0' : 'days 91–180 not covered'})`}`);
+  }
+}
+// ---- v1.26.0: firm list A–Z (every filter and search use the same sort) ----
+{
+  const fs = [{ slug: 'z', name: 'ZZ TEST 2' }, { slug: 'm', name: 'The Mahdavi Law Firm' }, { slug: 'l', name: 'Law Firm Marketing Pros (LFMP)' },
+    { slug: 'h', name: 'Hedayati Law Group, P.C' }, { slug: 'e', name: 'emery Law Office' }, { slug: 'a', name: 'Acme Law' }];
+  const nm = f => f.name, names = list => sortFirms(list, nm).map(f => f.slug).join('');
+  check(names(fs) === 'aehlmz', `All: A–Z by shown name, "The Mahdavi" under M, lower-case "emery" under E (${names(fs)})`);
+  check(names(fs.filter(f => /law/i.test(f.name))) === 'aehlm', 'search "law": results A–Z');
+  check(names(fs.filter(f => ['z', 'm', 'h'].includes(f.slug))) === 'hmz', 'Needs attention subset: A–Z (not by urgency)');
+  check(names(fs.filter(f => f.slug === 'z')) === 'z' && names([]) === '', 'Test firms / empty');
+  check(JSON.stringify(fs.map(f => f.slug)) === '["z","m","l","h","e","a"]', 'sortFirms returns a copy (the firm list itself keeps index.json order)');
+  check(names([{ slug: 'x', name: 'zed' }, { slug: 'b', name: 'Beta' }, { slug: 'a', name: 'alpha' }, { slug: 'c', name: 'Charlie' }]) === 'abcx', 'case-insensitive: alpha, Beta, Charlie, zed');
+}
+// ---- v1.26.0: "No successful sync for …" on the firm row ----
+{
+  const N = Date.parse('2026-11-19T12:00:00Z'), back = min => new Date(N - min * 60e3).toISOString();
+  check(staleLine(N, back(45)) === 'No successful sync for 45 min', staleLine(N, back(45)));
+  check(staleLine(N, back(182)) === 'No successful sync for 3 h', staleLine(N, back(182)));
+  check(staleLine(N, back(2 * 1440 + 30)) === 'No successful sync for 2 days', staleLine(N, back(2 * 1440 + 30)));
+  check(forDuration(N, back(119)) === '119 min' && forDuration(N, back(47 * 60)) === '47 h', 'units as the bell: minutes under 2 h, hours under 2 days');
+  const html = await readFile(join(ROOT, 'admin/index.html'), 'utf8');
+  check(/staleLine\(Date\.now\(\), r\.issue\.lastGood/.test(html) && !/No successful sync in \$\{/.test(html), 'the row uses staleLine (no "in 3 hours 2 h ago")');
+}
+// ---- v1.26.0: What's new cards only for minor releases ----
+{
+  check(isMinor('1.26.0') && !isMinor('1.25.1') && !isMinor('1.26.10') && !isMinor(''), 'isMinor: x.Y.0 only');
+  check(cardVersion('1.26.0') === '1.26.0' && cardVersion('1.26.3') === '1.26.0' && cardVersion('nope') === null, 'cardVersion: a patch shows its minor release\'s card, never its own');
+  const html = await readFile(join(ROOT, 'admin/index.html'), 'utf8');
+  const toast = html.match(/async function showNewsToast\(\) \{[\s\S]*?\n\}/)?.[0] || '';
+  check(/cardVersion\(latest\)/.test(toast) && /isMinor\(v\)/.test(toast) && /loadPlainNews\(\)\)\[v\]/.test(toast) && !/buildCards|guessItem|loadChangelog/.test(toast), 'the card uses whats-new.json for the minor release only (no CHANGELOG fallback wording)');
+  const plain = await json('admin/whats-new.json');
+  const latest = (await readFile(join(ROOT, 'CHANGELOG.md'), 'utf8')).match(/^## v(\d+\.\d+\.\d+)/m)[1];
+  check(plain[cardVersion(latest)]?.title, `the card for v${latest} = whats-new.json "${cardVersion(latest)}" with a title`);
 }
 
 // ---- not in pipeline list ----

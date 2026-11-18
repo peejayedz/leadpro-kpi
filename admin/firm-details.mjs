@@ -1,6 +1,7 @@
 // Admin page v1.13: what the firm list and the Details panel show. Pure functions (no DOM, no fetch), tested by
 // tests/admin-details/run.mjs. Reads only what the page already has: the bell's issues and the PUBLIC kpis.json.
 import { sentBaseKey } from '../scripts/kpi-core.mjs';
+import { byName } from './lfmp-session.js';
 
 // ---------- needs attention ----------
 // Order = how urgent. Short labels go on the firm row ("… →"); the Details panel shows the full text and the fix.
@@ -22,20 +23,46 @@ export const NOTICE_KINDS = new Set(['held', 'incomplete', 'mapping-review', 'no
 export const severity = kind => (NOTICE_KINDS.has(kind) ? 'notice' : 'alert');
 export const isAlert = kind => severity(kind) === 'alert';
 
-// ---------- leads trend on the firm row (v1.25.0) ----------
+// ---------- leads trend on the firm row (v1.25.0; coverage rule v1.26.0) ----------
 // Last 90 days vs the 90 days before (days 91–180), both already in the synced kpis.json (periods.last90.current /
-// .previous.totalLeads). null = no trend (no data, or no previous number): the row keeps "leads · 90 days".
-// → { dir: 'up' | 'down' | 'same', text: '▲ 12%' | '▼ 8%' | '— same' | '▲ from 0', label } (label = words for screen readers)
-export function leadTrend(k) {
+// .previous.totalLeads). null = no trend: the row keeps "leads · 90 days".
+// v1.26.0 (PJ, 19 Nov): a trend ONLY when the 90 days before are fully covered by this firm's synced data, i.e. the
+// firm's scorecard started (firms/index.json `createdAt`, when the firm was added and first synced) at or before the
+// start of days 91–180 (periods.last90.from − 90 days). Before that, the "previous" number is whatever happened to be in
+// the firm's GHL pipeline before it was onboarded (Mahdavi: 11 leads, LFMP: 0), so a % from it means nothing (Mahdavi
+// "▲ 809%"). No start date → not covered. A previous of 0 → no trend (never "▲ from 0").
+// → { dir: 'up' | 'down' | 'same', text: '▲ 12%' | '▼ 8%' | '— same', label } (label = words for screen readers)
+const DAY_MS = 864e5;
+const msOf = v => (typeof v === 'number' ? v : Date.parse(v));
+export function trendCovered(k, since) {
+  const from = msOf(k?.periods?.last90?.from), start = msOf(since);
+  return Number.isFinite(from) && Number.isFinite(start) && start <= from - 90 * DAY_MS;
+}
+export function leadTrend(k, { since } = {}) {
   const cur = k?.periods?.last90?.current?.totalLeads, prev = k?.periods?.last90?.previous?.totalLeads;
-  if (!Number.isFinite(cur) || !Number.isFinite(prev)) return null;
+  if (!Number.isFinite(cur) || !Number.isFinite(prev) || !trendCovered(k, since)) return null;
+  if (prev === 0) return null;
   if (cur === prev) return { dir: 'same', text: '— same', label: 'the same as the 90 days before' };
-  if (prev === 0) return { dir: 'up', text: '▲ from 0', label: 'up from 0 in the 90 days before' };
   const pct = Math.round(Math.abs(cur - prev) / prev * 100);
   if (pct === 0) return { dir: 'same', text: '— same', label: 'about the same as the 90 days before' };
   return cur > prev ? { dir: 'up', text: `▲ ${pct}%`, label: `up ${pct}% on the 90 days before` } : { dir: 'down', text: `▼ ${pct}%`, label: `down ${pct}% on the 90 days before` };
 }
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+// ---------- firm list order (v1.26.0) ----------
+// A–Z by the name shown (fname: Builder record name > index.json name, through displayName), case-insensitive, a leading
+// "The " ignored (shared byName). Same in every filter and in search results, desktop and phone; the status dots and the
+// filter counts still show what is urgent, only the order changed.
+export const sortFirms = (list, nameOf) => [...list].sort(byName(nameOf));
+
+// ---------- "No recent sync" line on the firm row (v1.26.0) ----------
+// "No successful sync for 45 min" / "for 3 h" / "for 2 days" (was "No successful sync in 3 hours 2 h ago": the bell's
+// title plus the time since the issue started). Units as the bell's fmtMinutes: minutes under 2 h, hours under 2 days.
+export function forDuration(now, iso) {
+  const m = Math.max(0, Math.round((now - Date.parse(iso)) / 60e3));
+  return m < 120 ? `${m} min` : m < 48 * 60 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} days`;
+}
+export const staleLine = (now, lastGood) => `No successful sync for ${forDuration(now, lastGood)}`;
 
 // k: the firm's kpis.json (or null). issues: every open bell issue (any firm). Returns the firm's reasons, most urgent first.
 export function firmReasons(slug, k, issues = []) {

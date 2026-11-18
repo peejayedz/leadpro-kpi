@@ -142,6 +142,10 @@ const contrastFailures = (page, root = 'body') => page.evaluate(root => {
 }, root);
 const noSideScroll = page => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 const slugs = page => page.$$eval(ROW, els => els.map(e => e.dataset.slug));
+// v1.26.0: A–Z by the shown name, case-insensitive, a leading "The " ignored (written here on its own, not taken from the page)
+const shownNames = page => page.$$eval(`${ROW} .lv-nm`, els => els.map(e => e.textContent));
+const azKey = s => String(s).replace(/\s+/g, ' ').trim().replace(/^the\s+/i, '').toLowerCase();
+const isAZ = names => names.length > 0 && names.every((n, i) => !i || azKey(names[i - 1]).localeCompare(azKey(n), 'en', { sensitivity: 'base', numeric: true }) <= 0);
 // "asked to sign in again": a password box anywhere, or the page left for the sign-in page
 const lockShown = async page => /\/signin\//.test(page.url()) || !!(await page.$('#lgPw, #tokenIn, input[autocomplete="current-password"]'));
 // nothing secret in browser storage: the server's keys, the GitHub token, the Review key, a dashboard passphrase
@@ -207,7 +211,12 @@ try {
   let { ctx, page } = await openPage(G);
 
   // ---------------- home ----------------
-  check(JSON.stringify(await slugs(page)) === '["mahdavi","lfmp","hedayati-law-group-p-c","emery-law-office"]', `home: the 4 firms, test firms hidden (${(await slugs(page)).join(', ')})`);
+  // v1.26.0: A–Z by the shown name ("The Mahdavi Law Firm" under M), whatever index.json's order
+  check(JSON.stringify(await slugs(page)) === '["emery-law-office","hedayati-law-group-p-c","lfmp","mahdavi"]', `home: the 4 firms A–Z, test firms hidden (${(await slugs(page)).join(', ')})`);
+  check(isAZ(await shownNames(page)), `home: A–Z by the shown name (${(await shownNames(page)).join(' | ')})`);
+  // v1.26.0: a trend only when days 91–180 are covered by the firm's synced data; every firm started in Nov 2026 → none, never "from 0"
+  { const smalls = await page.$$eval(`${ROW} .lv-c:not(.lv-pr) .lv-big small`, s => s.map(x => x.textContent.trim()));
+    check(!(await page.$(`${ROW} [data-trend]`)) && !(await page.textContent('#firmRows')).includes('from 0') && smalls.every(t => /^leads? · 90 days$/.test(t)), `rows: no trend before the 90 days before are covered, never "from 0" (${smalls.join(' | ')})`); }
   const strip = (await page.textContent('#screen [data-lv-sum]')).replace(/\s+/g, ' ');
   check(/^4 firms · (all synced \d{1,2}:\d{2} (AM|PM)|\d+ sync problems?)$/i.test(strip), `summary line: ${strip}`);
   check((await page.textContent('#screen .lv-h1')).trim() === 'Scorecards' && await page.getAttribute('#firmSearch', 'placeholder') === 'Search 4 firms', 'title "Scorecards" + "Search 4 firms" (real count)');
@@ -228,12 +237,16 @@ try {
   check((await slugs(page)).includes('zz-test-2') && /^5 firms/.test(await page.textContent('#screen [data-lv-sum]')), 'Me → Show test clients adds ZZ TEST 2');
   await page.reload(); await unlocked(page); await page.waitForSelector(ROW);
   check(!(await lockShown(page)) && (await slugs(page)).includes('zz-test-2'), 'reload: still unlocked, Show test clients remembered');
+  check(JSON.stringify(await slugs(page)) === '["emery-law-office","hedayati-law-group-p-c","lfmp","mahdavi","zz-test-2"]', `All + test firms: A–Z (${(await slugs(page)).join(', ')})`);
   mx = await openMe(page); check(await page.getAttribute(`${mx} [data-lv="tests"]`, 'aria-checked') === 'true', 'Me shows the switch on'); await page.click(`${mx} [data-lv="tests"]`); await page.keyboard.press('Escape');
   await page.click('#screen [data-lv-seg="test"]');
   check(JSON.stringify(await slugs(page)) === '["zz-test-2"]', `Test filter: the test firms only, even with the switch off (${(await slugs(page)).join(', ')})`);
   await page.click('#screen [data-lv-seg="attention"]');
   check(await page.getAttribute('#screen [data-lv-seg="attention"]', 'aria-pressed') === 'true' && (await slugs(page)).includes('lfmp') && !(await slugs(page)).includes('mahdavi'), `Needs attention filter (${(await slugs(page)).join(', ')})`);
+  check(isAZ(await shownNames(page)), `Needs attention: A–Z, not by urgency (${(await shownNames(page)).join(' | ')})`);
   await page.click('#screen [data-lv-seg="all"]');
+  await page.fill('#firmSearch', 'law');
+  check((await slugs(page)).length >= 3 && isAZ(await shownNames(page)), `search "law": results A–Z (${(await shownNames(page)).join(' | ')})`);
   await page.fill('#firmSearch', 'emery');
   check(JSON.stringify(await slugs(page)) === '["emery-law-office"]', 'search by name');
   await page.fill('#firmSearch', 'hedayati-law');
@@ -242,6 +255,26 @@ try {
   check(await page.isVisible('[data-clear-filter]'), 'empty search shows "Show all firms"');
   await page.click('[data-clear-filter]');
   check((await slugs(page)).length === 4, 'Show all firms clears the search');
+
+  // v1.26.0: a firm with no good sync for ~3 hours: "No successful sync for 3 h" on its row (desktop and phone), never "… in 3 hours 2 h ago"
+  {
+    const G3 = useGitHub(createMockGitHub({ root: ROOT }));
+    const ago3h = new Date(Date.now() - 182 * 60e3).toISOString();
+    const km = JSON.parse(await G3.fileText('firms/mahdavi/data/kpis.json')); km.generatedAt = ago3h; if (km.sync) km.sync.checkedAt = ago3h;
+    G3.M.overlay.set('firms/mahdavi/data/kpis.json', JSON.stringify(km, null, 2) + '\n');
+    const st = JSON.parse(await G3.fileText('status/sync-status.json')); st.firms.mahdavi.lastSuccessAt = ago3h; st.firms.mahdavi.lastAttemptAt = ago3h;
+    G3.M.overlay.set('status/sync-status.json', JSON.stringify(st, null, 2) + '\n');
+    for (const [w, h] of [[1440, 900], [390, 844]]) {
+      const o = await openPage(G3, { width: w, height: h, scheme: 'light' });
+      const sel = `${rowOf('mahdavi')} ${w === 390 ? '.lv-mt.lv-p' : '.lv-mt.lv-d'}`;
+      const ok = await o.page.waitForFunction(s => /No successful sync for 3 h$/.test(document.querySelector(s)?.textContent || ''), sel, { timeout: 8000 }).then(() => true, () => false);
+      const t = (await o.page.textContent(sel).catch(() => '')) || '';
+      check(ok && !/ in \d+ hours|ago/.test(t), `${w}: stale row reads "No successful sync for 3 h" (${t})`);
+      await shot(o.page, `list_stale_${w}_light`);
+      await o.ctx.close();
+    }
+    useGitHub(G);
+  }
 
   // ---------------- Details: Overview ----------------
   await page.click(`${rowOf('lfmp')} .lv-mt`);
@@ -546,6 +579,7 @@ try {
     check(await noSideScroll(page), `${tag}: list has no sideways scroll`);
     let cf = await contrastFailures(page); check(!cf.length, `${tag}: list passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);
     await shot(page, `list_${tag}`);
+    check(JSON.stringify(await slugs(page)) === '["emery-law-office","hedayati-law-group-p-c","lfmp","mahdavi"]' && isAZ(await shownNames(page)), `${tag}: list A–Z by the shown name (${(await shownNames(page)).join(' | ')})`);
     const me1 = await openMe(page);
     check(/PJ Drozo/.test(await page.textContent(me1)) && await page.isVisible(`${me1} [data-lv="signout"]`), `${tag}: Me shows the Google name and Sign out`);
     cf = await contrastFailures(page, me1); check(!cf.length, `${tag}: Me passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);

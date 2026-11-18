@@ -249,6 +249,10 @@ export function displayName(name) {
   const s = String(name ?? '').replace(/\s+/g, ' ').trim();
   return s.replace(/(?:^|[\s,])((?:[A-Z]\.){1,3}[A-Z])$/, m => `${m}.`);
 }
+// v1.17.0: every list (Clients, Scorecards, Reviews) is A–Z by display name, case-insensitive, ignoring a leading
+// "The " ("The Mahdavi Law Firm" sorts under M). Use: list.sort(byName(x => x.name)).
+export const nameKey = name => displayName(name).replace(/^the\s+/i, '').toLowerCase();
+export const byName = get => (a, b) => nameKey(get(a)).localeCompare(nameKey(get(b)), 'en', { sensitivity: 'base', numeric: true }) || String(get(a)).localeCompare(String(get(b)));
 // The Builder's client records (private repo, records/<id>.json) through the team site, read only:
 // [{ id, name, locationId, reviewCode, kpiSlug, linkSent }]. Never throws: any failure = [] (tools keep their own names).
 let recordsPromise = null;

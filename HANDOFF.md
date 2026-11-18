@@ -2,6 +2,12 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.26.0 Firms A–Z, honest trend, stale wording, sticky details header: COMMITTED LOCALLY 19 Nov 2026 (overnight run Part 1, not pushed; with Builder v1.17.0, Review admin v1.10.0)
+
+- **Trend rule:** "▲ / ▼ n%" only when days 91–180 are fully covered by synced data: firm `createdAt` (firms/index.json) ≤ `periods.last90.from` − 90 days; else just "leads · 90 days". No "from 0". Today no firm qualifies (all started Nov 2026), so no trend shows anywhere; the first appear ~180 days after each start.
+- **809% vs ▼17% (PJ's question):** the ▼17% in the v1.25.0 notes came from the Builder test `polish.mjs`, which SET Mahdavi's days 91–180 to 120 as a fixture. The real file has 11 leads there (only opportunities already in GHL before onboarding on 2 Nov), so live showed 100 vs 11 = ▲809%; LFMP had 0 → "▲ from 0". Neither is a real comparison.
+- A–Z list (shared `byName`), "No successful sync for 3 h" on the row (the Slack DM wording in `scripts/sync-status.mjs` is unchanged), What's new card only for x.Y.0, details header sticky (`.dpsticky`) with a shadow once scrolled. Shared `lfmp-session.js` has `byName`: deploy it with this version.
+
 ## v1.25.1 Fix: phone "No leads yet" size: LIVE 18 Nov 2026 (Builder `f42bdf6`, KPI `8d37f1d`, Review `5bcc965`; admin-site.yml run 44186335198 green, "Changed: deploying admin-site e41d91c8b689d668" = local build of the 3 pushed commits). Live at 390 px: "No leads yet" 13px muted, counts 22px (details: Builder HANDOFF v1.16.1)
 
 ## v1.25.0 Numbers with meaning + v2 pop-ups: LIVE 18 Nov 2026 (`a20b1cb`; deploy 44174855128, fingerprint e01ae930a42cd7e2; live check in the Builder HANDOFF v1.16.0)

@@ -466,3 +466,15 @@ input[readonly]{color:var(--mut)}
   .drawer#newsPanel{z-index:46}
   .drawer-shade#newsShade{z-index:45}   /* v1.25.0 fix: the shade (48) sat on top of the phone panel (46): dimmed, every tap closed it */
 }
+/* v1.26.0: the details header (name, close, tabs) stays put: solid background, 1px line, soft shadow once scrolled */
+.dpsticky{position:sticky;top:0;z-index:2;background:var(--panel);margin:0 -32px 20px;padding:0 32px;border-bottom:1px solid var(--line);transition:box-shadow .2s ease}
+.dpsticky .dptabs{position:static;border-bottom:0;margin-bottom:0}
+.dpanel.scrolled .dpsticky{box-shadow:0 8px 18px rgba(0,0,0,.08)}
+:root[data-theme="dark"] .dpanel.scrolled .dpsticky{box-shadow:0 8px 18px rgba(0,0,0,.45)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dpanel.scrolled .dpsticky{box-shadow:0 8px 18px rgba(0,0,0,.45)}}
+@media (max-width:879.98px){
+  .dpsticky{top:57px;margin:0 -16px 16px;padding:0 16px}
+  .dpanel.scrolled .dphead .sub{display:none}
+  .dpanel.scrolled .dphead .disp{font-size:26px}
+  .dpanel.scrolled .dphead{padding-top:8px;padding-bottom:8px}
+}

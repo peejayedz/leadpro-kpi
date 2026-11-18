@@ -1,5 +1,14 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.26.0": {
+    "title": "Firms A to Z",
+    "summary": "The firm list is in A to Z order, and the leads trend only shows when it is fair.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "Firms are listed A to Z by the name you see, in every filter and in search results, on a computer and on a phone. \"The\" at the start is skipped, so The Mahdavi Law Firm is under M. The status dots and the Needs attention count still show what is urgent." },
+      { "type": "improved", "tag": "internal", "text": "The leads trend (▲ / ▼ against the 90 days before) only shows once the firm has a full 90 days before on its scorecard. Until then the row just says \"leads · 90 days\", so you never see a big jump that only means the scorecard is new." },
+      { "type": "fixed", "tag": "internal", "text": "A firm that hasn't synced for a while now reads \"No successful sync for 3 h\" (it read \"No successful sync in 3 hours 2 h ago\")." }
+    ]
+  },
   "1.25.1": {
     "title": "Small fix on phones",
     "summary": "On a phone, \"No leads yet\" is small text again.",

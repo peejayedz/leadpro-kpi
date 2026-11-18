@@ -14,7 +14,7 @@
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=2.2.1">
-<link rel="stylesheet" href="admin.css?v=1.25.1">
+<link rel="stylesheet" href="admin.css?v=1.26.0">
 </head>
 <body>
 
@@ -61,8 +61,8 @@ import { keeperIssues, reviewIssues, tokenLabel } from '../scripts/keeper-status
 import { checkScopes } from '../scripts/scope-check.mjs';
 import { pipelineNotices } from '../scripts/not-in-pipeline.mjs';
 import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
-import { buildCards, filterCards, newer } from './news.mjs';
-import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS, severity, isAlert, leadTrend } from './firm-details.mjs';
+import { buildCards, filterCards, newer, isMinor, cardVersion } from './news.mjs';
+import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS, severity, isAlert, leadTrend, sortFirms, staleLine } from './firm-details.mjs';
 import { decryptJSON } from '../scripts/kpi-core.mjs';
 import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
@@ -435,7 +435,7 @@ async function loadFirms() {
   }));
   applyNames(await recsP);
 }
-const kpiSummary = k => ({ generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null, sync: k.sync || null, trend: leadTrend(k),
+const kpiSummary = k => ({ generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null, sync: k.sync || null,
   notInPipeline30: k.periods?.last30?.current?.notInPipeline ?? null });   // null until the firm's first sync with the contact check
 const contactsUrl = slug => { const loc = configs[slug]?.locationId || firmOf(slug)?.locationId || ''; return validLoc(loc) ? `${configs[slug]?.ghlAppBase || 'https://app.lawfirmmarketingpros.com'}/v2/location/${loc}/contacts/smart_list/All` : ''; };
 const isStale = k => !!(k?.generatedAt && Date.now() - Date.parse(k.generatedAt) > 2 * 3600e3);   // syncs run every 30 minutes
@@ -473,15 +473,20 @@ function firmRow(f) {
   const k = kpis[f.slug], rs = reasonsOf(f), r = rs[0], bad = !!r && isBad(r);
   const more = rs.length > 1 ? ` +${rs.length - 1}` : '';
   const test = isTest(f) ? 'Test' : '';
-  const sub = [f.practiceArea || 'No practice area', test, r ? `${reasonTitle(r)}${r.issue ? ` ${ago(r.issue.firstSeen)}` : ''}` : ''].filter(Boolean).join(' · ');
-  const subPhone = [test, r ? `${r.short}${r.issue ? ` · ${ago(r.issue.firstSeen)}` : ''}` : `Synced ${clock(k?.generatedAt)}`].filter(Boolean).join(' · ');
+  // v1.26.0: "No successful sync for 3 h" (was the bell's title + the time since the issue started: "… in 3 hours 2 h ago")
+  const stale = r?.kind === 'stale' && r.issue ? staleLine(Date.now(), r.issue.lastGood || k?.generatedAt || r.issue.firstSeen) : '';
+  const sub = [f.practiceArea || 'No practice area', test, stale || (r ? `${reasonTitle(r)}${r.issue ? ` ${ago(r.issue.firstSeen)}` : ''}` : '')].filter(Boolean).join(' · ');
+  const subPhone = [test, stale || (r ? `${r.short}${r.issue ? ` · ${ago(r.issue.firstSeen)}` : ''}` : `Synced ${clock(k?.generatedAt)}`)].filter(Boolean).join(' · ');
   const status = r ? lvStatus(bad ? 'red' : 'amber', `${r.short}${more}`) : lvStatus('green', `Synced ${clock(k?.generatedAt)}`);
   // v1.25.0: 0 leads → a muted "No leads yet"; under the number, on the same small line, the trend vs the 90 days before
-  // (when the synced data has it): "leads · 90 days ▼ 19%" (rows keep one height)
-  const n = k?.leads90, noun = `lead${n === 1 ? '' : 's'}`, tr = n > 0 ? k?.trend : null;
+  // (when the synced data has it): "leads · 90 days ▼ 19%" (rows keep one height). v1.26.0: only when the 90 days before
+  // are fully covered by the firm's synced data (index.json createdAt at or before day 180; firm-details.mjs leadTrend).
+  const n = k?.leads90, noun = `lead${n === 1 ? '' : 's'}`, tr = n > 0 ? leadTrend(kpiFull[f.slug], { since: f.createdAt }) : null;
+  // v1.26.0: a stale sync doesn't make the leads bad: the number stays in normal ink; red is only on the status
+  const redNum = bad && r?.kind !== 'stale';
   const leads = phone => (n === 0 ? '<span class="lv-big lv-none" data-leads="none">No leads yet</span>'
-    : n == null ? bigHtml('—', `${noun} · ${phone ? '90 d' : '90 days'}`, bad)
-    : `<span class="lv-big${bad ? ' red' : ''}" data-leads="${n}"${tr ? ` title="${esc(`${n} ${noun} in the last 90 days, ${tr.label}`)}"` : ''}>${n}<small>${noun} · ${phone ? '90 d' : '90 days'}${tr ? ` <span class="lv-tr ${tr.dir}" data-trend="${tr.dir}">${esc(tr.text)}</span>` : ''}</small></span>`);
+    : n == null ? bigHtml('—', `${noun} · ${phone ? '90 d' : '90 days'}`, redNum)
+    : `<span class="lv-big${redNum ? ' red' : ''}" data-leads="${n}"${tr ? ` title="${esc(`${n} ${noun} in the last 90 days, ${tr.label}`)}"` : ''}>${n}<small>${noun} · ${phone ? '90 d' : '90 days'}${tr ? ` <span class="lv-tr ${tr.dir}" data-trend="${tr.dir}">${esc(tr.text)}</span>` : ''}</small></span>`);
   return lvRow({ name: fname(f), sub, subPhone, label: `Open ${fname(f)}`,
     attrs: `data-slug="${esc(f.slug)}" data-row${dpSlug === f.slug ? ' data-sel' : ''} title="${esc(k?.generatedAt ? `Last sync ${fmtTime(k.generatedAt)}` : 'No data yet')}"`,
     cells: [status.replace('<span class="lv-st', '<span data-state="status" class="lv-st'), leads(false)], phoneRight: leads(true) });
@@ -511,7 +516,7 @@ function paintList() {
   const host = $('firmList'); if (!host) return;
   const fn = FILTERS.find(x => x[0] === listFilter)[2];
   const pool = listFilter === 'test' ? firms : visibleFirms();
-  const shown = pool.filter(f => fn(f) && matchesQuery(f));
+  const shown = sortFirms(pool.filter(f => fn(f) && matchesQuery(f)), fname);   // v1.26.0: A–Z by the shown name (every filter + search)
   const hiddenTests = !showTests && listFilter !== 'test' ? firms.filter(f => isTest(f) && fn(f) && matchesQuery(f)).length : 0;
   host.innerHTML = !firms.length ? `<div class="lv-list lv-empty"><p>No firms yet.</p><button class="lv-plus" type="button" data-new-firm>+ Add the first firm</button></div>`
     : shown.length ? `<div class="lv-list" id="firmRows" style="--lv-cols:${LIST_COLS}">${shown.map(firmRow).join('')}</div>`
@@ -972,16 +977,17 @@ function paintDetails({ soft = false } = {}) {
   const scroll = P.scrollTop;
   P.dataset.slug = f.slug;
   P.innerHTML = `<button type="button" class="lv-back lv-p dpback" data-dp-close><span aria-hidden="true">‹</span>Scorecards</button>
-    <div class="dphead"><div class="dptitles"><p class="ey">Firm details</p><h2 class="disp" id="dpTitle">${esc(fname(f))}</h2>
+    <div class="dpsticky"><div class="dphead"><div class="dptitles"><p class="ey">Firm details</p><h2 class="disp" id="dpTitle">${esc(fname(f))}</h2>
       <p class="sub">${esc(f.practiceArea || 'No practice area')}${subNames[f.slug] ? ` · GHL: ${esc(subNames[f.slug])}` : ''}</p></div>
       <button class="xbtn lv-d" type="button" data-dp-close aria-label="Close details">${ICON.cross}</button></div>
-    <div class="dptabs" role="tablist" aria-label="${esc(fname(f))}">${TABS.map(([k, l]) => `<a role="tab" href="${esc(hashFor('list', f.slug, k))}" data-dp-tab="${k}" aria-selected="${k === dpTab}"${k === dpTab ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</div>
+    <div class="dptabs" role="tablist" aria-label="${esc(fname(f))}">${TABS.map(([k, l]) => `<a role="tab" href="${esc(hashFor('list', f.slug, k))}" data-dp-tab="${k}" aria-selected="${k === dpTab}"${k === dpTab ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</div></div>
     <div class="dpmsg" data-msg="${esc(f.slug)}" aria-live="polite">${firmMsg[f.slug] || ''}</div>
     <div class="dpbody" role="tabpanel" data-tab="${dpTab}">${tabBody}</div>`;
   if (soft) P.scrollTop = scroll;
   wireEyes(P);
   if (dpTab === 'overview') loadNip(f);
 }
+$('dPanel').addEventListener('scroll', () => { const P = $('dPanel'); P.classList.toggle('scrolled', P.scrollTop > 4); }, { passive: true });   // v1.26.0: header shadow
 $('dPanel').addEventListener('click', e => {
   if (e.target.closest('[data-dp-close]')) return closeDetails();
   const p = e.target.closest('[data-perf]');
@@ -1192,12 +1198,14 @@ async function loadPlainNews() {
 function paintNewsDot() { const v = changelog && latestVersion(changelog); shell?.setNewsDot(!!v && newer(v, store.get(NEWS_SEEN) || '0.0.0')); }   // dot on the avatar + Me → What's new
 // v1.25.0: the shared What's new card (same as the Builder and Review admin), once per version: whats-new.json's title
 // (or summary) and one short line; a version without plain words shows no card (the dot in Me still does).
+// v1.26.0: a card only for a minor release (x.Y.0): on a patch, the card of its minor release if still unseen; a patch
+// never has a card of its own, and a version without plain words never gets one (no wording made from CHANGELOG.md).
 async function showNewsToast() {
-  const v = changelog && latestVersion(changelog);
-  if (!v || !newer(v, store.get(NEWS_SEEN) || '0.0.0')) return;
+  const latest = changelog && latestVersion(changelog), v = cardVersion(latest);
+  if (!v || !isMinor(v) || !newer(v, store.get(NEWS_SEEN) || '0.0.0')) return;
   const p = (await loadPlainNews())[v]; if (!p || !newer(v, store.get(NEWS_SEEN) || '0.0.0')) return;
   showNewsCard({ version: v, title: p.title || p.summary, line: p.title ? newsLine(p) : newsLine({ items: p.items }),
-    onSee: () => openNews(), onGot: () => { store.set(NEWS_SEEN, v); paintNewsDot(); } });
+    onSee: () => openNews(), onGot: () => { store.set(NEWS_SEEN, latest); paintNewsDot(); } });
 }
 const TYPE_LABEL = { new: 'New', improved: 'Improved', fixed: 'Fixed' };
 function newsCardHtml(c, i) {
