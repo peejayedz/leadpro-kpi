@@ -161,18 +161,66 @@ test('greeting HTML: date eyebrow, letters, gold name, numbers (0 = green All cl
   assert.ok(!S.greetingHtml({ hour: 9, date, name: '<i>x</i>' }).includes('<i>x</i>'), 'escaped');
 });
 test('greeting counts: the tool\'s own within ~1 s (never waits longer), the others from their last load (12 h), never throws', async () => {
-  const st = memStore(), now = Date.now();
-  S.noteCount('reviews', 2, st, now - 3600e3);
-  S.noteCount('scorecards', 1, st, now - 13 * 3600e3);   // too old
-  S.noteCount('bogus', 5, st, now);
-  assert.deepEqual(S.cachedCounts(st, now), { reviews: 2 });
-  assert.deepEqual(await S.greetCounts(() => Promise.resolve({ clients: 4 }), { store: st, now, wait: 50 }), { reviews: 2, clients: 4 });
+  const now = Date.now();
+  // v2.4.1: fresh counts are remembered, so each case starts from the same remembered set (its own store)
+  const seed = () => { const s = memStore(); S.noteCount('reviews', 2, s, now - 3600e3); S.noteCount('scorecards', 1, s, now - 13 * 3600e3); S.noteCount('bogus', 5, s, now); return s; };
+  assert.deepEqual(S.cachedCounts(seed(), now), { reviews: 2 }, 'scorecards too old, bogus ignored');
+  assert.deepEqual(await S.greetCounts(() => Promise.resolve({ clients: 4 }), { store: seed(), now, wait: 50 }), { reviews: 2, clients: 4 });
   const t0 = Date.now();
-  assert.deepEqual(await S.greetCounts(() => new Promise(() => {}), { store: st, now, wait: 60 }), { reviews: 2 }, 'own count late = left out');
+  assert.deepEqual(await S.greetCounts(() => new Promise(() => {}), { store: seed(), now, wait: 60 }), { reviews: 2 }, 'own count late = left out');
   assert.ok(Date.now() - t0 < 400, 'no long wait');
-  assert.deepEqual(await S.greetCounts(() => { throw new Error('x'); }, { store: st, now, wait: 50 }), { reviews: 2 });
+  assert.deepEqual(await S.greetCounts(() => { throw new Error('x'); }, { store: seed(), now, wait: 50 }), { reviews: 2 });
   assert.deepEqual(await S.greetCounts(undefined, { store: { getItem() { throw new Error('no'); } }, now, wait: 20 }), {});
-  assert.deepEqual(await S.greetCounts(() => ({ reviews: 0 }), { store: st, now, wait: 50 }), { reviews: 0 }, 'own count wins; 0 kept (All clear)');
+  assert.deepEqual(await S.greetCounts(() => ({ reviews: 0 }), { store: seed(), now, wait: 50 }), { reviews: 0 }, 'own count wins; 0 kept (All clear)');
+});
+// v2.4.1: Sign out replays the greeting; all three counts read fresh when it starts
+test('greeting v2.4.1: Sign out forgets "greeted today" (next load plays again, same day); nothing else does; storage that fails = no greeting', () => {
+  const st = memStore(), d1 = new Date(2026, 10, 19, 9), d1b = new Date(2026, 10, 19, 15);
+  assert.equal(S.claimGreetingDay(st, d1), true);
+  assert.equal(S.claimGreetingDay(st, d1b), false, 'tool switch / reload / app reopened / Access renewing the session: same page load rules, no replay');
+  S.forgetGreetingDay(st);
+  assert.equal(st.getItem(S.GREET_DAY_KEY), null, 'Sign out clears the mark');
+  assert.equal(S.claimGreetingDay(st, d1b), true, 'signed back in the same day: plays again');
+  assert.equal(S.claimGreetingDay(st, d1b), false, 'then once a day again');
+  S.forgetGreetingDay({ removeItem() { throw new Error('blocked'); } });   // never throws
+  S.forgetGreetingDay(null);
+  assert.equal(S.claimGreetingDay({ getItem() { throw new Error('blocked'); }, setItem() {}, removeItem() {} }, d1), false, 'storage blocked: still no greeting');
+  // signOut() is the only caller (the menu's Sign out and the tools' own Sign out buttons); toSignIn (expired session) is not
+  const src = fs.readFileSync(path.join(DIR, 'lfmp-session.js'), 'utf8');
+  assert.match(src, /export async function signOut\(\) \{\n {2}clearLegacy\(\); forgetGreetingDay\(\);/);
+  assert.equal((src.match(/forgetGreetingDay\(\)/g) || []).length, 1, 'only signOut forgets the day');
+  assert.doesNotMatch(src.slice(src.indexOf('export function toSignIn'), src.indexOf('export async function signOut')), /forgetGreetingDay/);
+});
+test('greeting v2.4.1: every count read at once; what is in by the deadline shows; slow = last known (12 h) or left out; failed = ignored; late ones are still noted', async () => {
+  const st = memStore(), now = Date.now(), sleep = ms => new Promise(r => setTimeout(r, ms));
+  S.noteCount('reviews', 7, st, now - 3600e3);   // last known, 1 h old
+  let late;
+  const reads = [() => Promise.resolve({ clients: 4 }), () => sleep(10).then(() => ({ scorecards: 0 })), () => new Promise(r => { late = r; })];
+  const t0 = Date.now();
+  assert.deepEqual(await S.greetCounts(reads, { store: st, now, wait: 80 }), { clients: 4, scorecards: 0, reviews: 7 }, 'slow reviews read = the last known count');
+  assert.ok(Date.now() - t0 < 300, 'never waits past the deadline');
+  assert.deepEqual(S.cachedCounts(st), { clients: 4, scorecards: 0, reviews: 7 }, 'fresh counts noted');
+  late({ reviews: 3 }); await sleep(5);
+  assert.equal(S.cachedCounts(st).reviews, 3, 'a late read is still noted for next time');
+  // a failed read: the other two still show; never throws
+  const st2 = memStore();
+  assert.deepEqual(await S.greetCounts([() => ({ clients: 1 }), () => Promise.reject(new Error('down')), () => { throw new Error('x'); }, () => ({ reviews: 2 })], { store: st2, now, wait: 50 }), { clients: 1, reviews: 2 });
+  // all in early: resolves at once (no waiting for the deadline)
+  const t1 = Date.now(); await S.greetCounts([() => ({ clients: 1 }), () => ({ reviews: 2 })], { store: st2, now, wait: 2000 }); assert.ok(Date.now() - t1 < 200);
+  // junk answers are ignored
+  assert.deepEqual(await S.greetCounts([() => ({ clients: null, reviews: 'x', scorecards: undefined }), () => null], { store: memStore(), now, wait: 30 }), {});
+});
+test('greeting v2.4.1: each tool reads its own count from its list + the other two with their greet-count module on this site', async () => {
+  assert.deepEqual(S.TOOL_KIND, { builder: 'clients', kpi: 'scorecards', review: 'reviews' });
+  assert.deepEqual(S.GREET_SOURCES, { clients: '/ghl-subaccount-builder-page/greet-count.js', scorecards: '/leadpro-kpi/admin/greet-count.mjs', reviews: '/automation-review/admin/greet-count.mjs' });
+  for (const [tool, mine] of Object.entries(S.TOOL_KIND)) {
+    const asked = [], own = () => ({ [mine]: 1 });
+    const reads = S.greetReads(tool, own, k => { asked.push(k); return Promise.resolve({ [k]: 0 }); });
+    assert.equal(reads[0], own, `${tool}: its own count first`);
+    await Promise.all(reads.slice(1).map(r => r()));
+    assert.deepEqual(asked.sort(), S.GREET_KINDS.map(k => k[0]).filter(k => k !== mine).sort(), `${tool}: reads the other two only`);
+  }
+  assert.equal(S.greetReads('builder', undefined, () => ({})).length, 2, 'no own count (still loading) → just the other two');
 });
 test('"Your menu ›" hint: only in the first 3 days after this release (per device), never when storage fails', () => {
   const st = memStore();
@@ -471,11 +519,15 @@ tb('in Chromium: the greeting plays once a day, a click / key skips it (lift-awa
 <script type="module">import * as S from '/lfmp-session.js'; const q = new URLSearchParams(location.search); window.log = [];
 document.getElementById('under').onclick = () => log.push('under');
 window.shell = S.mountShell({ tool: 'builder', me: { name: 'PJ', first: 'PJ', email: 'pj@example.com' }, root: document.getElementById('app'), version: '1.0.0', plus: { label: 'New' },
- greet: { count: () => new Promise(r => setTimeout(() => r({ clients: Number(q.get('n') ?? 2) }), Number(q.get('late') || 0))) } });
-window.played = shell.greeting;</script></body></html>`;
+ greet: { count: () => new Promise(r => setTimeout(() => r({ clients: Number(q.get('n') ?? 2) }), Number(q.get('late') || 0))),
+  // v2.4.1: ?fresh=1 stands in for the other two tools' greet-count modules (slow=<kind> answers after 5 s, fail=<kind> fails)
+  readOther: q.has('fresh') ? (k => q.get('fail') === k ? Promise.reject(new Error('down')) : new Promise(r => setTimeout(() => r({ [k]: Number(q.get(k) ?? 1) }), q.get('slow') === k ? 5000 : 60))) : undefined } });
+window.played = shell.greeting; window.S = S;</script></body></html>`;
   const server = http.createServer((req, res) => {
     const u = new URL(req.url, 'http://x');
     if (u.pathname === '/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(PAGE); }
+    if (u.pathname === '/cdn-cgi/access/logout') { server.logouts = (server.logouts || 0) + 1; res.writeHead(200); return res.end(''); }
+    if (u.pathname.startsWith('/signin/')) { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<title>signed out</title>'); }
     if (u.pathname === '/lfmp-session.js' || u.pathname === '/lfmp-ui.css') { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
     res.writeHead(404); res.end();
   });
@@ -514,12 +566,58 @@ window.played = shell.greeting;</script></body></html>`;
       await page.waitForSelector('[data-lv-greet]', { state: 'detached', timeout: 1500 }); assert.ok(Date.now() - t0 < 1000, 'skip is quick');
       assert.deepEqual(await page.evaluate(() => log.splice(0)), [], 'the skip click did not press anything');
       await page.click('#under'); assert.deepEqual(await page.evaluate(() => log.splice(0)), ['under']);
-      // a key skips it too; a late count (> ~1 s) is left out (never waits, no spinner)
-      await page.evaluate(() => localStorage.setItem('lfmp-greet-day', '2000-01-01'));
+      // a key skips it too; a late count (> ~1 s) with nothing remembered is left out (never waits, no spinner)
+      // (v2.4.1: fresh counts are remembered, so forget the earlier ones here; the fallback is checked below)
+      await page.evaluate(() => { localStorage.setItem('lfmp-greet-day', '2000-01-01'); localStorage.removeItem('lfmp-counts'); });
       const tl = Date.now(); await page.goto(`${base}/?n=5&late=3000`); await page.waitForSelector('[data-lv-greet].play', { timeout: 3000 });
       assert.ok(Date.now() - tl < 2500, 'starts within ~1 s even if the count is late');
       assert.equal(await page.locator('[data-lv-greet] .lv-gr-st').count(), 0, 'no number row');
       await page.keyboard.press('Escape'); await page.waitForSelector('[data-lv-greet]', { state: 'detached', timeout: 1500 });
+      await ctx.close();
+    }
+    // v2.4.1: all three counts read fresh when it starts; whatever is in by the number row shows; nothing waits
+    {
+      const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } }), page = await ctx.newPage();
+      const row = () => page.$$eval('[data-lv-greet] .lv-gr-st > div', els => els.map(e => [e.dataset.k, e.querySelector('[data-to]')?.dataset.to ?? 'clear']));
+      const fresh = async qs => {
+        await page.evaluate(() => localStorage.setItem('lfmp-greet-day', '2000-01-01'));
+        const t0 = Date.now(); await page.goto(`${base}/?fresh=1&${qs}`); await page.waitForSelector('[data-lv-greet].play', { timeout: 3000 });
+        assert.ok(Date.now() - t0 < 2500, 'starts at once');
+        await wait(1700); return row();
+      };
+      await page.goto(base); await page.evaluate(() => { localStorage.removeItem('lfmp-counts'); });
+      // one slow (reviews, 5 s) and one failed (scorecards), nothing remembered: the own count shows alone, on time
+      assert.deepEqual(await fresh('n=4&slow=reviews&fail=scorecards'), [['clients', '4']]);
+      await page.keyboard.press('Escape'); await wait(500);
+      // all three in time: all three show, and they're noted for later
+      assert.deepEqual(await fresh('n=4&scorecards=1&reviews=2'), [['reviews', '2'], ['scorecards', '1'], ['clients', '4']]);
+      assert.deepEqual(Object.keys(JSON.parse(await page.evaluate(() => localStorage.getItem('lfmp-counts')))).sort(), ['clients', 'reviews', 'scorecards']);
+      await page.keyboard.press('Escape'); await wait(500);
+      // a failed read falls back to the last known count (≤ 12 h); the other two are fresh
+      assert.deepEqual(await fresh('n=0&scorecards=3&fail=reviews'), [['reviews', '2'], ['scorecards', '3'], ['clients', 'clear']]);
+      await page.keyboard.press('Escape'); await page.waitForSelector('[data-lv-greet]', { state: 'detached', timeout: 1500 });
+      // Sign out in the name menu: the mark goes, so signing back in the same day plays it again
+      await page.click('[data-lv-top] [data-lv="me"]'); await page.click('[data-lv-top] [data-lv-pop] [data-lv="signout"]');
+      await page.waitForURL(/\/signin\/\?out=1$/);
+      assert.equal(await page.evaluate(() => localStorage.getItem('lfmp-greet-day')), null, 'Sign out cleared the mark');
+      await page.goto(`${base}/?n=2`); await page.waitForSelector('[data-lv-greet].play', { timeout: 3000 });
+      await page.keyboard.press('Escape'); await wait(500);
+      await page.reload(); await page.waitForSelector('.lv-in'); await wait(400);
+      assert.equal(await page.locator('[data-lv-greet]').count(), 0, 'a reload after that: not again');
+      // an expired session (sent to sign in, not a Sign out press) keeps the mark: no replay
+      await page.evaluate(() => S.toSignIn()); await page.waitForURL(/\/signin\/\?next=/);
+      assert.match(await page.evaluate(() => localStorage.getItem('lfmp-greet-day')), /^\d{4}-\d\d-\d\d$/);
+      await page.goto(`${base}/?n=2`); await page.waitForSelector('.lv-in'); await wait(400);
+      assert.equal(await page.locator('[data-lv-greet]').count(), 0, 'expired session: no replay');
+      await ctx.close();
+    }
+    // Sign out on the phone (Me screen) clears it too
+    {
+      const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }), page = await ctx.newPage();
+      await page.goto(`${base}/?n=2`); await page.waitForSelector('[data-lv-greet].play'); await page.keyboard.press('Escape'); await wait(500);
+      await page.click('[data-lv-tabs] [data-lv="metab"]'); await page.click('[data-lv-me] [data-lv="signout"]');
+      await page.waitForURL(/\/signin\/\?out=1$/);
+      assert.equal(await page.evaluate(() => localStorage.getItem('lfmp-greet-day')), null, 'phone Me → Sign out cleared the mark');
       await ctx.close();
     }
     // reduced motion: skipped entirely; blocked storage: never plays

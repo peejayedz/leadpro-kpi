@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.29.1": {
+    "title": "The greeting plays again after you sign out and back in",
+    "summary": "And it always shows all three numbers.",
+    "items": [
+      { "type": "fixed", "tag": "internal", "text": "The greeting plays again after you sign out and back in, and always shows all three numbers." }
+    ]
+  },
   "1.29.0": {
     "title": "A greeting when you sign in, once a day, with what needs you",
     "summary": "Your name, theme and Sign out are now under your initials.",

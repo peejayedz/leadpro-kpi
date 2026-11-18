@@ -5,6 +5,12 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.29.1 — 19 Nov 2026
+- **[internal]** Admin: the greeting plays again after you sign out and back in, and always shows all three numbers (shared `lfmp-session.js` 2.4.1, the same as Builder v1.22.1 and Review admin v1.12.1; look unchanged). Sign out clears "greeted today"; nothing else replays it. When the greeting starts, the other two tools' counts are read fresh (read-only, through the team site); a late or failed read falls back to the last known count (≤ 12 h) or is left out.
+- **[internal]** Admin: new `admin/greet-count.mjs` holds the "Needs attention" count (`reasonsOf`, `needsAttention`, `isTestFirm`), the bell's issue list (`buildIssues`), the chain state (`readChain`) and the contents read (`readText`); the firm list uses them too, and `readCount()` makes the same GitHub reads for the other tools' greetings. No writes, no GHL.
+- **[internal]** Admin: this page's own greeting count now waits for the bell's issues (they change "Needs attention"), so it equals the settled filter.
+- **[internal]** Tests: `tests/shell/shell.test.mjs` (same in all three repos) covers Sign out and the fresh reads; the cross-tool check is the Builder's `tests/e2e/greet-fresh.mjs`.
+
 ## v1.29.0 — 19 Nov 2026
 - **[internal]** Admin: a greeting when you sign in, once a day, with what needs you (shared `lfmp-session.js` / `lfmp-ui.css` 2.4.0, the same as Builder v1.21.0 and Review admin v1.12.0, PJ's `LFMP_Greeting_Final_1plus9.html`). This page gives "scorecards need attention", the same count as the "Needs attention" filter, and notes it for the other two tools' greetings. Skipped with reduced motion; a click, tap or key ends it.
 - **[internal]** Admin top bar: no name and no Sign out. The initials open the name menu on desktop and phone: name + Last signed in · Theme · test clients · Refresh · What's new (now with this page's version) · Team sign-ins · Install · Sign out. "Your menu ›" shows under the initials after the greeting for the first 3 days.

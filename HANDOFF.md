@@ -2,6 +2,12 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.29.1 Greeting after Sign out + all three numbers (shared shell 2.4.1): TESTED LOCALLY 19 Nov 2026, NOT PUSHED (waiting for PJ)
+- **What it is:** see CHANGELOG v1.29.1 (with Builder v1.22.1 and Review admin v1.12.1). Sign out clears "greeted today"; the greeting reads all three counts fresh. `admin/greet-count.mjs` = the "Needs attention" count + the bell's issues + `readCount()` (the same GitHub reads as the list and the bell, read only). It imports `firm-details.mjs`, which brings a second `lfmp-session.js` copy into the other tools' pages; shell 2.4.1 makes that copy add no page-wide listeners.
+- **Own count:** now noted only after the bell's issues are read (`issuesRead`), so it equals the settled filter (before: the first paint could be lower, e.g. 1 → 2).
+- **Push order:** KPI and Review first, the Builder last (its push deploys); see the Builder HANDOFF v1.22.1.
+- **Tests (19 Nov, local):** mapping / messages / chain / status, `tests/shell/shell.test.mjs` 33/33, `tests/admin-ui/run.mjs` 287/287; cross-tool: Builder `tests/e2e/greet-fresh.mjs` 27/27.
+
 ## v1.29.0 Greeting + name menu (shared shell 2.4.0): LIVE 18 Nov 2026 14:54 UTC (`4e90349` + `8254d89`; Builder `87297c7` + `5449b77`, Review `7dc6f8b` + `4bbc014`; admin-site run 44329460367, "Changed: deploying admin-site 7674f3d040aacd3b")
 - **What it is:** the once-a-day greeting (shared `lfmp-session.js` / `lfmp-ui.css` 2.4.0, byte-identical in the three repos). This page gives "scorecards need attention" (= the Needs attention filter) and notes it in localStorage `lfmp-counts` for the other two tools.
 - **Top bar:** initials only. Name, Last signed in, Theme, What's new (now with this page's version), Team sign-ins, Install and Sign out are in the name menu under the initials (desktop and phone; the phone's Me tab still opens the Me screen).

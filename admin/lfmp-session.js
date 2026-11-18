@@ -21,6 +21,9 @@ export const SIGNIN = '/signin/';
 export const LOGOUT = '/cdn-cgi/access/logout';   // Cloudflare Access logout (ends the Access session)
 export const SIGNED_OUT = '/signin/?out=1';
 const API_BASE = '/api/';
+// v2.4.1: the greeting reads the other two tools' counts with their greet-count modules, which can bring a second copy of
+// this file (their own folder's lfmp-session.js) into the page. Only the first copy on a page adds the page-wide listeners.
+const FIRST_COPY = typeof document !== 'undefined' && !globalThis.__lfmpShellListeners && (globalThis.__lfmpShellListeners = true);
 
 // Left over from the password login (v1.x): the vault (GitHub token + Review key, sealed), the session key, lock and
 // guard markers, the Review page's admin key copy, the old per-page tokens, the remembered-passphrase vault and the
@@ -45,8 +48,10 @@ export function toSignIn() {
 // Sign out: Cloudflare Access logout on this site (that response ends the Access session and clears its cookie), then
 // /signin/?out=1 ("You've been signed out. See you next shift."). Not the team-domain logout as well: live (17 Nov) it
 // answered "Failed to log out." right after this one, because the session was already gone.
+// v2.4.1: a deliberate Sign out forgets "greeted today", so signing back in plays the greeting again (even the same day).
+// Only here: an expired session (toSignIn), Cloudflare renewing it, reloads and tool switches keep the mark.
 export async function signOut() {
-  clearLegacy(); leaving = true;
+  clearLegacy(); forgetGreetingDay(); leaving = true;
   try { await fetch(LOGOUT, { credentials: 'same-origin', redirect: 'manual', cache: 'no-store' }); } catch {}
   location.assign(SIGNED_OUT);
 }
@@ -91,7 +96,7 @@ export async function openTeamSignins() {
   }
   d.querySelector('[data-lfmp-close]')?.focus();
 }
-if (typeof document !== 'undefined') document.addEventListener('click', e => { if (e.target.closest?.('[data-act="signins"]')) openTeamSignins(); });
+if (FIRST_COPY) document.addEventListener('click', e => { if (e.target.closest?.('[data-act="signins"]')) openTeamSignins(); });
 
 // One POST to /api/<name>. redirect: 'manual' so an expired Google sign-in (Access answers with a redirect to its login
 // page) shows up as "signed out" instead of a confusing network error.
@@ -406,7 +411,7 @@ export function panelFinish(panel) {
   }
 }
 export const panelMoving = panel => (panel ? PM.has(panel) : PM.size > 0);
-if (typeof document !== 'undefined') document.addEventListener('pointerdown', () => { if (PM.size) panelFinish(); }, true);
+if (FIRST_COPY) document.addEventListener('pointerdown', () => { if (PM.size) panelFinish(); }, true);
 
 // ---------------------------------------------------------------- busy states (v2.3.0, Nov 2026): no silent clicks
 // PJ's previews "Claude outputs/LFMP_Busy_Options_v2.html" option 1 "Gold fill" (buttons), "LFMP_No_Silent_Clicks_Preview.html"
@@ -473,12 +478,12 @@ function autoStart(p) {
 }
 // No double submit, mouse or keyboard: a click on a busy button or a dimmed neighbour does nothing (registered before
 // the tools' own click handlers, which listen on the bubble phase).
-if (hasDoc()) document.addEventListener('click', e => { if (e.target.closest?.('.lv-bz, .lv-bz-dim')) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+if (FIRST_COPY) document.addEventListener('click', e => { if (e.target.closest?.('.lv-bz, .lv-bz-dim')) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
 function autoSettle(j) {
   clearTimeout(j.t);
   j.t = setTimeout(() => { if (j.n) return; if (autoJob === j) autoJob = null; j.bad ? j.bz.fail() : j.bz.done(j.w.done); }, AUTO_SETTLE_MS);
 }
-if (hasDoc()) document.addEventListener('click', e => {
+if (FIRST_COPY) document.addEventListener('click', e => {
   const b = e.target.closest?.('button, a.btn');
   autoPress = (!b || b.disabled || b.matches(AUTO_SKIP) || b.closest(AUTO_SKIP_IN)) ? null : { btn: b, label: b.innerHTML, t: Date.now() };
 }, true);
@@ -613,8 +618,11 @@ export function progressCard(el, cfg) {
 // "GOOD AFTERNOON, PJ" letter by letter, a gold line, today's numbers count up, then it lifts away (~3.5 s). A click, tap
 // or key ends it at once. Skipped with reduced motion, or when the day can't be remembered (storage blocked).
 // Numbers: only the counts the tools already show (Reviews "Needs you", Scorecards "Needs attention", Clients "In
-// progress"). A tool gives its own count (greet.count(): a promise); the other two come from the last time their own
-// list loaded on this site (noteCount; kept per device, used for 12 hours). Not ready within ~1 s = left out.
+// progress"). A tool gives its own count (greet.count(): a promise). v2.4.1: when the greeting starts, the other two are
+// read fresh at the same time (readOtherCount: that tool's greet-count module, the same reads and the same counting
+// function as its filter, read only, through the team site). Whatever is in by the time the number row shows is used;
+// a late or failed read falls back to the last count noted on this device (noteCount, 12 hours) or is left out. Every
+// fresh count is noted, even a late one.
 // =====================================================================================================================
 export const GREET_DAY_KEY = 'lfmp-greet-day', GREET_COUNTS_KEY = 'lfmp-counts', MENU_HINT_KEY = 'lfmp-menu-hint-from';
 export const GREET_WAIT_MS = 1000, GREET_MS = 3500, COUNT_FRESH_MS = 12 * 3600 * 1000, MENU_HINT_DAYS = 3;
@@ -643,6 +651,10 @@ export function claimGreetingDay(store = globalThis.localStorage, now = new Date
     return store.getItem(GREET_DAY_KEY) === day;
   } catch { return false; }
 }
+// v2.4.1: Sign out (only) forgets today's mark, so the next load after signing back in greets again.
+export function forgetGreetingDay(store = globalThis.localStorage) {
+  try { store?.removeItem(GREET_DAY_KEY); } catch {}
+}
 // A tool notes its own count whenever its list loads, so the other two tools can show it in their greeting.
 export function noteCount(kind, n, store = globalThis.localStorage, now = Date.now()) {
   if (!GREET_KINDS.some(k => k[0] === kind) || !Number.isFinite(Number(n))) return;
@@ -655,14 +667,32 @@ export function cachedCounts(store = globalThis.localStorage, now = Date.now()) 
     return out;
   } catch { return {}; }
 }
-// The tool's own counts if they come within `wait` ms (never waits longer, never throws), over the cached ones.
-export async function greetCounts(own, { wait = GREET_WAIT_MS, store = globalThis.localStorage, now = Date.now() } = {}) {
-  const cached = cachedCounts(store, now);
-  let mine = {};
-  try { mine = (await Promise.race([Promise.resolve(typeof own === 'function' ? own() : own), new Promise(r => setTimeout(() => r({}), wait))])) || {}; } catch { mine = {}; }
-  const out = { ...cached };
-  for (const [k] of GREET_KINDS) if (Number.isFinite(Number(mine[k])) && mine[k] !== null) out[k] = Number(mine[k]);
-  return out;
+// v2.4.1: reads = one read or a list (each a function returning a promise of { reviews?, scorecards?, clients? }), all
+// started at once. Resolves when all are in or after `wait` ms, whichever is first (never waits longer, never throws):
+// the fresh counts over the cached ones. Every fresh count is noted for later, even one that comes in after `wait`.
+export async function greetCounts(reads, { wait = GREET_WAIT_MS, store = globalThis.localStorage, now = Date.now() } = {}) {
+  const cached = cachedCounts(store, now), fresh = {};
+  const take = o => { for (const [k] of GREET_KINDS) { const v = o?.[k]; if (v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v))) { fresh[k] = Number(v); noteCount(k, fresh[k], store); } } };
+  const list = (Array.isArray(reads) ? reads : [reads]).filter(Boolean);
+  const all = Promise.all(list.map(r => Promise.resolve().then(() => (typeof r === 'function' ? r() : r)).then(take, () => {})));
+  let timer;
+  await Promise.race([all, new Promise(r => { timer = setTimeout(r, wait); })]);
+  clearTimeout(timer);
+  return { ...cached, ...fresh };
+}
+// v2.4.1: where each tool's count is read from (same team site). readCount gets the shell's own read helpers, so the
+// module makes exactly the read-only calls its tool makes (GitHub and the review backend through /api/, never GHL).
+export const GREET_SOURCES = { clients: '/ghl-subaccount-builder-page/greet-count.js', scorecards: '/leadpro-kpi/admin/greet-count.mjs', reviews: '/automation-review/admin/greet-count.mjs' };
+export const TOOL_KIND = { builder: 'clients', kpi: 'scorecards', review: 'reviews' };
+export function readOtherCount(kind) {
+  return import(GREET_SOURCES[kind])
+    .then(m => m.readCount({ ghFetch, api, loadBuilderRecords, store: globalThis.localStorage }))
+    .then(o => ({ [kind]: o?.[kind] }));
+}
+// The greeting's reads for a tool: its own count (from its own list load) + the other two, read fresh.
+export function greetReads(tool, own, readOther = readOtherCount) {
+  const mine = TOOL_KIND[tool];
+  return [own, ...GREET_KINDS.map(([k]) => k).filter(k => k !== mine).map(k => () => readOther(k))].filter(Boolean);
 }
 const lettersHtml = (text, cls, from) => {
   let i = from;
@@ -684,9 +714,10 @@ export function greetingHtml({ hour, date = new Date(), name = '', counts = {} }
 }
 // Plays it (if today is unclaimed). Resolves when it has gone (true = it played). Never blocks clicks after it ends.
 // It starts at once (never waits for a number): with the counts remembered from the tools' last loads (12 h), and the
-// tool's own count joins if it arrives before the number row shows (STATS_AT); later = left out. No spinner.
+// fresh counts (reads: the tool's own + the other two, v2.4.1) join if they arrive before the number row shows
+// (STATS_AT); later = the remembered one or left out. No spinner, no error. count = a single read (older callers).
 export const STATS_AT = 1450;
-export async function playGreeting({ me, count, store = globalThis.localStorage, now = new Date(), onEnd } = {}) {
+export async function playGreeting({ me, count, reads = count, store = globalThis.localStorage, now = new Date(), onEnd } = {}) {
   if (!hasDoc() || reducedMotion() || !claimGreetingDay(store, now)) return false;
   document.querySelector('[data-lv-greet]')?.remove();
   document.body.insertAdjacentHTML('beforeend', greetingHtml({ hour: now.getHours(), date: now, name: firstName(me), counts: cachedCounts(store, now.getTime()) }));
@@ -706,8 +737,8 @@ export async function playGreeting({ me, count, store = globalThis.localStorage,
       for (let s = 1; s <= steps; s++) timers.push(setTimeout(() => { n.textContent = String(Math.round((to * s) / steps)); }, Math.max(0, 1500 + s * 200 - (Date.now() - t0))));
     } };
     countUp();
-    // the tool's own count, if it comes in time (merged over the remembered ones)
-    greetCounts(count, { wait: Math.max(0, STATS_AT - 100), store, now: now.getTime() }).then(counts => {
+    // the fresh counts that come in time (merged over the remembered ones)
+    greetCounts(reads, { wait: Math.max(0, STATS_AT - 100), store, now: now.getTime() }).then(counts => {
       const late = Date.now() - t0;
       if (done || late > STATS_AT - 60) return;
       const t = document.createElement('template'); t.innerHTML = greetingHtml({ hour: now.getHours(), date: now, counts });
@@ -822,8 +853,8 @@ export function mountShell(cfg) {
     openScreen, showMenuHint,
   };
   // v2.4.0: the once-a-day greeting. cfg.greet: { count: () => Promise<{ reviews?, scorecards?, clients? }> } (the tool's
-  // own count); greet: false = never (e.g. a reset / offline page).
+  // own count); greet: false = never (e.g. a reset / offline page). v2.4.1: the other two tools' counts are read fresh.
   api.greeting = cfg.greet === false ? Promise.resolve(false)
-    : playGreeting({ me: cfg.me, count: cfg.greet?.count, onEnd: () => { if (menuHintDue()) showMenuHint(); } }).catch(() => false);
+    : playGreeting({ me: cfg.me, reads: greetReads(cfg.tool, cfg.greet?.count, cfg.greet?.readOther), onEnd: () => { if (menuHintDue()) showMenuHint(); } }).catch(() => false);
   return api;
 }

@@ -57,14 +57,15 @@
 import { mergeConfig, practiceSlug } from '../scripts/config-merge.mjs';
 import { parseChangelog, latestVersion, inlineMd } from '../scripts/changelog.mjs';
 import { STEPS_MAP, initialState, stageList as stagesOf, buildMapping, applyMapping } from './mapping.mjs';
-import { openIssues, firmState, describeIssue, seenKey, inBadge, STALE_MIN, chainAlive, driftText } from '../scripts/sync-status.mjs';
-import { keeperIssues, reviewIssues, tokenLabel } from '../scripts/keeper-status.mjs';
+import { firmState, describeIssue, seenKey, inBadge, STALE_MIN, driftText } from '../scripts/sync-status.mjs';
+import { tokenLabel } from '../scripts/keeper-status.mjs';
 import { checkScopes } from '../scripts/scope-check.mjs';
 import { pipelineNotices } from '../scripts/not-in-pipeline.mjs';
 import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
 import { buildCards, filterCards, newer, isMinor, cardVersion } from './news.mjs';
-import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS, severity, isAlert, leadTrend, sortFirms, staleLine } from './firm-details.mjs';
+import { SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS, severity, isAlert, leadTrend, sortFirms, staleLine } from './firm-details.mjs';
 import { decryptJSON } from '../scripts/kpi-core.mjs';
+import * as GC from './greet-count.mjs';   // v1.29.1: the "Needs attention" count (list + greeting)
 import { PRACTICE_TYPES, practiceTypeOf, practiceLabel, isCare, countsOnly as countsOnlyOf, BUCKETS, BUCKET_HINTS, careInitialState, unchosen, buildPipelineMap, applyCare, mapOf } from '../scripts/care-core.mjs';
 import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName, busyButton, noteCount } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
@@ -255,12 +256,8 @@ async function gh(method, path, body, { allow404 = false } = {}) {
   const text = r.status === 204 ? '' : await r.text();     // some successes (e.g. secret created) have an empty body
   return text ? JSON.parse(text) : {};
 }
-async function getText(path, ref = BRANCH) {
-  const f = await gh('GET', `${R}/contents/${path.split('/').map(encodeURIComponent).join('/')}?ref=${ref}`, null, { allow404: true });
-  if (!f) return null;
-  const b64 = f.content || (await gh('GET', `${R}/git/blobs/${f.sha}`)).content;   // files over 1 MB come back without content
-  return dec.decode(fromB64(b64));
-}
+// v1.29.1: greet-count.mjs readText (the same read the greeting's count makes): files over 1 MB come back without content
+const getText = (path, ref = BRANCH) => GC.readText(gh, R, path, ref);
 async function getJSON(path, ref) { const t = await getText(path, ref); return t === null ? null : JSON.parse(t); }
 const jsonText = o => JSON.stringify(o, null, 2) + '\n';
 
@@ -440,24 +437,23 @@ async function loadFirms() {
   }));
   applyNames(await recsP);
 }
-const kpiSummary = k => ({ generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null, sync: k.sync || null,
-  notInPipeline30: k.periods?.last30?.current?.notInPipeline ?? null });   // null until the firm's first sync with the contact check
+const kpiSummary = GC.kpiSummary;   // null numbers until the firm's first sync with the contact check
 const contactsUrl = slug => { const loc = configs[slug]?.locationId || firmOf(slug)?.locationId || ''; return validLoc(loc) ? `${configs[slug]?.ghlAppBase || 'https://app.lawfirmmarketingpros.com'}/v2/location/${loc}/contacts/smart_list/All` : ''; };
 const isStale = k => !!(k?.generatedAt && Date.now() - Date.parse(k.generatedAt) > 2 * 3600e3);   // syncs run every 30 minutes
-const isTest = f => /(^|[-\s])test\b|^zz[-\s]/i.test(f.slug) || /\btest\b|^zz\b/i.test(f.name || '');
+const isTest = GC.isTestFirm;   // v1.29.1: greet-count.mjs (the greeting counts the same way)
 // Needs attention (v1.13): any reason from admin/firm-details.mjs: a sync problem, token/app problem, held or "may be
 // incomplete" numbers, mapping to review, no data yet, or new contacts outside a pipeline. Most urgent first.
-const reasonsOf = f => firmReasons(f.slug, kpiFull[f.slug], issues, { status: f.status || null });
+const reasonsOf = f => GC.reasonsOf(f, kpiFull, issues);
 // v1.28.0: practice type (config.json wins; index.json has it too) and status (index.json: needsMapping | draft | live).
 const careOf = f => isCare(configs[f.slug] || { practiceType: f.practiceType });
 const typeOf = f => practiceTypeOf(configs[f.slug] || { practiceType: f.practiceType });
 const isDraft = f => f.status === 'draft', needsMap = f => f.status === 'needsMapping';
 const noLink = f => isDraft(f) || needsMap(f);   // no scorecard link can be copied until it's published
-const needsAttention = f => reasonsOf(f).length > 0;
+const needsAttention = f => GC.needsAttention(f, kpiFull, issues);
 // v2 filter (reference wording): desktop "All 4 · Needs attention · 1 · Test firms", phone "All · Needs attention · 1 · Test".
 // Test = the test firms only (shown there even when "Show test clients" is off).
 const FILTERS = [['all', 'All', () => true], ['attention', 'Needs attention', needsAttention], ['test', 'Test firms', f => isTest(f)]];
-const FILTER_KEY = 'leadpro-admin-filter', TESTS_KEY = 'leadpro-admin-tests';
+const FILTER_KEY = 'leadpro-admin-filter', TESTS_KEY = GC.TESTS_KEY;
 let listFilter = FILTERS.some(x => x[0] === store.get(FILTER_KEY)) ? store.get(FILTER_KEY) : 'all', listQuery = '';
 let showTests = store.get(TESTS_KEY) === '1';                 // test firms are hidden unless "Show test firms" is ticked
 const visibleFirms = () => firms.filter(f => showTests || !isTest(f));
@@ -509,8 +505,9 @@ function paintStrip() {
   // attention"; was "· 1 sync problem" beside "Needs attention · 2"); nothing to look at = "all synced 4:37 PM"
   const att = vis.filter(needsAttention).length;
   el.textContent = `${plural(vis.length, 'firm')} · ${att ? `${att} ${att === 1 ? 'needs' : 'need'} attention` : `all synced ${clock(last)}`}`;
-  // v1.29.0: the greeting's "scorecards need attention" (the same count as the filter); kept for the other tools' greetings
-  if (firms.length) { noteCount('scorecards', att); greetReady({ scorecards: att }); }
+  // v1.29.0: the greeting's "scorecards need attention" (the same count as the filter); kept for the other tools' greetings.
+  // v1.29.1: only once the bell's issues are read too (they change the count), so it equals the settled filter.
+  if (firms.length && issuesRead) { noteCount('scorecards', att); greetReady({ scorecards: att }); }
   el.title = fmtTime(last);
   const q = $('firmSearch'); if (q) { q.placeholder = `Search ${plural(vis.length, 'firm')}`; q.setAttribute('aria-label', `${q.placeholder} by name, slug or GHL name`); }
 }
@@ -739,7 +736,7 @@ async function deleteFirm(slug, secretKey, name) {
 const CHECK_MS = 5 * 60e3;
 const BASE_TITLE = document.title;
 const SEEN_KEY = 'leadpro-admin-seen', LIVE_KEY = 'leadpro-admin-live', LOCAL_RESOLVED = 'leadpro-admin-resolved';
-let syncStatus = null, keeperStatus = null, removedLog = null, issues = [], chainInfo = {}, lastCheck = 0, checkErr = null, checkTimer = null, checking = null;
+let syncStatus = null, keeperStatus = null, removedLog = null, issues = [], issuesRead = false, chainInfo = {}, lastCheck = 0, checkErr = null, checkTimer = null, checking = null;
 const subNames = {}, expanded = new Set(), issueMsg = {};
 const readStore = (k, d) => { try { return JSON.parse(store.get(k)) ?? d; } catch { return d; } };
 const seenSet = () => new Set(readStore(SEEN_KEY, []));
@@ -752,19 +749,8 @@ const locOf = f => configs[f.slug]?.locationId || f.locationId || '';
 const issueText = i => { const f = i.slug ? firmOf(i.slug) : null; return describeIssue(i, { now: Date.now(), subAccount: f ? subNames[f.slug] : null, secretKey: f?.secretKey, tokenSource: f?.tokenSource, lastGood: f ? kpis[f.slug]?.generatedAt : null, when, care: f ? careOf(f) : undefined }); };
 
 // SYNC_CHAIN and whether a link of the chain is waiting (or a chained sync is running).
-async function chainState() {
-  const out = { value: 'on', source: 'variable', waiting: null, lastLinkAt: null, lastLinkUrl: null };
-  try { const v = await gh('GET', `${R}/actions/variables/SYNC_CHAIN`, null, { allow404: true }); out.value = norm(v?.value) === 'off' ? 'off' : 'on'; }
-  catch { out.value = syncStatus?.syncChain?.value === 'off' ? 'off' : 'on'; out.source = 'status'; }   // token can't read variables: use what the last sync saw
-  try {
-    const [links, syncs] = await Promise.all([gh('GET', `${R}/actions/workflows/sync-chain.yml/runs?per_page=5`), gh('GET', `${R}/actions/workflows/sync.yml/runs?per_page=10`)]);
-    const L = links.workflow_runs || [], S = syncs.workflow_runs || [], last = L[0];
-    out.lastLinkAt = last?.status === 'completed' ? last.updated_at : null; out.lastLinkUrl = last?.html_url || null;
-    // a waiting link, a link that just ended, or the last sync still queued / running on GitHub (≤ 2 h): scripts/sync-status.mjs
-    out.waiting = chainAlive({ links: L, syncs: S, now: Date.now() });
-  } catch { out.waiting = null; }
-  return out;
-}
+// v1.29.1: greet-count.mjs readChain (the greeting's count reads it the same way)
+const chainState = () => GC.readChain(gh, R, syncStatus);
 async function refreshIssues({ reloadKpis = false } = {}) {
   if (checking) return checking;
   checking = (async () => {
@@ -774,12 +760,10 @@ async function refreshIssues({ reloadKpis = false } = {}) {
       chainInfo = await chainState();
       keeperStatus = await getJSON('status/token-keeper.json').catch(() => null);
       removedLog = await getJSON('status/removed.json').catch(() => null);   // v1.28.0: "Scorecard removed" notices (7 days)
-      const rank = i => (i.slug ? 1 : 0);
-      issues = [...keeperIssues(keeperStatus, { now: Date.now(), firms }), ...reviewIssues(firms, configs), ...openIssues(syncStatus, { now: Date.now(), firms, kpis, chain: chainInfo })]
-        .sort((a, b) => rank(a) - rank(b) || Date.parse(b.firstSeen) - Date.parse(a.firstSeen));
+      issues = GC.buildIssues({ keeperStatus, syncStatus, chain: chainInfo, firms, configs, kpis, now: Date.now() });   // v1.29.1: greet-count.mjs
       trackLive(); lastCheck = Date.now(); checkErr = null;
     } catch (e) { checkErr = e.message; }
-    finally { checking = null; }
+    finally { checking = null; issuesRead = true; }
     if (!me) return;
     paintBell(); paintRows(); paintStrip(); paintSyncInfo(); if (!$('nPanel').hidden) paintPanel();
   })();
