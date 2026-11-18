@@ -1,14 +1,16 @@
 // Admin page v1.13: what the firm list and the Details panel show. Pure functions (no DOM, no fetch), tested by
 // tests/admin-details/run.mjs. Reads only what the page already has: the bell's issues and the PUBLIC kpis.json.
 import { sentBaseKey } from '../scripts/kpi-core.mjs';
+import { isCare, wordsFor, practiceTypeOf, FUNNEL } from '../scripts/care-core.mjs';
 import { byName } from './lfmp-session.js';
 
 // ---------- needs attention ----------
 // Order = how urgent. Short labels go on the firm row ("… →"); the Details panel shows the full text and the fix.
-const ORDER = ['failed', 'app-missing', 'app-token', 'stale', 'nodata', 'incomplete', 'held', 'mapping-review', 'not-in-pipeline'];
+const ORDER = ['failed', 'app-missing', 'app-token', 'stale', 'needs-mapping', 'nodata', 'incomplete', 'held', 'unmapped', 'mapping-review', 'not-in-pipeline'];
 const SHORT = {
   failed: 'Sync failed', 'app-missing': 'App not on the sub-account', 'app-token': 'Token problem', stale: 'No recent sync',
   nodata: 'No data yet', incomplete: 'Numbers may be incomplete', held: 'Holding previous numbers', 'mapping-review': 'Review mapping',
+  'needs-mapping': 'Needs mapping', unmapped: 'Stages not mapped',   // v1.28.0
 };
 // Kinds that mean the numbers aren't syncing cleanly (the strip's "N sync problems").
 export const SYNC_PROBLEMS = new Set(['failed', 'app-missing', 'app-token', 'stale', 'nodata']);
@@ -19,7 +21,7 @@ export const SYNC_PROBLEMS = new Set(['failed', 'app-missing', 'app-token', 'sta
 // amber = NOTICE: the numbers still update, worth a look (holding previous numbers, may be incomplete, review mapping,
 //   no data yet, leads not in a pipeline). Anything new or unknown is an alert (safer).
 // The bell's items, the firm row's status dot and number, the details' boxes and the "Needs attention" filter all use this.
-export const NOTICE_KINDS = new Set(['held', 'incomplete', 'mapping-review', 'nodata', 'not-in-pipeline']);
+export const NOTICE_KINDS = new Set(['held', 'incomplete', 'mapping-review', 'nodata', 'not-in-pipeline', 'needs-mapping', 'unmapped']);
 export const severity = kind => (NOTICE_KINDS.has(kind) ? 'notice' : 'alert');
 export const isAlert = kind => severity(kind) === 'alert';
 
@@ -65,10 +67,12 @@ export function forDuration(now, iso) {
 export const staleLine = (now, lastGood) => `No successful sync for ${forDuration(now, lastGood)}`;
 
 // k: the firm's kpis.json (or null). issues: every open bell issue (any firm). Returns the firm's reasons, most urgent first.
-export function firmReasons(slug, k, issues = []) {
+// v1.28.0: status = the firm's firms/index.json status. "needsMapping" replaces "No data yet" (it isn't synced until mapped).
+export function firmReasons(slug, k, issues = [], { status = null } = {}) {
   const out = [];
   for (const i of issues) if (i.slug === slug && SHORT[i.kind] && !out.some(r => r.kind === i.kind)) out.push({ kind: i.kind, short: SHORT[i.kind], issue: i });
-  if (!k && !out.some(r => r.kind === 'nodata')) out.push({ kind: 'nodata', short: SHORT.nodata });
+  if (status === 'needsMapping') out.push({ kind: 'needs-mapping', short: SHORT['needs-mapping'] });
+  else if (!k && !out.some(r => r.kind === 'nodata')) out.push({ kind: 'nodata', short: SHORT.nodata });
   const np = k?.periods?.last30?.current?.notInPipeline;
   if (Number.isFinite(np) && np > 0) out.push({ kind: 'not-in-pipeline', short: `${plural(np, 'lead')} not in a pipeline`, count: np });
   return out.sort((a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind));
@@ -118,7 +122,37 @@ const fmtPct = v => (v === null || v === undefined ? '—' : `${Math.round(v)}%`
 
 // kpis: the firm's public kpis.json. cfg: the firm's effective config (defaults + practice area + firm), for
 // sentRateBase and minSample. Returns everything the Performance tab draws, or null when there's no data for the period.
+// v1.28.0: Medical & dental / Other firms (their kpis.json periods hold the care summary from scripts/care-core.mjs).
+function carePerfView(kpis, cfg, key) {
+  const per = kpis?.periods?.[key], c = per?.current;
+  if (!c) return null;
+  const p = per.previous || null, t = kpis.targets || cfg.targets || {}, days = (PERF_PERIODS.find(x => x[0] === key) || [])[2] || 30;
+  const MIN = cfg.minSample ?? 5, n = c.enquiries ?? c.totalLeads ?? 0, w = wordsFor(cfg), type = practiceTypeOf(cfg);
+  const diff = p ? n - (p.enquiries ?? p.totalLeads ?? 0) : null;
+  const usd = v => `$${Math.round(v || 0).toLocaleString('en-US')}`;
+  const tiles = [
+    { label: w.enquiries, value: String(n), sub: diff === null ? '' : `${diff > 0 ? '+' : diff < 0 ? '−' : '±'}${Math.abs(diff)} vs prior ${days} days` },
+    { label: w.booked, value: String(c.booked ?? 0), sub: n ? `${fmtPct(pct(c.booked || 0, n))} of ${w.enquiries.toLowerCase()}` : '' },
+    type === 'medical'
+      ? { label: w.showRate, value: fmtPct(c.showRatePct), sub: t.showRatePct !== undefined ? `goal ${t.showRatePct}%` : '' }
+      : { label: w.value, value: usd(c.value), sub: '' },
+    { label: w.yes, value: String(c.yes ?? 0), sub: `${c.yesPct === null || c.yesPct === undefined ? '—' : `${Math.round(c.yesPct * 10) / 10}%`} of ${w.enquiries.toLowerCase()}` },
+  ];
+  const rows = FUNNEL[type].map(([wk, k]) => ({ label: w[wk], value: c[k] || 0 }));
+  const top = Math.max(1, ...rows.map(r => r.value));
+  const funnel = rows.map(r => ({ ...r, width: Math.round((r.value / top) * 1000) / 10 }));
+  const good = [], bad = [];
+  if (p && c.yes > (p.yes ?? 0)) good.push(`${c.yes} ${w.yes.toLowerCase()}, up from ${p.yes ?? 0} the prior ${days} days.`);
+  const scored = type === 'medical' && c.showRatePct !== null && c.showRatePct !== undefined && t.showRatePct !== undefined && (c.booked ?? 0) >= MIN;
+  if (scored) (c.showRatePct >= t.showRatePct ? good : bad).push(`${w.showRate} is ${Math.round(c.showRatePct)}%${c.showRatePct >= t.showRatePct ? `, above the ${t.showRatePct}% goal` : ` (goal ${t.showRatePct}%)`}.`);
+  const pn = p?.enquiries ?? p?.totalLeads ?? 0;
+  if (p && pn >= MIN && n < pn * 0.8) bad.push(`${w.enquiries} are down ${Math.round((1 - n / pn) * 100)}% vs the prior ${days} days (${n} vs ${pn}).`);
+  const none = n === 0 ? `No new ${w.enquiries.toLowerCase()} in these dates.` : !scored ? 'Not enough data yet to judge any metric against its goal.' : null;
+  return { tiles, funnel, good, bad, goodEmpty: none || 'No metric is above goal.', badEmpty: none || 'Nothing below goal.', asOf: kpis.generatedAt || null, care: true };
+}
+
 export function perfView(kpis, cfg = {}, key = 'last30') {
+  if (isCare(cfg) || isCare(kpis)) return carePerfView(kpis, { ...cfg, practiceType: cfg.practiceType || kpis?.practiceType }, key);
   const per = kpis?.periods?.[key], c = per?.current;
   if (!c) return null;
   const p = per.previous || null, t = kpis.targets || cfg.targets || {}, days = (PERF_PERIODS.find(x => x[0] === key) || [])[2] || 30;

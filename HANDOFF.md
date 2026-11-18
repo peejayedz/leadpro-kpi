@@ -2,6 +2,15 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.28.0 Non-law scorecards (PBPCS) + Draft first + Add to GHL menu + Remove: COMMITTED LOCALLY 18–19 Nov 2026 (queue item 1, with Builder v1.19.0; push only on "GO PUSH 1" in assets/handoff/2026-11-19_CLAUDE_NOTES.md)
+- **Push order:** KPI first, then the Builder (its `assemble.mjs` copies `scripts/care-core.mjs`; with the Builder first the deploy fails, safely), then `gh workflow run admin-site.yml -R peejayedz/ghl-subaccount-builder`. The team-site server (`/api`) must be deployed for Add to GHL menu / Remove / Stop to be allowed.
+- **What it is:** `config.practiceType` (absent = law, unchanged) · `config.pipelineMap` by stage + pipeline id · people counting · `config.countsOnly` · `sync.drift` → bell notice + Slack · `firms/index.json` `status`: `needsMapping` / `draft` / absent = live · new workflows `menu-link.yml` (Draft → live, only the menu step) and `remove-firm.yml` (Builder's Remove scorecard). Details: CHANGELOG v1.28.0.
+- **Law firms unchanged:** `node tests/care/law-identical.mjs` (needs `git fetch`; compares with `origin/main`): all 6 identical. New law firms are Drafts now (no automatic GHL menu link); existing live firms keep theirs.
+- **PBPCS (step 5, NOT done; after the deploy, in the browser by Claude (chat) or PJ):** KPI admin → + New firm → Medical & dental → name "Palm Beach Plastic and Cosmetic Surgery", location `ZccxN6Zevq1UkgUuOphV`, "Use the LeadPro app" → it stops at "Needs mapping" (no sync, no menu link) → Map pipelines (pre-filled from `firms/_presets/care/palm-beach-plastic.json` = PJ's 18 Nov mapping; check every chip, names are matched with dashes/case ignored) → Save → Draft + first sync. Then list the opportunities whose name or source contains "test" for PJ (QUESTION in the notes file). Never "Add to GHL menu" before Andy approves.
+- **Boca Dental:** PJ started its KPI setup on 18 Nov with the live (old) flow → a LAW firm "boca-dental" (guessed stages, "Review mapping", no GHL menu link recorded). After the deploy: Edit mapping → Medical & dental → map → Save switches it to people counting (its law mapping is kept). PJ decides.
+- **Open:** light-mode `--ink-3` grey (funnel "% of …", "No metric is above goal") is 3.86:1 on white, below AA, on every dashboard (pre-existing, law too). Mahdavi's 3-section layout (`.stages.three`) doesn't stack on phones (pre-existing; non-law fixed with `.stages.three.care`). Ask PJ before changing law dashboards.
+- **Tests:** `tests/care/run.mjs`, `tests/care/law-identical.mjs`, `tests/care/ui.mjs [shots]` (CHROMIUM_PATH), `tests/remove-firm/run.mjs`, plus every earlier suite.
+
 ## v1.26.0 + v1.27.0: LIVE 18 Nov 2026 07:09 UTC (`5ff3191` after a rebase onto 27 sync commits; deploy 44256607647, fingerprint 04ab155bfbfef86b; live check in the Builder HANDOFF v1.18.0: A–Z, "4 firms · 1 needs attention", no trends, Check now gold fill)
 
 ## v1.27.0 Busy states ("no silent clicks"): LIVE 18 Nov 2026 (with Builder v1.18.0, Review admin v1.11.0)

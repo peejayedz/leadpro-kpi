@@ -250,7 +250,9 @@ test('new-firm.yml: non-secret inputs, one run at a time, no refresh, menu never
   ok(/KEEPER_NO_REFRESH: "1"/.test(y) && /KEEPER_NO_STATUS: "1"/.test(y), 'token job never refreshes');
   ok(!/echo[^\n]*(PASS|TOKEN|SECRET)\b/.test(y.replace(/PASSPHRASE_\$\{\{ steps\.plan\.outputs\.key \}\} is empty/, '')), 'nothing secret echoed');
   ok(/run: node scripts\/new-firm\.mjs menu/.test(y), 'menu step');
-  ok(/needs: \[prepare, first-sync\]/.test(y), 'menu after the first sync');
+  ok(/needs: \[prepare, setup, first-sync\]/.test(y), 'menu after the first sync');
+  // v1.28.0 Draft first: the setup's menu job runs only for an already-live (resumed) firm
+  ok(/menu-link:\n    needs: \[prepare, setup, first-sync\]\n(    #.*\n)*    if: needs\.setup\.outputs\.status == 'live'/.test(y), 'menu job skipped for a Draft');
 });
 
 // Live run 43375600253 (2026-11-13): GitHub reads a run's secrets when the run starts, so the firm token

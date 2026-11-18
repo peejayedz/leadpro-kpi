@@ -14,8 +14,9 @@
 import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { computeAll, encryptJSON, decryptJSON, tzOffsetMin } from './kpi-core.mjs';
-import { checkSlug, loadFirmConfig } from './firms.mjs';
+import { computeAll, encryptJSON, decryptJSON, tzOffsetMin, PERIOD_KEYS, periodRange } from './kpi-core.mjs';
+import { checkSlug, loadFirmConfig, readIndex } from './firms.mjs';
+import { isCare, countsOnly, careDrift, lawDrift, driftCounts, computeCareAll } from './care-core.mjs';
 import { checkScopes, scopeForPath } from './scope-check.mjs';
 import { areaForPath } from './sync-status.mjs';
 import { pickNotInPipeline, breakdown, countedIn } from './not-in-pipeline.mjs';
@@ -149,6 +150,22 @@ for (const p of pipelines) { pipelineName[p.id] = p.name; for (const s of p.stag
 // Printed in the Action log so the stage names in config.json can be matched exactly.
 console.log('Pipelines and stages in GHL:');
 for (const p of pipelines) console.log(`  • ${p.name}: ${(p.stages || []).map(s => s.name).join(' → ')}`);
+
+// ---------- v1.28.0: firm status + drift guard ----------
+// A firm whose pipelines aren't mapped yet (status "needsMapping" in firms/index.json) isn't synced at all.
+// Drift: stages that aren't mapped (new or renamed in GHL), pipelines that appeared or disappeared. Non-law firms:
+// an unmapped stage counts nowhere until it's mapped. Law firms: a warning only, their counting is unchanged.
+// kpis.json gets the counts only (sync.drift); the bell and Slack read them from there.
+const firmEntry = (await readIndex()).find(f => f.slug === SLUG) || {};
+if (firmEntry.status === 'needsMapping') { console.log(`${SLUG} needs its pipelines mapped first (KPI admin → Map pipelines). Not synced.`); process.exit(0); }
+const driftFound = isCare(cfg) ? careDrift(cfg, pipelines)
+  : lawDrift(cfg, pipelines, await readFile(new URL('discovery.json', firmDir), 'utf8').then(JSON.parse, () => null));
+const drift = driftCounts(driftFound);
+if (drift) {
+  const names = [...driftFound.unmappedStages.map(s => s.missing ? `"${s.id}" (in the mapping, not in GHL)` : `${s.pipeline}: ${s.name}`),
+    ...driftFound.newPipelines.map(p => `new pipeline ${p.name}`), ...driftFound.gonePipelines.map(p => `pipeline gone: ${p.name}`)];
+  warn(`${SLUG}: ${drift.stages} stage(s) not mapped, ${drift.pipelinesNew} new pipeline(s), ${drift.pipelinesGone} pipeline(s) gone${isCare(cfg) ? ' (unmapped stages count nowhere until mapped)' : ' (warning only)'}: ${names.join('; ')}`);
+}
 const wanted = (cfg.pipelines || []).map(norm);
 const pipelineOk = id => !wanted.length || wanted.includes(norm(pipelineName[id]));
 if (wanted.length && !pipelines.some(p => wanted.includes(norm(p.name)))) console.warn(`None of config.pipelines (${cfg.pipelines.join(', ')}) match a GHL pipeline name.`);
@@ -168,6 +185,61 @@ const opps = [];
   }
 }
 const recentOpps = opps.filter(o => (Date.parse(o.createdAt) || 0) >= since && pipelineOk(o.pipelineId));
+
+// ---------- v1.28.0: Medical & dental / Other firms (scripts/care-core.mjs) ----------
+// Their own path, so nothing below (the law-firm counting) changes for law firms. People, not opportunities, are
+// counted; the mapping is by pipeline and stage id. Counts only (the default for Medical & dental): the details file
+// holds ids, stages, statuses, values and dates only, never a name, email or phone. Calls and messages aren't used.
+if (isCare(cfg)) {
+  const used = new Set((cfg.pipelineMap?.pipelines || []).filter(p => p.use !== false).map(p => p.id));
+  const careOpps = opps.filter(o => (Date.parse(o.createdAt) || 0) >= since && used.has(o.pipelineId)).map(o => ({
+    oppId: o.id, contactId: o.contactId || o.contact?.id || null, pipelineId: o.pipelineId, stageId: o.pipelineStageId || null,
+    status: o.status || 'open', value: Number(o.monetaryValue) || 0, createdAt: iso(o.createdAt),
+  }));
+  // Appointment statuses (no-show rate shows only when the firm marks no-shows at all). Ids, status and times only.
+  const careAppts = (await optional('appointments', async () => {
+    const { calendars = [] } = await ghl(`/calendars/?locationId=${LOC}`);
+    const out = [];
+    for (const cal of calendars) {
+      const q = new URLSearchParams({ locationId: LOC, calendarId: cal.id, startTime: String(since), endTime: String(now + 60 * DAY) });
+      const { events = [] } = await ghl(`/calendars/events?${q}`);
+      for (const e of events) out.push({ contactId: e.contactId || null, status: e.appointmentStatus || e.status || '', startTime: iso(e.startTime) });
+    }
+    return out;
+  })) || [];
+  let names = null;
+  if (!countsOnly(cfg)) {   // names shown on drill-downs only when the firm's counts-only setting is off
+    names = {};
+    for (const id of [...new Set(careOpps.map(o => o.contactId).filter(Boolean))]) {
+      const c = (await optional(`contact ${id}`, () => ghl(`/contacts/${id}`)))?.contact;
+      if (c) names[id] = { name: c.contactName || [c.firstName, c.lastName].filter(Boolean).join(' ') || 'Unnamed', email: c.email || null, phone: c.phone || null };
+    }
+  }
+  await stopOnAuthFailures();
+  const careRecords = { generatedAt: new Date(now).toISOString(), locationId: LOC, ghlBase: cfg.ghlAppBase, practiceType: cfg.practiceType,
+    countsOnly: countsOnly(cfg), opps: careOpps, appointments: careAppts, ...(names ? { contacts: names } : {}) };
+  const { periods, noShowTracked: tracked, people } = computeCareAll(careRecords, cfg, now, { PERIOD_KEYS, periodRange, tzOffsetMin });
+  let prev = null; try { prev = JSON.parse(await readFile(new URL('kpis.json', dataDir), 'utf8')); } catch {}
+  const A = cfg.notice?.autoHide, moved = A ? (periods[A.window || 'last90']?.current?.stageMoved ?? 0) : 0;
+  const graduatedAt = prev?.notice?.graduatedAt || (A && moved >= A.minLeadsMoved ? careRecords.generatedAt : null);
+  const out = {
+    generatedAt: careRecords.generatedAt, location: cfg.locationName, targets: cfg.targets,
+    practiceType: cfg.practiceType, countsOnly: countsOnly(cfg), noShowTracked: tracked,
+    ...(firmEntry.status === 'draft' ? { status: 'draft' } : {}),
+    // "Pipelines counted": only pipelines with at least one stage that counts (an all-Ignore pipeline, e.g. after-care, isn't listed)
+    pipelines: (cfg.pipelineMap?.pipelines || []).filter(p => p.use !== false && Object.values(cfg.pipelineMap?.stages || {}).some(s => s.pipelineId === p.id && s.bucket !== 'ignore')).map(p => ({ id: p.id, name: pipelineName[p.id] || p.name })),
+    dataNotes: { appointments: careAppts.length ? 'Calendar appointments (no-show status only)' : 'No calendar appointments' },
+    detailsAvailable: !!PASS, periods, notice: { graduatedAt },
+    sync: { checkedAt: careRecords.generatedAt, holds: 0, heldSince: null, incomplete: false, ...(drift ? { drift } : {}) },
+  };
+  await mkdir(dataDir, { recursive: true });
+  await writeFile(new URL('kpis.json', dataDir), JSON.stringify(out, null, 2) + '\n');
+  if (PASS) await writeFile(new URL('details.enc.json', dataDir), JSON.stringify(await encryptJSON(careRecords, PASS)) + '\n');
+  else await rm(new URL('details.enc.json', dataDir), { force: true });
+  const mapped = careOpps.filter(o => cfg.pipelineMap?.stages?.[o.stageId]).length;
+  console.log(`Wrote firms/${SLUG}/data/kpis.json (${cfg.practiceType}: ${careOpps.length} opportunities in ${used.size} pipeline(s), ${mapped} in a mapped stage, ${people} people; ${careAppts.length} appointments; counts only: ${countsOnly(cfg) ? 'yes' : 'no'}${firmEntry.status === 'draft' ? '; DRAFT' : ''})`);
+  process.exit(0);
+}
 
 // Lost reasons: names from config.turnedAway.lostReasons ({ id: name }) if given; ids are logged so they can be mapped.
 const lostReasonNames = cfg.turnedAway?.lostReasons || {};
@@ -405,6 +477,7 @@ const holdsSoFar = prevSync?.holds || 0;
 await stopOnAuthFailures();
 if (drops.length && holdsSoFar < HOLD.maxHolds && prevPub?.periods) {
   prevPub.sync = { ...prevSync, checkedAt, holds: holdsSoFar + 1, heldSince: prevSync.heldSince || checkedAt, reason: drops.join(', ') };
+  if (drift) prevPub.sync.drift = drift; else delete prevPub.sync.drift;
   await writeFile(new URL('kpis.json', dataDir), JSON.stringify(prevPub, null, 2) + '\n');
   warn(`${SLUG}: held (${holdsSoFar + 1} of ${HOLD.maxHolds}). GHL returned fewer calls or messages than last sync (${drops.join(', ')}); the dashboard keeps the numbers from ${prevPub.generatedAt}.`);
   console.log('Message export diagnostics:', JSON.stringify(diag));
@@ -423,7 +496,8 @@ if (drops.length) {
   } else console.log(still.length ? `"May be incomplete" note cleared after ${HOLD.noteHours} hours (${still.join(', ')}).` : 'Counts are back near their pre-hold level; "may be incomplete" note cleared.');
 }
 const syncInfo = { checkedAt, counts, channels: chState, holds: 0, heldSince: null, incomplete: !!incomplete,
-  incompleteSince: incomplete?.since || null, baseline: incomplete?.baseline || null, reason: incomplete?.reason || null };
+  incompleteSince: incomplete?.since || null, baseline: incomplete?.baseline || null, reason: incomplete?.reason || null,
+  ...(drift ? { drift } : {}) };
 
 const byTimeDesc = (a, b) => Date.parse(b.at) - Date.parse(a.at);
 const messageLog = { items: [...log.values()].sort(byTimeDesc) };

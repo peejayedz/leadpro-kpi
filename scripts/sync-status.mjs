@@ -67,6 +67,20 @@ export function cleanBreakdown(raw) {
   }
   return out;
 }
+// v1.28.0 drift guard: kpis.json sync.drift → whole numbers only, or null when there's nothing to flag.
+export function cleanDrift(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const d = { stages: intOr(raw.stages), pipelinesNew: intOr(raw.pipelinesNew), pipelinesGone: intOr(raw.pipelinesGone) };
+  return d.stages || d.pipelinesNew || d.pipelinesGone ? d : null;
+}
+// "3 stages not mapped", "1 new pipeline", … joined, for the bell and Slack.
+export function driftText(i) {
+  const parts = [];
+  if (i.stages) parts.push(`${i.stages} stage${i.stages === 1 ? '' : 's'} not mapped`);
+  if (i.pipelinesNew) parts.push(`${i.pipelinesNew} new pipeline${i.pipelinesNew === 1 ? '' : 's'}`);
+  if (i.pipelinesGone) parts.push(`${i.pipelinesGone} pipeline${i.pipelinesGone === 1 ? '' : 's'} gone`);
+  return parts.join(', ');
+}
 // A sync result file (written by sync.mjs) reduced to the allowed fields and values.
 export function cleanResult(raw, slug) {
   if (!raw || typeof raw !== 'object' || raw.slug !== slug) return null;
@@ -111,6 +125,8 @@ export function updateStatus(prev, { now, runUrl, event, chained, attempted = []
       const flags = syncFlags[slug] || {};
       if (intOr(flags.holds) > 0) current.push({ kind: 'held', count: intOr(flags.holds), since: isoOr(flags.heldSince), reason: REASON_RE.test(flags.reason || '') ? flags.reason : null });
       else if (flags.incomplete) current.push({ kind: 'incomplete', since: isoOr(flags.incompleteSince), reason: REASON_RE.test(flags.reason || '') ? flags.reason : null });
+      const d = cleanDrift(flags.drift);
+      if (d) current.push({ kind: 'unmapped', ...d });
     }
     const mine = s.open.filter(i => i.slug === slug);
     s.open = s.open.filter(i => i.slug !== slug);
@@ -183,6 +199,8 @@ export function openIssues(status, { now, firms = [], kpis = {}, chain = {} }) {
     // Firms the status file hasn't seen yet (or older data): fall back to the published kpis.json.
     if (k?.sync?.holds > 0 && !has(f.slug, 'held') && !has(f.slug, 'failed')) out.push({ id: `${f.slug}:held`, slug: f.slug, kind: 'held', count: k.sync.holds, firstSeen: k.sync.heldSince || k.sync.checkedAt, lastSeen: k.sync.checkedAt, reason: k.sync.reason || null, runUrl: fs?.lastRunUrl || null });
     else if (k?.sync?.incomplete && !k?.sync?.holds && !has(f.slug, 'incomplete') && !has(f.slug, 'failed')) out.push({ id: `${f.slug}:incomplete`, slug: f.slug, kind: 'incomplete', count: 1, firstSeen: k.sync.incompleteSince || k.sync.checkedAt, lastSeen: k.sync.checkedAt, reason: k.sync.reason || null, runUrl: fs?.lastRunUrl || null });
+    const dr = cleanDrift(k?.sync?.drift);
+    if (dr && !has(f.slug, 'unmapped')) out.push({ id: `${f.slug}:unmapped`, slug: f.slug, kind: 'unmapped', ...dr, count: 1, firstSeen: k.sync.checkedAt || k.generatedAt, lastSeen: k.sync.checkedAt || k.generatedAt, runUrl: fs?.lastRunUrl || null });
     const times = [fs?.lastSuccessAt, k?.sync?.checkedAt, k?.generatedAt].map(t => Date.parse(t)).filter(Number.isFinite);
     lastGood[f.slug] = times.length ? Math.max(...times) : null;
   }
@@ -216,7 +234,8 @@ export function firmState(issues, slug) {
 
 // Counts in the bell's badge and the tab title? A hold is only a notice (it usually clears on the
 // next sync); it counts once it becomes the published "may be incomplete" note.
-export const inBadge = i => i.kind !== 'held';
+// v1.28.0: "stages not mapped" is an amber notice too (it goes to Slack, see kpi-alerts.mjs, but not in the badge).
+export const inBadge = i => i.kind !== 'held' && i.kind !== 'unmapped';
 
 // The key "Mark as seen" remembers: a new occurrence of the same problem shows again.
 export const seenKey = i => `${i.id}@${i.firstSeen}`;
@@ -352,6 +371,16 @@ export function describeIssue(i, ctx = {}) {
         what: `The last token keeper run stopped${i.category === 'ghl' ? ' because GHL kept failing or couldn\'t be reached' : i.category === 'github' ? ' while saving to GitHub' : ' with an unexpected error'}. ${keeperNote} Tokens minted earlier keep working for up to 24 hours.`,
         steps: ['Usually temporary: the next hourly run clears it.', 'If it lasts more than 2 hours, press <b>Run token keeper</b> and then <b>View run on GitHub</b>.'],
         actions: ['keeper', 'run'] };
+    case 'unmapped':
+      return ctx.care === false ? {
+        title: driftText(i) || 'Mapping out of date',
+        what: 'GHL has stages or pipelines this firm\'s mapping doesn\'t know about: a stage was added or renamed, a stage in the mapping no longer exists, or a counted pipeline disappeared. This firm\'s numbers are counted exactly as before; check the mapping still says what you mean.',
+        steps: ['Press <b>Edit mapping</b>, then <b>Re-read GHL</b>, check each step and save. This clears on the next sync once the mapping matches GHL.'],
+        actions: ['map', 'firm'] } : {
+        title: driftText(i) || 'Pipelines not mapped',
+        what: `GHL has ${i.stages ? `<b>${i.stages}</b> stage${i.stages === 1 ? '' : 's'} this firm's mapping doesn't cover (new or renamed)` : 'pipeline changes the mapping doesn\'t cover'}${i.pipelinesNew ? `, <b>${i.pipelinesNew}</b> new pipeline${i.pipelinesNew === 1 ? '' : 's'}` : ''}${i.pipelinesGone ? `, and <b>${i.pipelinesGone}</b> counted pipeline${i.pipelinesGone === 1 ? '' : 's'} no longer there` : ''}. People in an unmapped stage <b>count nowhere</b> until it's mapped.`,
+        steps: ['Press <b>Map pipelines</b>, then <b>Re-read GHL</b>. New stages and pipelines are marked; pick a bucket for each (or Ignore) and save.', 'This clears on the next sync once every stage is mapped.'],
+        actions: ['map', 'firm'] };
     case 'mapping-review':
       return {
         title: 'Review mapping',

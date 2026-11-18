@@ -1,0 +1,72 @@
+name: Add a scorecard to its GHL menu (from the builder)
+# v1.28.0. Every new scorecard starts as a Draft: new-firm.yml no longer adds the GHL menu link. After Andy's review,
+# the Builder's KPI tab "Add to GHL menu" (asks first) starts this: ONLY the existing menu-link step (scripts/ghl-menu.mjs,
+# the same guarded POST as before: "KPI Dashboard", this one sub-account, new tab), then the firm goes live (its Draft
+# status is removed from firms/index.json). Refuses a firm that isn't a Draft.
+# PUBLIC LOGS: step names, slugs and results only. The link holds the dashboard passphrase: never printed.
+run-name: "Menu link ${{ inputs.slug }} [${{ inputs.request }}]"
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Firm slug (a Draft)"
+        required: true
+      request:
+        description: "Builder request id (to find this run)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: new-firm
+  cancel-in-progress: false
+
+env:
+  NF_SLUG: ${{ inputs.slug }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      key: ${{ steps.plan.outputs.key }}
+      location: ${{ steps.plan.outputs.location }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Check the firm is a Draft
+        id: plan
+        run: node scripts/new-firm.mjs menu-plan
+
+  menu-link:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: GHL menu link
+        env:
+          GHL_MENU_TOKEN: ${{ secrets.GHL_MENU_TOKEN }}
+          NF_PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', needs.prepare.outputs.key)] }}
+          NF_LOCATION: ${{ needs.prepare.outputs.location }}
+        run: node scripts/new-firm.mjs menu
+      - name: Go live
+        run: |
+          node scripts/new-firm.mjs go-live
+          git config user.name "kpi-sync-bot"
+          git config user.email "kpi-sync-bot@users.noreply.github.com"
+          git add "firms/$NF_SLUG/config.json" firms/index.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Menu link for $NF_SLUG: live"
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1

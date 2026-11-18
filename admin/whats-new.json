@@ -1,5 +1,16 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.28.0": {
+    "title": "Scorecards for medical and dental practices",
+    "summary": "Pick a practice type, map each pipeline stage once, and new scorecards start as a Draft.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "Practice type for every firm: Law firm (unchanged), Medical & dental, or Other. Medical scorecards show patient enquiries, consults booked, show rate, treatment accepted, procedures completed and value." },
+      { "type": "new", "tag": "internal", "text": "Map pipelines: choose what each GHL stage means (enquiry, contacted, consult booked, attended, yes, done, lost or ignore) as chips. It's pre-filled; renaming a stage in GHL doesn't break it." },
+      { "type": "new", "tag": "internal", "text": "Each person counts once, even when they're in several pipelines. Counts only (on for medical) keeps patient names out of the scorecard." },
+      { "type": "new", "tag": "internal", "text": "The bell (and Slack) tells you when GHL has a stage that isn't mapped yet, or when a scorecard was removed." },
+      { "type": "improved", "tag": "internal", "text": "New scorecards start as a Draft. \"Add to GHL menu\" puts the KPI link in the client's GHL menu after Andy's review." }
+    ]
+  },
   "1.27.0": {
     "title": "Every click shows it's working",
     "summary": "The button you press fills with gold while it works, then says what it did.",

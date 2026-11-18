@@ -15,6 +15,7 @@
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=2.3.0">
 <link rel="stylesheet" href="admin.css?v=1.27.0">
+<link rel="stylesheet" href="care.css?v=1.28.0">
 </head>
 <body>
 
@@ -56,7 +57,7 @@
 import { mergeConfig, practiceSlug } from '../scripts/config-merge.mjs';
 import { parseChangelog, latestVersion, inlineMd } from '../scripts/changelog.mjs';
 import { STEPS_MAP, initialState, stageList as stagesOf, buildMapping, applyMapping } from './mapping.mjs';
-import { openIssues, firmState, describeIssue, seenKey, inBadge, STALE_MIN, chainAlive } from '../scripts/sync-status.mjs';
+import { openIssues, firmState, describeIssue, seenKey, inBadge, STALE_MIN, chainAlive, driftText } from '../scripts/sync-status.mjs';
 import { keeperIssues, reviewIssues, tokenLabel } from '../scripts/keeper-status.mjs';
 import { checkScopes } from '../scripts/scope-check.mjs';
 import { pipelineNotices } from '../scripts/not-in-pipeline.mjs';
@@ -64,6 +65,7 @@ import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
 import { buildCards, filterCards, newer, isMinor, cardVersion } from './news.mjs';
 import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS, severity, isAlert, leadTrend, sortFirms, staleLine } from './firm-details.mjs';
 import { decryptJSON } from '../scripts/kpi-core.mjs';
+import { PRACTICE_TYPES, practiceTypeOf, practiceLabel, isCare, countsOnly as countsOnlyOf, BUCKETS, BUCKET_HINTS, careInitialState, unchosen, buildPipelineMap, applyCare, mapOf } from '../scripts/care-core.mjs';
 import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName, busyButton } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -389,7 +391,7 @@ async function route() {
   const r = parseHash();
   // v2: the firm list uses the shell's full-width phone list; New firm and Edit mapping keep a 16px phone margin
   $('screen').classList.toggle('kpi-list', r.screen === 'list');
-  shell?.setTitle(r.screen === 'new' ? 'New firm' : r.screen === 'map' ? 'Edit mapping' : 'Scorecards');
+  shell?.setTitle(r.screen === 'new' ? 'New firm' : r.screen === 'map' ? (firmOf(r.slug) && careOf(firmOf(r.slug)) ? 'Map pipelines' : 'Edit mapping') : 'Scorecards');
   if (r.screen === 'new') { closeDetails({ keepHash: true }); screenNow = 'new'; return renderNewFirm(); }
   if (r.screen === 'map') {
     closeDetails({ keepHash: true });
@@ -442,7 +444,12 @@ const isStale = k => !!(k?.generatedAt && Date.now() - Date.parse(k.generatedAt)
 const isTest = f => /(^|[-\s])test\b|^zz[-\s]/i.test(f.slug) || /\btest\b|^zz\b/i.test(f.name || '');
 // Needs attention (v1.13): any reason from admin/firm-details.mjs: a sync problem, token/app problem, held or "may be
 // incomplete" numbers, mapping to review, no data yet, or new contacts outside a pipeline. Most urgent first.
-const reasonsOf = f => firmReasons(f.slug, kpiFull[f.slug], issues);
+const reasonsOf = f => firmReasons(f.slug, kpiFull[f.slug], issues, { status: f.status || null });
+// v1.28.0: practice type (config.json wins; index.json has it too) and status (index.json: needsMapping | draft | live).
+const careOf = f => isCare(configs[f.slug] || { practiceType: f.practiceType });
+const typeOf = f => practiceTypeOf(configs[f.slug] || { practiceType: f.practiceType });
+const isDraft = f => f.status === 'draft', needsMap = f => f.status === 'needsMapping';
+const noLink = f => isDraft(f) || needsMap(f);   // no scorecard link can be copied until it's published
 const needsAttention = f => reasonsOf(f).length > 0;
 // v2 filter (reference wording): desktop "All 4 · Needs attention · 1 · Test firms", phone "All · Needs attention · 1 · Test".
 // Test = the test firms only (shown there even when "Show test clients" is off).
@@ -475,8 +482,8 @@ function firmRow(f) {
   const test = isTest(f) ? 'Test' : '';
   // v1.26.0: "No successful sync for 3 h" (was the bell's title + the time since the issue started: "… in 3 hours 2 h ago")
   const stale = r?.kind === 'stale' && r.issue ? staleLine(Date.now(), r.issue.lastGood || k?.generatedAt || r.issue.firstSeen) : '';
-  const sub = [f.practiceArea || 'No practice area', test, stale || (r ? `${reasonTitle(r)}${r.issue ? ` ${ago(r.issue.firstSeen)}` : ''}` : '')].filter(Boolean).join(' · ');
-  const subPhone = [test, stale || (r ? `${r.short}${r.issue ? ` · ${ago(r.issue.firstSeen)}` : ''}` : `Synced ${clock(k?.generatedAt)}`)].filter(Boolean).join(' · ');
+  const sub = [f.practiceArea || 'No practice area', careOf(f) ? practiceLabel(typeOf(f)) : '', isDraft(f) ? 'Draft' : '', test, stale || (r ? `${reasonTitle(r)}${r.issue ? ` ${ago(r.issue.firstSeen)}` : ''}` : '')].filter(Boolean).join(' · ');
+  const subPhone = [isDraft(f) ? 'Draft' : '', test, stale || (r ? `${r.short}${r.issue ? ` · ${ago(r.issue.firstSeen)}` : ''}` : `Synced ${clock(k?.generatedAt)}`)].filter(Boolean).join(' · ');
   const status = r ? lvStatus(bad ? 'red' : 'amber', `${r.short}${more}`) : lvStatus('green', `Synced ${clock(k?.generatedAt)}`);
   // v1.25.0: 0 leads → a muted "No leads yet"; under the number, on the same small line, the trend vs the 90 days before
   // (when the synced data has it): "leads · 90 days ▼ 19%" (rows keep one height). v1.26.0: only when the 90 days before
@@ -555,7 +562,7 @@ document.addEventListener('click', e => {
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-f]'); if (!b) return;
   const host = b.closest('[data-slug]'); const f = host && firmOf(host.dataset.slug); if (!f) return;
-  ({ link: copyLinkDialog, sync: resyncFirm, map: x => go(hashFor('map', x.slug)), banner: toggleBanner, delete: deleteDialog, token: x => tokenDialog(x, h => firmSay(x.slug, h)), keeper: runKeeperFor })[b.dataset.f]?.(f, b);
+  ({ link: copyLinkDialog, sync: resyncFirm, map: x => go(hashFor('map', x.slug)), banner: toggleBanner, publish: publishDialog, counts: toggleCounts, delete: deleteDialog, token: x => tokenDialog(x, h => firmSay(x.slug, h)), keeper: runKeeperFor })[b.dataset.f]?.(f, b);
 });
 // Per-firm messages ("Copied", "Synced", errors) show on the firm's row and in its Details panel.
 const firmMsg = {}, busy = new Set();
@@ -579,6 +586,7 @@ function flashCopied(btn) {
   setTimeout(() => tag.remove(), COPIED_MS);
 }
 function copyLinkDialog(f, btn) {
+  if (noLink(f)) { firmSay(f.slug, `<span class="chip warn">Not yet</span> ${needsMap(f) ? 'Map the pipelines and publish the scorecard first.' : 'Publish the scorecard first: it\'s a Draft.'}`); return; }
   openDialog({
     title: 'Copy GHL menu link', okIcon: ICON.copy, ok: 'Copy link',
     body: `<p class="sub">The scorecard link to paste into the sub-account's Custom Menu Link. Type <b>${esc(fname(f))}</b>'s dashboard passphrase; it's only used to build the link and isn't saved.</p>
@@ -642,6 +650,52 @@ async function toggleBanner(f) {
   finally { busy.delete(key); repaintFirm(f.slug); }
 }
 
+// ---------- v1.28.0: status + counts only ----------
+// Draft → live = "Add to GHL menu" (same as the Builder's KPI tab): menu-link.yml runs ONLY the existing menu-link step
+// ("KPI Dashboard", this one sub-account) and removes the Draft status once the link is there. Asked once, with a tick.
+function publishDialog(f) {
+  openDialog({
+    title: `Add the KPI link to ${esc(fname(f))}'s GHL menu?`, ok: 'Add to GHL menu',
+    body: `<p class="sub">This publishes the scorecard: a <b>KPI Dashboard</b> link is added to <b>${esc(fname(f))}</b>'s GHL menu (this sub-account only, opens in a new tab), and the Draft banner goes away on the next sync. Nothing else in GHL changes and nothing is sent to the client.</p>
+      <label class="check"><input type="checkbox" id="dlgOk2"> The scorecard has been reviewed and approved for the client.</label>
+      <div class="ferr" id="dlgErr"></div>`,
+    onOk: async () => {
+      if (!$('dlgOk2').checked) { $('dlgErr').textContent = 'Tick the box to confirm it was reviewed and approved.'; return; }
+      closeDialog();
+      const key = `${f.slug}:publish`; busy.add(key); repaintFirm(f.slug);
+      const say = h => firmSay(f.slug, h);
+      try {
+        const request = `adm-${Date.now().toString(36)}`;
+        const t0 = await dispatch('menu-link.yml', { slug: f.slug, request });
+        say('<span class="chip">Adding</span> Starting…');
+        await follow({ workflow: 'menu-link.yml', title: `Menu link ${f.slug} [${request}]`, t0, label: 'Adding to the GHL menu', limitMs: 5 * 60e3, say,
+          check: async () => { const list = await getJSON('firms/index.json'); const row = (list || []).find(x => x.slug === f.slug); return row && !row.status ? row : null; } });
+        delete f.status;
+        say('<span class="chip good">Live</span> "KPI Dashboard" is in the GHL menu. Re-syncing so the Draft banner goes away…');
+        resyncFirm(f);
+      } catch (e) { say(`<span class="chip bad">Not added</span> ${errHtml(e)} The scorecard stays a Draft.`); }
+      finally { busy.delete(key); repaintFirm(f.slug); }
+    },
+  });
+}
+// Counts only on/off (non-law firms). The next sync rewrites the details file with or without names.
+async function toggleCounts(f) {
+  const key = `${f.slug}:counts`; if (busy.has(key)) return;
+  busy.add(key); repaintFirm(f.slug); firmSay(f.slug, 'Saving the counts-only setting…');
+  try {
+    let next;
+    await commitFiles(`${countsOnlyOf(configs[f.slug]) ? 'Turn off' : 'Turn on'} counts only for ${f.name}`, async head => {
+      const cfg = await getJSON(`firms/${f.slug}/config.json`, head); if (!cfg) throw new Error('config.json not found');
+      cfg.countsOnly = !countsOnlyOf(cfg); next = cfg;
+      return [{ path: `firms/${f.slug}/config.json`, content: jsonText(cfg) }];
+    });
+    configs[f.slug] = next;
+    firmSay(f.slug, `<span class="chip good">Saved</span> Counts only ${next.countsOnly ? 'on: names, emails and phones are removed' : 'off: names are shown'} from the next sync. Re-syncing…`);
+    resyncFirm(f);
+  } catch (e) { firmSay(f.slug, `<span class="chip bad">Not saved</span> ${esc(e.message)}`); }
+  finally { busy.delete(key); repaintFirm(f.slug); }
+}
+
 // ---------- delete ----------
 function deleteDialog(f) {
   openDialog({
@@ -680,7 +734,7 @@ async function deleteFirm(slug, secretKey, name) {
 const CHECK_MS = 5 * 60e3;
 const BASE_TITLE = document.title;
 const SEEN_KEY = 'leadpro-admin-seen', LIVE_KEY = 'leadpro-admin-live', LOCAL_RESOLVED = 'leadpro-admin-resolved';
-let syncStatus = null, keeperStatus = null, issues = [], chainInfo = {}, lastCheck = 0, checkErr = null, checkTimer = null, checking = null;
+let syncStatus = null, keeperStatus = null, removedLog = null, issues = [], chainInfo = {}, lastCheck = 0, checkErr = null, checkTimer = null, checking = null;
 const subNames = {}, expanded = new Set(), issueMsg = {};
 const readStore = (k, d) => { try { return JSON.parse(store.get(k)) ?? d; } catch { return d; } };
 const seenSet = () => new Set(readStore(SEEN_KEY, []));
@@ -690,7 +744,7 @@ const unseen = () => { const s = seenSet(); return listed().filter(i => !s.has(s
 const when = iso => (iso ? `${fmtTime(iso)} (${ago(iso)})` : 'unknown');
 const firmOf = slug => firms.find(f => f.slug === slug);
 const locOf = f => configs[f.slug]?.locationId || f.locationId || '';
-const issueText = i => { const f = i.slug ? firmOf(i.slug) : null; return describeIssue(i, { now: Date.now(), subAccount: f ? subNames[f.slug] : null, secretKey: f?.secretKey, tokenSource: f?.tokenSource, lastGood: f ? kpis[f.slug]?.generatedAt : null, when }); };
+const issueText = i => { const f = i.slug ? firmOf(i.slug) : null; return describeIssue(i, { now: Date.now(), subAccount: f ? subNames[f.slug] : null, secretKey: f?.secretKey, tokenSource: f?.tokenSource, lastGood: f ? kpis[f.slug]?.generatedAt : null, when, care: f ? careOf(f) : undefined }); };
 
 // SYNC_CHAIN and whether a link of the chain is waiting (or a chained sync is running).
 async function chainState() {
@@ -714,6 +768,7 @@ async function refreshIssues({ reloadKpis = false } = {}) {
       syncStatus = await getJSON('status/sync-status.json').catch(() => null);
       chainInfo = await chainState();
       keeperStatus = await getJSON('status/token-keeper.json').catch(() => null);
+      removedLog = await getJSON('status/removed.json').catch(() => null);   // v1.28.0: "Scorecard removed" notices (7 days)
       const rank = i => (i.slug ? 1 : 0);
       issues = [...keeperIssues(keeperStatus, { now: Date.now(), firms }), ...reviewIssues(firms, configs), ...openIssues(syncStatus, { now: Date.now(), firms, kpis, chain: chainInfo })]
         .sort((a, b) => rank(a) - rank(b) || Date.parse(b.firstSeen) - Date.parse(a.firstSeen));
@@ -757,6 +812,7 @@ function stopIssues() {
 const COUNT = {
   failed: i => ['In a row', `${i.count} sync${i.count === 1 ? '' : 's'}`],
   held: i => ['Holds', `${i.count} of 3`],
+  unmapped: i => ['Not mapped', driftText(i)],
   incomplete: i => ['Syncs with the note', String(i.count)],
   stale: i => ['Missed syncs', `about ${i.count}`],
   'no-sync': i => ['Missed syncs', `about ${i.count}`],
@@ -771,8 +827,8 @@ function issueHtml(i, seen) {
     : code === 'run' ? (i.runUrl ? `<a class="btn${primary ? ' primary' : ''}" href="${esc(i.runUrl)}" target="_blank" rel="noopener">${ICON.ext}View run on GitHub</a>` : '')
     : code === 'variables' ? `<a class="btn${primary ? ' primary' : ''}" href="https://github.com/${esc(OWNER)}/${esc(REPO)}/settings/variables/actions" target="_blank" rel="noopener">${ICON.ext}Open variables</a>`
     : `<button class="btn${primary ? ' primary' : ''}" type="button" data-n="${code}">${html}</button>`;
-  const LABEL = { token: `${ICON.key}Update token`, resync: `${ICON.sync}Re-sync`, firm: `${ICON.target}Go to firm`, restart: `${ICON.sync}Restart chain`, keeper: `${ICON.key}Run token keeper`, map: `${ICON.map}Edit mapping`, 'sync-all': `${ICON.sync}Sync all firms now` };
-  const strong = !['held', 'incomplete'].includes(i.kind);
+  const LABEL = { token: `${ICON.key}Update token`, resync: `${ICON.sync}Re-sync`, firm: `${ICON.target}Go to firm`, restart: `${ICON.sync}Restart chain`, keeper: `${ICON.key}Run token keeper`, map: `${ICON.map}${f && careOf(f) ? 'Map pipelines' : 'Edit mapping'}`, 'sync-all': `${ICON.sync}Sync all firms now` };
+  const strong = !['held', 'incomplete'].includes(i.kind);   // v1.28.0: "stages not mapped" keeps its Map pipelines button primary
   return `<article class="issue" data-issue="${esc(i.id)}">
     <button class="ihead" type="button" aria-expanded="${open}" data-n="toggle"><span class="sev ${sev}" aria-hidden="true"></span>
       <span><span class="ititle">${esc(d.title)}</span><span class="imeta">${f ? esc(fname(f)) : 'System'} · since ${esc(ago(i.firstSeen))}${isNew ? ' · <span class="newtag">New</span>' : ''}</span></span>${ICON.chev}</button>
@@ -791,6 +847,13 @@ function issueHtml(i, seen) {
       <div class="ifoot">${isNew ? '<button class="linkbtn" type="button" data-n="seen">Mark as seen</button>' : '<span class="muted">Seen · stays listed until it\'s fixed</span>'}</div>
     </div></article>`;
 }
+// v1.28.0: "Scorecard removed · <firm>" (status/removed.json, written by remove-firm.yml), for 7 days. A short notice:
+// nothing to do, never counted in the badge.
+function removedHtml() {
+  const list = (removedLog?.removed || []).filter(e => Date.now() - Date.parse(e.at) < 7 * 864e5).slice(0, 5);
+  if (!list.length) return '';
+  return `<div class="nnotices">${list.map(e => `<div class="note nnotice" data-notice="removed"><b>Scorecard removed · ${esc(e.name || e.slug)}</b> · ${esc(ago(e.at))} by ${esc(e.by || 'someone')} from the Builder.${e.menu === 'removed' ? ' Its "KPI Dashboard" link was taken out of the GHL menu.' : ''}</div>`).join('')}</div>`;
+}
 function paintPanel() {
   const seen = seenSet(), open = listed(), notices = issues.filter(i => !inBadge(i)), n = open.filter(i => !seen.has(seenKey(i))).length;
   const nip = pipelineNotices(firms, kpis);   // amber notices, never counted in the badge or tab title
@@ -803,7 +866,8 @@ function paintPanel() {
         <button class="linkbtn" type="button" data-n="check">Check now</button>${n ? '<button class="linkbtn" type="button" data-n="seen-all">Mark all as seen</button>' : ''}</p>
       ${checkErr ? `<div class="errbox small">Couldn't check everything: ${esc(checkErr)}</div>` : ''}
     </div>
-    ${notices.length || nip.length ? `<div class="nnotices">${nip.map(x => { const u = contactsUrl(x.slug); return `<div class="warnbox nnotice"><b>New contacts not in pipeline</b> · ${esc(x.name)} · ${x.count} in the last 30 days<br>${x.count === 1 ? 'A contact' : `${x.count} contacts`} came in by form, chat, booking, call, text or email but ${x.count === 1 ? 'has' : 'have'} no opportunity in any pipeline, so ${x.count === 1 ? 'it isn\'t' : 'they aren\'t'} counted in New leads. What to do: check the firm's lead intake in GHL (the chat widget, form and call workflows) and make sure each one creates an opportunity in the lead pipeline, then add these contacts to it. ${u ? `<a class="linkbtn" href="${esc(u)}" target="_blank" rel="noopener">Open contacts in GHL</a> · ` : ''}<button class="linkbtn" type="button" data-n="firm" data-slug="${esc(x.slug)}">Go to firm</button></div>`; }).join('')}${notices.map(i => { const f = firmOf(i.slug); return `<div class="warnbox nnotice"><b>Holding previous numbers</b> · ${esc(f?.name || i.slug)} · hold ${i.count} of 3, since ${esc(ago(i.firstSeen))}<br>GHL returned fewer calls or messages than the last sync${i.reason ? ` (${esc(i.reason)})` : ''}, so the dashboard keeps the previous numbers. Nothing to do: it usually clears on the next sync. After 3 holds it publishes with a "may be incomplete" note, which shows here as an issue. <button class="linkbtn" type="button" data-n="firm" data-slug="${esc(i.slug)}">Go to firm</button></div>`; }).join('')}</div>` : ''}
+    ${removedHtml()}
+    ${notices.length || nip.length ? `<div class="nnotices">${nip.map(x => { const u = contactsUrl(x.slug); return `<div class="warnbox nnotice"><b>New contacts not in pipeline</b> · ${esc(x.name)} · ${x.count} in the last 30 days<br>${x.count === 1 ? 'A contact' : `${x.count} contacts`} came in by form, chat, booking, call, text or email but ${x.count === 1 ? 'has' : 'have'} no opportunity in any pipeline, so ${x.count === 1 ? 'it isn\'t' : 'they aren\'t'} counted in New leads. What to do: check the firm's lead intake in GHL (the chat widget, form and call workflows) and make sure each one creates an opportunity in the lead pipeline, then add these contacts to it. ${u ? `<a class="linkbtn" href="${esc(u)}" target="_blank" rel="noopener">Open contacts in GHL</a> · ` : ''}<button class="linkbtn" type="button" data-n="firm" data-slug="${esc(x.slug)}">Go to firm</button></div>`; }).join('')}${notices.map(i => { const f = firmOf(i.slug); if (i.kind === 'unmapped') { const d = issueText(i); return `<div class="warnbox nnotice" data-notice="unmapped"><b>${esc(d.title)}</b> · ${esc(f ? fname(f) : i.slug)} · since ${esc(ago(i.firstSeen))}<br>${d.what} <button class="linkbtn" type="button" data-n="map" data-slug="${esc(i.slug)}">${f && careOf(f) ? 'Map pipelines' : 'Edit mapping'}</button> · <button class="linkbtn" type="button" data-n="firm" data-slug="${esc(i.slug)}">Go to firm</button></div>`; } return `<div class="warnbox nnotice"><b>Holding previous numbers</b> · ${esc(f?.name || i.slug)} · hold ${i.count} of 3, since ${esc(ago(i.firstSeen))}<br>GHL returned fewer calls or messages than the last sync${i.reason ? ` (${esc(i.reason)})` : ''}, so the dashboard keeps the previous numbers. Nothing to do: it usually clears on the next sync. After 3 holds it publishes with a "may be incomplete" note, which shows here as an issue. <button class="linkbtn" type="button" data-n="firm" data-slug="${esc(i.slug)}">Go to firm</button></div>`; }).join('')}</div>` : ''}
     ${open.length ? open.map(i => issueHtml(i, seen)).join('')
       : `<div class="nempty"><span class="okic">${ICON.tick}</span><b>No open issues</b><p>Every firm synced in the last ${STALE_MIN} minutes and the sync chain is running.</p></div>`}
     <details class="nresolved"${resolved.length ? '' : ' hidden'}><summary>Recently resolved (${resolved.length})</summary><ul>${resolved.map(r => {
@@ -858,7 +922,7 @@ $('nPanel').addEventListener('click', async e => {
     case 'firm': goToFirm(i?.slug || b.dataset.slug); break;
     case 'resync': if (f) startResync(f, say); break;
     case 'token': if (f) tokenDialog(f, say); break;
-    case 'map': { closePanel(); if (f) go(hashFor('map', f.slug)); break; }
+    case 'map': { closePanel(); const s = f?.slug || b.dataset.slug; if (s) go(hashFor('map', s)); break; }   // v1.28.0: notices carry data-slug
     case 'keeper':
       b.disabled = true;
       try { await dispatch('tokens.yml', f ? { slug: f.slug } : {}); say(`<span class="chip good">Started</span> The token keeper is running${f ? ` for ${esc(f.name)}` : ''} (about a minute). This list updates on the next check.`); setTimeout(() => refreshIssues(), 90e3); }
@@ -1152,16 +1216,33 @@ function setupHtml(f) {
   const cfg = configs[f.slug] || {}, banner = configs[f.slug] ? bannerOn(cfg, bases[f.slug] || shared.defaults) : true;
   const pipes = Array.isArray(cfg.pipelines) ? cfg.pipelines : [];
   const app = f.tokenSource === 'app', bannerBusy = busy.has(`${f.slug}:banner`);
-  return `<section class="dset"><h3 class="lbl">Stage mapping</h3>
+  const care = careOf(f), M = mapOf(cfg), inUse = M.pipelines.filter(p => p.use !== false);
+  // v1.28.0 (review FIX 1.3): the same rule as the dashboard: a pipeline is counted when at least one of its stages isn't Ignore
+  const counts = p => Object.values(M.stages).some(s => s.pipelineId === p.id && s.bucket !== 'ignore');
+  const used = inUse.filter(counts), allIgnored = inUse.filter(p => !counts(p));
+  // v1.28.0: status (Draft / Needs mapping / Live) and, for non-law firms, practice type + counts only + Map pipelines
+  const statusSec = needsMap(f) ? `<section class="dset" data-sec="status"><h3 class="lbl">Status</h3>
+      <p><span class="chip warn">Needs mapping</span> Not synced yet. Map its pipelines; it then becomes a <b>Draft</b> for LFMP to review.</p>
+      <div class="btnrow"><button class="btn p" type="button" data-f="map">${ICON.map}Map pipelines ›</button></div></section>`
+    : isDraft(f) ? `<section class="dset" data-sec="status"><h3 class="lbl">Status</h3>
+      <p><span class="chip">Draft</span> Ready for Andy's review. Syncing, but not in the client's GHL menu yet: the dashboard shows a Draft banner and the link can't be copied.</p>
+      <div class="btnrow"><a class="btn" href="${esc(dashUrl(f.slug))}" target="_blank" rel="noopener">${ICON.ext}Preview dashboard</a><button class="btn" type="button" data-f="publish"${busy.has(`${f.slug}:publish`) ? ' disabled' : ''}>Add to GHL menu…</button></div></section>` : '';
+  const mapSec = care ? `<section class="dset"><h3 class="lbl">Pipelines</h3>
+      ${infoRows([['Practice type', esc(practiceLabel(typeOf(f)))], ['Pipelines counted', `${used.length ? used.map(p => esc(p.name)).join(', ') : '—'}${allIgnored.length ? `<br><span class="muted">${allIgnored.map(p => `${esc(p.name)}: all stages ignored`).join(' · ')}</span>` : ''}`], ['Stages mapped', String(Object.keys(M.stages).length)], ['Counts only', countsOnlyOf(cfg) ? 'On: no names, emails or phones stored or shown' : 'Off: names shown on drill-downs']])}
+      <div class="btnrow"><button class="btn" type="button" data-f="map">${ICON.map}Map pipelines</button><button class="btn" type="button" data-f="counts" aria-pressed="${countsOnlyOf(cfg)}"${busy.has(`${f.slug}:counts`) ? ' disabled' : ''}>Counts only ${countsOnlyOf(cfg) ? 'on · turn off' : 'off · turn on'}</button></div></section>`
+    : `<section class="dset"><h3 class="lbl">Stage mapping</h3>
       <p>${pipes.length ? `Counts leads in <b>${pipes.map(esc).join(', ')}</b>.` : 'Counts leads in every pipeline.'}${cfg.mappingReview ? ' <span class="chip warn">Review mapping</span> The stages were guessed when the firm was set up.' : ''}</p>
-      <div class="btnrow"><button class="btn" type="button" data-f="map">${ICON.map}Edit mapping</button></div></section>
+      <div class="btnrow"><button class="btn" type="button" data-f="map">${ICON.map}Edit mapping</button></div></section>`;
+  return `${statusSec}${mapSec}
     <section class="dset"><h3 class="lbl">Connection</h3>
       ${infoRows([['Token', esc(connLabel(f))], ['GHL sub-account', esc(subNames[f.slug] || '—')], ['Location ID', `<span class="mono">${esc(locOf(f) || '—')}</span>`], ['Secrets', `<span class="mono">GHL_TOKEN_${esc(f.secretKey)}</span>, <span class="mono">PASSPHRASE_${esc(f.secretKey)}</span>`]])}
       <p class="hint">${app ? 'The token keeper makes a fresh token every hour. Nothing to paste.' : 'Pasted when the firm was added. Update it only if GHL rejects it (the bell says so).'}</p>
       <div class="btnrow">${app ? `<button class="btn" type="button" data-f="keeper">${ICON.key}Run token keeper</button>` : `<button class="btn" type="button" data-f="token">${ICON.key}Update token</button>`}</div></section>
     <section class="dset" data-sec="menu-link"><h3 class="lbl">GHL menu link</h3>
-      <p>The scorecard link to paste into the sub-account's Custom Menu Link.</p>
-      <div class="btnrow"><button class="btn" type="button" data-f="link">${ICON.copy}Copy GHL menu link</button></div></section>
+      ${noLink(f) ? `<p>Not available while the scorecard is ${needsMap(f) ? '<b>Needs mapping</b>' : 'a <b>Draft</b>'}: publish it first.</p>
+      <div class="btnrow"><button class="btn" type="button" disabled aria-disabled="true">${ICON.copy}Copy GHL menu link</button></div></section>`
+      : `<p>The scorecard link to paste into the sub-account's Custom Menu Link.</p>
+      <div class="btnrow"><button class="btn" type="button" data-f="link">${ICON.copy}Copy GHL menu link</button></div></section>`}
     <section class="dset"><h3 class="lbl">Testing banner</h3>
       <p>The dashboard's testing-period banner is <b>${banner ? 'on' : 'off'}</b>.</p>
       <div class="btnrow"><button class="btn" type="button" data-f="banner" aria-pressed="${banner}"${bannerBusy ? ' disabled' : ''}>${ICON.flag}Banner ${banner ? 'on · turn off' : 'off · turn on'}</button></div></section>
@@ -1324,10 +1405,77 @@ function mappingPanel(host, { discovery, config, isNew, saveLabel, saveBtn = nul
     draw();
   });
 }
+
+// ---------- v1.28.0: Map pipelines (Medical & dental / Other) ----------
+// Every stage of every counted pipeline gets one bucket, picked as a chip. Pre-filled from the saved mapping, else the
+// firm's location preset (firms/_presets/care/), else the stage name; Ignore is only ever an explicit choice (or the
+// preset's). Save stays blocked until every stage in a counted pipeline has a bucket. Stored by GHL pipeline + stage id.
+let carePresets = null;
+async function carePresetFor(loc) {
+  try {
+    carePresets ||= await (async () => {
+      const dir = await gh('GET', `${R}/contents/firms/_presets/care?ref=${BRANCH}`, null, { allow404: true }) || [];
+      return Promise.all(dir.filter(x => x.type === 'file' && x.name.endsWith('.json')).map(x => getJSON(x.path)));
+    })();
+  } catch { carePresets = []; }
+  return (carePresets || []).find(p => p?.locationId === loc) || null;
+}
+const SOURCE_TAG = { saved: ['Saved', ''], preset: ['Pre-filled', 'pre'], guess: ['Guessed from the name', 'pre'] };
+function carePanel(host, { discovery, config, type, preset, saveBtn, warnHost }) {
+  const st = careInitialState({ discovery, config, preset });
+  const hints = BUCKET_HINTS[type] || BUCKET_HINTS.other;
+  let counts = countsOnlyOf({ ...config, practiceType: type });
+  const unsure = new Set(st.pipelines.flatMap(p => p.stages.filter(s => s.source === 'guess' || s.source === 'preset').map(s => s.id)));   // shown as "to confirm" until clicked
+  return new Promise(resolve => {
+    const draw = () => {
+      const left = unchosen(st), toConfirm = st.pipelines.filter(p => p.use).flatMap(p => p.stages).filter(s => unsure.has(s.id)).length;
+      const total = st.pipelines.filter(p => p.use).reduce((n, p) => n + p.stages.length, 0);
+      host.innerHTML = `<div class="map caremap">
+        <section class="cm-sum"><p><b>${total}</b> stage${total === 1 ? '' : 's'} in <b>${st.pipelines.filter(p => p.use).length}</b> counted pipeline${st.pipelines.filter(p => p.use).length === 1 ? '' : 's'}${left.length ? ` · <span class="chip warn">${left.length} to choose</span>` : ''}${toConfirm ? ` · <span class="chip">${toConfirm} pre-filled</span>` : ''}</p>
+          <p class="hint">Pick one bucket per stage. People are counted once, at the furthest bucket any of their opportunities reached. <b>Ignore</b> = not part of the ${type === 'medical' ? 'patient' : 'sales'} journey (counts nowhere). A stage left without a bucket blocks saving.${preset ? ` Pre-filled from <b>${esc(preset.name)}</b>'s preset where the names match.` : ''}</p>
+          <div class="cm-legend">${BUCKETS.map(([k, l]) => `<span class="opt sm" title="${esc(hints[k] || '')}" data-b="${k}">${esc(l)}</span>`).join('')}</div></section>
+        ${st.gone.length ? `<div class="warnbox">Not in GHL any more: <b>${st.gone.map(p => esc(p.name)).join(', ')}</b>. It's dropped from the mapping when you save.</div>` : ''}
+        ${st.pipelines.map(p => `<section class="cm-pipe${p.use ? '' : ' off'}" data-pipe="${esc(p.id)}">
+          <header><label class="check"><input type="checkbox" data-use="${esc(p.id)}"${p.use ? ' checked' : ''}> <span class="cm-pn">${esc(p.name)}</span></label>
+            <span class="muted small">${p.stages.length} stage${p.stages.length === 1 ? '' : 's'}${p.isNew ? ' · <span class="chip warn">New in GHL</span>' : ''}${p.use ? '' : ' · not counted'}</span></header>
+          ${p.use ? `<div class="cm-rows">${p.stages.map(s => {
+            const tag = !s.bucket ? '<span class="chip warn">Choose</span>' : unsure.has(s.id) ? `<span class="cm-src ${SOURCE_TAG[s.source]?.[1] || ''}">${esc(SOURCE_TAG[s.source]?.[0] || '')}</span>` : '';
+            return `<div class="cm-row${s.bucket ? '' : ' need'}" role="radiogroup" aria-label="${esc(`${p.name}: ${s.name}`)}">
+              <div class="cm-st"><span class="cm-sn">${esc(s.name)}</span>${s.renamedFrom ? `<span class="cm-was">was “${esc(s.renamedFrom)}”</span>` : ''}${tag}</div>
+              <div class="opts">${BUCKETS.map(([k, l]) => `<button type="button" class="opt sm${k === 'ignore' ? ' ign' : ''}" role="radio" aria-checked="${s.bucket === k}" aria-pressed="${s.bucket === k}" data-stage="${esc(s.id)}" data-pipe-id="${esc(p.id)}" data-bucket="${k}" title="${esc(hints[k] || '')}">${esc(l)}</button>`).join('')}</div></div>`;
+          }).join('')}</div>` : ''}
+        </section>`).join('')}
+        <section class="cm-opts"><label class="check"><input type="checkbox" id="cmCounts"${counts ? ' checked' : ''}> <span>Counts only: don't store or show ${type === 'medical' ? 'patient' : ''} names, emails or phones (lists show counts and an Open in GHL link)</span></label></section>
+      </div>`;
+      if (warnHost) warnHost.innerHTML = left.length ? '' : warnHost.innerHTML;
+      host.querySelectorAll('[data-use]').forEach(c => c.addEventListener('change', () => { st.pipelines.find(p => p.id === c.dataset.use).use = c.checked; draw(); }));
+      host.querySelectorAll('[data-bucket]').forEach(b => b.addEventListener('click', () => {
+        const p = st.pipelines.find(x => x.id === b.dataset.pipeId), s = p.stages.find(x => x.id === b.dataset.stage);
+        s.bucket = b.dataset.bucket; unsure.delete(s.id);
+        const y = window.scrollY; draw(); window.scrollTo(0, y);
+        host.querySelector(`[data-stage="${CSS.escape(s.id)}"][data-bucket="${CSS.escape(s.bucket)}"]`)?.focus({ preventScroll: true });
+      }));
+      $('cmCounts').addEventListener('change', e => { counts = e.target.checked; });
+      saveBtn.disabled = false; saveBtn.textContent = left.length ? `Save mapping (${left.length} to choose)` : 'Save mapping';
+      saveBtn.onclick = () => {
+        const l = unchosen(st);
+        if (!st.pipelines.some(p => p.use)) { warnHost.innerHTML = '<div class="errbox" style="margin-bottom:16px">Count at least one pipeline.</div>'; return; }
+        if (l.length) {
+          warnHost.innerHTML = `<div class="errbox" style="margin-bottom:16px">Choose a bucket for every stage first (or <b>Ignore</b>): ${l.slice(0, 6).map(s => `<b>${esc(s.pipeline)} · ${esc(s.name)}</b>`).join(', ')}${l.length > 6 ? ` and ${l.length - 6} more` : ''}.</div>`;
+          host.querySelector('.cm-row.need')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return;
+        }
+        saveBtn.onclick = null;
+        resolve({ pipelineMap: buildPipelineMap(st), countsOnly: counts });
+      };
+    };
+    draw();
+  });
+}
 // =====================================================================
 // New firm
 // =====================================================================
 const PRACTICE = ['Personal Injury', 'Family Law', 'Criminal Defense', 'Immigration', 'Estate Planning', 'Employment', 'Bankruptcy', 'Business/Corporate', 'Other'];
+const AREAS_BY = { law: PRACTICE, medical: ['Plastic & Cosmetic Surgery', 'Dental', 'Med Spa', 'Dermatology', 'Other'], other: ['Other'] };   // v1.28.0
 const TIMEZONES = [['America/New_York', 'Eastern (New York)'], ['America/Chicago', 'Central (Chicago)'], ['America/Denver', 'Mountain (Denver)'], ['America/Phoenix', 'Arizona (Phoenix)'], ['America/Los_Angeles', 'Pacific (Los Angeles)'], ['America/Anchorage', 'Alaska (Anchorage)'], ['Pacific/Honolulu', 'Hawaii (Honolulu)'], ['America/Puerto_Rico', 'Atlantic (Puerto Rico)']];
 const WORDS = 'acorn amber anchor apple arrow aspen autumn badge bamboo banjo barley basil beacon berry birch blossom bonfire breeze brook cactus candle canyon carbon cedar cherry cinder citrus clover cobalt comet copper coral cotton crater cricket crystal daisy delta desert dolphin dragon ember falcon fern fiddle flint forest fossil galaxy garnet ginger glacier granite harbor hazel heron hickory honey horizon indigo island ivory jasmine juniper kettle kiwi lagoon lantern lemon lilac linen lotus maple marble meadow mesa mint monarch mosaic nectar nickel nutmeg oasis ocean olive onyx orbit orchid otter paddle pebble pepper pine planet plum polar poppy prairie quartz quill raven reef ribbon river robin saffron sage salmon sapphire sequoia shadow silver sparrow spruce summit sunset thistle thunder timber topaz tulip tundra valley velvet violet walnut willow winter yarrow zephyr'.split(' ');
 function makePassphrase() {
@@ -1338,6 +1486,7 @@ function makePassphrase() {
 
 const NEXT_STEPS = {
   app: [['Check the app is on the sub-account', 'The LFMP LeadPro Connector app is on every sub-account; GitHub waits up to 15 minutes for a brand-new one.'], ['Make a read-only token (no paste)', 'Refreshed every hour by the token keeper.'], ['Read pipelines and stages'], ['Map the stages', 'From the preset; if a stage is missing, it\'s guessed and flagged "Review mapping".'], ['Create the dashboard + first sync'], ['Add "KPI Dashboard" to the firm\'s GHL menu', 'Automatic when possible; otherwise copy the link at the end.']],
+  care: [['Check the app is on the sub-account', 'The LFMP LeadPro Connector app is on every sub-account.'], ['Make a read-only token (no paste)', 'Refreshed every hour by the token keeper.'], ['Read pipelines and stages', 'Read-only.'], ['Map pipelines', 'Pre-filled by stage name; you confirm every stage. Until then the firm is "Needs mapping" and isn\'t synced.'], ['First sync, as a Draft', 'Draft banner on the dashboard; no GHL menu link and no link to copy until you publish.']],
   pi: [['Save the token and passphrase', 'Sealed in this browser with the repo\'s key.'], ['Read GHL and check the 9 scopes', 'Missing scopes are named, with a Re-check.'], ['Confirm the stage mapping (pre-filled)'], ['Create the dashboard'], ['First sync'], ['Copy the GHL menu link', 'Add it in GHL by hand.']],
 };
 let presetList = null;
@@ -1362,6 +1511,10 @@ function renderNewFirm() {
         </fieldset>
         <label class="f" for="nfName">Firm name<input type="text" id="nfName" required placeholder="e.g. Harrison Law Group"></label>
         <div class="slugline" id="nfSlug">Slug: <span class="mono">—</span></div>
+        <fieldset class="connect" id="nfTypeSet"><legend class="ey" style="margin-bottom:12px">Practice type</legend>
+          <div class="seg-type" role="radiogroup" aria-label="Practice type">${PRACTICE_TYPES.map(([v, l], i) => `<label class="opt-card sm"><input type="radio" name="nfType" value="${v}"${i === 0 ? ' checked' : ''}><span><span class="t">${esc(l)}</span><span class="d">${v === 'law' ? 'Leads → signed clients. Today\'s scorecard.' : v === 'medical' ? 'Patient enquiries → consults → treatment.' : 'Leads → appointments → won.'}</span></span></label>`).join('')}</div>
+          <label class="check" id="nfCountsWrap" hidden><input type="checkbox" id="nfCounts" checked> <span>Counts only: don't store or show patient names, emails or phones <span class="hint">(can be changed later in Setup)</span></span></label>
+        </fieldset>
         <div class="grid2">
           <label class="f" for="nfArea">Practice area<select id="nfArea">${PRACTICE.map(p => `<option>${esc(p)}</option>`).join('')}</select></label>
           <label class="f" for="nfTz">Time zone<select id="nfTz">${TIMEZONES.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join('')}</select></label>
@@ -1399,13 +1552,25 @@ function renderNewFirm() {
     </form>
     <div id="runHost"></div>`;
   const mode = () => document.querySelector('input[name="nfMode"]:checked')?.value || 'app';
+  const ptype = () => document.querySelector('input[name="nfType"]:checked')?.value || 'law';
   const paintMode = () => {
+    // v1.28.0: a Medical & dental / Other firm always uses the app, gets no law preset, and stops at "Needs mapping".
+    const care = ptype() !== 'law';
+    const pi = document.querySelector('input[name="nfMode"][value="pi"]');
+    if (care && pi.checked) document.querySelector('input[name="nfMode"][value="app"]').checked = true;
+    pi.disabled = care; pi.closest('label').classList.toggle('off', care);
+    $('nfCountsWrap').hidden = !care;
+    const areas = AREAS_BY[ptype()] || PRACTICE, sel = $('nfArea');
+    if (sel.dataset.type !== ptype()) { sel.innerHTML = areas.map(p => `<option>${esc(p)}</option>`).join(''); sel.dataset.type = ptype(); $('nfAreaOtherWrap').hidden = sel.value !== 'Other'; }
+    if (care && !$('nfCounts').dataset.touched) $('nfCounts').checked = ptype() === 'medical';
     const m = mode();
-    $('nfAppOnly').hidden = m !== 'app'; $('nfPiOnly').hidden = m !== 'pi';
-    $('nfNext').innerHTML = NEXT_STEPS[m].map(([t, s], i) => `<li><span class="k">${i + 1}</span><span>${esc(t)}${s ? `<span class="s">${esc(s)}</span>` : ''}</span></li>`).join('');
+    $('nfAppOnly').hidden = m !== 'app' || care; $('nfPiOnly').hidden = m !== 'pi';
+    $('nfNext').innerHTML = (care ? NEXT_STEPS.care : NEXT_STEPS[m]).map(([t, s], i) => `<li><span class="k">${i + 1}</span><span>${esc(t)}${s ? `<span class="s">${esc(s)}</span>` : ''}</span></li>`).join('');
     $('nfNextFoot').textContent = m === 'app' ? 'About 5–15 minutes. You can leave this page; GitHub keeps going. A location that already has a firm is refused.' : 'About 3–5 minutes. The token is checked against all 9 scopes before anything is saved to the firm list.';
   };
   document.querySelectorAll('input[name="nfMode"]').forEach(r => r.addEventListener('change', () => { paintMode(); $('nfErr').textContent = ''; }));
+  document.querySelectorAll('input[name="nfType"]').forEach(r => r.addEventListener('change', () => { paintMode(); $('nfErr').textContent = ''; }));
+  $('nfCounts').addEventListener('change', () => { $('nfCounts').dataset.touched = '1'; });
   paintMode();
   loadPresetChoices().then(list => {
     const sel = $('nfPreset'); if (!sel) return;
@@ -1459,7 +1624,8 @@ function renderNewFirm() {
     $('nfErr').textContent = '';
     $('nfCreate').disabled = true;
     if (m === 'pi') startRun({ name, slug, secretKey: secretKeyFor(slug), practiceArea: area, locationId: loc, timezone: $('nfTz').value, token: tok, passphrase: pass });
-    else startAppRun({ name, practiceArea: area, locationId: loc, timezone: $('nfTz').value, snapshotId: $('nfPreset').value, passphrase: pass });
+    else startAppRun({ name, practiceArea: area, locationId: loc, timezone: $('nfTz').value, snapshotId: ptype() === 'law' ? $('nfPreset').value : '', passphrase: pass,
+      ...(ptype() !== 'law' ? { practiceType: ptype(), countsOnly: $('nfCounts').checked } : {}) });
   });
 }
 
@@ -1539,6 +1705,18 @@ function appFail(me, err) {
 function appDone(me, done) {
   clearInterval(me.timer); me.timer = null;
   const ctx = me.ctx, link = ghlLink(done.slug, ctx.passphrase);
+  if (done.care || done.draft) {   // v1.28.0: Needs mapping / Draft. No link to copy, nothing in GHL; the passphrase is shown once to save.
+    $('appResult').innerHTML = `<div class="success">
+      <div><h2>${esc(ctx.name)} ${done.care ? 'needs its pipelines mapped' : 'is set up as a Draft'}</h2><p class="sub" style="margin-top:8px">${done.care ? 'Pipelines read from GHL (read-only). It isn\'t synced until you confirm the mapping; it then becomes a <b>Draft</b> for review.' : 'Synced and ready for Andy\'s review. After that: Setup → <b>Add to GHL menu</b>.'} No GHL menu link was added.</p></div>
+      ${done.review !== 'none' && !done.care ? `<div class="warnbox">The stages were <b>guessed</b> (${done.review === 'unknown-snapshot' ? 'no preset chosen' : 'some preset stages weren\'t found'}). Check them: Edit mapping.</div>` : ''}
+      <label class="f" for="passOut">Dashboard passphrase <span class="hint">Save it in your password manager now; it isn't shown again. It's also remembered for the team in Details.</span><span class="copyrow"><input type="password" id="passOut" readonly value="${esc(ctx.passphrase)}"><button type="button" class="eye" data-eye="passOut" aria-label="Show passphrase"></button><button type="button" class="btn" id="copyPass">${ICON.copy}Copy</button></span></label>
+      <div class="btnrow" style="margin-top:0"><button type="button" class="btn p" id="appMap">${ICON.map}${done.care ? 'Map pipelines ›' : 'Edit mapping'}</button><button type="button" class="btn" id="toList">Back to all firms</button></div></div>`;
+    wireEyes($('appResult'));
+    $('copyPass').onclick = async () => { try { await navigator.clipboard.writeText(ctx.passphrase); const b = $('copyPass'); b.innerHTML = `${ICON.tick}Copied`; setTimeout(() => { if (document.body.contains(b)) b.innerHTML = `${ICON.copy}Copy`; }, COPIED_MS); } catch { $('passOut').type = 'text'; $('passOut').select(); } };
+    $('toList').onclick = () => go('#/', `Added ${esc(ctx.name)} (${done.care ? 'needs mapping' : 'Draft'}).`);
+    $('appMap').onclick = async () => { await loadFirms(); const f = firms.find(x => x.slug === done.slug); if (f) go(hashFor('map', f.slug)); };
+    return;
+  }
   $('appResult').innerHTML = `<div class="success">
       <div><h2>${esc(ctx.name)} is live</h2><p class="sub" style="margin-top:8px">Token: App (refreshed every hour by the token keeper). The dashboard may take a minute to appear while GitHub Pages publishes.</p></div>
       ${done.review !== 'none' ? `<div class="warnbox">The stages were <b>guessed</b> (${done.review === 'unknown-snapshot' ? 'no preset chosen' : 'some preset stages weren\'t found'}). Check them: <button type="button" class="linkbtn" id="appMap">Edit mapping</button>.</div>` : ''}
@@ -1707,9 +1885,9 @@ const STEP_FNS = [
 async function renderEditMapping(f) {
   cleanupRun();
   closeMenus();
-  $('screen').innerHTML = `<header class="head"><div class="titles"><button class="back" type="button" id="backBtn">${ICON.back}All firms</button><h1 class="disp">Edit <span class="g">mapping.</span></h1><p class="sub">${esc(f.name)} · <span class="mono">${esc(f.slug)}</span><span id="emAsOf"></span></p></div>
+  $('screen').innerHTML = `<header class="head"><div class="titles"><button class="back" type="button" id="backBtn">${ICON.back}All firms</button><h1 class="disp" id="emTitle">${careOf(f) ? 'Map <span class="g">pipelines.</span>' : 'Edit <span class="g">mapping.</span>'}</h1><p class="sub">${esc(f.name)} · <span class="mono">${esc(f.slug)}</span><span id="emAsOf"></span></p></div>
     <div class="controls"><button class="btn big" type="button" id="rereadBtn">${ICON.sync}Re-read GHL</button><button class="btn p big" type="button" id="emSave" disabled>Save mapping</button></div></header>
-    <div id="emStatus" aria-live="polite"></div><div id="emWarn"></div><div id="emHost"><p class="sub">Loading…</p></div>`;
+    <div id="emStatus" aria-live="polite"></div><div id="emWarn"></div><div id="emType"></div><div id="emHost"><p class="sub">Loading…</p></div>`;
   $('backBtn').onclick = () => go('#/');
   const host = $('emHost'); const stop = () => !document.body.contains(host);
   const status = h => { $('emStatus').innerHTML = h ? `<div class="note" style="margin-bottom:16px">${h}</div>` : ''; };
@@ -1727,16 +1905,82 @@ async function renderEditMapping(f) {
         <div class="btnrow"><button type="button" class="btn primary" id="recheckBtn">${ICON.sync}Re-check</button><a class="btn" href="${esc(piUrl(cfg.locationId || f.locationId))}" target="_blank" rel="noopener">${ICON.ext}Open Private Integrations</a></div></div>`);
       $('recheckBtn').onclick = () => $('rereadBtn').click();
     }
-    const m = await mappingPanel($('emHost'), { discovery: disc, config: cfg, isNew: false, saveLabel: 'Save mapping', saveBtn: $('emSave'), warnHost: $('emWarn') });
+    // v1.28.0: practice type first. Law firm = the stage-mapping panel below (unchanged); Medical & dental / Other =
+    // Map pipelines (bucket per stage, stored by id). Switching redraws the panel; nothing is saved until Save.
+    let type = practiceTypeOf(cfg);
+    const carePreset = await carePresetFor(cfg.locationId || f.locationId);
+    if (stop()) return;
+    const paintType = () => {
+      $('emType').innerHTML = `<fieldset class="connect emtype"><legend class="ey">Practice type</legend><div class="seg-type" role="radiogroup" aria-label="Practice type">
+        ${PRACTICE_TYPES.map(([v, l]) => `<label class="opt-card sm"><input type="radio" name="emType" value="${v}"${v === type ? ' checked' : ''}><span><span class="t">${esc(l)}</span></span></label>`).join('')}</div>
+        ${type !== practiceTypeOf(cfg) ? `<p class="hint">Changing from <b>${esc(practiceLabel(practiceTypeOf(cfg)))}</b>. ${type === 'law' ? 'The firm\'s earlier law mapping is shown; saving switches it back to law-firm counting.' : 'Saving switches this firm to people counting with the mapping below. Its law mapping is kept in case you switch back.'}</p>` : ''}</fieldset>`;
+      document.querySelectorAll('input[name="emType"]').forEach(r => r.addEventListener('change', () => { type = r.value; $('emWarn').innerHTML = ''; paintType(); panel(); }));
+      $('emTitle').innerHTML = type === 'law' ? 'Edit <span class="g">mapping.</span>' : 'Map <span class="g">pipelines.</span>';
+      shell?.setTitle(type === 'law' ? 'Edit mapping' : 'Map pipelines');   // the phone top bar says the same
+    };
+    const panel = async () => {
+      if (type !== 'law') {
+        // Still "Needs mapping": what new-firm saved is only a pre-fill, so it's shown as Pre-filled / Guessed to confirm, not Saved.
+        const r = await carePanel($('emHost'), { discovery: disc, config: needsMap(f) ? { ...cfg, pipelineMap: undefined } : cfg, type, preset: carePreset, saveBtn: $('emSave'), warnHost: $('emWarn') });
+        return saveCare(r);
+      }
+      const m = await mappingPanel($('emHost'), { discovery: disc, config: cfg, isNew: false, saveLabel: 'Save mapping', saveBtn: $('emSave'), warnHost: $('emWarn') });
+      return saveLaw(m);
+    };
+    const resync = async (what) => {
+      status(`Saved. Re-syncing so the dashboard uses the new ${what}…`);
+      const t0 = await dispatch('sync.yml', { slug: f.slug });
+      await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Syncing', limitMs: 8 * 60e3, stop, say: h => status(`${what.charAt(0).toUpperCase() + what.slice(1)} saved. ${h}`),
+        check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return k && Date.parse(k.generatedAt) > t0 - 60e3 ? k : null; } });
+    };
+    const saveCare = async r => {
+      const doSaveCare = async () => {
+        $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = true; }); $('emType').querySelectorAll('input').forEach(el => { el.disabled = true; });
+        $('emSave').disabled = true; $('emSave').onclick = null;
+        status('Saving config.json and the firm list…');
+        try {
+          let row = null;
+          await commitFiles(`Map pipelines for ${f.name} (${practiceLabel(type)})`, async head => {
+            const c = await getJSON(`firms/${f.slug}/config.json`, head);
+            const next = applyCare(c, { practiceType: type, pipelineMap: r.pipelineMap, countsOnly: r.countsOnly });
+            const list = await getJSON('firms/index.json', head);
+            row = (list || []).find(x => x.slug === f.slug); if (!row) throw new Error('This firm is no longer in the firm list.');
+            row.practiceType = type;
+            if (row.status === 'needsMapping') row.status = 'draft';   // mapped: it syncs from now on, as a Draft until published
+            return [{ path: `firms/${f.slug}/config.json`, content: jsonText(next) }, { path: 'firms/index.json', content: jsonText(list) }];
+          });
+          Object.assign(f, { practiceType: row.practiceType, status: row.status });
+          await resync('mapping');
+          go('#/', `Saved the pipeline mapping for ${esc(f.name)} and synced${f.status === 'draft' ? ' (Draft)' : ''}.`);
+        } catch (e) {
+          if (stop()) return;
+          status(''); $('emWarn').innerHTML = `<div class="errbox" style="margin-bottom:16px">${errHtml(e)}</div>`;
+          $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = false; }); $('emType').querySelectorAll('input').forEach(el => { el.disabled = false; });
+          $('emSave').disabled = false; $('emSave').textContent = 'Save mapping'; $('emSave').onclick = doSaveCare;
+        }
+      };
+      await doSaveCare();
+    };
+    paintType();
+    panel().catch(e => { if (!stop()) $('emHost').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; });
+  };
+  const saveLaw = async m => {
     const doSave = async () => {
     $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = true; }); $('emSave').disabled = true; $('emSave').onclick = null;
     status('Saving config.json…');
     try {
+      const wasCare = careOf(f);
       await commitFiles(`Update stage mapping for ${f.name}`, async head => {
         const c = await getJSON(`firms/${f.slug}/config.json`, head);
         const next = applyMapping(c, m); delete next.mappingReview;   // a saved mapping clears the builder's "Review mapping" flag
-        return [{ path: `firms/${f.slug}/config.json`, content: jsonText(next) }];
+        if (!wasCare) return [{ path: `firms/${f.slug}/config.json`, content: jsonText(next) }];
+        // v1.28.0: switched back to Law firm. The people-counting settings stay in config.json (unused) in case of a switch back.
+        delete next.practiceType;
+        const list = await getJSON('firms/index.json', head), row = (list || []).find(x => x.slug === f.slug);
+        if (row) { delete row.practiceType; if (row.status === 'needsMapping') row.status = 'draft'; }
+        return [{ path: `firms/${f.slug}/config.json`, content: jsonText(next) }, ...(row ? [{ path: 'firms/index.json', content: jsonText(list) }] : [])];
       });
+      if (wasCare) { delete f.practiceType; if (f.status === 'needsMapping') f.status = 'draft'; }
       status('Saved. Re-syncing so the dashboard uses the new mapping…');
       const t0 = await dispatch('sync.yml', { slug: f.slug });
       await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Syncing', limitMs: 8 * 60e3, stop, say: h => status(`Mapping saved. ${h}`),

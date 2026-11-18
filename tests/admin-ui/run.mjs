@@ -59,6 +59,11 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/ja
 const LATEST = (await readFile(join(ROOT, 'CHANGELOG.md'), 'utf8')).match(/^## v(\d+\.\d+\.\d+)/m)[1];
 // LFMP's real 90-day lead count changes with every sync: read it from the repo instead of hard-coding it.
 const LFMP_LEADS90 = JSON.parse(await readFile(join(ROOT, 'firms/lfmp/data/kpis.json'), 'utf8')).periods.last90.current.totalLeads;
+// v1.28.0: the real firms come from firms/index.json (a new real firm, e.g. Boca Dental on 18 Nov, no longer breaks the
+// counts). Test firms = the admin's rule. Expected order = slug order, which matches A–Z by shown name for these firms.
+const INDEX = JSON.parse(await readFile(join(ROOT, 'firms/index.json'), 'utf8'));
+const isTestFirm = f => /(^|[-\s])test\b|^zz[-\s]/i.test(f.slug) || /\btest\b|^zz\b/i.test(f.name || '');
+const REAL = INDEX.filter(f => !isTestFirm(f)).map(f => f.slug).sort(), ALL = INDEX.map(f => f.slug).sort(), NREAL = REAL.length;
 
 // Fixture for "lead not in a pipeline": LFMP's encrypted details, made here with a test passphrase (the real file stays untouched).
 const NIP_PASS = 'fixture-passphrase-lfmp';
@@ -212,7 +217,7 @@ try {
 
   // ---------------- home ----------------
   // v1.26.0: A–Z by the shown name ("The Mahdavi Law Firm" under M), whatever index.json's order
-  check(JSON.stringify(await slugs(page)) === '["emery-law-office","hedayati-law-group-p-c","lfmp","mahdavi"]', `home: the 4 firms A–Z, test firms hidden (${(await slugs(page)).join(', ')})`);
+  check(JSON.stringify(await slugs(page)) === JSON.stringify(REAL), `home: the ${NREAL} firms A–Z, test firms hidden (${(await slugs(page)).join(', ')})`);
   check(isAZ(await shownNames(page)), `home: A–Z by the shown name (${(await shownNames(page)).join(' | ')})`);
   // v1.26.0: a trend only when days 91–180 are covered by the firm's synced data; every firm started in Nov 2026 → none, never "from 0"
   { const smalls = await page.$$eval(`${ROW} .lv-c:not(.lv-pr) .lv-big small`, s => s.map(x => x.textContent.trim()));
@@ -220,10 +225,10 @@ try {
   const strip = (await page.textContent('#screen [data-lv-sum]')).replace(/\s+/g, ' ');
   // v1.27.0 (FIX 1): the summary uses the "Needs attention" filter's words and count
   { const attSeg = (await page.textContent('#screen [data-lv-seg="attention"]')).replace(/\s+/g, ' '), n = Number((attSeg.match(/(\d+)/) || [])[1] || 0);
-    check(n ? strip === `4 firms · ${n} ${n === 1 ? 'needs' : 'need'} attention` : /^4 firms · all synced \d{1,2}:\d{2} (AM|PM)$/i.test(strip), `summary line "${strip}" = filter "${attSeg}"`); }
-  check((await page.textContent('#screen .lv-h1')).trim() === 'Scorecards' && await page.getAttribute('#firmSearch', 'placeholder') === 'Search 4 firms', 'title "Scorecards" + "Search 4 firms" (real count)');
+    check(n ? strip === `${NREAL} firms · ${n} ${n === 1 ? 'needs' : 'need'} attention` : new RegExp(`^${NREAL} firms · all synced \\d{1,2}:\\d{2} (AM|PM)$`, 'i').test(strip), `summary line "${strip}" = filter "${attSeg}"`); }
+  check((await page.textContent('#screen .lv-h1')).trim() === 'Scorecards' && await page.getAttribute('#firmSearch', 'placeholder') === `Search ${NREAL} firms`, `title "Scorecards" + "Search ${NREAL} firms" (real count)`);
   const segs = await page.$$eval('#screen [data-lv-seg]', b => b.map(x => `${x.dataset.lvSeg}=${x.querySelector('.lv-d').textContent}`).join('|'));
-  check(/^all=All 4\|attention=Needs attention · \d+\|test=Test firms$/.test(segs), `filter: All 4 · Needs attention · n · Test firms (${segs})`);
+  check(new RegExp(`^all=All ${NREAL}\\|attention=Needs attention · \\d+\\|test=Test firms$`).test(segs), `filter: All ${NREAL} · Needs attention · n · Test firms (${segs})`);
   // v1.25.0: coloured only when n > 0: red if any firm has an alert, amber if they are all notices (same rule as the bell)
   { const t = await page.$eval('#screen [data-lv-seg="attention"]', b => (b.querySelector('.lv-red') ? 'red' : b.querySelector('.lv-amber') ? 'amber' : ''));
     const red = await page.$$eval('#firmRows .lv-row .lv-c [data-state="status"]', a => a.some(e => e.classList.contains('red')));
@@ -236,10 +241,10 @@ try {
   check(await page.$$eval(ROW, r => r.every(x => x.getBoundingClientRect().height >= 44)), 'rows are at least 44px tall');
   await shot(page, 'list_1440_dark_main');
   let mx = await openMe(page); await page.click(`${mx} [data-lv="tests"]`); await page.keyboard.press('Escape');
-  check((await slugs(page)).includes('zz-test-2') && /^5 firms/.test(await page.textContent('#screen [data-lv-sum]')), 'Me → Show test clients adds ZZ TEST 2');
+  check((await slugs(page)).includes('zz-test-2') && new RegExp(`^${ALL.length} firms`).test(await page.textContent('#screen [data-lv-sum]')), 'Me → Show test clients adds ZZ TEST 2');
   await page.reload(); await unlocked(page); await page.waitForSelector(ROW);
   check(!(await lockShown(page)) && (await slugs(page)).includes('zz-test-2'), 'reload: still unlocked, Show test clients remembered');
-  check(JSON.stringify(await slugs(page)) === '["emery-law-office","hedayati-law-group-p-c","lfmp","mahdavi","zz-test-2"]', `All + test firms: A–Z (${(await slugs(page)).join(', ')})`);
+  check(JSON.stringify(await slugs(page)) === JSON.stringify(ALL), `All + test firms: A–Z (${(await slugs(page)).join(', ')})`);
   mx = await openMe(page); check(await page.getAttribute(`${mx} [data-lv="tests"]`, 'aria-checked') === 'true', 'Me shows the switch on'); await page.click(`${mx} [data-lv="tests"]`); await page.keyboard.press('Escape');
   await page.click('#screen [data-lv-seg="test"]');
   check(JSON.stringify(await slugs(page)) === '["zz-test-2"]', `Test filter: the test firms only, even with the switch off (${(await slugs(page)).join(', ')})`);
@@ -256,7 +261,7 @@ try {
   await page.fill('#firmSearch', 'nothing-matches-this');
   check(await page.isVisible('[data-clear-filter]'), 'empty search shows "Show all firms"');
   await page.click('[data-clear-filter]');
-  check((await slugs(page)).length === 4, 'Show all firms clears the search');
+  check((await slugs(page)).length === NREAL, 'Show all firms clears the search');
 
   // v1.26.0: a firm with no good sync for ~3 hours: "No successful sync for 3 h" on its row (desktop and phone), never "… in 3 hours 2 h ago"
   {
@@ -546,6 +551,7 @@ try {
   check(di.every(i => JSON.stringify(Object.keys(i).sort()) === '["location","name","practice_area","request","slug","snapshot_id","timezone"]') && !JSON.stringify(di).includes(pass), 'dispatch inputs: the builder\'s non-secret set, no passphrase');
   check(JSON.parse(await G.fileText('firms/index.json')).filter(f => f.locationId === 'TestLoc000000000001').length === 1, 'one firm in the list');
   check(!(await page.textContent('#runHost')).includes(pass), 'the passphrase is not shown in the progress text');
+  check(/is set up as a Draft/.test(await page.textContent('#appResult')) && !(await page.$('#ghlLinkOut')) && /Add to GHL menu/.test(await page.textContent('#appResult')), 'v1.28.0: a new law firm ends as a Draft: no GHL link to copy, "Add to GHL menu" after Andy\'s review');
   await page.click('#toList');
   await page.waitForSelector(rowOf('smith-and-jones-law'));
   check(!(await lockShown(page)) && /Added Smith/.test(await page.textContent('.listmsg')), 'Back to all firms after a new firm: listed, no password');
@@ -581,7 +587,7 @@ try {
     check(await noSideScroll(page), `${tag}: list has no sideways scroll`);
     let cf = await contrastFailures(page); check(!cf.length, `${tag}: list passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);
     await shot(page, `list_${tag}`);
-    check(JSON.stringify(await slugs(page)) === '["emery-law-office","hedayati-law-group-p-c","lfmp","mahdavi"]' && isAZ(await shownNames(page)), `${tag}: list A–Z by the shown name (${(await shownNames(page)).join(' | ')})`);
+    check(JSON.stringify(await slugs(page)) === JSON.stringify(REAL) && isAZ(await shownNames(page)), `${tag}: list A–Z by the shown name (${(await shownNames(page)).join(' | ')})`);
     const me1 = await openMe(page);
     check(/PJ Drozo/.test(await page.textContent(me1)) && await page.isVisible(`${me1} [data-lv="signout"]`), `${tag}: Me shows the Google name and Sign out`);
     cf = await contrastFailures(page, me1); check(!cf.length, `${tag}: Me passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);

@@ -1,0 +1,49 @@
+/* v1.28.0: Practice type + Map pipelines (Medical & dental / Other firms). Same tokens as admin.css. */
+.seg-type{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.opt-card.sm{padding:12px 14px;gap:10px}
+.opt-card.sm .t{font-size:15px}
+.opt-card.sm .d{font-size:13px;margin-top:4px}
+.opt-card.off{opacity:.5;cursor:not-allowed}
+.opt-card.off:hover{border-color:var(--line)}
+.emtype{margin:0 0 20px}
+.emtype .ey{margin-bottom:10px}
+.emtype .hint{margin:4px 0 0}
+#nfCountsWrap{align-items:flex-start;margin-top:4px}
+#nfCountsWrap input{margin-top:2px;flex:0 0 auto}
+
+.caremap{gap:16px}
+.cm-sum p{margin:0 0 8px}
+.cm-legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.cm-legend .opt{cursor:help}
+.cm-pipe{padding:0 !important}
+.cm-pipe>header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px;padding:16px 24px;border-bottom:1px solid var(--line)}
+.cm-pipe.off>header{border-bottom:0}
+.cm-pipe.off .cm-pn{color:var(--mut)}
+.cm-pn{font-weight:700;font-size:16px}
+.cm-rows{padding:0 24px}
+.cm-row{display:grid;grid-template-columns:240px minmax(0,1fr);gap:8px 20px;padding:14px 0;border-top:1px solid var(--line);align-items:start}
+.cm-row:first-child{border-top:0}
+.cm-row.need{box-shadow:inset 3px 0 0 var(--amber, #c9932b);margin:0 -24px;padding-left:21px;padding-right:24px}
+.cm-st{display:flex;flex-direction:column;gap:4px;min-width:0;padding-top:6px}
+.cm-sn{font-weight:600;font-size:14.5px;overflow-wrap:anywhere}
+.cm-was{font-size:12.5px;color:var(--mut)}
+.cm-src{font-size:12px;color:var(--mut)}
+.cm-src.pre::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px;opacity:.7}
+.cm-st .chip{align-self:flex-start}
+.opt.sm{padding:6px 9px;font-size:13px}
+.opt.ign[aria-pressed="true"]{background:var(--panel2);border-color:var(--mut);color:var(--ink)}
+.cm-opts{padding:16px 24px !important}
+.cm-opts .check{align-items:flex-start}
+.cm-opts .check input{margin-top:2px;flex:0 0 auto}
+[data-sec="status"] .chip{margin-right:6px}
+
+@media (max-width:760px){
+  .seg-type{grid-template-columns:1fr}
+  .cm-pipe>header{padding:14px 16px}
+  .cm-rows{padding:0 16px}
+  .cm-row{grid-template-columns:1fr;gap:8px}
+  .cm-row.need{margin:0 -16px;padding-left:13px;padding-right:16px}
+  .cm-st{padding-top:0}
+  .cm-opts{padding:14px 16px !important}
+  .opt.sm{padding:8px 10px}
+}

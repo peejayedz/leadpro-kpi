@@ -1,0 +1,44 @@
+{
+  "_note": "Map pipelines pre-fill for Palm Beach Plastic and Cosmetic Surgery (Medical & dental), as PJ read it from GHL on 18 Nov 2026. Used only to pre-fill the Map pipelines step (matched by pipeline + stage name, case, dashes and spaces ignored); what's saved in config.json is always by GHL id. Post-Op & Retention is after-care: Ignore (a possible Reviews metric later if Andy wants it).",
+  "name": "Palm Beach Plastic and Cosmetic Surgery",
+  "locationId": "ZccxN6Zevq1UkgUuOphV",
+  "practiceType": "medical",
+  "pipelines": {
+    "Marketing Pipeline": {
+      "New Lead": "newEnquiry",
+      "Attempting Contact": "contacted",
+      "Connected / Qualifying": "contacted",
+      "Closed – Lost": "lost"
+    },
+    "Surgical Patients": {
+      "Qualified": "contacted",
+      "Consult Booked (In-person / Virtual)": "consultBooked",
+      "Consult Completed": "consultAttended",
+      "Quote Sent / Deciding": "consultAttended",
+      "Deposit Paid / Surgery Scheduled": "yes",
+      "Surgery Completed": "done"
+    },
+    "BII / Explant": {
+      "Qualified": "contacted",
+      "Consult Booked (In-person / Virtual)": "consultBooked",
+      "Consult Completed": "consultAttended",
+      "Quote Sent / Deciding": "consultAttended",
+      "Deposit Paid / Surgery Scheduled": "yes",
+      "Travel Confirmed": "yes",
+      "Surgery Completed": "done"
+    },
+    "Non-Surgical / Med Spa": {
+      "Qualified": "contacted",
+      "Appointment Booked": "consultBooked",
+      "Treatment Completed": "done",
+      "Rebook Due": "ignore"
+    },
+    "Post-Op & Retention": {
+      "1-Week Check": "ignore",
+      "3-Month Check": "ignore",
+      "Review Requested": "ignore",
+      "Review Left": "ignore",
+      "Referral / Next Procedure": "ignore"
+    }
+  }
+}

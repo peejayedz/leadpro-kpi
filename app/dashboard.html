@@ -104,6 +104,14 @@ h1{font-family:var(--serif);font-weight:600;font-size:clamp(24px,3.4vw,30px);lin
 .notice{display:flex;gap:12px;align-items:flex-start;background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);border-radius:8px;padding:12px 14px;margin:14px 0 0;font-size:13.5px;line-height:1.45}
 .notice svg{width:18px;height:18px;flex:0 0 auto;margin-top:2px}
 .notice b{display:block;margin-bottom:2px}
+.notice.draft{background:var(--track);border-color:var(--rule);color:var(--ink)}
+.care-pipes{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.care-pipes+.cov{margin-top:12px}
+/* v1.28.0: the Medical/Other sections stack on phones (.stages.three alone outranks the phone rule) */
+@media (max-width:860px){.stages.three.care{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.stages.three.care{grid-template-columns:1fr}}
+.care-pipes li{font-size:12.5px;padding:4px 10px;border-radius:6px;background:var(--track);color:var(--ink-2)}
+.mghl{white-space:nowrap}
 .stage h2[data-tip],.funnel h2[data-tip]{cursor:help}
 .label[data-tip]{cursor:help;text-decoration:underline dotted var(--ink-3);text-underline-offset:3px}
 .label[data-tip]:hover{color:var(--ink)}
@@ -274,6 +282,7 @@ button.mini{cursor:pointer} button.mini:hover span:first-child{color:var(--link)
     </div>
     <div class="controls">
       <span class="chip-sample" id="sampleChip" hidden>Sample data</span>
+      <span class="chip-sample" id="draftChip" hidden>Draft</span>
       <button class="btn" id="rangeBtn" aria-haspopup="dialog" aria-expanded="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
         <span id="rangeLabel">Last 30 days</span><span aria-hidden="true">▾</span>
@@ -313,6 +322,7 @@ button.mini{cursor:pointer} button.mini:hover span:first-child{color:var(--link)
       </div>
     </div>
   </header>
+  <div id="draftNote" hidden></div>
   <div id="notice" hidden></div>
   <div id="dataNote" hidden></div>
   <div class="status-line" id="statusLine" aria-live="polite"></div>
@@ -336,6 +346,7 @@ const { buildLists, summarize, hiddenSet, sentBaseKey, periodRange, customRange,
 const { mergeConfig, practiceSlug } = await import(`${ROOT}scripts/config-merge.mjs`);
 const { parseChangelog, latestVersion, onlyTag, inlineMd } = await import(`${ROOT}scripts/changelog.mjs`);
 const { pipelineWording } = await import(`${ROOT}scripts/wording.mjs`);
+const CC = await import(`${ROOT}scripts/care-core.mjs`);   // v1.28.0: Medical & dental / Other firms
 const W = () => pipelineWording(cfg?.pipelines);   // "From your Lead Stages pipeline" etc.
 let changelog = [];   // from CHANGELOG.md; the dashboard shows only [client] entries
 const PASS_KEY = `lfmp-pass-${SLUG}`;   // one saved passphrase per firm (all firms share this origin)
@@ -409,7 +420,13 @@ function compute() {
   range = sel.key === 'custom' ? customRange(sel.from, sel.to, now, off, TZ()) : periodRange(sel.key, now, off, TZ());
   const mode = !cmp.on ? 'prev' : cmp.b && records ? 'custom' : cmp.match ? 'prev' : 'full';
   crange = compareRange(range, mode, now, off, cmp.b, TZ());
-  if (records) {
+  if (records && CC.isCare(cfg)) {
+    // People are counted once (furthest stage wins); the same function the sync used for the public numbers.
+    const R = { ...records, people: CC.buildPeople(records.opps, cfg) }, o = { tracked: !!pub.noShowTracked };
+    lists = CC.buildCareLists(R, cfg, range.from, range.to);
+    cur = CC.summarizeCare(lists, o);
+    prev = CC.summarizeCare(CC.buildCareLists(R, cfg, crange.from, crange.to), o);
+  } else if (records) {
     lists = buildLists(records, cfg, range.from, range.to);
     cur = summarize(lists, cfg);
     prev = summarize(buildLists(records, cfg, crange.from, crange.to), cfg);
@@ -475,7 +492,7 @@ function change(k, c, p) {
   const d = c - p;
   if (Math.abs(d) < 1e-9) return { state: 'flat', text: 'No change' };
   const dir = (LOWER_BETTER.has(k) ? -1 : 1) * Math.sign(d);
-  const mag = isPct(k) ? `${Math.abs(Math.round(d * 10) / 10)} pts` : k === 'speedToLeadAvgMin' ? `${Math.abs(Math.round(d * 10) / 10)} min` : k === 'costPerSigned' ? fmt.usd(Math.abs(d)) : Math.abs(d).toLocaleString();
+  const mag = isPct(k) ? `${Math.abs(Math.round(d * 10) / 10)} pts` : k === 'speedToLeadAvgMin' ? `${Math.abs(Math.round(d * 10) / 10)} min` : k === 'costPerSigned' || k === 'value' ? fmt.usd(Math.abs(d)) : Math.abs(d).toLocaleString();
   let text = `${d > 0 ? '▲ +' : '▼ −'}${mag}`;
   if (!isPct(k) && k !== 'speedToLeadAvgMin') text += p === 0 ? ' (new)' : ` (${d > 0 ? '+' : '−'}${Math.abs(Math.round((d / Math.abs(p)) * 100))}%)`;
   return { state: dir > 0 ? 'good' : 'bad', text };
@@ -563,7 +580,7 @@ function metric({ k, label, big, small = '', goal = '', drill, priorCount = fals
   if (cmp.on) {
     const ch = change(k, cur[k], prev?.[k]);
     const pv = prev?.[k];
-    const pvTxt = pv === null || pv === undefined ? '—' : k === 'speedToLeadAvgMin' ? `${pv} min` : isPct(k) ? fmt.pct(pv) : k === 'costPerSigned' ? fmt.usd(pv) : fmt.n(pv);
+    const pvTxt = pv === null || pv === undefined ? '—' : k === 'speedToLeadAvgMin' ? `${pv} min` : isPct(k) ? fmt.pct(pv) : k === 'costPerSigned' || k === 'value' ? fmt.usd(pv) : fmt.n(pv);
     extra = `<span class="cmpv"><span class="sw prev"></span> ${esc(bShort())}: <b>${pvTxt}</b> · <span class="chg ${ch.state}">${esc(ch.text)}</span></span>`;
   } else if (priorCount && prev && prev[k] !== null && prev[k] !== undefined) small = `vs ${fmt.n(prev[k])} prior`;
   const inner = `<p class="label" ${DEFS[k] ? `data-tip="${esc(DEFS[k])}"` : ''}>${esc(label)}</p>
@@ -605,6 +622,8 @@ function render() {
   renderCompareLine();
   renderNotice();
   renderDataNote();
+  renderDraft();
+  if (CC.isCare(cfg)) return renderCare();
 
   const drill = canDrill();
   const H = hiddenSet(cfg), sentOfQualified = sentBaseKey(cfg) === 'qualified';
@@ -707,6 +726,180 @@ function render() {
   $('notes').textContent = pub.isSample ? 'Illustrative example using fictional data.' : `Speed to first contact: ${pub.dataNotes?.speedToLead || '—'}.`;
 }
 
+// ---------- v1.28.0: Draft banner (any firm whose kpis.json says status "draft") ----------
+function renderDraft() {
+  const on = pub?.status === 'draft', el = $('draftNote');
+  $('draftChip').hidden = !on;
+  if (!on) { el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  el.innerHTML = `<div class="notice draft" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><div><b>Draft scorecard</b>This scorecard is being set up and reviewed by LFMP. It hasn't been shared with the client yet, and the numbers may change while the setup is checked.</div></div>`;
+}
+
+// ---------- v1.28.0: Medical & dental / Other (scripts/care-core.mjs) ----------
+// People, not opportunities: one person's opportunities in any counted pipeline count once, at their furthest stage.
+const CW = () => CC.wordsFor(cfg);
+const careType = () => CC.practiceTypeOf(cfg);
+const careShows = k => CC.METRICS[careType()].includes(k) && (k !== 'noShowRate' || !!pub.noShowTracked);
+const CARE_DEFS = () => {
+  const w = CW(), med = careType() === 'medical';
+  return {
+    enquiries: `Everyone with an opportunity created in these dates in a counted pipeline. Each person counts once, however many pipelines they're in.`,
+    contacted: `${w.enquiries} who reached a Contacted stage or further.`,
+    booked: `${w.enquiries} who reached a ${med ? 'consult' : 'appointment'}-booked stage or further.`,
+    attended: `${w.enquiries} who reached a ${med ? 'consult' : 'appointment'}-attended stage or further.`,
+    yes: med ? 'Patients who accepted treatment (deposit paid or procedure scheduled), or went further. An opportunity marked Won counts too.' : 'Leads who reached a won stage or further, or whose opportunity is marked Won.',
+    done: med ? 'Patients whose procedure or treatment is completed.' : 'Leads whose work is completed.',
+    lost: 'Every one of their opportunities is marked Lost or Abandoned, or sits in a stage mapped to Lost, and they never reached a Yes stage.',
+    value: `Opportunity value of the ${med ? 'patients who accepted treatment' : 'leads won'} in these dates.`,
+    showRatePct: `Of ${med ? 'consults' : 'appointments'} booked, the share that reached ${med ? 'consult' : 'appointment'} attended or further.`,
+    noShowPct: `Of ${med ? 'consults' : 'appointments'} booked, the share with an appointment marked No-show in GHL that never reached attended.`,
+    secFunnel: `Each bar is the number of ${w.people} from these dates who reached that step. Each step is part of the one above it, so the gaps show where ${w.people} are lost.`,
+  };
+};
+function renderCare() {
+  const c = cur, w = CW(), D = CARE_DEFS(), T = pub.targets || {}, drill = canDrill(), type = careType(), n = c.enquiries ?? c.totalLeads ?? 0;
+  if (CC.countsOnly(cfg)) $('lockBtn').textContent = records ? '🔓 Lock details' : '🔒 Unlock details';
+  const F = CC.FUNNEL[type];
+  const funnelRows = F.map(([wk, key], i) => {
+    const v = c[key] ?? 0, before = i ? c[F[i - 1][1]] ?? 0 : null;
+    const share = i === 0 ? '' : `${before ? Math.round((v / before) * 100) : 0}% of ${w[F[i - 1][0]].toLowerCase()}`;
+    const pv = cmp.on && prev ? prev[key] : null, tag = drill ? 'button' : 'div';
+    return `<${tag} class="frow" ${drill ? `data-drill="${key}"` : ''} data-tip="${esc(`${w[wk]}: ${v}${pv !== null && pv !== undefined ? ` · ${bShort()}: ${pv}` : ''} · ${D[key]}${drill ? ' · click for the list' : ''}`)}">
+      <span>${esc(w[wk])}</span><span class="track"><span class="fill" style="display:block;width:${n ? (v / n) * 100 : 0}%;animation-delay:${i * 60}ms"></span></span>
+      <span class="num">${v}</span><span class="pct">${share}${pv !== null && pv !== undefined ? ` <span class="pv">· ${pv}</span>` : ''}</span></${tag}>`;
+  }).join('');
+  const withDef = (k, html) => html.replace('<p class="label"', `<p class="label" data-tip="${esc(D[k] || '')}"`);
+  const m = o => withDef(o.dk || o.k, metric(o));
+  const ofEnq = v => (n ? `${fmt.pct(Math.round((v / n) * 1000) / 10)} of ${w.enquiries.toLowerCase()}` : '');
+  const tiles = {
+    enquiries: () => m({ k: 'enquiries', label: w.enquiries, big: fmt.n(n), drill: 'enquiries', priorCount: true }),
+    booked: () => m({ k: 'booked', label: w.booked, big: fmt.n(c.booked), small: ofEnq(c.booked), drill: 'booked' }),
+    showRate: () => m({ k: 'showRatePct', label: w.showRate, big: fmt.pct(c.showRatePct), small: `${c.attended} of ${c.booked}`, drill: 'showRate', goal: badge(c.showRatePct, T.showRatePct, { denom: c.booked, suffix: '%' }) }),
+    noShowRate: () => m({ k: 'noShowPct', label: w.noShowRate, big: fmt.pct(c.noShowPct), small: `${c.noShows ?? 0} of ${c.booked}`, drill: 'noShowRate', goal: badge(c.noShowPct, T.noShowPct, { lower: true, denom: c.booked, suffix: '% or less' }) }),
+    yes: () => m({ k: 'yes', label: w.yes, big: fmt.n(c.yes), small: ofEnq(c.yes), drill: 'yes', priorCount: true }),
+    done: () => m({ k: 'done', label: w.done, big: fmt.n(c.done), drill: 'done', priorCount: true }),
+    value: () => m({ k: 'value', label: w.value, big: fmt.usd(c.value), drill: 'yes', dk: 'value' }),
+  };
+  const sec = (num, title, keys) => { const on = keys.filter(careShows); return on.length ? `<section class="stage"><h2><span>${num}</span>${esc(title)}</h2>${on.map(k => tiles[k]()).join('')}</section>` : ''; };
+  const sections = type === 'medical'
+    ? [sec(1, 'Enquiries', ['enquiries']), sec(2, 'Consultations', ['booked', 'showRate', 'noShowRate']), sec(3, 'Treatment', ['yes', 'done', 'value'])]
+    : [sec(1, 'Leads', ['enquiries']), sec(2, 'Appointments', ['booked']), sec(3, 'Won', ['yes', 'value'])];
+  const pipes = pub.pipelines || [];
+  $('app').innerHTML = `
+  <div class="hero">
+    <div class="left">
+      <p class="label" data-tip="${esc(D.yes)}">${esc(w.hero)}</p>
+      <p class="big">${fmt.pct1(c.yesPct)}</p>
+      <p class="strong">${drill ? `<a class="lnk" href="#" role="button" data-drill="yes">${esc(w.heroLine(c.yes, n))}</a>` : esc(w.heroLine(c.yes, n))}</p>
+      ${cmp.on ? `<span class="cmpv"><span class="sw prev"></span> ${esc(bShort())}: <b>${fmt.pct1(prev?.yesPct)}</b> · <span class="chg ${change('yesPct', c.yesPct, prev?.yesPct).state}">${esc(change('yesPct', c.yesPct, prev?.yesPct).text)}</span></span>` : ''}
+      <p class="cpc">${esc(w.value)}: <b>${fmt.usd(c.value)}</b><br>${type === 'medical' ? 'from patients who accepted treatment' : 'from leads won'}</p>
+    </div>
+    <div class="funnel"><h2 data-tip="${esc(D.secFunnel)}">${esc(w.funnelTitle)}</h2>${funnelRows}</div>
+  </div>
+  <div class="stages three care">${sections.join('')}</div>
+  <div class="bottom">
+    <section>
+      <h2>Pipelines counted</h2>
+      ${pipes.length ? `<ul class="care-pipes">${pipes.map(p => `<li>${esc(p.name)}</li>`).join('')}</ul>` : '<p class="hint">No pipelines mapped yet.</p>'}
+      <p class="cov">Each person counts once, at the furthest stage any of their opportunities reached. Stages not part of the ${type === 'medical' ? 'patient' : 'sales'} journey (for example after-care) aren't counted.</p>
+    </section>
+    <section class="howto">
+      <h2>How to read this scorecard</h2>
+      <ul>
+        <li>Each rate shows the actual count beside it, so small numbers are never hidden behind a percentage.</li>
+        <li>The funnel follows the ${w.people} whose first enquiry came in during the selected dates, so each step is part of the one before.</li>
+        <li>A rate based on fewer than ${MIN()} ${w.people} shows “Too few” instead of a goal badge.</li>
+        <li>${CC.countsOnly(cfg) ? `This scorecard shows counts only: no ${w.person} names, emails or phone numbers are stored or shown. ${drill ? 'Click a number to see where those people sit in each pipeline, then open GHL for the details.' : ''}` : drill ? 'Click any number or funnel step to see the people behind it.' : 'Names and custom dates are available after unlocking.'}</li>
+      </ul>
+    </section>
+  </div>`;
+  careExec();
+  renderCmpPop();
+  renderPresets();
+  $('notes').textContent = pub.isSample ? 'Illustrative example using fictional data.' : pub.noShowTracked ? 'No-shows come from GHL appointments marked No-show.' : 'No-show rate appears once appointments are marked No-show in GHL.';
+}
+function careExec() {
+  const t = pub.targets || {}, c = cur, w = CW(), n = c.enquiries ?? 0, F = cfg.recommendedFocus || {};
+  const link = (text, d) => canDrill() && d ? `<a class="lnk" href="#" role="button" data-drill="${esc(d)}">${text}</a>` : text;
+  const goals = [['showRatePct', w.showRate, 'showRatePct', false, 'showRate', 'booked']];
+  if (careShows('noShowRate')) goals.push(['noShowPct', w.noShowRate, 'noShowPct', true, 'noShowRate', 'booked']);
+  const scored = goals.filter(([k, , gk, , , dk]) => careShows(k === 'showRatePct' ? 'showRate' : 'noShowRate') && c[k] !== null && c[k] !== undefined && t[gk] !== undefined && (c[dk] ?? 0) >= MIN())
+    .map(([k, name, gk, low, d]) => ({ k, name, gk, low, d, goal: t[gk], gap: low ? (t[gk] - c[k]) / Math.max(t[gk], 1) : (c[k] - t[gk]) / Math.max(t[gk], 1) }));
+  const good = [], bad = [];
+  if (prev && c.yes > (prev.yes ?? 0)) good.push(link(`${c.yes} ${w.yes.toLowerCase()}, up from ${prev.yes ?? 0} last period.`, 'yes'));
+  for (const s of scored.filter(s => s.gap >= 0)) good.push(link(`${s.name} is ${Math.round(c[s.k])}%, ${s.low ? 'within' : 'above'} the ${s.goal}% goal.`, s.d));
+  for (const s of scored.filter(s => s.gap < 0)) bad.push(link(`${s.name} is ${Math.round(c[s.k])}% (goal ${s.goal}%).`, s.d));
+  if (prev && prev.enquiries >= MIN() && n < prev.enquiries * 0.8) bad.push(link(`${w.enquiries} are down ${Math.round((1 - n / prev.enquiries) * 100)}% vs the prior period (${n} vs ${prev.enquiries}).`, 'enquiries'));
+  const focus = scored.filter(s => s.gap < 0).map(s => F[s.gk]).filter(Boolean);
+  if (!focus.length) focus.push(scored.length ? 'Every measurable goal is on track. Keep the same follow-up rhythm and watch enquiry volume.'
+    : `Not enough data yet to recommend a focus. Make sure every ${w.enquiry} is moved through the pipeline stages as it progresses, so each step can be measured.`);
+  const li = (arr, empty) => arr.length ? `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>` : `<p class="none">${empty}</p>`;
+  $('exec').innerHTML = n === 0
+    ? `<section style="--c:var(--dot-focus);grid-column:1/-1"><h2>No new ${esc(w.enquiries.toLowerCase())} in these dates yet</h2><p class="none">Pick a wider date range to see the scorecard.</p></section>`
+    : `<section style="--c:var(--dot-good)"><h2>Going well</h2>${li(good, 'No metric is above goal yet.')}</section>
+       <section style="--c:var(--dot-bad)"><h2>Needs attention</h2>${li(bad, scored.length === 0 ? 'Not enough data yet to judge any metric against its goal.' : 'Nothing below goal.')}</section>
+       <section style="--c:var(--dot-focus)"><h2>Recommended focus</h2>${li(focus.slice(0, 2).map(esc), '')}</section>`;
+}
+// Drill-downs. Counts only: where those people sit (pipeline · furthest stage · how many) + Open in GHL; no names.
+function openCareDrill(key) {
+  const w = CW(), D = CARE_DEFS();
+  const K = { showRate: 'attended', noShowRate: 'noShows' }[key] || key;
+  const titles = { enquiries: w.enquiries, contacted: w.contacted, booked: w.booked, attended: w.attended, yes: w.yes, done: w.done, lost: w.lost, noShows: 'No-shows' };
+  const people = lists[K] || [];
+  const title = key === 'showRate' ? w.showRate : key === 'noShowRate' ? w.noShowRate : titles[K] || key;
+  const denom = key === 'showRate' || key === 'noShowRate' ? ` out of ${lists.booked.length} ${w.booked.toLowerCase()}` : '';
+  const ghl = CC.ghlOpportunitiesUrl(records.ghlBase || cfg.ghlAppBase, records.locationId || cfg.locationId);
+  const M = CC.mapOf(cfg), pipeName = Object.fromEntries(M.pipelines.map(p => [p.id, p.name]));
+  const where = p => { const s = M.stages[p.furthestStageId] || {}; return { pipeline: pipeName[s.pipelineId] || '—', stage: s.name || '—', bucket: CC.bucketLabel(s.bucket) }; };
+  let def, rows;
+  if (CC.countsOnly(cfg) || !records.contacts) {
+    rows = CC.stageBreakdown(people, cfg).map(r => ({ ...r, bucket: CC.bucketLabel(r.bucket) }));
+    def = { title, def: `${D[K] || D[key] || ''} Counts only: no names are stored. Open GHL to see the people.`, ghl, search: 'Search pipeline or stage…',
+      sum: `<span><b>${people.length}</b> ${people.length === 1 ? w.person : w.people}${denom}</span>`,
+      cols: [{ label: 'Pipeline', key: 'pipeline', filter: 'pipeline' }, { label: 'Where they are now', key: 'stage' }, { label: 'Step', key: 'bucket', type: 'badge', filter: 'bucket' }, { label: w.people.charAt(0).toUpperCase() + w.people.slice(1), key: 'count', num: true }] };
+  } else {
+    rows = people.map(p => { const c = records.contacts[p.contactId] || {}; return { contactId: p.contactId, name: c.name || 'Unnamed', email: c.email, phone: c.phone, createdAt: p.createdAt, value: p.value, ...where(p) }; });
+    def = { title, def: D[K] || D[key] || '', ghl, sum: `<span><b>${people.length}</b> ${people.length === 1 ? w.person : w.people}${denom}</span>`,
+      cols: [col.name, col.email, col.phone, { label: 'First enquiry', key: 'createdAt', type: 'dt' }, { label: 'Pipeline', key: 'pipeline', filter: 'pipeline' }, { label: 'Where they are now', key: 'stage' }, { label: 'Step', key: 'bucket', type: 'badge', filter: 'bucket' }, { label: 'Value', key: 'value', type: 'usd', num: true }] };
+  }
+  view = { key, def, rows, q: '', filters: {}, sortKey: null, sortDir: 1, page: 0 };
+  renderModal();
+  $('scrim').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function openHowCare() {
+  const w = CW(), D = CARE_DEFS(), G = pub?.targets || cfg.targets || {}, M = CC.mapOf(cfg), type = careType();
+  const ts = pub ? new Date((records || pub).generatedAt).toLocaleString('en-US', { timeZone: TZ(), dateStyle: 'medium', timeStyle: 'short' }) : '—';
+  const used = M.pipelines.filter(p => p.use !== false && Object.values(M.stages).some(s => s.pipelineId === p.id && s.bucket !== 'ignore'));   // as "Pipelines counted"
+  const byBucket = k => used.flatMap(p => Object.values(M.stages).filter(s => s.pipelineId === p.id && s.bucket === k).map(s => `<code>${esc(p.name)} · ${esc(s.name)}</code>`)).join(' ') || '<span class="muted">—</span>';
+  const steps = [['newEnquiry', w.enquiries, D.enquiries], ['contacted', w.contacted, D.contacted], ['consultBooked', w.booked, D.booked], ['consultAttended', w.attended, D.attended], ['yes', w.yes, D.yes], ['done', w.done, D.done], ['lost', w.lost, D.lost]];
+  $('modal').className = 'modal how';
+  $('modal').innerHTML = `
+    <div class="mhead"><div><h3 id="mTitle">How this scorecard works</h3>
+      <div class="def">What each number means, where it comes from, and how to use the controls.</div></div>
+      <button class="close" data-close aria-label="Close">×</button></div>
+    <div class="hbody">
+      <section><h4>What it shows</h4>
+        <p>How ${w.people} move from first enquiry to ${type === 'medical' ? 'accepted and completed treatment' : 'won'}, and where they drop off. Each person counts once, at the furthest stage any of their opportunities reached, even if they're in several pipelines.</p></section>
+      <section><h4>Where the numbers come from</h4>
+        <ul>
+          <li>Pulled from GoHighLevel automatically every 30 minutes. Last sync: <b>${esc(ts)}</b>.</li>
+          <li>Pipelines counted: ${used.map(p => `<code>${esc(p.name)}</code>`).join(' ') || '<span class="muted">—</span>'}. Stages mapped to Ignore, and any stage not mapped yet, aren't counted.</li>
+          ${CC.countsOnly(cfg) ? `<li>Counts only: no ${w.person} names, emails or phone numbers are stored or shown. Lists show where people sit in each pipeline, with a link to open GHL.</li>` : ''}
+        </ul></section>
+      <section><h4>How each step is counted</h4>
+        <div class="srcwrap"><table><thead><tr><th>Step</th><th>Counts when</th><th>GHL stages</th></tr></thead><tbody>
+          ${steps.map(([k, n, d]) => `<tr><td><b>${esc(n)}</b></td><td>${esc(d)}</td><td>${k === 'newEnquiry' ? `${byBucket(k)} <span class="muted">(and every stage below)</span>` : byBucket(k)}</td></tr>`).join('')}
+        </tbody></table></div></section>
+      <section><h4>Goals and badges</h4>
+        <ul><li>${esc(w.showRate)}: ${G.showRatePct ?? '—'}% or more.${careShows('noShowRate') ? ` ${esc(w.noShowRate)}: ${G.noShowPct ?? '—'}% or less.` : ''}</li>
+          <li>A rate based on fewer than ${MIN()} ${w.people} shows <b>Too few</b> instead of a badge.</li></ul></section>
+    </div>`;
+  $('scrim').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  $('modal').querySelector('.close').focus();
+}
+
 function renderCompareLine() {
   const el = $('cmpLine');
   if (!cmp.on || !crange) { el.hidden = true; el.innerHTML = ''; return; }
@@ -793,6 +986,7 @@ let view = null;
 const PAGE = 25;
 function openDrill(key) {
   if (!records) { openUnlock(key); return; }
+  if (CC.isCare(cfg)) return openCareDrill(key);
   let def, rows;
   if (key.startsWith('source:')) {
     const s = key.slice(7);
@@ -838,7 +1032,7 @@ const filterVal = (c, r) => c.type === 'user' ? userName(r[c.key]) : String(r[c.
 function filteredRows() {
   const { def, rows, q, filters, sortKey, sortDir } = view;
   let out = rows;
-  if (q) { const s = q.toLowerCase(); out = out.filter(r => [r.name, r.company, r.email, r.phone, r.source, r.stage].some(x => String(x ?? '').toLowerCase().includes(s))); }
+  if (q) { const s = q.toLowerCase(); out = out.filter(r => [r.name, r.company, r.email, r.phone, r.source, r.stage, r.pipeline].some(x => String(x ?? '').toLowerCase().includes(s))); }
   for (const [k, val] of Object.entries(filters)) if (val) { const c = def.cols.find(c => (c.filter || c.key) === k); out = out.filter(r => filterVal(c, r) === val); }
   if (sortKey) { const c = def.cols.find(c => c.key === sortKey); out = [...out].sort((a, b) => { const x = sortVal(c, a), y = sortVal(c, b); return (x > y ? 1 : x < y ? -1 : 0) * sortDir; }); }
   return out;
@@ -851,6 +1045,7 @@ function renderModal() {
   let sum = `<span><b>${all}</b> ${all === 1 ? 'row' : 'rows'}</span>`;
   if (def.numerator) sum = `<span><b>${def.numerator(lists)}</b> of <b>${all}</b> ${def.numLabel}</span>`;
   if (def.denom) sum += `<span>out of <b>${def.denom(lists)}</b> ${def.denomLabel}</span>`;
+  if (def.sum) sum = def.sum;   // v1.28.0: counts-only lists say how many people, not how many stage rows
   const selects = def.cols.filter(c => c.filter).map(c => {
     const opts = [...new Set(rows.map(r => filterVal(c, r)))].sort();
     if (opts.length < 2) return '';
@@ -863,7 +1058,7 @@ function renderModal() {
   $('modal').innerHTML = `
     <div class="mhead"><div><h3 id="mTitle">${esc(def.title)} · ${esc(range.label)}</h3><div class="def">${esc(def.def)}</div></div><button class="close" data-close aria-label="Close">×</button></div>
     <div class="msum">${sum}</div>
-    <div class="toolbar"><input type="search" id="mSearch" placeholder="Search name, firm, email, phone, source…" value="${esc(view.q)}" aria-label="Search">${selects}<button class="btn" id="mCsv">Download CSV</button></div>
+    <div class="toolbar"><input type="search" id="mSearch" placeholder="${def.search || 'Search name, firm, email, phone, source…'}" value="${esc(view.q)}" aria-label="Search">${selects}<button class="btn" id="mCsv">Download CSV</button>${def.ghl ? `<a class="btn mghl" href="${esc(def.ghl)}" target="_blank" rel="noopener">Open in GHL ↗</a>` : ''}</div>
     <div class="tablewrap"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>
     <div class="pager"><span>${shown.length === all ? `${all} rows` : `${shown.length} of ${all} rows match`}</span>
       <span>${pages > 1 ? `<button class="btn" data-page="-1" ${view.page === 0 ? 'disabled' : ''}>‹ Prev</button> Page ${view.page + 1} of ${pages} <button class="btn" data-page="1" ${view.page >= pages - 1 ? 'disabled' : ''}>Next ›</button>` : ''}</span></div>`;
@@ -942,6 +1137,7 @@ $('themeBtn').addEventListener('click', () => {
 
 // ---------- how this works ----------
 function openHow() {
+  if (CC.isCare(cfg)) return openHowCare();
   const S = cfg.stages || {}, T = cfg.tags || {}, G = pub?.targets || cfg.targets || {};
   const list = a => (a || []).length ? a.map(x => `<code>${esc(x)}</code>`).join(' ') : '<span class="muted">—</span>';
   const stageList = a => list((a || []).map(x => pub?.stageNames?.[x] || x));

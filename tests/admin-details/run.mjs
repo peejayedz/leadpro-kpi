@@ -27,7 +27,7 @@ check(SYNC_PROBLEMS.has('failed') && SYNC_PROBLEMS.has('stale') && !SYNC_PROBLEM
 
 // ---- v1.25.0: one colour per meaning (bell, row, details, filter) ----
 const ALERTS = ['failed', 'app-missing', 'app-token', 'stale', 'no-sync', 'chain-off', 'no-link', 'keeper-failed', 'keeper-reconnect', 'keeper-stale'];
-const NOTICES = ['held', 'incomplete', 'mapping-review', 'nodata', 'not-in-pipeline'];
+const NOTICES = ['held', 'incomplete', 'mapping-review', 'nodata', 'not-in-pipeline', 'unmapped', 'needs-mapping'];   // v1.28.0: unmapped, needs-mapping
 check(ALERTS.every(k => severity(k) === 'alert'), `alerts (red): ${ALERTS.join(', ')}`);
 check(NOTICES.every(k => severity(k) === 'notice'), `notices (amber): ${NOTICES.join(', ')}`);
 check(severity('something-new') === 'alert', 'an unknown kind is an alert (safer)');

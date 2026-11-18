@@ -16,7 +16,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { openIssues, inBadge, describeIssue, chainAlive } from './sync-status.mjs';
+import { openIssues, inBadge, describeIssue, chainAlive, driftText } from './sync-status.mjs';
 import { keeperIssues, reviewIssues } from './keeper-status.mjs';
 import { postSlack, slackEscape, slackLink, duration, manilaTime } from './slack.mjs';
 
@@ -32,8 +32,9 @@ export function bellIssues({ status, keeper, firms, configs, kpis, chain, now })
   const rank = i => (i.slug ? 1 : 0);
   return [...keeperIssues(keeper, { now, firms }), ...reviewIssues(firms, configs), ...openIssues(status, { now, firms, kpis, chain })]
     .sort((a, b) => rank(a) - rank(b) || Date.parse(b.firstSeen) - Date.parse(a.firstSeen))
-    .filter(inBadge);
+    .filter(i => inBadge(i) || i.kind === 'unmapped');   // v1.28.0: "stages not mapped" is a bell notice, but it's DMed too
 }
+const isCareCfg = c => ['medical', 'other'].includes(c?.practiceType);
 
 const plain = s => String(s ?? '').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 export function issueTitle(i, firm, now) {
@@ -41,8 +42,13 @@ export function issueTitle(i, firm, now) {
 }
 const who = (slug, firms) => (slug ? firms.find(f => f.slug === slug)?.name || slug : 'All firms');
 
-export function startText(i, { firms, now }) {
+export function startText(i, { firms, now, configs = {} }) {
   const name = who(i.slug, firms), title = issueTitle(i, firms.find(f => f.slug === i.slug), now);
+  if (i.kind === 'unmapped') return [
+    `:warning: *${slackEscape(driftText(i) || 'Mapping out of date')} · ${slackEscape(name)}*`,
+    isCareCfg(configs[i.slug]) ? 'People in an unmapped stage count nowhere until it\'s mapped.' : 'Numbers are counted as before (warning only); check the mapping still matches GHL.',
+    slackLink(`${ADMIN_URL}#/map/${encodeURIComponent(i.slug)}`, isCareCfg(configs[i.slug]) ? 'Map pipelines →' : 'Edit mapping →'),
+  ].join('\n');
   return [
     `:rotating_light: *KPI sync problem: ${slackEscape(name)}*`,
     `${slackEscape(title)}. The admin bell shows the fix.`,
@@ -80,7 +86,7 @@ export function plan(prev, issues, { firms, chainKnown = true }) {
 }
 
 // Sends the DMs and returns the next state. A DM that fails leaves its entry as it was, so it's tried again.
-export async function run({ prev, issues, firms, chainKnown = true, now = Date.now(), send = postSlack, log = console.log }) {
+export async function run({ prev, issues, firms, configs = {}, chainKnown = true, now = Date.now(), send = postSlack, log = console.log }) {
   const { starts, resolves, keep } = plan(prev, issues, { firms, chainKnown });
   const open = { ...keep };
   let sent = 0, failed = 0;
@@ -89,7 +95,7 @@ export async function run({ prev, issues, firms, chainKnown = true, now = Date.n
     if (r.ok) { sent++; log(`Resolved DM sent: ${e.id}`); } else { failed++; open[e.id] = { kind: e.kind, slug: e.slug, name: e.name, title: e.title, firstSeen: e.firstSeen, sentAt: e.sentAt }; }
   }
   for (const i of starts) {
-    const r = await send(startText(i, { firms, now }));
+    const r = await send(startText(i, { firms, now, configs }));
     if (r.ok) {
       sent++; log(`Alert DM sent: ${i.id}`);
       open[i.id] = { kind: i.kind, slug: i.slug || null, name: who(i.slug, firms), title: issueTitle(i, firms.find(f => f.slug === i.slug), now), firstSeen: i.firstSeen, sentAt: new Date(now).toISOString() };
@@ -134,7 +140,7 @@ async function main() {
   const chain = await chainState({ repo: process.env.GITHUB_REPOSITORY || 'peejayedz/leadpro-kpi', token: process.env.GH_TOKEN || '', syncChain: process.env.SYNC_CHAIN });
   const issues = bellIssues({ status, keeper, firms, configs, kpis, chain, now: Date.now() });
   const prev = await readJSON(join(ROOT, STATE_FILE));
-  const { state, changed } = await run({ prev, issues, firms, chainKnown: chain.value === 'off' || chain.waiting !== null });
+  const { state, changed } = await run({ prev, issues, firms, configs, chainKnown: chain.value === 'off' || chain.waiting !== null });
   if (changed) await writeFile(join(ROOT, STATE_FILE), `${JSON.stringify(state, null, 2)}\n`);
 }
 

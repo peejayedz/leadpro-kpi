@@ -92,7 +92,9 @@ export function createAppRun(deps) {
     if (!run) {
       const request = deps.newRequestId();
       title = `${prefix}${request}]`;
-      t0 = await deps.dispatchNewFirm({ name: ctx.name, location: ctx.locationId, slug: S.slug, practice_area: ctx.practiceArea || '', timezone: ctx.timezone || 'America/New_York', snapshot_id: ctx.snapshotId || '', request });
+      t0 = await deps.dispatchNewFirm({ name: ctx.name, location: ctx.locationId, slug: S.slug, practice_area: ctx.practiceArea || '', timezone: ctx.timezone || 'America/New_York', snapshot_id: ctx.snapshotId || '', request,
+        // v1.28.0: only sent for non-law firms, so a law firm's dispatch is exactly as before
+        ...(ctx.practiceType && ctx.practiceType !== 'law' ? { practice_type: ctx.practiceType, counts_only: ctx.countsOnly === false ? 'no' : 'yes' } : {}) });
     }
     for (;;) {
       if (!run) {
@@ -123,9 +125,19 @@ export function createAppRun(deps) {
   }
   async function finish() {
     const cfg = await deps.readConfig(S.slug);
+    // v1.28.0: a Medical & dental / Other firm stops here as "Needs mapping": no first sync, no menu link, no link to copy.
+    if (['medical', 'other'].includes(cfg?.practiceType)) {
+      step('sync', 'pending', 'Runs when you save Map pipelines.');
+      step('menu', 'pending', 'Not added: the scorecard stays a Draft until it\'s published.');
+      S.done = { slug: S.slug, key: S.key, review: 'needs-mapping', menu: 'none', care: true };
+      return S.done;
+    }
     const menu = ['created', 'exists'].includes(cfg?.menuLink?.status) ? cfg.menuLink.status : 'manual';
-    step('menu', menu === 'manual' ? 'warn' : 'ok', menu === 'created' ? '"KPI Dashboard" added to this sub-account\'s menu (opens in a new tab).' : menu === 'exists' ? 'This sub-account already had a "KPI Dashboard" link.' : 'Not added automatically. Copy the link below and add it by hand.');
-    S.done = { slug: S.slug, key: S.key, review: cfg?.mappingReview?.reason || 'none', menu };
+    // v1.28.0 Draft first: a new law firm is a Draft too; its GHL menu link comes from "Add to GHL menu" after Andy's review.
+    const index = await deps.readIndex().catch(() => []), draft = (index || []).find(f => f.slug === S.slug)?.status === 'draft';
+    if (draft) step('menu', 'pending', 'Not added: the scorecard is a Draft. After Andy\'s review: Setup → Add to GHL menu.');
+    else step('menu', menu === 'manual' ? 'warn' : 'ok', menu === 'created' ? '"KPI Dashboard" added to this sub-account\'s menu (opens in a new tab).' : menu === 'exists' ? 'This sub-account already had a "KPI Dashboard" link.' : 'Not added automatically. Copy the link below and add it by hand.');
+    S.done = { slug: S.slug, key: S.key, review: cfg?.mappingReview?.reason || 'none', menu, ...(draft ? { draft: true } : {}) };
     return S.done;
   }
 
@@ -133,7 +145,9 @@ export function createAppRun(deps) {
   async function go(ctx, retry) {
     const firm = await check(ctx, retry);
     await pass(ctx);
-    if (firm && firm.tokenSource === 'app') {
+    if (firm && firm.tokenSource === 'app' && firm.status === 'needsMapping') {
+      for (const k of ['start', 'app', 'token', 'setup']) step(k, 'ok', 'Done earlier.');   // nothing to sync until it's mapped
+    } else if (firm && firm.tokenSource === 'app') {
       // Already in the list: only the first sync (if it has no numbers yet) and the menu-link check can be missing.
       for (const k of ['start', 'app', 'token', 'setup']) step(k, 'ok', 'Done earlier.');
       if (!(await deps.hasKpis(S.slug))) {

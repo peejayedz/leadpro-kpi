@@ -20,6 +20,8 @@ for (const f of only ? [index.find(x => x.slug === only) || { slug: only }] : in
   const secretKey = f.secretKey || expected;
   // secretKey must belong to this slug, so a bad index entry can never borrow another firm's secrets.
   if (secretKey !== expected) { problems.push({ slug: f.slug, detail: 'secret-key-mismatch', msg: `${f.slug}: secretKey "${secretKey}" should be "${expected}"` }); continue; }
+  // v1.28.0: a firm still waiting for Map pipelines isn't synced on the schedule (sync.mjs also stops for it).
+  if (!only && f.status === 'needsMapping') { console.log(`${f.slug}: needs mapping, not synced until its pipelines are mapped.`); continue; }
   try { await access(new URL(`../firms/${f.slug}/config.json`, import.meta.url)); }
   catch { problems.push({ slug: f.slug, detail: 'no-config', msg: `${f.slug}: no firms/${f.slug}/config.json` }); continue; }
   // name only labels the job ("Sync · <firm name>") so GitHub's emails and run pages say which firm.

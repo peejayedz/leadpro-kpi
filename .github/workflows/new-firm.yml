@@ -31,6 +31,14 @@ on:
       request:
         description: "Builder request id (to find this run)"
         required: true
+      practice_type:
+        description: "law (default) | medical | other. Non-law firms start as Needs mapping: no first sync or menu link."
+        required: false
+        default: "law"
+      counts_only:
+        description: "yes | no | empty (default: yes for medical). Non-law firms only: no names, emails or phones stored."
+        required: false
+        default: ""
 
 permissions:
   contents: write # commits the new firm
@@ -49,6 +57,8 @@ env:
   NF_TIMEZONE: ${{ inputs.timezone }}
   NF_SNAPSHOT_ID: ${{ inputs.snapshot_id }}
   NF_REQUEST: ${{ inputs.request }}
+  NF_PRACTICE_TYPE: ${{ inputs.practice_type }}
+  NF_COUNTS_ONLY: ${{ inputs.counts_only }}
 
 jobs:
   prepare:
@@ -130,6 +140,7 @@ jobs:
     timeout-minutes: 10
     outputs:
       review: ${{ steps.write.outputs.review }}
+      status: ${{ steps.write.outputs.status }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -159,6 +170,9 @@ jobs:
 
   first-sync:
     needs: [prepare, setup]
+    # v1.28.0: a Medical & dental / Other firm is "Needs mapping" until its pipelines are mapped in KPI admin, so its
+    # first sync (and, because menu-link needs this job, the GHL menu link) is skipped here. Map pipelines syncs it.
+    if: needs.setup.outputs.review != 'needs-mapping'
     runs-on: ubuntu-latest
     env:
       NF_SLUG: ${{ needs.prepare.outputs.slug }} # the planned slug (a resumed firm keeps its own)
@@ -184,7 +198,10 @@ jobs:
           exit 1
 
   menu-link:
-    needs: [prepare, first-sync]
+    needs: [prepare, setup, first-sync]
+    # v1.28.0: Draft first. A new scorecard (law or not) is a Draft, so this is skipped; the Builder's "Add to GHL menu"
+    # (menu-link.yml) adds the link after Andy's review. Only a resumed older, already-live firm still gets it here.
+    if: needs.setup.outputs.status == 'live'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

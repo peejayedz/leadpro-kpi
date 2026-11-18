@@ -12,6 +12,7 @@ import { realpathSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { checkSlug, secretKeyFor } from './firms.mjs';
 import { initialState, buildMapping, applyMapping } from '../admin/mapping.mjs';
+import { careInitialState, buildPipelineMap, applyCare } from './care-core.mjs';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const norm = s => String(s ?? '').trim().toLowerCase();
@@ -40,11 +41,26 @@ export async function loadPresets(dir = `${ROOT}firms/_presets/`) {
 }
 export const presetFor = (snapshotId, presets) => presets.find(p => (p.snapshots || []).some(s => s.id === snapshotId)) || null;
 
+// v1.28.0: location presets for non-law firms (firms/_presets/care/*.json, matched by locationId).
+export async function loadCarePresets(dir = `${ROOT}firms/_presets/care/`) {
+  const out = [];
+  for (const f of (await readdir(dir).catch(() => [])).filter(f => f.endsWith('.json'))) out.push({ file: f, ...JSON.parse(await readFile(dir + f, 'utf8')) });
+  return out;
+}
+export const careTypeOf = t => (['medical', 'other'].includes(norm(t)) ? norm(t) : 'law');
+
 // The firm's config. Preset: names checked against discovery, saved as stage ids. Otherwise (or if any
 // name is missing): the admin page's auto-guess by name, and mappingReview so the bell asks for a look.
-export function buildConfig({ template, discovery, preset, name, practiceArea, locationId, timezone, now = new Date().toISOString() }) {
+// v1.28.0: a Medical & dental or Other firm gets no law preset: its pipelineMap is pre-filled (location preset, else
+// stage-name guesses; never Ignore unless the preset says so) and the firm starts as "Needs mapping".
+export function buildConfig({ template, discovery, preset, name, practiceArea, locationId, timezone, practiceType = 'law', countsOnly: co = null, carePreset = null, now = new Date().toISOString() }) {
   const cfg = structuredClone(template);
   Object.assign(cfg, { locationName: name, practiceArea, locationId, title: '', timezone: timezone || cfg.timezone });
+  if (careTypeOf(practiceType) !== 'law') {
+    const st = careInitialState({ discovery, config: {}, preset: carePreset });
+    applyCare(cfg, { practiceType: careTypeOf(practiceType), pipelineMap: buildPipelineMap(st), countsOnly: typeof co === 'boolean' ? co : careTypeOf(practiceType) === 'medical' });
+    return { config: cfg, review: { reason: 'needs-mapping', at: now }, preset: carePreset?.name || null, care: true };
+  }
   const pipes = discovery?.pipelines || [];
   let review = null;
   if (preset) {
@@ -73,7 +89,8 @@ export function buildConfig({ template, discovery, preset, name, practiceArea, l
 
 // ---------- commands ----------
 const env = process.env;
-const input = () => ({ name: (env.NF_NAME || '').trim(), locationId: (env.NF_LOCATION || '').trim(), slug: (env.NF_SLUG || '').trim(), practiceArea: (env.NF_PRACTICE || '').trim(), timezone: (env.NF_TIMEZONE || '').trim(), snapshotId: (env.NF_SNAPSHOT_ID || '').trim() });
+const input = () => ({ name: (env.NF_NAME || '').trim(), locationId: (env.NF_LOCATION || '').trim(), slug: (env.NF_SLUG || '').trim(), practiceArea: (env.NF_PRACTICE || '').trim(), timezone: (env.NF_TIMEZONE || '').trim(), snapshotId: (env.NF_SNAPSHOT_ID || '').trim(),
+  practiceType: careTypeOf(env.NF_PRACTICE_TYPE), countsOnly: env.NF_COUNTS_ONLY === 'yes' ? true : env.NF_COUNTS_ONLY === 'no' ? false : null });
 const readJSON = async (p, fallback = null) => { try { return JSON.parse(await readFile(p, 'utf8')); } catch { return fallback; } };
 async function output(pairs) {
   if (!env.GITHUB_OUTPUT) return;
@@ -119,20 +136,32 @@ async function cmdWrite() {
   const exists = await access(`${dir}config.json`).then(() => true, () => false);
   if (!exists) {
     const template = await readJSON(`${ROOT}firms/_template/config.json`);
-    const preset = presetFor(i.snapshotId, await loadPresets());
-    const { config, review } = buildConfig({ template, discovery, preset, ...i });
+    const care = i.practiceType !== 'law';
+    const preset = care ? null : presetFor(i.snapshotId, await loadPresets());
+    const carePreset = care ? (await loadCarePresets()).find(p => p.locationId === i.locationId) || null : null;
+    const { config, review } = buildConfig({ template, discovery, preset, carePreset, ...i });
     await mkdir(dir, { recursive: true });
     await writeFile(`${dir}config.json`, jsonText(config));
     await writeFile(`${dir}index.html`, await readFile(`${ROOT}firms/_template/index.html`, 'utf8'));
-    const n = Object.values(config.stages).flat().length;
-    log(review ? `Mapping: auto-guess (${review.reason === 'unknown-snapshot' ? 'no preset for this snapshot' : `${review.missing} preset stage(s) not found`}); flagged "Review mapping". ${n} stage selections.` : `Mapping: preset "${preset.name}", ${n} stage selections saved as stage ids.`);
+    const n = care ? Object.keys(config.pipelineMap.stages).length : Object.values(config.stages).flat().length;
+    if (care) log(`Practice type ${i.practiceType}: ${config.pipelineMap.pipelines.length} pipeline(s), ${n} stage(s) pre-filled${carePreset ? ` from the preset "${carePreset.name}"` : ' from the stage names'}. Status: Needs mapping (no first sync or menu link until the pipelines are mapped in KPI admin).`);
+    else log(review ?`Mapping: auto-guess (${review.reason === 'unknown-snapshot' ? 'no preset for this snapshot' : `${review.missing} preset stage(s) not found`}); flagged "Review mapping". ${n} stage selections.` : `Mapping: preset "${preset.name}", ${n} stage selections saved as stage ids.`);
     await output({ review: review ? review.reason : 'none' });
-  } else log('config.json already exists (resumed run); kept as it is.');
+  } else {
+    log('config.json already exists (resumed run); kept as it is.');
+    // A resumed non-law firm that still needs mapping must not go on to the first sync or the menu link.
+    if (existing?.status === 'needsMapping') await output({ review: 'needs-mapping' });
+  }
   if (!existing) {
-    index.push({ slug, secretKey: key, name: i.name, practiceArea: i.practiceArea, locationId: i.locationId, createdAt: new Date().toISOString(), tokenSource: 'app', createdBy: 'builder' });
+    index.push({ slug, secretKey: key, name: i.name, practiceArea: i.practiceArea, locationId: i.locationId, createdAt: new Date().toISOString(), tokenSource: 'app', createdBy: 'builder',
+      // v1.28.0: every new scorecard starts as a Draft (law firms too): no GHL menu link until "Add to GHL menu"
+      ...(i.practiceType !== 'law' ? { practiceType: i.practiceType, status: 'needsMapping' } : { status: 'draft' }) });
     await writeFile(`${ROOT}firms/index.json`, jsonText(index));
     log(`Added ${slug} to the firm list (${index.length} firms).`);
   }
+  // v1.28.0: the menu-link job runs only for a LIVE firm (a resumed older firm); a Draft gets it from "Add to GHL menu".
+  const row = index.find(f => f.slug === slug) || existing;
+  await output({ status: row?.status || 'live' });
   return 0;
 }
 
@@ -149,7 +178,37 @@ async function cmdMenu() {
   return 0;   // never fails the setup: the builder shows the Copy link + clicks instead
 }
 
-const CMDS = { plan: cmdPlan, 'wait-app': cmdWaitApp, write: cmdWrite, menu: cmdMenu };
+// ---------- v1.28.0: "Add to GHL menu" (menu-link.yml) ----------
+// menu-plan: the firm must be in the list and a Draft (a firm still "Needs mapping" can't be added; a live firm already is).
+export function planMenu({ index, slug }) {
+  const f = (index || []).find(x => x.slug === slug);
+  if (!f) return { error: `"${slug}" isn't in the firm list.` };
+  if (f.status === 'needsMapping') return { error: `${slug} still needs its pipelines mapped. Map them first.` };
+  if (f.status !== 'draft') return { error: `${slug} is already live: nothing to add.` };
+  return { slug, key: f.secretKey || secretKeyFor(slug), locationId: f.locationId };
+}
+async function cmdMenuPlan() {
+  const slug = (env.NF_SLUG || '').trim(), index = await readJSON(`${ROOT}firms/index.json`, []);
+  const p = planMenu({ index, slug });
+  if (p.error) { log(`Refused: ${p.error}`); return 1; }
+  const cfg = await readJSON(`${ROOT}firms/${slug}/config.json`);
+  log(`${slug}: Draft → adding "KPI Dashboard" to its GHL menu.`);
+  await output({ key: p.key, location: cfg?.locationId || p.locationId });
+  return 0;
+}
+// go-live: only once the menu link is there (created, or one already existed), the Draft status goes.
+async function cmdGoLive() {
+  const slug = (env.NF_SLUG || '').trim(), index = await readJSON(`${ROOT}firms/index.json`, []), cfg = await readJSON(`${ROOT}firms/${slug}/config.json`);
+  if (!['created', 'exists'].includes(cfg?.menuLink?.status)) { log('The menu link wasn\'t added, so the scorecard stays a Draft. See the step above.'); return 1; }
+  const row = index.find(f => f.slug === slug);
+  if (!row) { log(`"${slug}" isn't in the firm list.`); return 1; }
+  delete row.status;
+  await writeFile(`${ROOT}firms/index.json`, jsonText(index));
+  log(`${slug} is live: in its GHL menu, no longer a Draft.`);
+  return 0;
+}
+
+const CMDS = { plan: cmdPlan, 'wait-app': cmdWaitApp, write: cmdWrite, menu: cmdMenu, 'menu-plan': cmdMenuPlan, 'go-live': cmdGoLive };
 const isMain = () => { try { return import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href; } catch { return false; } };
 if (process.argv[1] && isMain()) {
   const fn = CMDS[process.argv[2]];

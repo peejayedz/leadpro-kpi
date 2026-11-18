@@ -56,6 +56,24 @@ export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kp
       M.overlay.set(`firms/${slug}/data/kpis.json`, JSON.stringify(k, null, 2) + '\n');
       return finish('success');
     }
+    if (r.workflow === 'menu-link.yml') {   // v1.28.0: the menu link is added, the Draft goes live
+      if (n < 3) return;
+      const slug = r.inputs.slug, idx = JSON.parse(await fileText('firms/index.json')), row = idx.find(f => f.slug === slug);
+      if (!row || row.status !== 'draft') return finish('failure');
+      delete row.status; M.overlay.set('firms/index.json', JSON.stringify(idx, null, 2) + '\n');
+      const c = JSON.parse(await fileText(`firms/${slug}/config.json`)); c.menuLink = { status: 'created', at: new Date().toISOString() };
+      M.overlay.set(`firms/${slug}/config.json`, JSON.stringify(c, null, 2) + '\n');
+      return finish('success');
+    }
+    if (r.workflow === 'remove-firm.yml') {   // v1.28.0: firm files + list row gone (mock only; never against a real repo)
+      if (n < 3) return;
+      const slug = r.inputs.slug, idx = JSON.parse(await fileText('firms/index.json'));
+      if (!idx.some(f => f.slug === slug)) return finish('failure');
+      M.overlay.set('firms/index.json', JSON.stringify(idx.filter(f => f.slug !== slug), null, 2) + '\n');
+      for (const p of ['config.json', 'discovery.json', 'index.html', 'data/kpis.json', 'data/details.enc.json']) M.overlay.set(`firms/${slug}/${p}`, null);
+      M.removed = [...(M.removed || []), slug];
+      return finish('success');
+    }
     if (r.workflow === 'discover.yml') {
       if (n < 3) return;
       const p = `firms/${r.inputs.slug}/discovery.json`, d = JSON.parse(await fileText(p));
@@ -71,10 +89,24 @@ export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kp
         return finish('failure');
       }
       const { slug, location, name, practice_area: area } = r.inputs;
+      // v1.28.0: a Medical & dental / Other firm stops at "Needs mapping" (first sync and menu link skipped), as new-firm.yml does
+      if (['medical', 'other'].includes(r.inputs.practice_type) && n >= 4) {
+        const idx = JSON.parse(await fileText('firms/index.json'));
+        if (!idx.some(f => f.locationId === location)) {
+          idx.push({ slug, secretKey: slug.toUpperCase().replace(/-/g, '_'), name, practiceArea: area, locationId: location, createdAt: new Date().toISOString(), tokenSource: 'app', createdBy: 'builder', practiceType: r.inputs.practice_type, status: 'needsMapping' });
+          M.overlay.set('firms/index.json', JSON.stringify(idx, null, 2) + '\n');
+          const tpl = JSON.parse(await fileText('firms/_template/config.json'));
+          Object.assign(tpl, { locationName: name, practiceArea: area, locationId: location, title: '', practiceType: r.inputs.practice_type, countsOnly: r.inputs.counts_only !== 'no', pipelineMap: { pipelines: [], stages: {} } });
+          M.overlay.set(`firms/${slug}/config.json`, JSON.stringify(tpl, null, 2) + '\n');
+          M.overlay.set(`firms/${slug}/discovery.json`, M.careDiscovery || await fileText('firms/zz-test-2/discovery.json'));
+        }
+        r.jobs = JOBS.map(name => ({ name, status: 'completed', conclusion: ['first-sync', 'menu-link'].includes(name) ? 'skipped' : 'success', steps: steps(name) }));
+        return finish('success');
+      }
       if (n >= 4) {
         const idx = JSON.parse(await fileText('firms/index.json'));
         if (!idx.some(f => f.locationId === location)) {
-          idx.push({ slug, secretKey: slug.toUpperCase().replace(/-/g, '_'), name, practiceArea: area, locationId: location, createdAt: new Date().toISOString(), tokenSource: 'app', createdBy: 'builder' });
+          idx.push({ slug, secretKey: slug.toUpperCase().replace(/-/g, '_'), name, practiceArea: area, locationId: location, createdAt: new Date().toISOString(), tokenSource: 'app', createdBy: 'builder', status: 'draft' });
           M.overlay.set('firms/index.json', JSON.stringify(idx, null, 2) + '\n');
           const tpl = JSON.parse(await fileText('firms/_template/config.json'));
           Object.assign(tpl, { locationName: name, practiceArea: area, locationId: location, title: '' });
@@ -85,9 +117,7 @@ export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kp
       }
       if (n >= 6) {
         M.overlay.set(`firms/${slug}/data/kpis.json`, JSON.stringify({ generatedAt: new Date().toISOString(), periods: { last90: { current: { totalLeads: 0 } }, last30: { current: { notInPipeline: 0 } } } }) + '\n');
-        const c = JSON.parse(await fileText(`firms/${slug}/config.json`)); c.menuLink = { status: 'created', at: new Date().toISOString() };
-        M.overlay.set(`firms/${slug}/config.json`, JSON.stringify(c, null, 2) + '\n');
-        r.jobs.forEach(j => Object.assign(j, { status: 'completed', conclusion: 'success' }));
+        r.jobs.forEach(j => Object.assign(j, { status: 'completed', conclusion: j.name === 'menu-link' ? 'skipped' : 'success' }));   // v1.28.0: Draft, menu link skipped
         return finish('success');
       }
       return;
@@ -116,7 +146,7 @@ export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kp
     if ((m = /^\/actions\/workflows\/([\w.-]+)\/dispatches$/.exec(p)) && method === 'POST') {
       const wf = m[1], i = body.inputs || {};
       M.dispatches.push({ workflow: wf, inputs: i });
-      const title = wf === 'sync.yml' ? (i.slug ? `Sync ${i.slug}` : 'Sync all firms') : wf === 'discover.yml' ? `Discover ${i.slug}` : wf === 'new-firm.yml' ? `New firm ${i.slug} [${i.request}]` : wf;
+      const title = wf === 'sync.yml' ? (i.slug ? `Sync ${i.slug}` : 'Sync all firms') : wf === 'discover.yml' ? `Discover ${i.slug}` : wf === 'new-firm.yml' ? `New firm ${i.slug} [${i.request}]` : wf === 'menu-link.yml' ? `Menu link ${i.slug} [${i.request}]` : wf === 'remove-firm.yml' ? `Remove firm ${i.slug} [${i.request}]` : wf;
       run(wf, i, title);
       return { status: 204, json: null };
     }
@@ -126,6 +156,12 @@ export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kp
       return ok({ workflow_runs: list.slice().reverse().map(({ jobs, t0, inputs, workflow, ...r }) => r) });
     }
     if ((m = /^\/actions\/runs\/(\d+)$/.exec(p))) { const r = M.runs.find(x => x.id === Number(m[1])); await advance(r); const { jobs, t0, inputs, workflow, ...rest } = r; return ok(rest); }
+    if ((m = /^\/actions\/runs\/(\d+)\/cancel$/.exec(p)) && method === 'POST') {   // v1.28.0: Stop setup
+      const r = M.runs.find(x => x.id === Number(m[1])); if (!r) return { status: 404, json: { message: 'Not Found' } };
+      M.cancels = [...(M.cancels || []), r.id];
+      if (r.status !== 'completed') { r.status = 'completed'; r.conclusion = 'cancelled'; r.updated_at = new Date().toISOString(); r.jobs = (r.jobs || []).map(j => (j.status === 'completed' ? j : { ...j, status: 'completed', conclusion: 'cancelled' })); }
+      return { status: 202, json: {} };
+    }
     if ((m = /^\/actions\/runs\/(\d+)\/jobs$/.exec(p))) { const r = M.runs.find(x => x.id === Number(m[1])); await advance(r); return ok({ jobs: structuredClone(r.jobs) }); }
     if ((m = /^\/contents\/(.+)$/.exec(p)) && method === 'GET') {
       const fp = decodeURIComponent(m[1]);

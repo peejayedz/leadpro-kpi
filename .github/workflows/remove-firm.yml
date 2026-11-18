@@ -1,0 +1,88 @@
+name: Remove a scorecard (from the builder)
+# v1.28.0. Started by the Builder's KPI tab ("Remove scorecard", after typing the client's name). The team site's server
+# sets "by" from the signed-in Google account (first name). scripts/remove-firm.mjs does the work and refuses unknown
+# slugs, and law firms with no Builder record unless "confirm" equals the slug.
+# Removes: firms/<slug>/ (dashboard + settings + data), its firms/index.json row, GHL_TOKEN_<KEY> and PASSPHRASE_<KEY>,
+# and, only for a LIVE firm, its own "KPI Dashboard" GHL menu link (the exact reversal of the setup's menu step; the only
+# GHL change). Logs it in status/removed.json (public: slug, name, time, first name). Slack DM "Scorecard removed · <firm>".
+# PUBLIC LOGS: step names, slugs and results only.
+run-name: "Remove firm ${{ inputs.slug }} [${{ inputs.request }}]"
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Firm slug"
+        required: true
+      confirm:
+        description: "Only for a law firm with no Builder record: type the slug again"
+        required: false
+        default: ""
+      by:
+        description: "Who removed it (set by the team site's server)"
+        required: false
+        default: ""
+      request:
+        description: "Builder request id (to find this run)"
+        required: true
+
+permissions:
+  contents: write
+
+# Never at the same time as a new firm (both write firms/index.json). Never cancelled half-way.
+concurrency:
+  group: new-firm
+  cancel-in-progress: false
+
+env:
+  RF_SLUG: ${{ inputs.slug }}
+  RF_CONFIRM: ${{ inputs.confirm }}
+  RF_BY: ${{ inputs.by }}
+
+jobs:
+  remove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Check the firm can be removed
+        id: plan
+        run: node scripts/remove-firm.mjs plan
+      - name: Remove the GHL menu link (live firms only)
+        id: menu
+        if: steps.plan.outputs.live == 'yes'
+        env:
+          GHL_MENU_TOKEN: ${{ secrets.GHL_MENU_TOKEN }}
+        run: node scripts/remove-firm.mjs menu
+      # Files first (one commit), then the secrets: if a later step fails, what's left over is only unused secrets,
+      # never a firm whose secrets are gone.
+      - name: Remove the dashboard and its settings
+        id: files
+        env:
+          RF_MENU: ${{ steps.menu.outputs.menu || 'none' }}
+        run: |
+          node scripts/remove-firm.mjs files
+          git config user.name "kpi-sync-bot"
+          git config user.email "kpi-sync-bot@users.noreply.github.com"
+          git add -A "firms/$RF_SLUG" firms/index.json status/removed.json
+          git commit -m "Remove firm $RF_SLUG (${RF_BY:-someone} via Builder)"
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            sleep $((i * 5))
+          done
+          echo "Push failed after 3 tries" >&2
+          exit 1
+      - name: Delete the firm's secrets
+        env:
+          SECRETS_TOKEN: ${{ secrets.KEEPER_GH_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/remove-firm.mjs secrets
+      - name: Slack DM
+        if: always() && steps.files.outcome == 'success'
+        continue-on-error: true
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: node scripts/remove-firm.mjs notify
