@@ -2,7 +2,9 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
-## v1.27.0 Busy states ("no silent clicks"): COMMITTED LOCALLY 19 Nov 2026 (overnight run Part 2, not pushed; with Builder v1.18.0, Review admin v1.11.0)
+## v1.26.0 + v1.27.0: LIVE 18 Nov 2026 07:09 UTC (`5ff3191` after a rebase onto 27 sync commits; deploy 44256607647, fingerprint 04ab155bfbfef86b; live check in the Builder HANDOFF v1.18.0: A–Z, "4 firms · 1 needs attention", no trends, Check now gold fill)
+
+## v1.27.0 Busy states ("no silent clicks"): LIVE 18 Nov 2026 (with Builder v1.18.0, Review admin v1.11.0)
 
 - Shared `lfmp-session.js` / `lfmp-ui.css` 2.3.0 (Builder HANDOFF v1.18.0): press feedback, gold fill on the pressed button, gold top line while any request runs (all `api()` / `ghFetch()` calls). Delete firm, Check scopes (Update token), Check now (bell) and Clean up use `busyButton`; other buttons that start a request (Re-sync, Sync all, Restart chain, Mark as seen, …) get it automatically. New firm keeps its own step view. Cache `lfmp-ui.css?v=2.3.0`, `admin.css?v=1.27.0`.
 - **PJ, 19 Nov (replaces the 17 Nov decision):** the summary line uses the "Needs attention" filter's words and count: "4 firms · 2 need attention" (nothing to look at: "all synced 4:37 PM").
