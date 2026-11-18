@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T21:37:45.596Z",
+  "generatedAt": "2026-11-18T22:07:48.975Z",
   "location": "Boca Dental",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,9 +22,9 @@
     "today": {
       "label": "Today",
       "from": 1794978000000,
-      "to": 1795037865596,
+      "to": 1795039668975,
       "current": {
-        "totalLeads": 13,
+        "totalLeads": 14,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -69,6 +69,11 @@
             0
           ],
           [
+            "Adwords Call Extension",
+            1,
+            0
+          ],
+          [
             "GMB - IP - Gregg Weinstein, DDS",
             1,
             0
@@ -77,17 +82,17 @@
         "byChannel": [
           [
             "Third Party",
-            13,
+            14,
             0
           ]
         ],
-        "attributedLeads": 13,
+        "attributedLeads": 14,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            13,
+            14,
             "newLeads",
             null
           ],
@@ -130,7 +135,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 7,
+        "totalLeads": 8,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -170,6 +175,11 @@
             0
           ],
           [
+            "BingAds Call Extension",
+            1,
+            0
+          ],
+          [
             "Google Business Profile - Boca Raton",
             1,
             0
@@ -183,17 +193,17 @@
         "byChannel": [
           [
             "Third Party",
-            7,
+            8,
             0
           ]
         ],
-        "attributedLeads": 7,
+        "attributedLeads": 8,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            7,
+            8,
             "newLeads",
             null
           ],
@@ -466,9 +476,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1795037865596,
+      "to": 1795039668975,
       "current": {
-        "totalLeads": 37,
+        "totalLeads": 38,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -514,7 +524,7 @@
           ],
           [
             "Adwords Call Extension",
-            3,
+            4,
             0
           ],
           [
@@ -531,7 +541,7 @@
         "byChannel": [
           [
             "Third Party",
-            34,
+            35,
             0
           ],
           [
@@ -540,13 +550,13 @@
             0
           ]
         ],
-        "attributedLeads": 37,
+        "attributedLeads": 38,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            37,
+            38,
             "newLeads",
             null
           ],
@@ -974,10 +984,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794433065596,
-      "to": 1795037865596,
+      "from": 1794434868975,
+      "to": 1795039668975,
       "current": {
-        "totalLeads": 54,
+        "totalLeads": 55,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1023,7 +1033,7 @@
           ],
           [
             "Adwords Call Extension",
-            5,
+            6,
             0
           ],
           [
@@ -1045,7 +1055,7 @@
         "byChannel": [
           [
             "Third Party",
-            48,
+            49,
             0
           ],
           [
@@ -1054,13 +1064,13 @@
             0
           ]
         ],
-        "attributedLeads": 54,
+        "attributedLeads": 55,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            54,
+            55,
             "newLeads",
             null
           ],
@@ -1236,10 +1246,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792445865596,
-      "to": 1795037865596,
+      "from": 1792447668975,
+      "to": 1795039668975,
       "current": {
-        "totalLeads": 249,
+        "totalLeads": 250,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1285,7 +1295,7 @@
           ],
           [
             "Adwords Call Extension",
-            27,
+            28,
             0
           ],
           [
@@ -1312,7 +1322,7 @@
         "byChannel": [
           [
             "Third Party",
-            208,
+            209,
             0
           ],
           [
@@ -1326,13 +1336,13 @@
             0
           ]
         ],
-        "attributedLeads": 248,
+        "attributedLeads": 249,
         "stageMoved": 0,
         "attributionPct": 99.6,
         "funnel": [
           [
             "New leads",
-            249,
+            250,
             "newLeads",
             null
           ],
@@ -1503,10 +1513,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787261865596,
-      "to": 1795037865596,
+      "from": 1787263668975,
+      "to": 1795039668975,
       "current": {
-        "totalLeads": 715,
+        "totalLeads": 716,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1552,7 +1562,7 @@
           ],
           [
             "Adwords Call Extension",
-            101,
+            102,
             0
           ],
           [
@@ -1579,7 +1589,7 @@
         "byChannel": [
           [
             "Third Party",
-            569,
+            570,
             0
           ],
           [
@@ -1593,13 +1603,13 @@
             0
           ]
         ],
-        "attributedLeads": 714,
+        "attributedLeads": 715,
         "stageMoved": 0,
         "attributionPct": 99.9,
         "funnel": [
           [
             "New leads",
-            715,
+            716,
             "newLeads",
             null
           ],
@@ -1781,9 +1791,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795037865596,
+      "to": 1795039668975,
       "current": {
-        "totalLeads": 145,
+        "totalLeads": 146,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1824,7 +1834,7 @@
           ],
           [
             "Adwords Call Extension",
-            22,
+            23,
             0
           ],
           [
@@ -1856,7 +1866,7 @@
         "byChannel": [
           [
             "Third Party",
-            122,
+            123,
             0
           ],
           [
@@ -1865,13 +1875,13 @@
             0
           ]
         ],
-        "attributedLeads": 145,
+        "attributedLeads": 146,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            145,
+            146,
             "newLeads",
             null
           ],
@@ -2300,9 +2310,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795037865596,
+      "to": 1795039668975,
       "current": {
-        "totalLeads": 404,
+        "totalLeads": 405,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -2348,7 +2358,7 @@
           ],
           [
             "Adwords Call Extension",
-            46,
+            47,
             0
           ],
           [
@@ -2375,7 +2385,7 @@
         "byChannel": [
           [
             "Third Party",
-            335,
+            336,
             0
           ],
           [
@@ -2389,13 +2399,13 @@
             0
           ]
         ],
-        "attributedLeads": 403,
+        "attributedLeads": 404,
         "stageMoved": 0,
         "attributionPct": 99.8,
         "funnel": [
           [
             "New leads",
-            404,
+            405,
             "newLeads",
             null
           ],
@@ -2906,7 +2916,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-18T21:37:45.596Z",
+    "checkedAt": "2026-11-18T22:07:48.975Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
