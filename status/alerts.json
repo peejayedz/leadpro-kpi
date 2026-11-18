@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-18T21:30:50.983Z",
+  "updatedAt": "2026-11-18T21:48:07.772Z",
   "open": {
     "boca-dental:mapping-review": {
       "kind": "mapping-review",
@@ -9,14 +9,6 @@
       "title": "Review mapping",
       "firstSeen": "2026-11-18T08:20:18.073Z",
       "sentAt": "2026-11-18T08:22:59.438Z"
-    },
-    "system:keeper-stale": {
-      "kind": "keeper-stale",
-      "slug": null,
-      "name": "All firms",
-      "title": "Token keeper hasn't run in 4 hours",
-      "firstSeen": "2026-11-18T17:16:25.635Z",
-      "sentAt": "2026-11-18T18:13:27.123Z"
     }
   }
 }
