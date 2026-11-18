@@ -40,5 +40,15 @@
     "createdAt": "2026-11-13T06:09:10.448Z",
     "tokenSource": "app",
     "createdBy": "builder"
+  },
+  {
+    "slug": "boca-dental",
+    "secretKey": "BOCA_DENTAL",
+    "name": "Boca Dental",
+    "practiceArea": "",
+    "locationId": "cUGbQORfR3Qp9nnzcgft",
+    "createdAt": "2026-11-18T08:20:18.081Z",
+    "tokenSource": "app",
+    "createdBy": "builder"
   }
 ]
