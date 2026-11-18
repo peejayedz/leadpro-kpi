@@ -398,6 +398,12 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
         assert.equal(await page.locator(`${bar} .lv-av [data-lv-dot], ${bar} .lv-av .lv-dot`).count(), 0, 'no dot on the avatar');
         assert.equal(await page.locator(`${me} [data-lv="news"] .lv-ndot`).count(), 1, 'the new dot is on the What\'s new row');
         assert.equal(await page.evaluate(s => { const r = document.querySelector(s).getBoundingClientRect(); return r.right <= innerWidth && r.left >= 0 && r.bottom <= innerHeight; }, me), true, `${tool} ${w}: the menu is fully on screen`);
+        // review FIX 3.3: fully opaque from the first frame (no fade), a solid background, and on top: every item hit-tests
+        // as the menu (nothing from the page shows through or sits above it)
+        const op = await page.evaluate(s => { const p = document.querySelector(s), cs = getComputedStyle(p), bg = cs.backgroundColor.match(/[\d.]+/g).map(Number);
+          return { opacity: [cs.opacity, ...p.getAnimations().map(a => getComputedStyle(p).opacity)], bgA: bg.length > 3 ? bg[3] : 1, z: Number(cs.zIndex),
+            onTop: [...p.querySelectorAll('.lv-mi')].every(m => { const r = m.getBoundingClientRect(); return document.elementFromPoint(r.left + r.width * 0.85, r.top + r.height / 2)?.closest('[data-lv-pop]') === p; }) }; }, me);
+        assert.ok(op.opacity.every(o => o === '1') && op.bgA === 1 && op.z >= 70 && op.onTop, `${tool} ${w}: the menu is opaque and on top ${JSON.stringify(op)}`);
         // nothing clips it (a short page's body overflow cut the phone menu's bottom edge): its last 3px still hit-test as the menu
         assert.equal(await page.evaluate(s => { const p = document.querySelector(s), r = p.getBoundingClientRect(); return document.elementFromPoint(r.left + 30, r.bottom - 3)?.closest('[data-lv-pop]') === p; }, me), true, `${tool} ${w}: the menu's bottom edge isn't clipped`);
         // a click outside closes it; clicking the initials again closes it
