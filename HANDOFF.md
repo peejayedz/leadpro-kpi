@@ -2,7 +2,9 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
-## v1.29.1 Greeting after Sign out + all three numbers (shared shell 2.4.1): TESTED LOCALLY 19 Nov 2026, NOT PUSHED (waiting for PJ)
+## v1.29.1 Greeting after Sign out + all three numbers (shared shell 2.4.1): LIVE 19 Nov 2026 (`f5b959c`; Review `67ad062`, Builder `8ae7acd`; admin-site run 44359509100, admin-site 4935c6c871b5ab14 = the local build)
+- **Live check (read-only):** serves 1.29.1 (CHANGELOG + whats-new); fresh `readCount` = Needs attention filter = 2. Sign out not pressed.
+- **OPEN:** this count's live read takes ~3.6 s (index + every firm's config/kpis + status + chain), past the greeting's ~1.35 s cut, so the other tools' greetings usually show the last known count (≤ 12 h). See the Builder HANDOFF v1.22.1 for the options.
 - **What it is:** see CHANGELOG v1.29.1 (with Builder v1.22.1 and Review admin v1.12.1). Sign out clears "greeted today"; the greeting reads all three counts fresh. `admin/greet-count.mjs` = the "Needs attention" count + the bell's issues + `readCount()` (the same GitHub reads as the list and the bell, read only). It imports `firm-details.mjs`, which brings a second `lfmp-session.js` copy into the other tools' pages; shell 2.4.1 makes that copy add no page-wide listeners.
 - **Own count:** now noted only after the bell's issues are read (`issuesRead`), so it equals the settled filter (before: the first paint could be lower, e.g. 1 → 2).
 - **Push order:** KPI and Review first, the Builder last (its push deploys); see the Builder HANDOFF v1.22.1.
