@@ -218,7 +218,9 @@ try {
   { const smalls = await page.$$eval(`${ROW} .lv-c:not(.lv-pr) .lv-big small`, s => s.map(x => x.textContent.trim()));
     check(!(await page.$(`${ROW} [data-trend]`)) && !(await page.textContent('#firmRows')).includes('from 0') && smalls.every(t => /^leads? · 90 days$/.test(t)), `rows: no trend before the 90 days before are covered, never "from 0" (${smalls.join(' | ')})`); }
   const strip = (await page.textContent('#screen [data-lv-sum]')).replace(/\s+/g, ' ');
-  check(/^4 firms · (all synced \d{1,2}:\d{2} (AM|PM)|\d+ sync problems?)$/i.test(strip), `summary line: ${strip}`);
+  // v1.27.0 (FIX 1): the summary uses the "Needs attention" filter's words and count
+  { const attSeg = (await page.textContent('#screen [data-lv-seg="attention"]')).replace(/\s+/g, ' '), n = Number((attSeg.match(/(\d+)/) || [])[1] || 0);
+    check(n ? strip === `4 firms · ${n} ${n === 1 ? 'needs' : 'need'} attention` : /^4 firms · all synced \d{1,2}:\d{2} (AM|PM)$/i.test(strip), `summary line "${strip}" = filter "${attSeg}"`); }
   check((await page.textContent('#screen .lv-h1')).trim() === 'Scorecards' && await page.getAttribute('#firmSearch', 'placeholder') === 'Search 4 firms', 'title "Scorecards" + "Search 4 firms" (real count)');
   const segs = await page.$$eval('#screen [data-lv-seg]', b => b.map(x => `${x.dataset.lvSeg}=${x.querySelector('.lv-d').textContent}`).join('|'));
   check(/^all=All 4\|attention=Needs attention · \d+\|test=Test firms$/.test(segs), `filter: All 4 · Needs attention · n · Test firms (${segs})`);

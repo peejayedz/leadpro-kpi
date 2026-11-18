@@ -151,7 +151,10 @@ test('AA contrast: every text pair the shell uses passes 4.5:1 (icons 3:1)', () 
 test('gold only on: + button, current tab/nav, top line, initials, on-switches', () => {
   const rules = [...V2.matchAll(/([^{}]+)\{([^{}]*var\(--gold[^{}]*)\}/g)].map(m => m[1].trim().replace(/^.*\*\/\s*/s, ''));
   // v1.16.0: + the What's new card's small dot and its "See what's new" button (PJ: gold, primary)
-  const allowed = [/^\.lv-av$/, /^\.lv-top$/, /^\.lv-plus$/, /^\.lv-tg\[aria-checked="true"\]$/, /^\.lv-band$/, /^\.lv-pplus$/, /^\.lv-tab\[aria-current="page"\]( svg)?$/, /^\.lv-note-dot$/, /^\.lv-note-go$/, /^\.lv-load-mk i:nth-child\(3\)$/];
+  const allowed = [/^\.lv-av$/, /^\.lv-top$/, /^\.lv-plus$/, /^\.lv-tg\[aria-checked="true"\]$/, /^\.lv-band$/, /^\.lv-pplus$/, /^\.lv-tab\[aria-current="page"\]( svg)?$/, /^\.lv-note-dot$/, /^\.lv-note-go$/, /^\.lv-load-mk i:nth-child\(3\)$/,
+    // v2.3.0 busy states (PJ's previews LFMP_Busy_Options_v2 option 1 "Gold fill", No Silent Clicks, Busy States): the top line,
+    // the button fill / outline, the area bar, the progress card's bar and its running step (+ its pulse keyframe)
+    /^\.lv-net$/, /^\.lv-work$/, /^\.lv-bz>\.lv-bz-fill$/, /^(:root\.lfmp-v2(\.lfmp-v2)? (\.btn|button)?\.lv-bz,?\s*)+$/, /^:root\.lfmp-v2 \.btn\.lv-bz,:root\.lfmp-v2 button\.lv-bz$/, /^\.lv-area-bar i$/, /^\.lv-pc-bar i$/, /^\.lv-pc-s\.run \.lv-pc-d$/, /^50%$/];
   assert.ok(rules.length >= 7);
   for (const r of rules) assert.ok(allowed.some(a => a.test(r)), `gold used on ${r}`);
 });
@@ -407,6 +410,116 @@ window.close1 = () => S.panelClose(pn, sh, () => { pn.hidden = true; sh.hidden =
         await page.evaluate(() => open1()); await wait(600); await page.evaluate(() => close1()); await wait(80); await page.evaluate(() => open1());
         await wait(700); assert.deepEqual(await page.evaluate(() => [log.splice(0), pn.hidden]), [[], false], 'reopened while closing'); assert.equal(await tx(page), 0);
       }
+      await ctx.close();
+    }
+  } finally { await browser.close(); server.close(); }
+});
+
+// ---------------------------------------------------------------- v2.3.0 busy states: no silent clicks
+test('busy helpers: action words, progress card (typical time, real steps, 30 s note, done line), escaped; CSS = option 1 "Gold fill"', () => {
+  assert.deepEqual(S.busyWords('<svg></svg><span>Add to review package</span>'), { word: 'Adding…', done: '✓ Added' });
+  assert.equal(S.busyWords('Save summary').word, 'Saving…');
+  assert.equal(S.busyWords('↻ Re-sync').word, 'Syncing…');
+  assert.equal(S.busyWords('Delete firm…').done, '✓ Deleted');
+  assert.equal(S.busyWords('Frobnicate').word, 'Working…');
+  assert.equal(S.BUSY_DELAY_MS, 150); assert.equal(S.LONG_NOTE_MS, 30000);
+  assert.equal(S.fmtTypical(40000), 'Usually about 40 seconds'); assert.equal(S.fmtTypical(120000), 'Usually about 2 minutes');
+  const steps = [['a', 'First <step>'], ['b', 'Second'], ['c', 'Third']];
+  const h = S.progressCardHtml({ title: 'Publishing <x>', typicalMs: 40000, steps, states: { a: 'ok', b: 'run' }, elapsed: 1000 });
+  assert.match(h, /<b>Publishing &lt;x&gt;<\/b><span>Usually about 40 seconds<\/span>/);
+  assert.match(h, /lv-pc-s ok" data-k="a"><span class="lv-pc-d" aria-hidden="true">✓<\/span><span>First &lt;step&gt;/);
+  assert.match(h, /lv-pc-s run" data-k="b"/); assert.match(h, /lv-pc-s todo" data-k="c"/);
+  assert.match(h, /--lv-pc-delay:-1000ms/, 'a repaint carries on'); assert.doesNotMatch(h, /lv-pc-wait/); assert.doesNotMatch(h, /Still working/);
+  assert.match(S.progressCardHtml({ title: 'X', steps, elapsed: 50 }), /lv-pc-wait"[^>]*style="--lv-pc-show:100ms"/, 'shown only after 150 ms');
+  assert.match(S.progressCardHtml({ title: 'X', steps, elapsed: 31000 }), /<p class="lv-pc-long" role="status">Still working, usually under a minute\. You can close this panel; you&#39;ll get a bell notice when it&#39;s done\.<\/p>/);
+  // the note uses the job's own typical time (review note FIX 6)
+  assert.equal(S.longNote(120000), "Still working, usually about 2 minutes. You can close this panel; you'll get a bell notice when it's done.");
+  assert.match(S.progressCardHtml({ title: 'Publishing', typicalMs: 120000, steps, elapsed: 31000 }), /Still working, usually about 2 minutes\./);
+  const d = S.progressCardHtml({ title: 'X', steps, done: { result: 'Published', next: 'send link A' }, elapsed: 31000 });
+  assert.match(d, /class="lv-pc is-done"/); assert.match(d, /<p class="lv-pc-ok" role="status">✓ Published\. Next: send link A<\/p>/); assert.doesNotMatch(d, /Still working/);
+  assert.match(S.busyInnerHtml('<b>Add</b>', 'Adding <now>'), /^<span class="lv-bz-idle"><b>Add<\/b><\/span><span class="lv-bz-word" aria-live="polite">Adding &lt;now&gt;<\/span><span class="lv-bz-fill" aria-hidden="true"><span class="lv-bz-fw">Adding &lt;now&gt;<\/span><\/span>$/);
+  assert.match(S.areaLoadingHtml('Loading review…'), /<span class="lv-area-bar" aria-hidden="true"><i><\/i><\/span><span class="lv-area-t"><b class="lv-area-pct" hidden><\/b><span>Loading review…<\/span>/);
+  assert.match(CSS, /\.lv-bz>\.lv-bz-fill\{[^}]*background:var\(--gold\)[^}]*animation:lv-bz-fill var\(--lv-bz-ms,1500ms\) cubic-bezier\(\.3,\.6,\.4,1\) var\(--lv-bz-delay,\.15s\) forwards/);
+  assert.match(CSS, /@keyframes lv-bz-fill\{from\{clip-path:inset\(0 100% 0 0\)\}to\{clip-path:inset\(0 10% 0 0\)\}\}/, 'reveals left → right, eases to ~90%');
+  assert.match(CSS, /\.lv-bz>\.lv-bz-fill>\.lv-bz-fw\{[^}]*color:#151515/, 'near-black text on gold');
+  assert.match(CSS, /\.lv-bz>\.lv-bz-word\{[^}]*color:var\(--ink\)/, 'the not-yet-filled part reads in the normal text colour');
+  assert.match(CSS, /\.lv-net\{position:fixed;left:0;top:0;height:3px;width:0;background:var\(--gold\)/, '3px gold top line');
+  assert.match(CSS, /:root\.lfmp-v2 button:active:not\(:disabled\),[^{]*\{transform:scale\(\.98\);filter:brightness\(\.94\)\}/, 'press feedback');
+  const rm = CSS.slice(CSS.lastIndexOf('@media (prefers-reduced-motion:reduce){'));
+  for (const s of ['.lv-bz>.lv-bz-fill{display:none}', '.lv-bz{box-shadow:inset 0 0 0 2px var(--gold)}', '.lv-pc-s.run .lv-pc-d{animation:none}']) assert.ok(rm.includes(s), `reduced motion: ${s}`);
+});
+
+tb('in Chromium: press feedback < 100 ms; a slow click (1.5 s network) shows the gold fill + "Adding…" within 150 ms, no double submit, "✓ Added" then the label; failure drains; top line; reduced motion = gold outline', { timeout: 120000 }, async () => {
+  const { chromium } = createRequire(path.join(pwDir, 'package.json'))('./index.js');
+  const PAGE = `<!doctype html><html lang="en" class="lfmp-v2"><head><meta charset="utf-8"><link rel="stylesheet" href="/lfmp-ui.css"></head><body>
+<header class="lv-top" data-lv-top style="display:flex"><b>LFMP</b></header>
+<div class="act" style="padding:40px;display:flex;gap:8px"><button class="btn primary" id="add" type="button">Add to review package</button><button class="btn" id="other" type="button">Remove</button></div>
+<div style="padding:0 40px"><button class="btn" id="bad" type="button">Save summary</button></div>
+<script type="module">import * as S from '/lfmp-session.js'; window.S = S; window.calls = 0;
+document.getElementById('add').addEventListener('click', () => { calls++; S.lfmpFetch('/slow'); });
+document.getElementById('other').addEventListener('click', () => { calls++; });
+document.getElementById('bad').addEventListener('click', () => { S.lfmpFetch('/fail').catch(() => {}); });</script></body></html>`;
+  const server = http.createServer((req, res) => {
+    const u = new URL(req.url, 'http://x');
+    if (u.pathname === '/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(PAGE); }
+    if (u.pathname === '/lfmp-session.js' || u.pathname === '/lfmp-ui.css') { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
+    if (u.pathname === '/slow') return setTimeout(() => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{}'); }, 1500);
+    if (u.pathname === '/fail') return setTimeout(() => { res.writeHead(500); res.end(''); }, 600);
+    res.writeHead(404); res.end();
+  });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const st = p => p.evaluate(() => { const b = document.getElementById('add'), f = b.querySelector('.lv-bz-fill'), w = b.querySelector('.lv-bz-word'), o = document.getElementById('other');
+    // filled width = the button width minus the clip-path's right inset (the gold layer is revealed left → right)
+    const clip = f ? getComputedStyle(f).clipPath : '', right = (clip.match(/inset\(\S+ ([\d.]+)%/) || [])[1];
+    const bw = b.getBoundingClientRect().width, fw = b.querySelector('.lv-bz-fw');
+    return { busy: b.classList.contains('lv-bz'), ok: b.classList.contains('lv-bz-ok'), disabled: b.disabled || b.getAttribute('aria-disabled') === 'true', fillW: f ? (right != null ? bw * (1 - Number(right) / 100) : (clip.startsWith('inset(0') ? bw : 0)) : 0, fillDisplay: f ? getComputedStyle(f).display : '', word: w && getComputedStyle(w).opacity === '1' ? w.textContent : '',
+      text: b.textContent.trim(), width: bw, dim: getComputedStyle(o).pointerEvents === 'none', net: document.querySelector('.lv-net')?.classList.contains('on') || false, shadow: getComputedStyle(b).boxShadow, color: fw ? getComputedStyle(fw).color : '' }; });
+  try {
+    for (const motion of ['no-preference', 'reduce']) {
+      const ctx = await browser.newContext({ reducedMotion: motion, viewport: { width: 900, height: 600 } });
+      const page = await ctx.newPage(); await page.goto(base); await page.waitForFunction(() => window.S);
+      const w0 = await page.evaluate(() => document.getElementById('add').getBoundingClientRect().width);
+      // press feedback within 100 ms (scale .98)
+      const bx = await page.locator('#add').boundingBox();
+      await page.mouse.move(bx.x + 10, bx.y + 10); await page.mouse.down(); await wait(motion === 'reduce' ? 20 : 100);
+      const tf = await page.evaluate(() => new DOMMatrix(getComputedStyle(document.getElementById('add')).transform).a);
+      if (motion === 'reduce') assert.equal(tf, 1, 'reduced motion: no scale'); else assert.ok(tf < 0.99, `pressed scale ${tf}`);
+      await page.mouse.up();
+      await wait(60);
+      let s = await st(page);
+      assert.ok(s.busy && s.disabled && !s.word, `busy class at once, the word waits for 150 ms ${JSON.stringify(s)}`);
+      await wait(180); s = await st(page);
+      assert.equal(s.word, 'Adding…', 'the action word within 150 ms'); assert.ok(Math.abs(s.width - w0) < 1, 'width kept');
+      assert.ok(s.dim, 'the other button in the group dims and can\'t be clicked');
+      assert.ok(s.net, 'gold line under the top bar while the request is in flight');
+      if (motion === 'reduce') { assert.equal(s.fillDisplay, 'none', 'no fill'); assert.match(s.shadow, /inset/, 'solid gold outline'); }
+      else { await wait(500); const s2 = await st(page); assert.ok(s2.fillW > 0 && s2.fillW < s2.width * 0.95, `fills left → right ${s2.fillW}`); assert.equal(s2.color, 'rgb(21, 21, 21)', 'near-black text on gold'); }
+      // no double submit
+      await page.click('#add', { force: true }).catch(() => {}); await page.click('#other', { force: true }).catch(() => {});
+      await page.evaluate(() => { document.getElementById('add').click(); document.getElementById('other').click(); });   // keyboard / script clicks too
+      assert.equal(await page.evaluate(() => calls), 1, 'one request only');
+      await page.waitForFunction(() => document.getElementById('add').classList.contains('lv-bz-ok'), null, { timeout: 4000 });
+      s = await st(page); assert.equal(s.word, '✓ Added'); assert.ok(s.fillDisplay !== 'none', '✓ on gold');
+      await wait(1400); s = await st(page);
+      assert.ok(!s.busy && !s.disabled && s.text === 'Add to review package' && !s.dim, `back to the label ${JSON.stringify(s)}`);
+      await wait(700); assert.equal((await st(page)).net, false, 'top line gone');
+      // failure: the fill drains, the label comes back
+      await page.click('#bad'); await wait(250);
+      assert.equal(await page.evaluate(() => document.getElementById('bad').querySelector('.lv-bz-word')?.textContent), 'Saving…');
+      await page.waitForFunction(() => document.getElementById('bad').classList.contains('lv-bz-bad'), null, { timeout: 3000 });
+      await page.waitForFunction(() => !document.getElementById('bad').classList.contains('lv-bz') && document.getElementById('bad').textContent === 'Save summary', null, { timeout: 3000 });
+      // progress card controller: shown after 150 ms, steps tick, done line
+      await page.evaluate(() => { const el = document.createElement('div'); el.id = 'pc'; document.body.append(el); window.pc = S.progressCard(el, { title: 'Publishing', typicalMs: 40000, steps: [['a', 'One'], ['b', 'Two']] }); });
+      assert.equal(await page.evaluate(() => document.getElementById('pc').innerHTML), '', 'nothing before 150 ms');
+      await wait(200); await page.evaluate(() => pc.step('b'));
+      assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('#pc .lv-pc-s')].map(x => x.className)), ['lv-pc-s ok', 'lv-pc-s run'], 'a done, b running');
+      assert.match(await page.textContent('#pc'), /Usually about 40 seconds/);
+      await page.evaluate(() => pc.done('Published', 'send link A')); assert.match(await page.textContent('#pc'), /✓ Published\. Next: send link A/);
+      await page.evaluate(() => { window.pc2 = S.progressCard(document.getElementById('pc'), { title: 'X', steps: [['a', 'One']] }); pc2.fail('GitHub said 500.', () => { window.retried = true; }); });
+      await page.click('#pc [data-lv-retry]'); assert.equal(await page.evaluate(() => window.retried), true, 'failure = error card + Retry');
       await ctx.close();
     }
   } finally { await browser.close(); server.close(); }

@@ -5,6 +5,10 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.27.0 — 19 Nov 2026
+- **[internal]** The Scorecards summary uses the same words and count as the "Needs attention" filter: "4 firms · 2 need attention" (was "4 firms · 1 sync problem" beside "Needs attention · 2"); nothing to look at = "all synced 4:37 PM". (PJ, 19 Nov: replaces the 17 Nov "keep the tool's wording" decision.)
+- **[internal]** Busy states ("no silent clicks", shared `lfmp-session.js` / `lfmp-ui.css` 2.3.0, same in the Builder v1.18.0 and Review admin v1.11.0): press feedback on every button, row and tab; the pressed button fills with gold (PJ's option 1) with the action word, then "✓"; its neighbours wait (no double submit); a 3px gold line under the top bar while any request is in flight (every `api()` / `ghFetch()` call goes through the shared `lfmpFetch`). Delete firm, Check scopes, Check now and Clean up use `busyButton`; other buttons that start a request get it automatically. Reduced motion: a gold outline + the action word, no fill animation. Cache `lfmp-ui.css?v=2.3.0`, `admin.css?v=1.27.0`.
+
 ## v1.26.0 — 19 Nov 2026
 - **[internal]** A firm with no recent sync: its lead number stays in normal ink; only the status ("No recent sync") is red. A stale sync doesn't make the leads bad.
 - **[internal]** Firm details: the header (name, close, tabs) stays at the top while the panel scrolls (`.dpsticky`): solid background, 1px line, a soft shadow once scrolled; on phones it sits under the "‹ Scorecards" bar and drops the practice-area line once scrolled. Same as the Builder (v1.17.0) and Review admin (v1.10.0).

@@ -1,5 +1,16 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.27.0": {
+    "title": "Every click shows it's working",
+    "summary": "The button you press fills with gold while it works, then says what it did.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "The button you press fills with gold from left to right and says what it's doing (\"Syncing…\", \"Saving…\", \"Deleting…\"), then \"✓\" when it's done. Other buttons next to it wait, so nothing is sent twice." },
+      { "type": "new", "tag": "internal", "text": "A thin gold line under the top bar shows while anything is loading." },
+      { "type": "improved", "tag": "internal", "text": "Every button, row and tab dips slightly the moment you press it. If something fails, you see the error; nothing finishes silently." },
+      { "type": "improved", "tag": "internal", "text": "A firm's name, close button and tabs stay at the top while you scroll its details." },
+      { "type": "improved", "tag": "internal", "text": "The line under Scorecards uses the same words and count as the \"Needs attention\" filter, e.g. \"4 firms · 2 need attention\"." }
+    ]
+  },
   "1.26.0": {
     "title": "Firms A to Z",
     "summary": "The firm list is in A to Z order, and the leads trend only shows when it is fair.",

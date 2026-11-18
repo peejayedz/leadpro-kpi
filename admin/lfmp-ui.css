@@ -385,6 +385,19 @@ div.lv-mi{cursor:default} div.lv-mi:hover{background:none}
   .lv-fadein{animation:none}
   .lfmp-v2 .lv-pm,.lfmp-v2 .lv-pm-sh{transition:none !important}
   .lfmp-v2 .lv-pm.lv-pm-enter > *{animation:none}
+  /* v2.3.0 busy states: no animated fill; a solid gold outline + the action word; steps still tick (no pulse).
+     (".lfmp-v2.lfmp-v2" so these win over the busy rules further down) */
+  :root.lfmp-v2.lfmp-v2 button,:root.lfmp-v2.lfmp-v2 a.btn,:root.lfmp-v2.lfmp-v2 .lv-row,:root.lfmp-v2.lfmp-v2 [role="tab"]{transition:none}
+  :root.lfmp-v2.lfmp-v2 button:active:not(:disabled),:root.lfmp-v2.lfmp-v2 a.btn:active,:root.lfmp-v2.lfmp-v2 .lv-row:active,:root.lfmp-v2.lfmp-v2 [role="tab"]:active{transform:none}
+  :root.lfmp-v2.lfmp-v2 .lv-bz>.lv-bz-fill{display:none}
+  :root.lfmp-v2.lfmp-v2 .lv-bz{box-shadow:inset 0 0 0 2px var(--gold)}
+  :root.lfmp-v2.lfmp-v2 .btn.lv-bz,:root.lfmp-v2.lfmp-v2 button.lv-bz,:root.lfmp-v2.lfmp-v2 .lv-bz>.lv-bz-word{color:var(--ink)}
+  :root.lfmp-v2.lfmp-v2 .lv-bz.lv-bz-ok>.lv-bz-fill{display:block;clip-path:inset(0 0 0 0);transition:none}
+  :root.lfmp-v2.lfmp-v2 .lv-bz.lv-bz-ok>.lv-bz-word{color:#151515}
+  :root.lfmp-v2.lfmp-v2 .lv-net{transition:none}
+  :root.lfmp-v2.lfmp-v2 .lv-area-bar i,:root.lfmp-v2.lfmp-v2 .lv-pc-bar i{animation:none;width:var(--lv-pc-min,40%)}
+  :root.lfmp-v2.lfmp-v2 .lv-pc.is-done .lv-pc-bar i{width:100%}
+  :root.lfmp-v2.lfmp-v2 .lv-pc-s.run .lv-pc-d{animation:none}
 }
 
 /* What's new card (v1.16.0, all three tools; newsCardHtml / showNewsCard in lfmp-session.js): one rounded card like the
@@ -460,3 +473,66 @@ div.lv-mi{cursor:default} div.lv-mi:hover{background:none}
 :root.lfmp-v2 .dlg h3,:root.lfmp-v2 .lfmp-dlg-h h2,:root.lfmp-v2 .nhead h3{font:600 20px/1.25 var(--b);text-transform:none;letter-spacing:0}
 :root.lfmp-v2 .lfmp-dlg-h .ey{display:none}
 :root.lfmp-v2 .lfmp-dlg-h{align-items:center}
+
+/* ---------- BUSY STATES (v2.3.0, Nov 2026): no silent clicks. PJ's previews: LFMP_Busy_Options_v2.html option 1 "Gold fill",
+   LFMP_No_Silent_Clicks_Preview.html (press feedback, top line), LFMP_Busy_States_Preview.html (progress card). JS in lfmp-session.js. ---------- */
+/* press feedback within 100 ms: every button, row and tab dips (scale .98) and darkens a touch */
+:root.lfmp-v2 button,:root.lfmp-v2 a.btn,:root.lfmp-v2 .lv-row,:root.lfmp-v2 [role="tab"]{transition:transform .08s ease,filter .08s ease;-webkit-user-select:none;user-select:none}   /* a press never selects text */
+:root.lfmp-v2 button:active:not(:disabled),:root.lfmp-v2 a.btn:active,:root.lfmp-v2 .lv-row:active,:root.lfmp-v2 [role="tab"]:active{transform:scale(.98);filter:brightness(.94)}
+/* the 3px gold line under the top bar while any request is in flight */
+.lv-net{position:fixed;left:0;top:0;height:3px;width:0;background:var(--gold);z-index:90;opacity:0;pointer-events:none;transition:width .5s cubic-bezier(.2,.8,.2,1),opacity .25s}
+.lv-net.on{opacity:1;width:70%;transition:width 1.6s cubic-bezier(.1,.6,.2,1),opacity .2s}
+.lv-net.on.end{width:100%;opacity:0;transition:width .25s,opacity .35s .2s}
+/* option 1 "Gold fill": the clicked button fills with gold left → right behind its label; the label becomes the action word;
+   near-black text on gold (AA); the width stays; the label swap and the fill start after 150 ms */
+.lv-bz{position:relative;overflow:hidden;isolation:isolate;cursor:default!important}
+.lv-bz>.lv-bz-fill{position:absolute;inset:0;background:var(--gold);z-index:1;clip-path:inset(0 100% 0 0);animation:lv-bz-fill var(--lv-bz-ms,1500ms) cubic-bezier(.3,.6,.4,1) var(--lv-bz-delay,.15s) forwards}
+.lv-bz>.lv-bz-fill>.lv-bz-fw{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#151515;font-weight:600;white-space:nowrap}
+.lv-bz>.lv-bz-idle{display:inline-flex;align-items:center;gap:8px;animation:lv-bz-out 0s linear max(0s,var(--lv-bz-delay,.15s)) forwards}
+.lv-bz>.lv-bz-word{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:6px;opacity:0;color:var(--ink);font-weight:600;white-space:nowrap;animation:lv-bz-in 0s linear max(0s,var(--lv-bz-delay,.15s)) forwards}
+/* a tool that repaints mid-job sets --lv-bz-delay to (150 ms − elapsed), so the fill carries on instead of restarting */
+:root.lfmp-v2 .btn.lv-bz,:root.lfmp-v2 button.lv-bz{opacity:1!important;border-color:var(--gold)!important;color:var(--ink)}
+/* a primary button keeps its own colour on the part not filled yet (as the preview), the word in its own text colour;
+   a gold (Publish) button shows the panel colour there so the gold fill is visible */
+:root.lfmp-v2 .btn.primary.lv-bz>.lv-bz-word{color:var(--acc-on)}
+:root.lfmp-v2 .btn.gold.lv-bz{background:var(--panel)}
+.lv-bz.lv-bz-ok>.lv-bz-fill{clip-path:inset(0 0 0 0)!important;animation:none;transition:clip-path .25s}
+.lv-bz.lv-bz-ok>.lv-bz-idle{opacity:0}.lv-bz.lv-bz-ok>.lv-bz-word{opacity:1;animation:none}
+.lv-bz.lv-bz-bad>.lv-bz-fill{animation:lv-bz-drain .4s ease-in forwards}
+@keyframes lv-bz-fill{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 10% 0 0)}}
+@keyframes lv-bz-drain{to{clip-path:inset(0 100% 0 0)}}
+@keyframes lv-bz-out{to{opacity:0}}
+@keyframes lv-bz-in{to{opacity:1}}
+/* the card being worked on: a gold outline + soft glow (No Silent Clicks preview) */
+.lv-work{border-color:var(--gold)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 22%,transparent)!important}
+/* the other buttons in the group dim and can't be clicked (no double submit) */
+.lv-bz-dim{opacity:.45!important;pointer-events:none!important}
+/* an area loading: 3px gold bar along its top edge + "Loading review…" centred */
+.lv-area-host{position:relative}
+.lv-area{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;min-height:120px;background:color-mix(in srgb,var(--panel) 82%,transparent);opacity:0;animation:lv-bz-in 0s linear .15s forwards;border-radius:inherit}
+.lv-area-bar{position:absolute;left:0;right:0;top:0;height:3px;overflow:hidden}
+.lv-area-bar i{display:block;height:100%;width:0;background:var(--gold);animation:lv-area 2.2s cubic-bezier(.3,.6,.4,1) .15s forwards}
+.lv-area.lv-area-real .lv-area-bar i{animation:none;transition:width .3s ease}
+.lv-area.lv-area-done .lv-area-bar i{width:100%!important;animation:none;transition:width .2s}
+.lv-area-t{display:flex;flex-direction:column;align-items:center;gap:6px;font:500 13.5px/1.4 var(--b,Inter,sans-serif);color:var(--mut)}
+.lv-area-pct{font:700 22px/1 var(--b,Inter,sans-serif);color:var(--ink)}
+@keyframes lv-area{from{width:0}to{width:85%}}
+/* long jobs: the progress card under the buttons */
+.lv-pc{background:var(--panel2,var(--panel));border:1px solid var(--line);border-radius:14px;padding:18px 16px;margin-top:12px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.lv-pc-t{margin:0;display:flex;flex-direction:column;gap:2px}.lv-pc-t b{font:600 14.5px/1.35 var(--b,Inter,sans-serif);color:var(--ink)}.lv-pc-t span{font-size:13px;color:var(--mut)}
+.lv-pc-steps{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.lv-pc-s{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;line-height:1.4;color:var(--mut);transition:color .3s}
+.lv-pc-d{width:16px;height:16px;margin-top:1px;border-radius:50%;border:1.5px solid var(--line);flex:none;display:grid;place-items:center;font-size:10px;line-height:1;transition:all .3s}
+.lv-pc-s.run{color:var(--ink)}.lv-pc-s.run .lv-pc-d{border-color:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 25%,transparent);animation:lv-pc-pulse 1.2s ease-in-out infinite}
+.lv-pc-s.ok{color:var(--ink)}.lv-pc-s.ok .lv-pc-d{background:var(--green);border-color:var(--green);color:#fff}
+.lv-pc-s.fail{color:var(--red)}.lv-pc-s.fail .lv-pc-d{border-color:var(--red);color:var(--red)}
+.lv-pc-x{color:var(--mut)}
+.lv-pc-bar{display:block;height:3px;border-radius:3px;background:var(--soft);overflow:hidden}
+.lv-pc-bar i{display:block;height:100%;width:var(--lv-pc-min,0%);background:var(--gold);border-radius:3px;animation:lv-pc-fill var(--lv-pc-ms,40000ms) cubic-bezier(.2,.6,.3,1) var(--lv-pc-delay,0s) forwards}
+.lv-pc.lv-pc-wait{opacity:0;animation:lv-bz-in 0s linear var(--lv-pc-show,.15s) forwards}   /* shown only if the job isn't done within 150 ms */
+.lv-pc.is-done .lv-pc-bar i{width:100%;animation:none;transition:width .3s}
+.lv-pc-ok{margin:0;font:600 14px/1.4 var(--b,Inter,sans-serif);color:var(--green-ink,var(--green))}
+.lv-pc-long{margin:0;font-size:13px;color:var(--mut)}
+@keyframes lv-pc-fill{to{width:90%}}
+@keyframes lv-pc-pulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--gold) 12%,transparent)}}
+/* reduced motion for the busy states: in the one reduced-motion block above (motion section) */

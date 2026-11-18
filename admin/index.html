@@ -13,8 +13,8 @@
 <script>/* apply the saved theme before first paint so the page and logo don't flash */ try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="lfmp-ui.css?v=2.2.1">
-<link rel="stylesheet" href="admin.css?v=1.26.0">
+<link rel="stylesheet" href="lfmp-ui.css?v=2.3.0">
+<link rel="stylesheet" href="admin.css?v=1.27.0">
 </head>
 <body>
 
@@ -64,7 +64,7 @@ import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
 import { buildCards, filterCards, newer, isMinor, cardVersion } from './news.mjs';
 import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS, severity, isAlert, leadTrend, sortFirms, staleLine } from './firm-details.mjs';
 import { decryptJSON } from '../scripts/kpi-core.mjs';
-import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName } from './lfmp-session.js';
+import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName, busyButton } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -491,12 +491,14 @@ function firmRow(f) {
     attrs: `data-slug="${esc(f.slug)}" data-row${dpSlug === f.slug ? ' data-sel' : ''} title="${esc(k?.generatedAt ? `Last sync ${fmtTime(k.generatedAt)}` : 'No data yet')}"`,
     cells: [status.replace('<span class="lv-st', '<span data-state="status" class="lv-st'), leads(false)], phoneRight: leads(true) });
 }
-// Summary line (desktop): "4 firms · all synced 4:37 PM" (or "1 sync problem").
+// Summary line (desktop): "4 firms · all synced 4:37 PM" (or "2 need attention", as the filter).
 function paintStrip() {
   const el = document.querySelector('#screen [data-lv-sum]'); if (!el) return;
   const vis = visibleFirms(), last = lastSyncIso();
-  const syncBad = vis.filter(f => reasonsOf(f).some(r => SYNC_PROBLEMS.has(r.kind))).length;
-  el.textContent = `${plural(vis.length, 'firm')} · ${syncBad ? plural(syncBad, 'sync problem') : `all synced ${clock(last)}`}`;
+  // v1.27.0 (PJ, 19 Nov, review FIX 1): the same words and count as the "Needs attention" filter ("4 firms · 2 need
+  // attention"; was "· 1 sync problem" beside "Needs attention · 2"); nothing to look at = "all synced 4:37 PM"
+  const att = vis.filter(needsAttention).length;
+  el.textContent = `${plural(vis.length, 'firm')} · ${att ? `${att} ${att === 1 ? 'needs' : 'need'} attention` : `all synced ${clock(last)}`}`;
   el.title = fmtTime(last);
   const q = $('firmSearch'); if (q) { q.placeholder = `Search ${plural(vis.length, 'firm')}`; q.setAttribute('aria-label', `${q.placeholder} by name, slug or GHL name`); }
 }
@@ -649,7 +651,7 @@ function deleteDialog(f) {
       <div class="ferr" id="dlgErr"></div>`,
     onOk: async () => {
       if ($('dlgConfirm').value.trim() !== f.slug) { $('dlgErr').textContent = `Type ${f.slug} exactly.`; return; }
-      $('dlgOk').disabled = true; $('dlgOk').textContent = 'Deleting…';
+      busyButton($('dlgOk'), 'Deleting…', { ms: 15000 });   // v1.27.0: the gold fill (shared)
       try { await deleteFirm(f.slug, f.secretKey, f.name); closeDialog(); closeDetails({ keepHash: true }); go('#/', `Deleted ${esc(f.name)}: folder, list entry and both secrets.`); }
       catch (e) { $('dlgErr').innerHTML = esc(e.message); $('dlgOk').disabled = false; $('dlgOk').textContent = 'Delete firm'; }
     },
@@ -845,7 +847,7 @@ $('nPanel').addEventListener('click', async e => {
   const say = html => { if (id) issueMsg[id] = html; const s = art?.querySelector('.istatus'); if (s) s.innerHTML = html; };
   switch (b.dataset.n) {
     case 'close': closePanel(); visibleBell()?.focus(); break;
-    case 'check': b.textContent = 'Checking…'; await refreshIssues({ reloadKpis: true }); paintPanel(); break;
+    case 'check': busyButton(b, 'Checking…', { ms: 4000 }); await refreshIssues({ reloadKpis: true }); paintPanel(); break;
     case 'seen-all': markSeen(listed()); paintBell(); paintPanel(); break;
     case 'seen': markSeen([i]); paintBell(); paintPanel(); break;
     case 'toggle': {
@@ -905,7 +907,7 @@ function tokenDialog(f, say) {
       const v = $('dlgTok').value.trim(); if (v.length < 20) { $('dlgErr').textContent = 'Paste the whole token.'; return; }
       const loc = locOf(f), reset = () => { $('dlgOk').disabled = false; $('dlgOk').textContent = 'Save token and re-sync'; };
       if (!validLoc(loc)) { $('dlgErr').textContent = 'This firm has no valid location ID, so the token can\'t be checked.'; return; }
-      $('dlgOk').disabled = true; $('dlgOk').textContent = 'Checking scopes…'; $('dlgErr').textContent = '';
+      busyButton($('dlgOk'), 'Checking scopes…', { ms: 6000 }); $('dlgErr').textContent = '';
       let sc;
       try { sc = await checkPastedToken(v, loc); } catch (err) { $('dlgErr').textContent = `Couldn't check the token: ${err.message}`; reset(); return; }
       if (sc.tokenRejected) { $('dlgErr').innerHTML = `<b>GHL refused this token for every check</b>${sc.ghlMessage ? ` (GHL said: “${esc(sc.ghlMessage)}”)` : ''}. It may be mistyped, revoked, or from a different sub-account than location <span class="mono">${esc(loc)}</span>. Nothing was saved.`; reset(); return; }
@@ -1608,7 +1610,7 @@ async function runFrom(i) {
         stepEl(i).querySelector('.e').innerHTML = ''; runFrom(i);
       };
       $('discardBtn').onclick = async () => {
-        $('discardBtn').disabled = true; $('retryBtn').disabled = true; $('discardBtn').textContent = 'Cleaning up…';
+        $('retryBtn').disabled = true; busyButton($('discardBtn'), 'Cleaning up…', { ms: 15000 });
         try { await deleteFirm(myRun.ctx.slug, myRun.ctx.secretKey, myRun.ctx.name); go('#/', `Discarded ${esc(myRun.ctx.name)}: secrets and any files removed.`); }
         catch (err) { stepEl(i).querySelector('.e').insertAdjacentHTML('beforeend', `<div class="errbox" style="margin-top:8px">${esc(err.message)}</div>`); $('discardBtn').disabled = false; $('discardBtn').textContent = 'Try clean-up again'; }
       };

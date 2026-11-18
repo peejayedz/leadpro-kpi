@@ -98,7 +98,8 @@ if (typeof document !== 'undefined') document.addEventListener('click', e => { i
 async function post(name, body) {
   let r;
   try {
-    r = await fetch(`${API_BASE}${name}`, { method: 'POST', redirect: 'manual', credentials: 'same-origin', cache: 'no-store',
+    // v2.3.0: through lfmpFetch, so the gold line under the top bar shows while any request is in flight
+    r = await lfmpFetch(`${API_BASE}${name}`, { method: 'POST', redirect: 'manual', credentials: 'same-origin', cache: 'no-store',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body ?? {}) });
   } catch { throw new ApiError(0, 'network', "Couldn't reach the LFMP tools site. Check your internet connection."); }
   if (r.type === 'opaqueredirect' || (r.status >= 300 && r.status < 400)) { toSignIn(); throw new ApiError(401, 'not_signed_in', 'Your Google sign-in ended. Sign in again.'); }
@@ -392,6 +393,205 @@ export function panelFinish(panel) {
 }
 export const panelMoving = panel => (panel ? PM.has(panel) : PM.size > 0);
 if (typeof document !== 'undefined') document.addEventListener('pointerdown', () => { if (PM.size) panelFinish(); }, true);
+
+// ---------------------------------------------------------------- busy states (v2.3.0, Nov 2026): no silent clicks
+// PJ's previews "Claude outputs/LFMP_Busy_Options_v2.html" option 1 "Gold fill" (buttons), "LFMP_No_Silent_Clicks_Preview.html"
+// (press feedback, top line) and "LFMP_Busy_States_Preview.html" (progress card for long jobs). Built once for all three tools:
+//   busyButton(btn, 'Adding…', { ms }) → { done('✓ Added'), fail(), stop() }   the clicked button fills with gold (left → right)
+//   areaLoading(el, 'Loading review…') → { done(), fail(msg, onRetry), pct(n) }  3px gold bar on the area's top edge + centred text
+//   progressCard(el, { title, hint, typicalMs, steps: [[key, label]] }) → { step(key, state, detail), done(result, next), fail(msg, onRetry) }
+//   lfmpFetch(url, init)  = fetch + the 3px gold line under the top bar while any request is in flight (api() / ghFetch() use it too)
+// Every busy state shows only if the work isn't finished within BUSY_DELAY_MS (150 ms). Nothing finishes silently: ✓ / a
+// fade-in / an error with Retry. Reduced motion: no animated fill; a solid gold outline + the action word; steps still tick.
+export const BUSY_DELAY_MS = 150;
+export const BUSY_DONE_MS = 1200;
+export const LONG_NOTE_MS = 30000;
+export const LONG_NOTE = 'Still working, usually under a minute. You can close this panel; you\'ll get a bell notice when it\'s done.';
+// the 30 s note in the job's own typical time ("usually about 2 minutes" for Publish; "under a minute" up to 60 s)
+export function longNote(typicalMs = 40000) {
+  if (!(typicalMs > 60000)) return LONG_NOTE;
+  return `Still working, usually ${fmtTypical(typicalMs).replace(/^Usually /, '')}. You can close this panel; you'll get a bell notice when it's done.`;
+}
+const hasDoc = () => typeof document !== 'undefined';
+
+// ---- top-of-page line: 3px gold under the top bar while any request is in flight (after 150 ms)
+let netCount = 0, netTimer = null, netEl = null;
+function netPaint() {
+  if (!hasDoc()) return;
+  if (!netEl) { netEl = document.createElement('div'); netEl.className = 'lv-net'; netEl.setAttribute('aria-hidden', 'true'); netEl.dataset.lvNet = ''; document.body.append(netEl); }
+  const bar = [...document.querySelectorAll('[data-lv-top],[data-lv-ptop]')].find(b => b.getBoundingClientRect().height);
+  netEl.style.top = `${bar ? Math.max(0, bar.getBoundingClientRect().bottom - 3) : 0}px`;
+  if (netCount > 0) { if (!netEl.classList.contains('on') && !netTimer) netTimer = setTimeout(() => { netTimer = null; if (netCount > 0) { netEl.classList.remove('end'); void netEl.offsetWidth; netEl.classList.add('on'); } }, BUSY_DELAY_MS); }
+  else { clearTimeout(netTimer); netTimer = null; if (netEl.classList.contains('on')) { netEl.classList.add('end'); setTimeout(() => { if (!netCount) netEl.classList.remove('on', 'end'); }, 450); } }
+}
+export function trackRequest(promise) {
+  netCount++; netPaint();
+  if (autoPress && Date.now() - autoPress.t < AUTO_WINDOW_MS && !autoJob) autoStart(autoPress);
+  const j = autoJob;
+  if (j) { j.n++; clearTimeout(j.t); }
+  const p = Promise.resolve(promise);
+  p.then(r => { if (j && r && r.ok === false && r.status >= 400 && r.status !== 404) j.bad = true; }, () => { if (j) j.bad = true; });
+  return p.finally(() => { netCount = Math.max(0, netCount - 1); netPaint(); if (j) { j.n--; if (!j.n) autoSettle(j); } });
+}
+// ---- automatic gold fill: a button press that starts a request (within 400 ms) gets busyButton until the requests it
+// started (and any that follow within 300 ms) are done: "✓ Saved" etc. on success, the fill drains on failure.
+// Not for: tabs, rows, filters, the shell (top bar / Me / phone tabs), Back / ✕, Try again, and buttons a tool runs itself
+// (data-lv-manual, or whose label the tool changed in its own click handler, e.g. "Saving…").
+const AUTO_WINDOW_MS = 400, AUTO_SETTLE_MS = 300;
+const AUTO_SKIP = '.lv-bz,.lv-bz-dim,[role="tab"],[data-lv-manual],[data-lv-retry],[data-lv-back],[data-lv],.lv-plus,.xbtn,.dclose,[data-dtab],[data-lv-seg],summary';
+const AUTO_SKIP_IN = '.lv-row,.lv-top,.lv-ptop,.lv-pop,.lv-mescreen,[data-lv-tabs],.lv-seg,.menu,[data-lv-manual]';
+let autoPress = null, autoJob = null;
+const VERB = [[/^(save|mark)/i, 'Saving…', '✓ Saved'], [/^add/i, 'Adding…', '✓ Added'], [/^(remove|forget)/i, 'Removing…', '✓ Removed'], [/^delete/i, 'Deleting…', '✓ Deleted'],
+  [/^re-?sync|^sync/i, 'Syncing…', '✓ Started'], [/^refresh|^check|^re-?read/i, 'Refreshing…', '✓ Up to date'], [/^create|^make/i, 'Creating…', '✓ Created'], [/^(copy)/i, 'Copying…', '✓ Copied'],
+  [/^link/i, 'Linking…', '✓ Linked'], [/^(look|find|search)/i, 'Searching…', '✓ Found'], [/^send|^request/i, 'Sending…', '✓ Sent'], [/^(update|change|edit|rename)/i, 'Saving…', '✓ Saved'],
+  [/^(restart|start|run|retry)/i, 'Starting…', '✓ Started'], [/^publish/i, 'Publishing…', '✓ Published'], [/^(approve|use|keep|match|apply)/i, 'Saving…', '✓ Saved']];
+export function busyWords(label) {
+  const t = String(label || '').replace(/<[^>]*>/g, ' ').replace(/[^\p{L}\p{N}\s-]/gu, ' ').replace(/\s+/g, ' ').trim();
+  const v = VERB.find(([re]) => re.test(t));
+  return v ? { word: v[1], done: v[2] } : { word: 'Working…', done: '✓ Done' };
+}
+function autoStart(p) {
+  autoPress = null;
+  const b = p.btn;
+  if (!b.isConnected || b.innerHTML !== p.label || b.classList.contains('lv-bz')) return;   // the tool runs this button itself
+  const w = b.dataset.busy ? { word: b.dataset.busy, done: b.dataset.done || '✓ Done' } : busyWords(p.label);
+  autoJob = { n: 0, bad: false, t: null, w, bz: busyButton(b, w.word, { ms: Number(b.dataset.busyMs) || 1500, label: p.label, disable: false }) };
+}
+// No double submit, mouse or keyboard: a click on a busy button or a dimmed neighbour does nothing (registered before
+// the tools' own click handlers, which listen on the bubble phase).
+if (hasDoc()) document.addEventListener('click', e => { if (e.target.closest?.('.lv-bz, .lv-bz-dim')) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+function autoSettle(j) {
+  clearTimeout(j.t);
+  j.t = setTimeout(() => { if (j.n) return; if (autoJob === j) autoJob = null; j.bad ? j.bz.fail() : j.bz.done(j.w.done); }, AUTO_SETTLE_MS);
+}
+if (hasDoc()) document.addEventListener('click', e => {
+  const b = e.target.closest?.('button, a.btn');
+  autoPress = (!b || b.disabled || b.matches(AUTO_SKIP) || b.closest(AUTO_SKIP_IN)) ? null : { btn: b, label: b.innerHTML, t: Date.now() };
+}, true);
+export const requestsInFlight = () => netCount;
+// The one fetch wrapper for the three tools (same arguments and answer as fetch).
+export const lfmpFetch = (input, init) => trackRequest(fetch(input, init));
+
+// ---- press feedback (CSS: :active scale .98 + a touch darker) needs nothing here.
+
+// ---- buttons: option 1 "Gold fill"
+// Pure markup (also used by tools that repaint while busy): the label stays for 150 ms, then the action word over a gold
+// fill that eases to ~90% over `ms` (the real typical time of that action).
+// The gold layer covers the button and is revealed left → right (clip-path); it carries its own near-black copy of the
+// word, so the word reads on gold where filled and in the normal text colour where not yet filled.
+export function busyInnerHtml(label, word) {
+  return `<span class="lv-bz-idle">${label}</span><span class="lv-bz-word" aria-live="polite">${escH(word)}</span><span class="lv-bz-fill" aria-hidden="true"><span class="lv-bz-fw">${escH(word)}</span></span>`;
+}
+export function busyButton(btn, word, opts = {}) {
+  const { ms = 1500, group } = opts;
+  if (!btn) return { done() {}, fail() {}, stop() {} };
+  // offsetWidth = the layout width (getBoundingClientRect would give the pressed, scaled .98 width)
+  const old = opts.label ?? btn.innerHTML, w = btn.offsetWidth || btn.getBoundingClientRect().width;
+  // No double submit: a busy button and its dimmed neighbours ignore clicks (the guard below, mouse and keyboard).
+  // `disabled` is set only when asked (explicit calls) and only undone if this call set it, so a tool's own disabled
+  // state is never overwritten.
+  const useDisabled = opts.disable !== false, weDisabled = useDisabled && !btn.disabled;
+  const box = group === undefined ? btn.parentElement : group;
+  const others = box ? [...box.querySelectorAll('button, a.btn, [role="button"]')].filter(b => b !== btn && !b.classList.contains('lv-bz-dim')) : [];
+  btn.style.width = `${Math.ceil(w)}px`;
+  btn.style.setProperty('--lv-bz-ms', `${Math.max(300, ms)}ms`);
+  btn.classList.add('lv-bz');
+  btn.innerHTML = busyInnerHtml(old, word);
+  if (weDisabled) btn.disabled = true;
+  btn.setAttribute('aria-busy', 'true'); btn.setAttribute('aria-disabled', 'true');
+  others.forEach(o => { o.classList.add('lv-bz-dim'); o.setAttribute('aria-disabled', 'true'); });
+  // the card the button sits on gets a gold outline while it works (as the No Silent Clicks preview)
+  const card = btn.closest('.card, .dsec, .rvwcard, .lv-card'); card?.classList.add('lv-work');
+  let over = false;
+  const restore = () => {
+    card?.classList.remove('lv-work');
+    others.forEach(o => { o.classList.remove('lv-bz-dim'); o.removeAttribute('aria-disabled'); });
+    if (!btn.isConnected) return;
+    // only put the label back if the button still shows the busy markup (a tool may have repainted it itself)
+    const ours = !!btn.querySelector(':scope > .lv-bz-word');
+    if (ours) btn.innerHTML = old;
+    if (weDisabled && btn.disabled) btn.disabled = false;
+    btn.removeAttribute('aria-disabled');
+    btn.classList.remove('lv-bz', 'lv-bz-ok', 'lv-bz-bad'); btn.style.width = ''; btn.style.removeProperty('--lv-bz-ms');
+    btn.removeAttribute('aria-busy');
+  };
+  // Safety net: if the tool puts its own label on the button (e.g. "Retry" after an error), the busy state ends at once,
+  // so a button can never stay blocked.
+  let mo = null;
+  if (typeof MutationObserver !== 'undefined') {
+    mo = new MutationObserver(() => { if (!btn.querySelector(':scope > .lv-bz-word')) { over = true; mo.disconnect(); restore(); } });
+    mo.observe(btn, { childList: true });
+  }
+  const end = () => { mo?.disconnect(); };
+  return {
+    // success: snap to 100% + "✓ Added" for 1.2 s (shown even when the work took under 150 ms)
+    done(text = '✓ Done') { if (over) return; over = true; btn.classList.add('lv-bz-ok'); btn.querySelectorAll('.lv-bz-word, .lv-bz-fw').forEach(x => { x.textContent = text; }); setTimeout(() => { end(); restore(); }, BUSY_DONE_MS); },
+    // failure: the fill drains, the label comes back; the tool shows its error (with Retry)
+    fail() { if (over) return; over = true; btn.classList.add('lv-bz-bad'); setTimeout(() => { end(); restore(); }, 420); },
+    stop() { if (over) return; over = true; end(); restore(); }
+  };
+}
+// Run fn with the button busy: done(okText) on success, fail() + rethrow on error.
+export async function withBusy(btn, word, okText, fn, opts) {
+  const b = busyButton(btn, word, opts);
+  try { const r = await fn(); b.done(okText); return r; } catch (e) { b.fail(); throw e; }
+}
+
+// ---- an area (tab, panel section, Compare results, Refresh): 3px gold bar on its top edge + centred text.
+// A % only when the job really reports progress (pct(n)); never a made-up number.
+export function areaLoadingHtml(what) {
+  return `<div class="lv-area" role="status" data-lv-area><span class="lv-area-bar" aria-hidden="true"><i></i></span><span class="lv-area-t"><b class="lv-area-pct" hidden></b><span>${escH(what)}</span></span></div>`;
+}
+export function areaLoading(el, what = 'Loading…') {
+  if (!el) return { done() {}, fail() {}, pct() {} };
+  el.classList.add('lv-area-host'); el.setAttribute('aria-busy', 'true');
+  el.insertAdjacentHTML('beforeend', areaLoadingHtml(what));
+  const ov = el.lastElementChild;
+  const end = () => { ov.remove(); el.classList.remove('lv-area-host'); el.removeAttribute('aria-busy'); };
+  return {
+    pct(n) { const p = ov.querySelector('.lv-area-pct'); p.hidden = false; p.textContent = `${Math.max(0, Math.min(100, Math.round(n)))}%`; ov.querySelector('.lv-area-bar i').style.width = `${Math.max(0, Math.min(100, n))}%`; ov.classList.add('lv-area-real'); },
+    done() { ov.classList.add('lv-area-done'); setTimeout(() => { end(); fadeIn(el.firstElementChild); }, 220); },
+    fail(message, onRetry) { end(); el.insertAdjacentHTML('beforeend', loadErrorHtml(message)); const b = el.lastElementChild.querySelector('[data-lv-retry]'); if (onRetry) b.addEventListener('click', () => { el.lastElementChild.remove(); onRetry(); }, { once: true }); }
+  };
+}
+
+// ---- long jobs: the progress card under the buttons (title, real typical time, real steps, the same gold bar)
+export function fmtTypical(ms) {
+  const s = Math.round(ms / 1000);
+  if (s < 60) return `Usually about ${Math.max(5, Math.round(s / 5) * 5)} seconds`;
+  const m = Math.round(s / 60);
+  return `Usually about ${m} minute${m === 1 ? '' : 's'}`;
+}
+// st: { title, hint?, typicalMs, steps: [[key, label]], states: { key: 'run'|'ok'|'fail' }, details: { key: text }, long?, done?: {result, next}, error? }
+export function progressCardHtml(st) {
+  const stp = st.steps || [], states = st.states || {}, det = st.details || {};
+  const items = stp.map(([k, label]) => { const s = states[k] || 'todo'; return `<li class="lv-pc-s ${s}" data-k="${escH(k)}"><span class="lv-pc-d" aria-hidden="true">${s === 'ok' ? '✓' : s === 'fail' ? '✕' : ''}</span><span>${escH(label)}${det[k] ? ` <span class="lv-pc-x">· ${escH(det[k])}</span>` : ''}</span></li>`; }).join('');
+  const doneN = stp.filter(([k]) => states[k] === 'ok').length;
+  const head = st.done ? `<p class="lv-pc-ok" role="status">✓ ${escH(st.done.result)}.${st.done.next ? ` Next: ${escH(st.done.next)}` : ''}</p>`
+    : `<p class="lv-pc-t"><b>${escH(st.title)}</b><span>${escH(st.hint || fmtTypical(st.typicalMs || 40000))}</span></p>`;
+  // st.elapsed (ms since the job started): a repaint carries on where it was (no restart, no second 150 ms wait)
+  const el = Math.max(0, Number(st.elapsed) || 0), wait = !st.done && el < BUSY_DELAY_MS;
+  return `<div class="lv-pc${st.done ? ' is-done' : ''}${st.error ? ' is-bad' : ''}${wait ? ' lv-pc-wait' : ''}" data-lv-pc role="group" aria-label="${escH(st.title)}"${wait ? ` style="--lv-pc-show:${BUSY_DELAY_MS - el}ms"` : ''}>${head}
+    ${items ? `<ol class="lv-pc-steps">${items}</ol>` : ''}
+    <span class="lv-pc-bar" aria-hidden="true"><i style="--lv-pc-ms:${Math.max(1000, st.typicalMs || 40000)}ms${el ? `;--lv-pc-delay:-${el}ms` : ''}${stp.length ? `;--lv-pc-min:${Math.round((doneN / stp.length) * 90)}%` : ''}"></i></span>
+    ${(st.long || el >= LONG_NOTE_MS) && !st.done && !st.error ? `<p class="lv-pc-long" role="status">${escH(longNote(st.typicalMs))}</p>` : ''}</div>`;
+}
+export function progressCard(el, cfg) {
+  const st = { states: {}, details: {}, ...cfg };
+  let shown = false, timer = null, longT = null;
+  const paint = () => { if (shown && el) { el.innerHTML = progressCardHtml(st); el.hidden = false; } };
+  timer = setTimeout(() => { shown = true; paint(); }, BUSY_DELAY_MS);
+  longT = setTimeout(() => { st.long = true; paint(); }, LONG_NOTE_MS);
+  const stopT = () => { clearTimeout(timer); clearTimeout(longT); };
+  return {
+    state: st,
+    step(key, state = 'run', detail) { st.states[key] = state; if (detail != null) st.details[key] = detail; if (state === 'run') for (const [k] of st.steps || []) { if (k === key) break; if (!st.states[k] || st.states[k] === 'run') st.states[k] = 'ok'; } paint(); },
+    steps(states, details) { Object.assign(st.states, states || {}); Object.assign(st.details, details || {}); paint(); },
+    done(result, next) { stopT(); for (const [k] of st.steps || []) if (st.states[k] !== 'fail') st.states[k] = 'ok'; st.done = { result, next }; shown = true; paint(); },
+    fail(message, onRetry) { stopT(); st.error = message; if (!el) return; el.innerHTML = loadErrorHtml(message); el.hidden = false; const b = el.querySelector('[data-lv-retry]'); if (onRetry && b) b.addEventListener('click', () => onRetry(), { once: true }); },
+    close() { stopT(); if (el) { el.innerHTML = ''; el.hidden = true; } }
+  };
+}
 
 // Mount the shell on a page. root: the app container (the desktop top bar goes first inside it).
 export function mountShell(cfg) {
