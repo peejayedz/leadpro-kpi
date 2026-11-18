@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T23:07:40.075Z",
+  "generatedAt": "2026-11-18T23:37:23.567Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794981600000,
-      "to": 1795043260075,
+      "to": 1795045043567,
       "current": {
         "totalLeads": 12,
         "contacted": 0,
@@ -383,7 +383,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794808800000,
-      "to": 1795043260075,
+      "to": 1795045043567,
       "current": {
         "totalLeads": 45,
         "contacted": 0,
@@ -479,7 +479,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 40,
+        "totalLeads": 41,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -524,6 +524,11 @@
             0
           ],
           [
+            "Google Ads Assets",
+            1,
+            0
+          ],
+          [
             "Google Ads location extensions phone for GBP",
             1,
             0
@@ -532,7 +537,7 @@
         "byChannel": [
           [
             "Third Party",
-            32,
+            33,
             0
           ],
           [
@@ -556,13 +561,13 @@
             0
           ]
         ],
-        "attributedLeads": 40,
+        "attributedLeads": 41,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            40,
+            41,
             "newLeads",
             null
           ],
@@ -803,10 +808,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794438460075,
-      "to": 1795043260075,
+      "from": 1794440243567,
+      "to": 1795045043567,
       "current": {
-        "totalLeads": 73,
+        "totalLeads": 72,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -847,7 +852,7 @@
           ],
           [
             "Google Ads Assets",
-            5,
+            4,
             0
           ],
           [
@@ -864,17 +869,17 @@
         "byChannel": [
           [
             "Third Party",
-            73,
+            72,
             0
           ]
         ],
-        "attributedLeads": 73,
+        "attributedLeads": 72,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            73,
+            72,
             "newLeads",
             null
           ],
@@ -905,7 +910,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 41,
+        "totalLeads": 42,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -950,6 +955,11 @@
             0
           ],
           [
+            "Google Ads Assets",
+            1,
+            0
+          ],
+          [
             "Google Ads location extensions phone for GBP",
             1,
             0
@@ -958,7 +968,7 @@
         "byChannel": [
           [
             "Third Party",
-            32,
+            33,
             0
           ],
           [
@@ -982,13 +992,13 @@
             0
           ]
         ],
-        "attributedLeads": 41,
+        "attributedLeads": 42,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            41,
+            42,
             "newLeads",
             null
           ],
@@ -1021,8 +1031,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792451260075,
-      "to": 1795043260075,
+      "from": 1792453043567,
+      "to": 1795045043567,
       "current": {
         "totalLeads": 114,
         "contacted": 0,
@@ -1234,8 +1244,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787267260075,
-      "to": 1795043260075,
+      "from": 1787269043567,
+      "to": 1795045043567,
       "current": {
         "totalLeads": 119,
         "contacted": 1,
@@ -1458,7 +1468,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1795043260075,
+      "to": 1795045043567,
       "current": {
         "totalLeads": 114,
         "contacted": 0,
@@ -1839,7 +1849,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1795043260075,
+      "to": 1795045043567,
       "current": {
         "totalLeads": 115,
         "contacted": 0,
@@ -2249,7 +2259,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-18T23:07:40.075Z",
+    "checkedAt": "2026-11-18T23:37:23.567Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
