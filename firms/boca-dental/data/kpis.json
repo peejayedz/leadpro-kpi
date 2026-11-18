@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T21:22:29.573Z",
+  "generatedAt": "2026-11-18T21:37:45.596Z",
   "location": "Boca Dental",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794978000000,
-      "to": 1795036949573,
+      "to": 1795037865596,
       "current": {
         "totalLeads": 13,
         "contacted": 0,
@@ -466,7 +466,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1795036949573,
+      "to": 1795037865596,
       "current": {
         "totalLeads": 37,
         "contacted": 0,
@@ -974,8 +974,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794432149573,
-      "to": 1795036949573,
+      "from": 1794433065596,
+      "to": 1795037865596,
       "current": {
         "totalLeads": 54,
         "contacted": 0,
@@ -1103,7 +1103,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 59,
+        "totalLeads": 58,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1134,7 +1134,7 @@
         "bySource": [
           [
             "Website Number Pool",
-            21,
+            20,
             0
           ],
           [
@@ -1181,17 +1181,17 @@
           ],
           [
             "CRM UI",
-            13,
+            12,
             0
           ]
         ],
-        "attributedLeads": 59,
+        "attributedLeads": 58,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            59,
+            58,
             "newLeads",
             null
           ],
@@ -1236,8 +1236,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792444949573,
-      "to": 1795036949573,
+      "from": 1792445865596,
+      "to": 1795037865596,
       "current": {
         "totalLeads": 249,
         "contacted": 0,
@@ -1503,8 +1503,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787260949573,
-      "to": 1795036949573,
+      "from": 1787261865596,
+      "to": 1795037865596,
       "current": {
         "totalLeads": 715,
         "contacted": 0,
@@ -1781,7 +1781,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795036949573,
+      "to": 1795037865596,
       "current": {
         "totalLeads": 145,
         "contacted": 0,
@@ -2300,7 +2300,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795036949573,
+      "to": 1795037865596,
       "current": {
         "totalLeads": 404,
         "contacted": 0,
@@ -2906,7 +2906,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-18T21:22:29.573Z",
+    "checkedAt": "2026-11-18T21:37:45.596Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
