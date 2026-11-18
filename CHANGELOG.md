@@ -5,6 +5,11 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.29.0 — 19 Nov 2026
+- **[internal]** Admin: a greeting when you sign in, once a day, with what needs you (shared `lfmp-session.js` / `lfmp-ui.css` 2.4.0, the same as Builder v1.21.0 and Review admin v1.12.0, PJ's `LFMP_Greeting_Final_1plus9.html`). This page gives "scorecards need attention", the same count as the "Needs attention" filter, and notes it for the other two tools' greetings. Skipped with reduced motion; a click, tap or key ends it.
+- **[internal]** Admin top bar: no name and no Sign out. The initials open the name menu on desktop and phone: name + Last signed in · Theme · test clients · Refresh · What's new (now with this page's version) · Team sign-ins · Install · Sign out. "Your menu ›" shows under the initials after the greeting for the first 3 days.
+- **[internal]** Tests: `tests/shell/shell.test.mjs` (same in all three repos) covers the greeting and the name menu; the admin UI tests open Sign out from the menu.
+
 ## v1.28.0 — 19 Nov 2026
 - **[client]** Scorecards for medical and dental practices: patient enquiries, consults booked, show rate, treatment accepted, procedures completed and value. Each person counts once, even when they're in several pipelines. Optional "counts only" mode: no patient names, emails or phone numbers are stored or shown.
 - **[client]** A scorecard that is still being set up shows a "Draft scorecard" note at the top.

@@ -26,8 +26,9 @@ await t('admin/index.html: signs in with lfmp-session.js; no password, token scr
   for (const [what, re] of [['lfmp-login', /lfmp-login\.js|createLogin/], ['token screen', /id="tokenView"|id="tokenIn"|Connect GitHub/], ['vault', /vaultSet|lfmp-vault|leadpro-admin-firm-pass|PASS_VAULT/],
     ['GitHub from the browser', /https:\/\/api\.github\.com/], ['the old token variable', /\bghToken\b/], ['Lock / Forget token', /data-act="lock"|data-act="forget"|Forget token/]])
     ok(!re.test(html), `still has: ${what}`);
-  // v2 (redesign): the top bar, with the name and Sign out, is the shared shell's (lfmp-session.js mountShell)
-  ok(/mountShell\(\{[\s\S]*?tool: 'kpi'/.test(html) && /data-lv="signout"/.test(session) && /class="lv-n" data-me>/.test(session), 'no Sign out or name in the top bar (mountShell)');
+  // v2 (redesign): the top bar is the shared shell's (lfmp-session.js mountShell); v1.29.0: the name and Sign out are in
+  // its name menu under the initials (compact meHtml), not in the bar
+  ok(/mountShell\(\{[\s\S]*?tool: 'kpi'/.test(html) && /data-lv="signout"/.test(session) && /<b class="lv-n">/.test(session), 'no Sign out or name in the name menu (mountShell)');
 });
 
 await t('lfmp-session.js: /api/ only, no secrets, wipes the old browser keys', () => {

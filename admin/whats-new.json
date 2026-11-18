@@ -1,5 +1,13 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.29.0": {
+    "title": "A greeting when you sign in, once a day, with what needs you",
+    "summary": "Your name, theme and Sign out are now under your initials.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "A greeting when you sign in, once a day, with what needs you: reviews that need you, scorecards that need attention and clients in progress. Click, tap or press any key to skip it." },
+      { "type": "improved", "tag": "internal", "text": "Your name, theme and Sign out are now under your initials. Click your initials (on the phone too) to open the menu." }
+    ]
+  },
   "1.28.0": {
     "title": "Scorecards for medical and dental practices",
     "summary": "Pick a practice type, map each pipeline stage once, and new scorecards start as a Draft.",

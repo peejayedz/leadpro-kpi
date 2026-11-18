@@ -50,26 +50,35 @@ test('three tools in the same order everywhere: Clients · Scorecards · Reviews
     ['builder', 'Clients', '/ghl-subaccount-builder-page/', 'New sub-account'], ['kpi', 'Scorecards', '/leadpro-kpi/admin/', 'New firm'], ['review', 'Reviews', '/automation-review/admin/', null]]);
 });
 
-test('desktop top bar: icon + LFMP · nav (current = this tool) · [bell] · gold + · name + Last signed in · avatar · Sign out', () => {
+// v2.4.0 (PJ's Greeting 1+9 preview): no name and no Sign out in the bar; the initials open the name menu. The hidden
+// "Your menu ›" hint sits under the initials (shown ~2.6 s after the greeting, first 3 days).
+const noHint = h => text(h.replace(/<span class="lv-mhint"[^>]*>[^<]*<\/span>/g, ''));
+test('desktop top bar: icon + LFMP · nav (current = this tool) · [bell] · gold + · initials (no name, no Sign out)', () => {
   for (const t of S.SHELL_TOOLS) {
     const h = S.topBarHtml({ tool: t.id, me, bell: t.id === 'kpi', bellCount: 3, plus: t.plus ? { label: t.plus } : null });
-    assert.equal(text(h), `LFMP Clients Scorecards Reviews ${t.id === 'kpi' ? '🔔 3 ' : ''}${t.plus ? `+ ${t.plus} ` : ''}Pee Jay Edrozo ${S.lastSignInText(me)} PJ Sign out`);
+    assert.equal(noHint(h), `LFMP Clients Scorecards Reviews ${t.id === 'kpi' ? '🔔 3 ' : ''}${t.plus ? `+ ${t.plus} ` : ''}PJ`);
     assert.equal((h.match(/aria-current="page"/g) || []).length, 1);
     assert.match(h, new RegExp(`<a href="${t.path}" aria-current="page" data-lv-home>${t.label}</a>`));
     assert.match(h, /class="lv-mk"[^>]*><i><\/i><i><\/i><i><\/i><\/a>/, 'the 3-block LFMP icon');
-    assert.match(h, /data-lv="signout"/); assert.match(h, /data-lv="me"/);
+    assert.doesNotMatch(h, /data-lv="signout"|Pee Jay Edrozo|Last signed in|data-me/, 'no Sign out and no name in the bar');
+    assert.match(h, /data-lv="me" aria-haspopup="menu" aria-expanded="false"/);
+    assert.match(h, /<div class="lv-pop" data-lv-pop role="menu" aria-label="Your menu" tabindex="-1" hidden><\/div><span class="lv-mhint" data-lv-mhint aria-hidden="true" hidden>Your menu ›<\/span>/);
   }
   const q = S.topBarHtml({ tool: 'kpi', me, bell: true, bellCount: 0 });
   assert.match(q, /data-lv-badge hidden>0</, 'no count = badge hidden');
 });
 
-test('phone top bar: icon · TITLE · [bell] · gold round + · avatar', () => {
+test('phone top bar: icon · TITLE · [bell] · gold round + · initials (the same name menu as desktop)', () => {
   const b = S.phoneBarHtml({ tool: 'builder', me, plus: { label: 'New sub-account' } });
-  assert.equal(text(b), 'Clients + PJ');
+  assert.equal(noHint(b), 'Clients + PJ');
   assert.match(b, /class="lv-pplus lv-hit" data-lv="plus" aria-label="New sub-account">\+</);
-  assert.equal(text(S.phoneBarHtml({ tool: 'kpi', me, bell: true, bellCount: 1, plus: { label: 'New firm' } })), 'Scorecards 🔔 1 + PJ');
-  assert.equal(text(S.phoneBarHtml({ tool: 'review', me })), 'Reviews PJ', 'Reviews: no bell, no +');
-  assert.equal(text(S.phoneBarHtml({ tool: 'kpi', me, bell: true, plus: {}, meScreen: true }, 'Me')), 'Me PJ', 'the Me screen: title and avatar only');
+  assert.match(b, /data-lv-avwrap="phone"><button type="button" class="lv-avbtn lv-hit" data-lv="me" aria-haspopup="menu"/);
+  assert.match(b, /data-lv-pop role="menu"/);
+  assert.equal(noHint(S.phoneBarHtml({ tool: 'kpi', me, bell: true, bellCount: 1, plus: { label: 'New firm' } })), 'Scorecards 🔔 1 + PJ');
+  assert.equal(noHint(S.phoneBarHtml({ tool: 'review', me })), 'Reviews PJ', 'Reviews: no bell, no +');
+  const ms = S.phoneBarHtml({ tool: 'kpi', me, bell: true, plus: {}, meScreen: true }, 'Me');
+  assert.equal(text(ms), 'Me PJ', 'the Me screen: title and avatar only');
+  assert.doesNotMatch(ms, /data-lv-pop|data-lv-mhint/, 'the Me screen has no second menu');
 });
 
 test('bottom tabs: Clients · Scorecards · Reviews · Me; the current one is gold (aria-current); Me while Me is open', () => {
@@ -86,7 +95,7 @@ test('Me (identical in all three tools): avatar, name, Last signed in · SETTING
   const h = S.meHtml({ tool: 'kpi', me, version: '1.23.0', showTests: { label: 'Show test clients' }, onRefresh() {},
     extras: { title: 'Scorecards', items: [{ label: 'Sync', value: 'every 30 min' }] } },   // extras are ignored: no tool-only section
     { theme: 'dark', showTests: true, updated: '4:57 PM', newsDot: true });
-  assert.equal(text(h), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Settings Theme Auto Light Dark Show test clients Refresh now updated 4:57 PM Team Team sign-ins › What's new v1.23.0 › Install the app › Sign out`);
+  assert.equal(text(h), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Settings Theme Light Dark Auto Show test clients Refresh now updated 4:57 PM Team Team sign-ins › What's new v1.23.0 › Install the app › Sign out`);
   assert.match(h, /data-v="dark" aria-pressed="true"/); assert.match(h, /data-v="auto" aria-pressed="false"/);
   assert.match(h, /role="switch" data-lv="tests" aria-labelledby="lvTestsL" aria-checked="true"/);
   assert.match(h, /data-lv="news" role="menuitem"><span>What&#39;s new<\/span><span class="lv-v"><span class="lv-ndot"/, 'unseen What\'s new: the dot is on its row');
@@ -95,7 +104,82 @@ test('Me (identical in all three tools): avatar, name, Last signed in · SETTING
   const same = S.SHELL_TOOLS.map(t => S.meHtml({ tool: t.id, me, version: '1', showTests: {}, onRefresh() {} }, {}));
   assert.equal(new Set(same).size, 1, 'Me is the same in every tool');
   const plain = S.meHtml({ tool: 'review', me }, {});
-  assert.equal(text(plain), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Settings Theme Auto Light Dark Team Team sign-ins › What's new › Install the app › Sign out`);
+  assert.equal(text(plain), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Settings Theme Light Dark Auto Team Team sign-ins › What's new › Install the app › Sign out`);
+});
+test('the name menu (v2.4.0, compact): name + Last signed in · Theme Light/Dark/Auto · [tests · Refresh] · What\'s new (version) · Team sign-ins · Install · Sign out', () => {
+  const h = S.meHtml({ tool: 'kpi', me, version: '1.28.0', showTests: { label: 'Show test clients' }, onRefresh() {} }, { theme: 'auto', showTests: false, updated: '4:57 PM' }, { compact: true });
+  assert.equal(text(h), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Theme Light Dark Auto Show test clients Refresh now updated 4:57 PM What's new v1.28.0 › Team sign-ins › Install the app › Sign out`);
+  assert.match(h, /^<div class="lv-mh"><span class="lv-av">PJ<\/span><div><b class="lv-n">Pee Jay Edrozo<\/b><small class="lv-l">Last signed in /);
+  assert.match(h, /<div class="lv-dv" role="separator"><\/div><button type="button" class="lv-mi out" data-lv="signout" role="menuitem">Sign out<\/button><\/div>$/);
+  assert.doesNotMatch(h, /lv-gl/, 'no group labels in the compact menu');
+  assert.match(h, /data-v="auto" aria-pressed="true"/);
+  assert.equal(text(S.meHtml({ tool: 'review', me }, {}, { compact: true })), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Theme Light Dark Auto What's new › Team sign-ins › Install the app › Sign out`);
+  assert.ok(!S.meHtml({ tool: 'review', me: { name: '<b>x</b>' } }, {}, { compact: true }).includes('<b>x</b>'), 'escaped');
+});
+
+// ---------------------------------------------------------------- v2.4.0 greeting (pure parts)
+const memStore = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), m }; };
+test('greeting: once per person per day by the device date; a new day plays again; storage that fails = never plays', () => {
+  const st = memStore();
+  const d1 = new Date(2026, 10, 18, 8, 5), d1b = new Date(2026, 10, 18, 23, 59), d2 = new Date(2026, 10, 19, 0, 1);
+  assert.equal(S.dayKey(d1), '2026-11-18');
+  assert.equal(S.claimGreetingDay(st, d1), true, 'first load of the day');
+  assert.equal(S.claimGreetingDay(st, d1b), false, 'not again that day (moving between Clients / Scorecards / Reviews)');
+  assert.equal(S.claimGreetingDay(st, d2), true, 'next day');
+  const broken = { getItem() { throw new Error('blocked'); }, setItem() { throw new Error('blocked'); } };
+  assert.equal(S.claimGreetingDay(broken, d1), false, 'storage throws → no greeting');
+  const noWrite = { getItem: () => null, setItem() {} };   // writes silently dropped (private mode) → can't remember → no greeting
+  assert.equal(S.claimGreetingDay(noWrite, d1), false);
+  assert.equal(S.claimGreetingDay(null, d1), false);
+});
+test('greeting: morning < 12, afternoon < 18, evening after (device time)', () => {
+  assert.deepEqual([0, 11, 12, 17, 18, 23].map(S.greetingFor), ['Good morning', 'Good morning', 'Good afternoon', 'Good afternoon', 'Good evening', 'Good evening']);
+});
+test('greeting: the first name from the Google sign-in ("first"), else the same rule as the initials ("PJ" stays "PJ")', () => {
+  assert.equal(S.firstName({ name: 'PJ', first: 'PJ', email: 'peejay@x.com' }), 'PJ');
+  assert.equal(S.firstName({ name: 'Maria Lopez', first: 'Maria' }), 'Maria');
+  assert.equal(S.firstName({ name: 'Maria Lopez' }), 'Maria');
+  assert.equal(S.firstName({ email: 'sam.ortiz@x.com' }), 'Sam');
+  assert.equal(S.firstName({}), '');
+});
+test('greeting HTML: date eyebrow, letters, gold name, numbers (0 = green All clear, missing = left out), skip line; escaped', () => {
+  const date = new Date(2026, 10, 18, 15, 0);
+  const h = S.greetingHtml({ hour: 15, date, name: 'PJ', counts: { reviews: 2, scorecards: 1, clients: 0 } });
+  assert.match(h, /<div class="lv-gr-eb">Wednesday, November 18<\/div>/);
+  assert.equal(text(h.replace(/<div class="lv-gr-st">[\s\S]*?<\/div><\/div>\n/, '')).replace(/ /g, ''), 'Wednesday,November18GOODAFTERNOON,PJTapanywheretoskip');
+  assert.match(h, /aria-label="Good afternoon, PJ"/);
+  assert.match(h, /<span class="lv-gr-wd"><span class="l" style="--i:0">G<\/span>/, 'letter by letter, words never break');
+  assert.match(h, /<br class="lv-gr-br"><span class="lv-gr-wd"><span class="l nm" style="--i:16">P<\/span>/, 'name on its own line on phones, gold');
+  assert.match(h, /<div class="r" data-k="reviews"><em data-to="2">0<\/em>reviews need you<\/div>/);
+  assert.match(h, /<div class="a" data-k="scorecards"><em data-to="1">0<\/em>scorecard needs attention<\/div>/);
+  assert.match(h, /<div class="ok" data-k="clients"><em>All clear<\/em>clients in progress<\/div>/, "All clear keeps the item's own label");
+  const some = S.greetingHtml({ hour: 9, date, name: 'PJ', counts: { clients: 3 } });
+  assert.match(some, /GOOD|G<\/span>/); assert.doesNotMatch(some, /data-k="reviews"|data-k="scorecards"/, 'missing counts are left out');
+  assert.match(some, /<em data-to="3">0<\/em>clients in progress/);
+  assert.doesNotMatch(S.greetingHtml({ hour: 20, date, name: 'PJ', counts: {} }), /lv-gr-st/, 'no numbers at all = no row');
+  assert.match(S.greetingHtml({ hour: 20, date, name: 'PJ' }), /aria-label="Good evening, PJ"/);
+  assert.ok(!S.greetingHtml({ hour: 9, date, name: '<i>x</i>' }).includes('<i>x</i>'), 'escaped');
+});
+test('greeting counts: the tool\'s own within ~1 s (never waits longer), the others from their last load (12 h), never throws', async () => {
+  const st = memStore(), now = Date.now();
+  S.noteCount('reviews', 2, st, now - 3600e3);
+  S.noteCount('scorecards', 1, st, now - 13 * 3600e3);   // too old
+  S.noteCount('bogus', 5, st, now);
+  assert.deepEqual(S.cachedCounts(st, now), { reviews: 2 });
+  assert.deepEqual(await S.greetCounts(() => Promise.resolve({ clients: 4 }), { store: st, now, wait: 50 }), { reviews: 2, clients: 4 });
+  const t0 = Date.now();
+  assert.deepEqual(await S.greetCounts(() => new Promise(() => {}), { store: st, now, wait: 60 }), { reviews: 2 }, 'own count late = left out');
+  assert.ok(Date.now() - t0 < 400, 'no long wait');
+  assert.deepEqual(await S.greetCounts(() => { throw new Error('x'); }, { store: st, now, wait: 50 }), { reviews: 2 });
+  assert.deepEqual(await S.greetCounts(undefined, { store: { getItem() { throw new Error('no'); } }, now, wait: 20 }), {});
+  assert.deepEqual(await S.greetCounts(() => ({ reviews: 0 }), { store: st, now, wait: 50 }), { reviews: 0 }, 'own count wins; 0 kept (All clear)');
+});
+test('"Your menu ›" hint: only in the first 3 days after this release (per device), never when storage fails', () => {
+  const st = memStore();
+  assert.equal(S.menuHintDue(st, new Date(2026, 10, 19, 9)), true);
+  assert.equal(S.menuHintDue(st, new Date(2026, 10, 21, 23)), true, 'day 3');
+  assert.equal(S.menuHintDue(st, new Date(2026, 10, 22, 0, 5)), false, 'day 4');
+  assert.equal(S.menuHintDue({ getItem() { throw new Error('x'); } }), false);
 });
 
 test('page head: title + summary (desktop), search, filter; the "Needs …" label is red only when asked', () => {
@@ -154,7 +238,10 @@ test('gold only on: + button, current tab/nav, top line, initials, on-switches',
   const allowed = [/^\.lv-av$/, /^\.lv-top$/, /^\.lv-plus$/, /^\.lv-tg\[aria-checked="true"\]$/, /^\.lv-band$/, /^\.lv-pplus$/, /^\.lv-tab\[aria-current="page"\]( svg)?$/, /^\.lv-note-dot$/, /^\.lv-note-go$/, /^\.lv-load-mk i:nth-child\(3\)$/,
     // v2.3.0 busy states (PJ's previews LFMP_Busy_Options_v2 option 1 "Gold fill", No Silent Clicks, Busy States): the top line,
     // the button fill / outline, the area bar, the progress card's bar and its running step (+ its pulse keyframe)
-    /^\.lv-net$/, /^\.lv-work$/, /^\.lv-bz>\.lv-bz-fill$/, /^(:root\.lfmp-v2(\.lfmp-v2)? (\.btn|button)?\.lv-bz,?\s*)+$/, /^:root\.lfmp-v2 \.btn\.lv-bz,:root\.lfmp-v2 button\.lv-bz$/, /^\.lv-area-bar i$/, /^\.lv-pc-bar i$/, /^\.lv-pc-s\.run \.lv-pc-d$/, /^50%$/];
+    /^\.lv-net$/, /^\.lv-work$/, /^\.lv-bz>\.lv-bz-fill$/,
+    // v2.4.0 (PJ's Greeting 1+9): the ring on the initials (hover / menu open), the "Your menu ›" hint, and the greeting's
+    // own pieces (glow, hairlines, base block, gold name, line, number separators, amber number)
+    /^\.lfmp-v2 \.lv-avbtn:hover \.lv-av,\.lfmp-v2 \.lv-avbtn\[aria-expanded="true"\] \.lv-av$/, /^\.lfmp-v2 \.lv-mhint$/, /^\.lv-gr[\w\-:>.() ,\[\]="]*$/, /^(:root\.lfmp-v2(\.lfmp-v2)? (\.btn|button)?\.lv-bz,?\s*)+$/, /^:root\.lfmp-v2 \.btn\.lv-bz,:root\.lfmp-v2 button\.lv-bz$/, /^\.lv-area-bar i$/, /^\.lv-pc-bar i$/, /^\.lv-pc-s\.run \.lv-pc-d$/, /^50%$/];
   assert.ok(rules.length >= 7);
   for (const r of rules) assert.ok(allowed.some(a => a.test(r)), `gold used on ${r}`);
 });
@@ -262,7 +349,7 @@ tb('in Chromium: Me items, bottom tabs, bell count, Sign out, Install the app, t
 window.shell = S.mountShell({ tool: q.get('tool'), me: { name: 'Pee Jay Edrozo', email: 'pj@example.com', lastSignIn: '2026-11-16T11:31:00Z' }, root: document.getElementById('app'), version: '1.0.0',
  plus: q.get('tool') === 'review' ? null : { label: 'New', onClick: () => log.push('plus') }, bell: q.get('tool') === 'kpi' ? { onClick: () => log.push('bell') } : null,
  showTests: { on: false, onChange: v => log.push('tests:' + v) }, onRefresh: () => log.push('refresh'), onNews: () => log.push('news'), onHome: () => log.push('home'),
- newsDot: true });
+ newsDot: true, greet: q.get('greet') ? { count: () => new Promise(r => setTimeout(() => r({ clients: Number(q.get('greet')) }), Number(q.get('late') || 0))) } : false });
 document.getElementById('main').innerHTML = S.pageHeadHtml({ title: 'X', search: { placeholder: 'Search' }, segs: [{ key: 'a', label: 'All' }, { key: 'b', label: 'B' }], active: 'a' }) + '<div class="lv-list">' + S.rowHtml({ name: 'A', sub: 'b', cells: [S.statusHtml('green', 'All set')] }) + '</div>';
 document.querySelector('.lv-row').addEventListener('click', () => log.push('row'));</script></body></html>`;
   const server = http.createServer((req, res) => {
@@ -283,7 +370,8 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
       for (const tool of ['builder', 'kpi', 'review']) {
         const page = await browser.newPage({ viewport: { width: w, height: h } });
         await page.goto(`${base}/?tool=${tool}`); await page.waitForSelector('.lv-row');
-        const bar = phone ? '[data-lv-ptop]' : '[data-lv-top]', me = phone ? '[data-lv-me]' : '[data-lv-pop]';
+        // v2.4.0: the initials open the name menu on both bars; the phone's Me tab opens the Me screen
+        const bar = phone ? '[data-lv-ptop]' : '[data-lv-top]', me = `${bar} [data-lv-pop]`;
         const log = () => page.evaluate(() => window.log.splice(0));
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${tool} ${w}: no sideways scroll`);
         // + and bell
@@ -299,13 +387,29 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
           await page.click(`${bar} [data-lv="bell"]`); assert.deepEqual(await log(), ['bell']);
           await page.evaluate(() => shell.setBell(0)); assert.equal(await page.isVisible(`${bar} [data-lv-badge]`), false);
         }
-        // Me: items in order, each one works
-        await page.click(`${bar} [data-lv="me"]`); await page.waitForSelector(`${me}:not([hidden]) .lv-mlist`);
+        // the bar: no name, no Sign out (v2.4.0)
+        assert.equal(await page.locator(`${bar} .lv-who, ${bar} .lv-so, ${bar} > [data-lv="signout"]`).count(), 0, 'no name block, no Sign out in the bar');
+        // the name menu: items in order, each one works
+        await page.click(`${bar} [data-lv="me"]`); await page.waitForSelector(`${me}:not([hidden]) .lv-mc`);
+        assert.equal(await page.getAttribute(`${bar} [data-lv="me"]`, 'aria-expanded'), 'true');
+        { const mh = await page.locator(`${me} .lv-mh`).innerText(); assert.ok(mh.includes('Pee Jay Edrozo') && mh.includes(S.lastSignInText({ lastSignIn: '2026-11-16T11:31:00Z' })), mh); }
         const items = await page.locator(`${me} .lv-mi`).evaluateAll(els => els.map(e => (e.firstElementChild || e).textContent.trim()));
-        assert.deepEqual(items, ['Theme', 'Show test clients', 'Refresh now', 'Team sign-ins', "What's new", 'Install the app', 'Sign out'], `${tool} ${w}: Me items`);
+        assert.deepEqual(items, ['Theme', 'Show test clients', 'Refresh now', "What's new", 'Team sign-ins', 'Install the app', 'Sign out'], `${tool} ${w}: name menu items`);
         assert.equal(await page.locator(`${bar} .lv-av [data-lv-dot], ${bar} .lv-av .lv-dot`).count(), 0, 'no dot on the avatar');
         assert.equal(await page.locator(`${me} [data-lv="news"] .lv-ndot`).count(), 1, 'the new dot is on the What\'s new row');
+        assert.equal(await page.evaluate(s => { const r = document.querySelector(s).getBoundingClientRect(); return r.right <= innerWidth && r.left >= 0 && r.bottom <= innerHeight; }, me), true, `${tool} ${w}: the menu is fully on screen`);
+        // nothing clips it (a short page's body overflow cut the phone menu's bottom edge): its last 3px still hit-test as the menu
+        assert.equal(await page.evaluate(s => { const p = document.querySelector(s), r = p.getBoundingClientRect(); return document.elementFromPoint(r.left + 30, r.bottom - 3)?.closest('[data-lv-pop]') === p; }, me), true, `${tool} ${w}: the menu's bottom edge isn't clipped`);
+        // a click outside closes it; clicking the initials again closes it
+        await page.mouse.click(5, h - 5); assert.equal(await page.locator(`${me}:not([hidden])`).count(), 0, 'outside click closes the menu');
+        await page.click(`${bar} [data-lv="me"]`); await page.click(`${bar} [data-lv="me"]`); assert.equal(await page.locator(`${me}:not([hidden])`).count(), 0, 'the initials toggle it');
+        await page.click(`${bar} [data-lv="me"]`); await page.waitForSelector(`${me}:not([hidden]) .lv-mc`);
         if (phone) {
+          // the Me tab still opens the Me screen (grouped), and closes the name menu
+          await page.click('.lv-tabs [data-lv="metab"]'); await page.waitForSelector('[data-lv-me]:not([hidden]) .lv-mlist');
+          assert.equal(await page.locator(`${me}:not([hidden])`).count(), 0, 'name menu closed');
+          const sitems = await page.locator('[data-lv-me] .lv-mi').evaluateAll(els => els.map(e => (e.firstElementChild || e).textContent.trim()));
+          assert.deepEqual(sitems, ['Theme', 'Show test clients', 'Refresh now', 'Team sign-ins', "What's new", 'Install the app', 'Sign out'], `${tool}: Me screen items`);
           assert.equal(await page.getAttribute('.lv-tabs [data-lv="metab"]', 'aria-current'), 'page', 'Me tab gold while open');
           // a tool's toast (z-index 70, like the Builder's What's new) never covers Me; the bottom tabs stay on top of Me
           const covered = await page.evaluate(() => {
@@ -316,6 +420,8 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
             t.remove(); return res;
           });
           assert.deepEqual(covered, [true, true], 'Me above toasts, tabs above Me');
+          await page.click('.lv-tabs [data-lv="metab"]'); assert.equal(await page.locator('[data-lv-me]:not([hidden])').count(), 0, 'the Me tab closes it');
+          await page.click(`${bar} [data-lv="me"]`); await page.waitForSelector(`${me}:not([hidden]) .lv-mc`);   // back to the name menu
         }
         await page.click(`${me} [data-lv="theme"][data-v="dark"]`); assert.equal(await page.getAttribute('html', 'data-theme'), 'dark');
         await page.click(`${me} [data-lv="theme"][data-v="auto"]`); assert.equal(await page.getAttribute('html', 'data-theme'), null);
@@ -345,11 +451,78 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
         await page.goto(`${base}/?tool=${tool}`); await page.waitForSelector('.lv-row');
         // Sign out: Access logout, then /signin/?out=1
         const before = server.logouts || 0;
-        if (phone) { await page.click(`${bar} [data-lv="me"]`); await page.click(`${me} [data-lv="signout"]`); } else await page.click('.lv-top .lv-so');
+        await page.click(`${bar} [data-lv="me"]`); await page.click(`${me} [data-lv="signout"]`);   // v2.4.0: Sign out is in the name menu
         await page.waitForURL(`${base}/signin/?out=1`); assert.equal(server.logouts, before + 1, 'Access logout called');
         await page.close();
       }
     }
+  } finally { await browser.close(); server.close(); }
+});
+
+tb('in Chromium: the greeting plays once a day, a click / key skips it (lift-away) and never blocks later clicks; late count left out; 0 = All clear; reduced motion / blocked storage = none; "Your menu ›" after it', { timeout: 120000 }, async () => {
+  const { chromium } = createRequire(path.join(pwDir, 'package.json'))('./index.js');
+  const PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/lfmp-ui.css"></head><body><div id="app"><main class="lv-in" id="main"><button id="under">under</button></main></div>
+<script type="module">import * as S from '/lfmp-session.js'; const q = new URLSearchParams(location.search); window.log = [];
+document.getElementById('under').onclick = () => log.push('under');
+window.shell = S.mountShell({ tool: 'builder', me: { name: 'PJ', first: 'PJ', email: 'pj@example.com' }, root: document.getElementById('app'), version: '1.0.0', plus: { label: 'New' },
+ greet: { count: () => new Promise(r => setTimeout(() => r({ clients: Number(q.get('n') ?? 2) }), Number(q.get('late') || 0))) } });
+window.played = shell.greeting;</script></body></html>`;
+  const server = http.createServer((req, res) => {
+    const u = new URL(req.url, 'http://x');
+    if (u.pathname === '/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(PAGE); }
+    if (u.pathname === '/lfmp-session.js' || u.pathname === '/lfmp-ui.css') { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
+    res.writeHead(404); res.end();
+  });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  try {
+    for (const [w, h] of [[1440, 900], [390, 844]]) {
+      const ctx = await browser.newContext({ viewport: { width: w, height: h } });
+      const page = await ctx.newPage();
+      // first load of the day: it plays, with the count; the name on its own line on a phone
+      await page.goto(`${base}/?n=2`); await page.waitForSelector('[data-lv-greet].play');
+      const g = await page.evaluate(() => { const el = document.querySelector('[data-lv-greet]'); const br = getComputedStyle(el.querySelector('.lv-gr-br')).display;
+        return { text: el.innerText.replace(/\s+/g, ' '), z: getComputedStyle(el).zIndex, br, fixed: getComputedStyle(el).position }; });
+      assert.match(g.text, /GOOD (MORNING|AFTERNOON|EVENING), ?PJ/i); assert.equal(g.fixed, 'fixed');
+      assert.equal(g.br, w < 880 ? 'inline' : 'none', 'name on its own line only on phones');
+      await page.waitForFunction(() => document.querySelector('[data-lv-greet] [data-to]')?.textContent === '2', null, { timeout: 4000 });
+      // it ends by itself (~3.75 s), then nothing is in the way
+      assert.equal(await page.evaluate(() => played), true);
+      assert.equal(await page.locator('[data-lv-greet]').count(), 0, 'gone');
+      await page.click('#under'); assert.deepEqual(await page.evaluate(() => log.splice(0)), ['under'], 'clicks reach the page after it');
+      // "Your menu ›" under the initials for ~2.6 s (first 3 days)
+      const bar = w < 880 ? '[data-lv-ptop]' : '[data-lv-top]';
+      assert.equal(await page.isVisible(`${bar} [data-lv-mhint]`), true, 'menu hint shows'); await wait(2800);
+      assert.equal(await page.isVisible(`${bar} [data-lv-mhint]`), false, 'and goes');
+      // same day again (moving between tools = a new page load): no greeting
+      await page.goto(`${base}/?n=2`); await page.waitForSelector('.lv-in'); await wait(400);
+      assert.equal(await page.locator('[data-lv-greet]').count(), 0, 'once a day');
+      assert.equal(await page.evaluate(() => played), false);
+      // a new day: plays again; a click anywhere skips it at once (lift-away), and the click doesn't reach the page
+      await page.evaluate(() => localStorage.setItem('lfmp-greet-day', '2000-01-01'));
+      await page.goto(`${base}/?n=0`); await page.waitForSelector('[data-lv-greet].play'); await wait(900);
+      assert.match(await page.locator('[data-lv-greet] [data-k="clients"]').innerText(), /All clear/i, '0 = All clear');
+      const t0 = Date.now(); await page.mouse.click(w / 2, h / 2);
+      await page.waitForSelector('[data-lv-greet]', { state: 'detached', timeout: 1500 }); assert.ok(Date.now() - t0 < 1000, 'skip is quick');
+      assert.deepEqual(await page.evaluate(() => log.splice(0)), [], 'the skip click did not press anything');
+      await page.click('#under'); assert.deepEqual(await page.evaluate(() => log.splice(0)), ['under']);
+      // a key skips it too; a late count (> ~1 s) is left out (never waits, no spinner)
+      await page.evaluate(() => localStorage.setItem('lfmp-greet-day', '2000-01-01'));
+      const tl = Date.now(); await page.goto(`${base}/?n=5&late=3000`); await page.waitForSelector('[data-lv-greet].play', { timeout: 3000 });
+      assert.ok(Date.now() - tl < 2500, 'starts within ~1 s even if the count is late');
+      assert.equal(await page.locator('[data-lv-greet] .lv-gr-st').count(), 0, 'no number row');
+      await page.keyboard.press('Escape'); await page.waitForSelector('[data-lv-greet]', { state: 'detached', timeout: 1500 });
+      await ctx.close();
+    }
+    // reduced motion: skipped entirely; blocked storage: never plays
+    const rctx = await browser.newContext({ reducedMotion: 'reduce' }); const rp = await rctx.newPage();
+    await rp.goto(base); await rp.waitForSelector('.lv-in'); await wait(400);
+    assert.equal(await rp.locator('[data-lv-greet]').count(), 0, 'reduced motion: none'); await rctx.close();
+    const sctx = await browser.newContext(); await sctx.addInitScript(() => { Object.defineProperty(window, 'localStorage', { get() { throw new Error('blocked'); } }); });
+    const sp = await sctx.newPage(); await sp.goto(base); await sp.waitForSelector('.lv-in'); await wait(400);
+    assert.equal(await sp.locator('[data-lv-greet]').count(), 0, 'storage blocked: none'); await sctx.close();
   } finally { await browser.close(); server.close(); }
 });
 

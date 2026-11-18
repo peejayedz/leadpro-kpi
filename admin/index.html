@@ -13,7 +13,7 @@
 <script>/* apply the saved theme before first paint so the page and logo don't flash */ try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="lfmp-ui.css?v=2.3.0">
+<link rel="stylesheet" href="lfmp-ui.css?v=2.4.0">
 <link rel="stylesheet" href="admin.css?v=1.27.0">
 <link rel="stylesheet" href="care.css?v=1.28.0">
 </head>
@@ -66,7 +66,7 @@ import { buildCards, filterCards, newer, isMinor, cardVersion } from './news.mjs
 import { firmReasons, SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS, severity, isAlert, leadTrend, sortFirms, staleLine } from './firm-details.mjs';
 import { decryptJSON } from '../scripts/kpi-core.mjs';
 import { PRACTICE_TYPES, practiceTypeOf, practiceLabel, isCare, countsOnly as countsOnlyOf, BUCKETS, BUCKET_HINTS, careInitialState, unchosen, buildPipelineMap, applyCare, mapOf } from '../scripts/care-core.mjs';
-import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName, busyButton } from './lfmp-session.js';
+import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName, busyButton, noteCount } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -192,6 +192,8 @@ const rememberedPass = async slug => (await passApi('get', slug))?.pass || null;
 const rememberPass = (slug, pass) => passApi('set', slug, pass);
 const forgetPass = slug => passApi('forget', slug);
 
+let greetReady = () => {};
+const greetCount = new Promise(r => { greetReady = r; });
 async function boot() {
   try { me = await startSession(); }
   catch (e) {
@@ -209,6 +211,7 @@ async function boot() {
     onRefresh: () => { shell.closeMe(); refreshAll(); },
     onNews: () => openNews(),
     onHome: () => { closeDialog(); go('#/'); window.scrollTo(0, 0); },
+    greet: { count: () => greetCount },   // v1.29.0: the once-a-day greeting (shell); our count when the list has loaded
   });
   paintMe(me);   // name, email, "Last signed in …" (lfmp-session.js)
   openApp();
@@ -506,6 +509,8 @@ function paintStrip() {
   // attention"; was "· 1 sync problem" beside "Needs attention · 2"); nothing to look at = "all synced 4:37 PM"
   const att = vis.filter(needsAttention).length;
   el.textContent = `${plural(vis.length, 'firm')} · ${att ? `${att} ${att === 1 ? 'needs' : 'need'} attention` : `all synced ${clock(last)}`}`;
+  // v1.29.0: the greeting's "scorecards need attention" (the same count as the filter); kept for the other tools' greetings
+  if (firms.length) { noteCount('scorecards', att); greetReady({ scorecards: att }); }
   el.title = fmtTime(last);
   const q = $('firmSearch'); if (q) { q.placeholder = `Search ${plural(vis.length, 'firm')}`; q.setAttribute('aria-label', `${q.placeholder} by name, slug or GHL name`); }
 }
@@ -1278,7 +1283,11 @@ async function loadPlainNews() {
   try { const r = await fetch(`./whats-new.json?t=${Date.now()}`, { cache: 'no-store' }); plainNews = r.ok ? await r.json() : {}; } catch { plainNews = {}; }
   return plainNews;
 }
-function paintNewsDot() { const v = changelog && latestVersion(changelog); shell?.setNewsDot(!!v && newer(v, store.get(NEWS_SEEN) || '0.0.0')); }   // dot on the avatar + Me → What's new
+function paintNewsDot() {   // the dot on Me → What's new; v1.29.0: and the version beside it in the name menu
+  const v = changelog && latestVersion(changelog);
+  if (shell && v) shell.cfg.version = v;
+  shell?.setNewsDot(!!v && newer(v, store.get(NEWS_SEEN) || '0.0.0'));
+}
 // v1.25.0: the shared What's new card (same as the Builder and Review admin), once per version: whats-new.json's title
 // (or summary) and one short line; a version without plain words shows no card (the dot in Me still does).
 // v1.26.0: a card only for a minor release (x.Y.0): on a patch, the card of its minor release if still unseen; a patch

@@ -159,7 +159,7 @@ export const SHELL_TOOLS = [
 export const ME_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>';
 export const SEARCH_ICON = '<svg class="lv-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>';
 export const PHONE_MAX = 879.98;   // phone layout below 880px (same as lfmp-ui.css)
-export const THEMES = [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']];
+export const THEMES = [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Auto']];   // v2.4.0: the preview's order
 export const esc = escH;
 const toolOf = id => SHELL_TOOLS.find(t => t.id === id) || SHELL_TOOLS[0];
 
@@ -187,24 +187,27 @@ export function setTheme(mode) {
 const avHtml = me => `<span class="lv-av">${escH(initials(me))}</span>`;   // initials only (no dot: not in the reference)
 const bellHtml = n => `<span class="lv-bellwrap" data-lv-bellwrap><button type="button" class="lv-bell lv-hit" data-lv="bell" aria-haspopup="dialog" aria-expanded="false" aria-label="Sync issues${n ? `: ${n}` : ''}"><span class="lv-bi" aria-hidden="true">🔔</span><b class="lv-badge" data-lv-badge${n ? '' : ' hidden'}>${Number(n) || 0}</b></button></span>`;
 
-// Desktop top bar: icon + LFMP · Clients / Scorecards / Reviews · [bell] · gold + · name + Last signed in · avatar · Sign out
+// The initials circle + its menu (v2.4.0: the bar has no name and no Sign out; they are in this menu).
+const avWrapHtml = (me, where) => `<span class="lv-avwrap" data-lv-avwrap="${where}"><button type="button" class="lv-avbtn${where === 'phone' ? ' lv-hit' : ''}" data-lv="me" aria-haspopup="menu" aria-expanded="false" aria-label="Your menu: name, theme, what's new, sign out">${avHtml(me)}</button><div class="lv-pop" data-lv-pop role="menu" aria-label="Your menu" tabindex="-1" hidden></div><span class="lv-mhint" data-lv-mhint aria-hidden="true" hidden>Your menu ›</span></span>`;
+
+// Desktop top bar: icon + LFMP · Clients / Scorecards / Reviews · [bell] · gold + · initials (they open the name menu)
 export function topBarHtml(cfg) {
   const t = toolOf(cfg.tool), me = cfg.me || {};
   return `<header class="lv-top" data-lv-top>
   <a class="lv-mk" href="${t.path}" data-lv-home aria-label="LFMP · ${escH(t.label)}"><i></i><i></i><i></i></a><a class="lv-brand" href="${t.path}" data-lv-home>LFMP</a>
   <nav class="lv-nav" aria-label="LFMP tools">${SHELL_TOOLS.map(x => `<a href="${x.path}"${x.id === t.id ? ' aria-current="page" data-lv-home' : ''}>${x.label}</a>`).join('')}</nav>
   <div class="lv-rt">${cfg.bell ? bellHtml(cfg.bellCount) : ''}${cfg.plus ? `<button type="button" class="lv-plus" data-lv="plus">+ ${escH(cfg.plus.label || t.plus)}</button>` : ''}
-    <div class="lv-who"><div><div class="lv-n" data-me>${escH(me.name || me.email || '')}</div><div class="lv-l" data-me-last>${escH(lastSignInText(me))}</div></div>
-      <span class="lv-avwrap"><button type="button" class="lv-avbtn" data-lv="me" aria-haspopup="menu" aria-expanded="false" aria-label="Your menu: theme, test clients, refresh, team, what's new">${avHtml(me, cfg.newsDot)}</button><div class="lv-pop" data-lv-pop role="menu" aria-label="Your menu" tabindex="-1" hidden></div></span></div>
-    <button type="button" class="lv-so" data-lv="signout">Sign out</button></div>
+    ${avWrapHtml(me, 'top')}</div>
 </header>`;
 }
 
-// Phone top bar: band · icon · TITLE · [bell] · gold round + · avatar (the avatar opens Me)
+// Phone top bar: band · icon · TITLE · [bell] · gold round + · initials (the same name menu as on desktop; the Me tab
+// still opens the Me screen)
 export function phoneBarHtml(cfg, title) {
   const t = toolOf(cfg.tool);
   const plus = cfg.plus && !cfg.meScreen ? `<button type="button" class="lv-pplus lv-hit" data-lv="plus" aria-label="${escH(cfg.plus.label || t.plus)}">+</button>` : '';
-  return `<div class="lv-ptop"${cfg.meScreen ? '' : ' data-lv-ptop'}><div class="lv-band"></div><div class="lv-bb"><a class="lv-mk lv-hit" href="${t.path}" data-lv-home aria-label="LFMP · ${escH(t.label)}"><i></i><i></i><i></i></a><h2${cfg.meScreen ? '' : ' data-lv-title'}>${escH(title ?? t.title)}</h2><div class="lv-ic">${cfg.bell && !cfg.meScreen ? bellHtml(cfg.bellCount) : ''}${plus}<button type="button" class="lv-avbtn lv-hit" data-lv="me" aria-label="Me: theme, test clients, refresh, team, what's new">${avHtml(cfg.me, cfg.newsDot)}</button></div></div></div>`;
+  const av = cfg.meScreen ? `<button type="button" class="lv-avbtn lv-hit" data-lv="me" aria-label="Close Me">${avHtml(cfg.me)}</button>` : avWrapHtml(cfg.me || {}, 'phone');
+  return `<div class="lv-ptop"${cfg.meScreen ? '' : ' data-lv-ptop'}><div class="lv-band"></div><div class="lv-bb"><a class="lv-mk lv-hit" href="${t.path}" data-lv-home aria-label="LFMP · ${escH(t.label)}"><i></i><i></i><i></i></a><h2${cfg.meScreen ? '' : ' data-lv-title'}>${escH(title ?? t.title)}</h2><div class="lv-ic">${cfg.bell && !cfg.meScreen ? bellHtml(cfg.bellCount) : ''}${plus}${av}</div></div></div>`;
 }
 
 // Bottom tabs: Clients · Scorecards · Reviews · Me (gold = where you are)
@@ -212,11 +215,22 @@ export function tabsHtml(cfg, meOpen = false) {
   return `<nav class="lv-tabs" data-lv-tabs aria-label="LFMP tools">${SHELL_TOOLS.map(x => `<a class="lv-tab" href="${x.path}"${x.id === cfg.tool ? `${meOpen ? '' : ' aria-current="page"'} data-lv-home` : ''}>${x.icon}${x.label}</a>`).join('')}<button type="button" class="lv-tab" data-lv="metab"${meOpen ? ' aria-current="page"' : ''}>${ME_ICON}Me</button></nav>`;
 }
 
-// The Me content (same on the desktop popover and the phone Me screen).
-export function meHtml(cfg, st = {}) {
+// The Me content. compact (v2.4.0) = the name menu under the initials (desktop and phone, PJ's Greeting 1+9 preview):
+// name + Last signed in · Theme · [test clients · Refresh] · What's new · Team sign-ins · [Install] · Sign out.
+// Without compact = the phone Me screen (grouped, unchanged).
+export function meHtml(cfg, st = {}, { compact = false } = {}) {
   const me = cfg.me || {};
   const theme = st.theme || 'auto';
   const row = (lv, label, value = '', more = '') => `<button type="button" class="lv-mi" data-lv="${lv}" role="menuitem"${more}><span>${escH(label)}</span><span class="lv-v">${value}</span></button>`;
+  const ver = `${st.newsDot ? '<span class="lv-ndot" aria-label="new"></span>' : ''}${cfg.version ? `v${escH(String(cfg.version).replace(/^v/, ''))} ` : ''}›`;
+  const themeRow = `<div class="lv-mi" role="presentation"><span id="lvThemeL${compact ? 'c' : ''}">Theme</span><div class="lv-sw" role="group" aria-labelledby="lvThemeL${compact ? 'c' : ''}">${THEMES.map(([k, l]) => `<button type="button" class="lv-hit" data-lv="theme" data-v="${k}" aria-pressed="${k === theme}">${l}</button>`).join('')}</div></div>`;
+  const testsRow = cfg.showTests ? `<div class="lv-mi" role="presentation"><span id="lvTestsL${compact ? 'c' : ''}">${escH(cfg.showTests.label || 'Show test clients')}</span><button type="button" class="lv-tg lv-hit" role="switch" data-lv="tests" aria-labelledby="lvTestsL${compact ? 'c' : ''}" aria-checked="${!!st.showTests}"></button></div>` : '';
+  if (compact) {
+    return `<div class="lv-mh">${avHtml(me)}<div><b class="lv-n">${escH(me.name || me.email || '')}</b><small class="lv-l">${escH(lastSignInText(me))}</small></div></div>
+<div class="lv-mc">${themeRow}${testsRow}${cfg.onRefresh ? row('refresh', 'Refresh now', st.updated ? `updated ${escH(st.updated)}` : '') : ''}
+  ${row('news', "What's new", ver)}${row('signins', 'Team sign-ins', '›')}${row('install', 'Install the app', '›')}
+  <div class="lv-dv" role="separator"></div><button type="button" class="lv-mi out" data-lv="signout" role="menuitem">Sign out</button></div>`;
+  }
   return `<div class="lv-me-who">${avHtml(me, false)}<div><div class="lv-n">${escH(me.name || me.email || '')}</div><div class="lv-l">${escH(lastSignInText(me))}</div></div></div>
 <p class="lv-gl">Settings</p><div class="lv-mlist">
   <div class="lv-mi" role="presentation"><span id="lvThemeL">Theme</span><div class="lv-sw" role="group" aria-labelledby="lvThemeL">${THEMES.map(([k, l]) => `<button type="button" class="lv-hit" data-lv="theme" data-v="${k}" aria-pressed="${k === theme}">${l}</button>`).join('')}</div></div>
@@ -593,6 +607,130 @@ export function progressCard(el, cfg) {
   };
 }
 
+// =====================================================================================================================
+// GREETING (v2.4.0, PJ's LFMP_Greeting_Final_1plus9.html). Once per person per day (their device's date), on the first
+// page load of the day in any of the three tools: the page blurs behind a dark wash, the LFMP blocks drop in, the date,
+// "GOOD AFTERNOON, PJ" letter by letter, a gold line, today's numbers count up, then it lifts away (~3.5 s). A click, tap
+// or key ends it at once. Skipped with reduced motion, or when the day can't be remembered (storage blocked).
+// Numbers: only the counts the tools already show (Reviews "Needs you", Scorecards "Needs attention", Clients "In
+// progress"). A tool gives its own count (greet.count(): a promise); the other two come from the last time their own
+// list loaded on this site (noteCount; kept per device, used for 12 hours). Not ready within ~1 s = left out.
+// =====================================================================================================================
+export const GREET_DAY_KEY = 'lfmp-greet-day', GREET_COUNTS_KEY = 'lfmp-counts', MENU_HINT_KEY = 'lfmp-menu-hint-from';
+export const GREET_WAIT_MS = 1000, GREET_MS = 3500, COUNT_FRESH_MS = 12 * 3600 * 1000, MENU_HINT_DAYS = 3;
+export const GREET_KINDS = [   // [kind, tone, [label for 1, label otherwise (also under "All clear")]]
+  ['reviews', 'r', ['review needs you', 'reviews need you']],
+  ['scorecards', 'a', ['scorecard needs attention', 'scorecards need attention']],
+  ['clients', '', ['client in progress', 'clients in progress']],
+];
+export const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+export const greetingFor = hour => (hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening');
+// The first name from the Google sign-in (the team site's "first"), else the same rule as the initials: "PJ" stays "PJ".
+export function firstName(me) {
+  if (me?.first) return String(me.first).trim();
+  const words = String(me?.name || '').trim().split(/\s+/).filter(Boolean);
+  if (words.length) return words[0];
+  const e = String(me?.email || '').replace(/@.*/, '').split(/[._-]+/)[0] || '';
+  return e ? e[0].toUpperCase() + e.slice(1) : '';
+}
+// Should the greeting play now? Remembers today (first call of the day = true). Storage that throws = false (never plays).
+export function claimGreetingDay(store = globalThis.localStorage, now = new Date()) {
+  try {
+    if (!store) return false;
+    const day = dayKey(now);
+    if (store.getItem(GREET_DAY_KEY) === day) return false;
+    store.setItem(GREET_DAY_KEY, day);
+    return store.getItem(GREET_DAY_KEY) === day;
+  } catch { return false; }
+}
+// A tool notes its own count whenever its list loads, so the other two tools can show it in their greeting.
+export function noteCount(kind, n, store = globalThis.localStorage, now = Date.now()) {
+  if (!GREET_KINDS.some(k => k[0] === kind) || !Number.isFinite(Number(n))) return;
+  try { const all = JSON.parse(store.getItem(GREET_COUNTS_KEY) || '{}') || {}; all[kind] = { n: Number(n), at: now }; store.setItem(GREET_COUNTS_KEY, JSON.stringify(all)); } catch {}
+}
+export function cachedCounts(store = globalThis.localStorage, now = Date.now()) {
+  try {
+    const all = JSON.parse(store.getItem(GREET_COUNTS_KEY) || '{}') || {}, out = {};
+    for (const [k] of GREET_KINDS) { const c = all[k]; if (c && Number.isFinite(c.n) && now - c.at >= 0 && now - c.at < COUNT_FRESH_MS) out[k] = c.n; }
+    return out;
+  } catch { return {}; }
+}
+// The tool's own counts if they come within `wait` ms (never waits longer, never throws), over the cached ones.
+export async function greetCounts(own, { wait = GREET_WAIT_MS, store = globalThis.localStorage, now = Date.now() } = {}) {
+  const cached = cachedCounts(store, now);
+  let mine = {};
+  try { mine = (await Promise.race([Promise.resolve(typeof own === 'function' ? own() : own), new Promise(r => setTimeout(() => r({}), wait))])) || {}; } catch { mine = {}; }
+  const out = { ...cached };
+  for (const [k] of GREET_KINDS) if (Number.isFinite(Number(mine[k])) && mine[k] !== null) out[k] = Number(mine[k]);
+  return out;
+}
+const lettersHtml = (text, cls, from) => {
+  let i = from;
+  return String(text).split(' ').map(w => { const h = `<span class="lv-gr-wd">${[...w].map(c => `<span class="${cls}" style="--i:${i++}">${escH(c)}</span>`).join('')}</span>`; i++; return h; }).join(' ');
+};
+// Pure: the greeting's HTML. counts: { reviews, scorecards, clients } (missing = left out; 0 = green "All clear").
+export function greetingHtml({ hour, date = new Date(), name = '', counts = {} }) {
+  const hello = greetingFor(hour), head = `${hello.toUpperCase()},`;
+  const eyebrow = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  // review FIX 3.1: "All clear" keeps the item's own label under it ("All clear · clients in progress")
+  const items = GREET_KINDS.filter(([k]) => Number.isFinite(counts[k])).map(([k, tone, [one, many]]) => counts[k] === 0
+    ? `<div class="ok" data-k="${k}"><em>All clear</em>${escH(many)}</div>`
+    : `<div class="${tone}" data-k="${k}"><em data-to="${counts[k]}">0</em>${escH(counts[k] === 1 ? one : many)}</div>`).join('');
+  return `<div class="lv-gr" data-lv-greet role="dialog" aria-modal="true" aria-label="${escH(`${hello}${name ? `, ${name}` : ''}`)}">
+<div class="lv-gr-grp"><div class="lv-gr-mk" aria-hidden="true"><i></i><i></i><i></i></div><div class="lv-gr-eb">${escH(eyebrow)}</div>
+<div class="lv-gr-gn" aria-hidden="true">${lettersHtml(head, 'l', 0)}${name ? ` <br class="lv-gr-br">${lettersHtml(name, 'l nm', head.length + 1)}` : ''}</div>
+<div class="lv-gr-ul"></div>${items ? `<div class="lv-gr-st">${items}</div>` : ''}</div>
+<div class="lv-gr-skip">Tap anywhere to skip</div></div>`;
+}
+// Plays it (if today is unclaimed). Resolves when it has gone (true = it played). Never blocks clicks after it ends.
+// It starts at once (never waits for a number): with the counts remembered from the tools' last loads (12 h), and the
+// tool's own count joins if it arrives before the number row shows (STATS_AT); later = left out. No spinner.
+export const STATS_AT = 1450;
+export async function playGreeting({ me, count, store = globalThis.localStorage, now = new Date(), onEnd } = {}) {
+  if (!hasDoc() || reducedMotion() || !claimGreetingDay(store, now)) return false;
+  document.querySelector('[data-lv-greet]')?.remove();
+  document.body.insertAdjacentHTML('beforeend', greetingHtml({ hour: now.getHours(), date: now, name: firstName(me), counts: cachedCounts(store, now.getTime()) }));
+  const el = document.querySelector('[data-lv-greet]'), t0 = Date.now();
+  return new Promise(resolve => {
+    let done = false;
+    const timers = [];
+    const finish = () => { if (done) return; done = true; timers.forEach(clearTimeout); document.removeEventListener('keydown', onKey, true); el.remove(); onEnd?.(); resolve(true); };
+    const skip = e => { e?.preventDefault?.(); e?.stopPropagation?.(); if (done || el.classList.contains('out')) return; el.classList.add('out'); timers.push(setTimeout(finish, 420)); };
+    const onKey = e => skip(e);
+    el.addEventListener('pointerdown', skip); el.addEventListener('click', skip);
+    document.addEventListener('keydown', onKey, true);
+    // the numbers count up from 1.5 s (at most 5 steps, 200 ms apart)
+    const countUp = () => { for (const n of el.querySelectorAll('[data-to]:not([data-up])')) {
+      n.dataset.up = '1';
+      const to = Number(n.dataset.to), steps = Math.min(to, 5);
+      for (let s = 1; s <= steps; s++) timers.push(setTimeout(() => { n.textContent = String(Math.round((to * s) / steps)); }, Math.max(0, 1500 + s * 200 - (Date.now() - t0))));
+    } };
+    countUp();
+    // the tool's own count, if it comes in time (merged over the remembered ones)
+    greetCounts(count, { wait: Math.max(0, STATS_AT - 100), store, now: now.getTime() }).then(counts => {
+      const late = Date.now() - t0;
+      if (done || late > STATS_AT - 60) return;
+      const t = document.createElement('template'); t.innerHTML = greetingHtml({ hour: now.getHours(), date: now, counts });
+      const row = t.content.querySelector('.lv-gr-st'); if (!row) return;
+      row.style.animationDelay = `${STATS_AT - late}ms`;
+      const old = el.querySelector('.lv-gr-st');
+      if (old) old.replaceWith(row); else el.querySelector('.lv-gr-ul')?.after(row);
+      countUp();
+    });
+    requestAnimationFrame(() => el.classList.add('play'));
+    timers.push(setTimeout(finish, GREET_MS));
+  });
+}
+// "Your menu ›" under the initials for ~2 s after the greeting, only in the first 3 days after this release (per device).
+export function menuHintDue(store = globalThis.localStorage, now = new Date()) {
+  try {
+    let from = store.getItem(MENU_HINT_KEY);
+    if (!from) { from = dayKey(now); store.setItem(MENU_HINT_KEY, from); }
+    const [y, m, d] = from.split('-').map(Number), start = new Date(y, m - 1, d);
+    return (new Date(now.getFullYear(), now.getMonth(), now.getDate()) - start) / 86400000 < MENU_HINT_DAYS;
+  } catch { return false; }
+}
+
 // Mount the shell on a page. root: the app container (the desktop top bar goes first inside it).
 export function mountShell(cfg) {
   const doc = document, html = doc.documentElement, root = cfg.root || doc.body;
@@ -604,21 +742,34 @@ export function mountShell(cfg) {
   doc.body.insertAdjacentHTML('beforeend', `${tabsHtml(cfg)}<div class="lv-mescreen" data-lv-me role="dialog" aria-label="Me" tabindex="-1" hidden></div>`);
   doc.body.classList.add('lv-has-tabs');
   const $$ = s => [...doc.querySelectorAll(s)];
-  const pop = doc.querySelector('[data-lv-pop]'), scr = doc.querySelector('[data-lv-me]');
+  const scr = doc.querySelector('[data-lv-me]');
   const isPhone = () => matchMedia(`(max-width:${PHONE_MAX}px)`).matches;
+  // v2.4.0: the initials open the name menu (a popover) on desktop AND phone; the phone's Me tab opens the Me screen
+  const pops = () => $$('[data-lv-pop]');
+  const openPop = () => pops().find(p => !p.hidden);
+  const barSel = s => `${isPhone() ? '[data-lv-ptop]' : '[data-lv-top]'} ${s}`;
   const paintMe = () => {
-    if (pop && !pop.hidden) pop.innerHTML = meHtml(cfg, st);
+    for (const p of pops()) if (!p.hidden) p.innerHTML = meHtml(cfg, st, { compact: true });
     if (!scr.hidden) scr.innerHTML = phoneBarHtml({ ...full(), meScreen: true, plus: null, bell: false }, 'Me') + meHtml(cfg, st);
   };
   const setTabs = () => { const old = doc.querySelector('[data-lv-tabs]'); old.outerHTML = tabsHtml(cfg, st.meOpen); };
-  const closeMe = () => {
-    if (pop && !pop.hidden) { pop.hidden = true; $$('.lv-top [data-lv="me"]').forEach(b => b.setAttribute('aria-expanded', 'false')); }
-    if (!scr.hidden) { scr.hidden = true; st.meOpen = false; doc.body.classList.remove('lv-me-open'); setTabs(); }
+  const meBtnOf = p => p?.closest('[data-lv-avwrap]')?.querySelector('[data-lv="me"]');
+  const closePop = () => { for (const p of pops()) if (!p.hidden) { p.hidden = true; meBtnOf(p)?.setAttribute('aria-expanded', 'false'); } };
+  const closeScreen = () => { if (!scr.hidden) { scr.hidden = true; st.meOpen = false; doc.body.classList.remove('lv-me-open'); setTabs(); } };
+  const closeMe = () => { closePop(); closeScreen(); };
+  const hideMenuHint = () => $$('[data-lv-mhint]').forEach(h => { h.hidden = true; h.classList.remove('show'); });
+  const openPopFor = p => {
+    if (!p) return;
+    closeScreen(); hideMenuHint();
+    p.hidden = false; paintMe(); meBtnOf(p)?.setAttribute('aria-expanded', 'true');
+    p.focus({ preventScroll: true });   // focus moves into the menu (no ring on a tap; Tab then walks its items)
   };
-  const openMe = () => {
-    // focus moves into Me (the container, so no ring shows on a tap; Tab then walks its items)
-    if (isPhone()) { scr.hidden = false; st.meOpen = true; doc.body.classList.add('lv-me-open'); paintMe(); setTabs(); scr.scrollTop = 0; scr.focus({ preventScroll: true }); }
-    else { pop.hidden = false; paintMe(); $$('.lv-top [data-lv="me"]').forEach(b => b.setAttribute('aria-expanded', 'true')); pop.focus(); }
+  const openScreen = () => { closePop(); scr.hidden = false; st.meOpen = true; doc.body.classList.add('lv-me-open'); paintMe(); setTabs(); scr.scrollTop = 0; scr.focus({ preventScroll: true }); };
+  const openMe = () => openPopFor(doc.querySelector(barSel('[data-lv-pop]')));   // the name menu on the bar that's showing
+  // "Your menu ›" under the initials for ~2.6 s (after the greeting, first 3 days of this release)
+  const showMenuHint = () => {
+    const h = doc.querySelector(barSel('[data-lv-mhint]')); if (!h || openPop()) return;
+    h.hidden = false; h.classList.add('show'); setTimeout(() => { h.hidden = true; h.classList.remove('show'); }, 2600);
   };
   const install = () => {
     if (window.LFMPApp?.openInstall) return window.LFMPApp.openInstall();
@@ -633,10 +784,14 @@ export function mountShell(cfg) {
     const home = e.target.closest('[data-lv-home]');
     if (home && !e.metaKey && !e.ctrlKey && !e.shiftKey && (cfg.onHome || st.meOpen)) { e.preventDefault(); closeMe(); cfg.onHome?.(); return; }
     const b = e.target.closest('[data-lv]');
-    if (!b) { if (pop && !pop.hidden && !e.target.closest('.lv-avwrap')) closeMe(); return; }
+    if (!b) { if (openPop() && !e.target.closest('[data-lv-pop]')) closePop(); return; }   // a click outside closes the menu
     const a = b.dataset.lv;
-    if (a === 'me') { if (isPhone()) { st.meOpen ? closeMe() : openMe(); } else (pop.hidden ? openMe() : closeMe()); }
-    else if (a === 'metab') { st.meOpen ? closeMe() : openMe(); }
+    if (a === 'me') {
+      if (b.closest('[data-lv-me]')) { closeScreen(); return; }   // the avatar on the Me screen closes it
+      const p = b.closest('[data-lv-avwrap]')?.querySelector('[data-lv-pop]');
+      if (p && !p.hidden) closePop(); else openPopFor(p);
+    }
+    else if (a === 'metab') { st.meOpen ? closeScreen() : openScreen(); }
     else if (a === 'plus') { closeMe(); cfg.plus?.onClick?.(e); }
     else if (a === 'bell') { closeMe(); cfg.bell?.onClick?.(b, e); }
     else if (a === 'signout') { signOut(); }
@@ -649,7 +804,7 @@ export function mountShell(cfg) {
   };
   doc.addEventListener('click', onClick);
   const onKey = e => {
-    if (e.key === 'Escape' && (!pop.hidden || !scr.hidden)) { closeMe(); doc.querySelector(isPhone() ? '[data-lv-ptop] [data-lv="me"]' : '[data-lv-top] [data-lv="me"]')?.focus(); return; }
+    if (e.key === 'Escape' && (openPop() || !scr.hidden)) { const btn = meBtnOf(openPop()) || doc.querySelector(barSel('[data-lv="me"]')); closeMe(); btn?.focus(); return; }
     // list rows are role="button": Enter / Space open them like a click
     if ((e.key === 'Enter' || e.key === ' ') && e.target.classList?.contains('lv-row')) { e.preventDefault(); e.target.click(); }
   };
@@ -664,6 +819,11 @@ export function mountShell(cfg) {
     setTitle(t) { $$('[data-lv-title]').forEach(h => { h.textContent = t; }); },
     bellWrap() { return doc.querySelector(isPhone() ? '[data-lv-ptop] [data-lv-bellwrap]' : '[data-lv-top] [data-lv-bellwrap]'); },
     destroy() { doc.removeEventListener('click', onClick); doc.removeEventListener('keydown', onKey); },
+    openScreen, showMenuHint,
   };
+  // v2.4.0: the once-a-day greeting. cfg.greet: { count: () => Promise<{ reviews?, scorecards?, clients? }> } (the tool's
+  // own count); greet: false = never (e.g. a reset / offline page).
+  api.greeting = cfg.greet === false ? Promise.resolve(false)
+    : playGreeting({ me: cfg.me, count: cfg.greet?.count, onEnd: () => { if (menuHintDue()) showMenuHint(); } }).catch(() => false);
   return api;
 }
