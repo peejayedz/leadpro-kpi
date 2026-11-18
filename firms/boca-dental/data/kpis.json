@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T09:37:49.447Z",
+  "generatedAt": "2026-11-18T10:07:40.477Z",
   "location": "Boca Dental",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794978000000,
-      "to": 1794994669447,
+      "to": 1794996460477,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -412,7 +412,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1794994669447,
+      "to": 1794996460477,
       "current": {
         "totalLeads": 24,
         "contacted": 0,
@@ -915,8 +915,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794389869447,
-      "to": 1794994669447,
+      "from": 1794391660477,
+      "to": 1794996460477,
       "current": {
         "totalLeads": 50,
         "contacted": 0,
@@ -1172,8 +1172,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792402669447,
-      "to": 1794994669447,
+      "from": 1792404460477,
+      "to": 1794996460477,
       "current": {
         "totalLeads": 247,
         "contacted": 0,
@@ -1439,8 +1439,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787218669447,
-      "to": 1794994669447,
+      "from": 1787220460477,
+      "to": 1794996460477,
       "current": {
         "totalLeads": 715,
         "contacted": 0,
@@ -1717,7 +1717,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1794994669447,
+      "to": 1794996460477,
       "current": {
         "totalLeads": 132,
         "contacted": 0,
@@ -2236,7 +2236,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1794994669447,
+      "to": 1794996460477,
       "current": {
         "totalLeads": 391,
         "contacted": 0,
@@ -2842,7 +2842,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-18T09:37:49.447Z",
+    "checkedAt": "2026-11-18T10:07:40.477Z",
     "counts": {
       "Call": 0,
       "SMS": 0,

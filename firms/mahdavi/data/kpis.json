@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T09:37:32.305Z",
+  "generatedAt": "2026-11-18T10:07:24.126Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1794981600000,
-      "to": 1794994652305,
+      "to": 1794996444126,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -339,7 +339,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794808800000,
-      "to": 1794994652305,
+      "to": 1794996444126,
       "current": {
         "totalLeads": 33,
         "contacted": 0,
@@ -754,8 +754,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794389852305,
-      "to": 1794994652305,
+      "from": 1794391644126,
+      "to": 1794996444126,
       "current": {
         "totalLeads": 82,
         "contacted": 0,
@@ -967,8 +967,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792402652305,
-      "to": 1794994652305,
+      "from": 1792404444126,
+      "to": 1794996444126,
       "current": {
         "totalLeads": 102,
         "contacted": 0,
@@ -1175,8 +1175,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787218652305,
-      "to": 1794994652305,
+      "from": 1787220444126,
+      "to": 1794996444126,
       "current": {
         "totalLeads": 107,
         "contacted": 1,
@@ -1394,7 +1394,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1794994652305,
+      "to": 1794996444126,
       "current": {
         "totalLeads": 102,
         "contacted": 0,
@@ -1770,7 +1770,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1794994652305,
+      "to": 1794996444126,
       "current": {
         "totalLeads": 103,
         "contacted": 0,
@@ -2175,7 +2175,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-18T09:37:32.305Z",
+    "checkedAt": "2026-11-18T10:07:24.126Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
