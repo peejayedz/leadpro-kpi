@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-18T08:22:59.438Z",
+  "open": {
+    "boca-dental:mapping-review": {
+      "kind": "mapping-review",
+      "slug": "boca-dental",
+      "name": "Boca Dental",
+      "title": "Review mapping",
+      "firstSeen": "2026-11-18T08:20:18.073Z",
+      "sentAt": "2026-11-18T08:22:59.438Z"
+    }
+  }
+}
