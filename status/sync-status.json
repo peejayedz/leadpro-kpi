@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-18T08:11:23.830Z",
+  "updatedAt": "2026-11-18T08:40:45.388Z",
   "lastRun": {
-    "at": "2026-11-18T08:11:23.830Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44264229888",
+    "at": "2026-11-18T08:40:45.388Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44268533418",
     "event": "workflow_dispatch",
     "chained": true
   },
@@ -11,13 +11,13 @@
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-18T08:11:23.830Z",
+  "lastAnySuccessAt": "2026-11-18T08:40:45.388Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-18T08:11:23.830Z",
-      "lastSuccessAt": "2026-11-18T08:11:23.830Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44264229888",
+      "lastAttemptAt": "2026-11-18T08:40:45.388Z",
+      "lastSuccessAt": "2026-11-18T08:40:45.388Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44268533418",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -50,9 +50,9 @@
     },
     "lfmp": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-18T08:11:23.830Z",
-      "lastSuccessAt": "2026-11-18T08:11:23.830Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44264229888",
+      "lastAttemptAt": "2026-11-18T08:40:45.388Z",
+      "lastSuccessAt": "2026-11-18T08:40:45.388Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44268533418",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -85,9 +85,9 @@
     },
     "hedayati-law-group-p-c": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-18T08:11:23.830Z",
-      "lastSuccessAt": "2026-11-18T08:11:23.830Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44264229888",
+      "lastAttemptAt": "2026-11-18T08:40:45.388Z",
+      "lastSuccessAt": "2026-11-18T08:40:45.388Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44268533418",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -120,9 +120,9 @@
     },
     "emery-law-office": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-18T08:11:23.830Z",
-      "lastSuccessAt": "2026-11-18T08:11:23.830Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44264229888",
+      "lastAttemptAt": "2026-11-18T08:40:45.388Z",
+      "lastSuccessAt": "2026-11-18T08:40:45.388Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44268533418",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -155,9 +155,9 @@
     },
     "zz-test-2": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-18T08:11:23.830Z",
-      "lastSuccessAt": "2026-11-18T08:11:23.830Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44264229888",
+      "lastAttemptAt": "2026-11-18T08:40:45.388Z",
+      "lastSuccessAt": "2026-11-18T08:40:45.388Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44268533418",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -185,6 +185,41 @@
           "bulk": 0,
           "notLeadType": 0,
           "noInboundSignal": 0
+        }
+      }
+    },
+    "boca-dental": {
+      "status": "ok",
+      "lastAttemptAt": "2026-11-18T08:40:45.388Z",
+      "lastSuccessAt": "2026-11-18T08:40:45.388Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44268533418",
+      "failStreak": 0,
+      "notInPipeline": {
+        "last30": {
+          "form": 0,
+          "survey": 0,
+          "chat": 0,
+          "booking": 0,
+          "call": 0,
+          "sms": 0,
+          "email": 0,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 0,
+          "noInboundSignal": 8
+        },
+        "last90": {
+          "form": 0,
+          "survey": 0,
+          "chat": 0,
+          "booking": 0,
+          "call": 0,
+          "sms": 0,
+          "email": 0,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 0,
+          "noInboundSignal": 30
         }
       }
     }
