@@ -261,6 +261,7 @@ try {
       const chosen = await page.$$eval('.cm-row', els => els.map(r => `${r.closest('.cm-pipe').querySelector('.cm-pn').textContent} · ${r.querySelector('.cm-sn').textContent} = ${r.querySelector('[aria-pressed="true"]')?.dataset.bucket || '—'}`));
       const want = Object.entries(preset.pipelines).flatMap(([p, ss]) => Object.entries(ss).map(([s, b]) => `${p} · ${s} = ${b}`));
       check(want.every(x => chosen.includes(x)), 'Map pipelines: every stage pre-filled with PJ\'s mapping', want.filter(x => !chosen.includes(x)).join('; '));
+      check(/26 stages in 5 pipelines · 4 counted/.test(await page.textContent('.cm-sum')), 'Map pipelines header (review FIX 1.4): "26 stages in 5 pipelines · 4 counted"');
       check(/26 pre-filled/.test(await page.textContent('.cm-sum')) && (await page.$$('.cm-src')).length === 26, 'Map pipelines: each stage tagged "Pre-filled" until clicked');
       check(await page.isChecked('#cmCounts'), 'Map pipelines: Counts only ticked (Medical default)');
       await shot(page, `map-pipelines-pbpcs-${w}-${scheme}`);

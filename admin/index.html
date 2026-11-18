@@ -1430,8 +1430,10 @@ function carePanel(host, { discovery, config, type, preset, saveBtn, warnHost })
     const draw = () => {
       const left = unchosen(st), toConfirm = st.pipelines.filter(p => p.use).flatMap(p => p.stages).filter(s => unsure.has(s.id)).length;
       const total = st.pipelines.filter(p => p.use).reduce((n, p) => n + p.stages.length, 0);
+      // review FIX 1.4: "26 stages in 5 pipelines · 4 counted" = the dashboard's rule (a pipeline counts with ≥1 non-Ignore stage)
+      const inUseN = st.pipelines.filter(p => p.use).length, countedN = st.pipelines.filter(p => p.use && p.stages.some(s => s.bucket && s.bucket !== 'ignore')).length;
       host.innerHTML = `<div class="map caremap">
-        <section class="cm-sum"><p><b>${total}</b> stage${total === 1 ? '' : 's'} in <b>${st.pipelines.filter(p => p.use).length}</b> counted pipeline${st.pipelines.filter(p => p.use).length === 1 ? '' : 's'}${left.length ? ` · <span class="chip warn">${left.length} to choose</span>` : ''}${toConfirm ? ` · <span class="chip">${toConfirm} pre-filled</span>` : ''}</p>
+        <section class="cm-sum"><p><b>${total}</b> stage${total === 1 ? '' : 's'} in <b>${inUseN}</b> pipeline${inUseN === 1 ? '' : 's'} · <b>${countedN}</b> counted${left.length ? ` · <span class="chip warn">${left.length} to choose</span>` : ''}${toConfirm ? ` · <span class="chip">${toConfirm} pre-filled</span>` : ''}</p>
           <p class="hint">Pick one bucket per stage. People are counted once, at the furthest bucket any of their opportunities reached. <b>Ignore</b> = not part of the ${type === 'medical' ? 'patient' : 'sales'} journey (counts nowhere). A stage left without a bucket blocks saving.${preset ? ` Pre-filled from <b>${esc(preset.name)}</b>'s preset where the names match.` : ''}</p>
           <div class="cm-legend">${BUCKETS.map(([k, l]) => `<span class="opt sm" title="${esc(hints[k] || '')}" data-b="${k}">${esc(l)}</span>`).join('')}</div></section>
         ${st.gone.length ? `<div class="warnbox">Not in GHL any more: <b>${st.gone.map(p => esc(p.name)).join(', ')}</b>. It's dropped from the mapping when you save.</div>` : ''}
