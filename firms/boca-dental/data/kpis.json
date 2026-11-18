@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T12:58:12.446Z",
+  "generatedAt": "2026-11-18T21:22:29.573Z",
   "location": "Boca Dental",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,15 +22,15 @@
     "today": {
       "label": "Today",
       "from": 1794978000000,
-      "to": 1795006692446,
+      "to": 1795036949573,
       "current": {
-        "totalLeads": 0,
+        "totalLeads": 13,
         "contacted": 0,
-        "contactRatePct": null,
+        "contactRatePct": 0,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
-        "within5Pct": null,
+        "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
@@ -49,18 +49,45 @@
         "sentRatePct": null,
         "signed": 0,
         "signRatePct": null,
-        "leadToSignedPct": null,
+        "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
-        "bySource": [],
-        "byChannel": [],
-        "attributedLeads": 0,
+        "bySource": [
+          [
+            "Google Business Profile - Boca Raton",
+            6,
+            0
+          ],
+          [
+            "Website Number Pool",
+            4,
+            0
+          ],
+          [
+            "PPC Ad on GMB",
+            2,
+            0
+          ],
+          [
+            "GMB - IP - Gregg Weinstein, DDS",
+            1,
+            0
+          ]
+        ],
+        "byChannel": [
+          [
+            "Third Party",
+            13,
+            0
+          ]
+        ],
+        "attributedLeads": 13,
         "stageMoved": 0,
-        "attributionPct": null,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            0,
+            13,
             "newLeads",
             null
           ],
@@ -103,13 +130,13 @@
         ]
       },
       "previous": {
-        "totalLeads": 0,
+        "totalLeads": 7,
         "contacted": 0,
-        "contactRatePct": null,
+        "contactRatePct": 0,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
-        "within5Pct": null,
+        "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
@@ -128,18 +155,45 @@
         "sentRatePct": null,
         "signed": 0,
         "signRatePct": null,
-        "leadToSignedPct": null,
+        "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
-        "bySource": [],
-        "byChannel": [],
-        "attributedLeads": 0,
+        "bySource": [
+          [
+            "Website Number Pool",
+            3,
+            0
+          ],
+          [
+            "GMB - IP - Gregg Weinstein, DDS",
+            2,
+            0
+          ],
+          [
+            "Google Business Profile - Boca Raton",
+            1,
+            0
+          ],
+          [
+            "Adwords Call Extension",
+            1,
+            0
+          ]
+        ],
+        "byChannel": [
+          [
+            "Third Party",
+            7,
+            0
+          ]
+        ],
+        "attributedLeads": 7,
         "stageMoved": 0,
-        "attributionPct": null,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            0,
+            7,
             "newLeads",
             null
           ],
@@ -412,9 +466,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1795006692446,
+      "to": 1795036949573,
       "current": {
-        "totalLeads": 24,
+        "totalLeads": 37,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -445,22 +499,27 @@
         "bySource": [
           [
             "Website Number Pool",
-            11,
+            15,
             0
           ],
           [
             "Google Business Profile - Boca Raton",
-            5,
+            11,
             0
           ],
           [
             "GMB - IP - Gregg Weinstein, DDS",
-            4,
+            5,
             0
           ],
           [
             "Adwords Call Extension",
             3,
+            0
+          ],
+          [
+            "PPC Ad on GMB",
+            2,
             0
           ],
           [
@@ -472,7 +531,7 @@
         "byChannel": [
           [
             "Third Party",
-            21,
+            34,
             0
           ],
           [
@@ -481,13 +540,13 @@
             0
           ]
         ],
-        "attributedLeads": 24,
+        "attributedLeads": 37,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            24,
+            37,
             "newLeads",
             null
           ],
@@ -530,7 +589,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 23,
+        "totalLeads": 32,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -561,26 +620,26 @@
         "bySource": [
           [
             "Website Number Pool",
-            11,
+            12,
             0
           ],
           [
             "Adwords Call Extension",
-            5,
+            7,
             0
           ],
           [
             "Google Business Profile - Boca Raton",
-            2,
-            0
-          ],
-          [
-            "Social Media",
-            1,
+            6,
             0
           ],
           [
             "GMB - IP - Gregg Weinstein, DDS",
+            3,
+            0
+          ],
+          [
+            "Social Media",
             1,
             0
           ],
@@ -603,22 +662,22 @@
         "byChannel": [
           [
             "Third Party",
-            20,
+            26,
             0
           ],
           [
             "CRM UI",
-            3,
+            6,
             0
           ]
         ],
-        "attributedLeads": 23,
+        "attributedLeads": 32,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            23,
+            32,
             "newLeads",
             null
           ],
@@ -915,10 +974,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794401892446,
-      "to": 1795006692446,
+      "from": 1794432149573,
+      "to": 1795036949573,
       "current": {
-        "totalLeads": 50,
+        "totalLeads": 54,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -949,22 +1008,27 @@
         "bySource": [
           [
             "Website Number Pool",
-            22,
+            25,
             0
           ],
           [
             "Google Business Profile - Boca Raton",
-            10,
+            12,
             0
           ],
           [
             "GMB - IP - Gregg Weinstein, DDS",
-            9,
+            8,
             0
           ],
           [
             "Adwords Call Extension",
-            7,
+            5,
+            0
+          ],
+          [
+            "PPC Ad on GMB",
+            2,
             0
           ],
           [
@@ -981,22 +1045,22 @@
         "byChannel": [
           [
             "Third Party",
-            41,
+            48,
             0
           ],
           [
             "CRM UI",
-            9,
+            6,
             0
           ]
         ],
-        "attributedLeads": 50,
+        "attributedLeads": 54,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            50,
+            54,
             "newLeads",
             null
           ],
@@ -1039,7 +1103,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 61,
+        "totalLeads": 59,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1070,7 +1134,7 @@
         "bySource": [
           [
             "Website Number Pool",
-            26,
+            21,
             0
           ],
           [
@@ -1080,12 +1144,12 @@
           ],
           [
             "Google Business Profile - Boca Raton",
-            10,
+            12,
             0
           ],
           [
             "GMB - IP - Gregg Weinstein, DDS",
-            8,
+            9,
             0
           ],
           [
@@ -1112,22 +1176,22 @@
         "byChannel": [
           [
             "Third Party",
-            50,
+            46,
             0
           ],
           [
             "CRM UI",
-            11,
+            13,
             0
           ]
         ],
-        "attributedLeads": 61,
+        "attributedLeads": 59,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            61,
+            59,
             "newLeads",
             null
           ],
@@ -1172,10 +1236,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792414692446,
-      "to": 1795006692446,
+      "from": 1792444949573,
+      "to": 1795036949573,
       "current": {
-        "totalLeads": 247,
+        "totalLeads": 249,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1206,37 +1270,37 @@
         "bySource": [
           [
             "Website Number Pool",
-            88,
+            91,
             0
           ],
           [
             "Google Business Profile - Boca Raton",
-            74,
+            76,
             0
           ],
           [
             "GMB - IP - Gregg Weinstein, DDS",
-            41,
+            39,
             0
           ],
           [
             "Adwords Call Extension",
-            28,
+            27,
             0
           ],
           [
             "PPC Ad on GMB",
-            6,
+            8,
             0
           ],
           [
             "BingAds Call Extension",
-            5,
+            4,
             0
           ],
           [
             "GMB Local SEO (organic) Tracking # Spanish River Location",
-            4,
+            3,
             0
           ],
           [
@@ -1248,12 +1312,12 @@
         "byChannel": [
           [
             "Third Party",
-            205,
+            208,
             0
           ],
           [
             "CRM UI",
-            41,
+            40,
             0
           ],
           [
@@ -1262,13 +1326,13 @@
             0
           ]
         ],
-        "attributedLeads": 246,
+        "attributedLeads": 248,
         "stageMoved": 0,
         "attributionPct": 99.6,
         "funnel": [
           [
             "New leads",
-            247,
+            249,
             "newLeads",
             null
           ],
@@ -1311,7 +1375,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 230,
+        "totalLeads": 239,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1342,22 +1406,22 @@
         "bySource": [
           [
             "Website Number Pool",
-            73,
+            74,
             0
           ],
           [
             "Google Business Profile - Boca Raton",
-            62,
-            0
-          ],
-          [
-            "Adwords Call Extension",
-            38,
+            66,
             0
           ],
           [
             "GMB - IP - Gregg Weinstein, DDS",
-            38,
+            39,
+            0
+          ],
+          [
+            "Adwords Call Extension",
+            39,
             0
           ],
           [
@@ -1367,19 +1431,19 @@
           ],
           [
             "BingAds Call Extension",
-            4,
+            5,
             0
           ],
           [
             "GMB Local SEO (organic) Tracking # Spanish River Location",
-            1,
+            2,
             0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            185,
+            194,
             0
           ],
           [
@@ -1388,13 +1452,13 @@
             0
           ]
         ],
-        "attributedLeads": 230,
+        "attributedLeads": 239,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            230,
+            239,
             "newLeads",
             null
           ],
@@ -1439,8 +1503,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787230692446,
-      "to": 1795006692446,
+      "from": 1787260949573,
+      "to": 1795036949573,
       "current": {
         "totalLeads": 715,
         "contacted": 0,
@@ -1473,12 +1537,12 @@
         "bySource": [
           [
             "Website Number Pool",
-            265,
+            261,
             0
           ],
           [
             "Google Business Profile - Boca Raton",
-            196,
+            199,
             0
           ],
           [
@@ -1488,12 +1552,12 @@
           ],
           [
             "Adwords Call Extension",
-            102,
+            101,
             0
           ],
           [
             "PPC Ad on GMB",
-            26,
+            28,
             0
           ],
           [
@@ -1515,12 +1579,12 @@
         "byChannel": [
           [
             "Third Party",
-            565,
+            569,
             0
           ],
           [
             "CRM UI",
-            149,
+            145,
             0
           ],
           [
@@ -1578,7 +1642,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 373,
+        "totalLeads": 386,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1609,22 +1673,22 @@
         "bySource": [
           [
             "Website Number Pool",
-            145,
+            152,
             0
           ],
           [
             "Google Business Profile - Boca Raton",
-            95,
+            98,
             0
           ],
           [
             "Adwords Call Extension",
-            55,
+            56,
             0
           ],
           [
             "GMB - IP - Gregg Weinstein, DDS",
-            52,
+            54,
             0
           ],
           [
@@ -1651,12 +1715,12 @@
         "byChannel": [
           [
             "Third Party",
-            284,
+            293,
             0
           ],
           [
             "CRM UI",
-            84,
+            88,
             0
           ],
           [
@@ -1665,13 +1729,13 @@
             0
           ]
         ],
-        "attributedLeads": 368,
+        "attributedLeads": 381,
         "stageMoved": 0,
         "attributionPct": 98.7,
         "funnel": [
           [
             "New leads",
-            373,
+            386,
             "newLeads",
             null
           ],
@@ -1717,9 +1781,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795006692446,
+      "to": 1795036949573,
       "current": {
-        "totalLeads": 132,
+        "totalLeads": 145,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1750,12 +1814,12 @@
         "bySource": [
           [
             "Website Number Pool",
-            57,
+            61,
             0
           ],
           [
             "Google Business Profile - Boca Raton",
-            26,
+            32,
             0
           ],
           [
@@ -1765,7 +1829,12 @@
           ],
           [
             "GMB - IP - Gregg Weinstein, DDS",
-            20,
+            21,
+            0
+          ],
+          [
+            "PPC Ad on GMB",
+            3,
             0
           ],
           [
@@ -1782,17 +1851,12 @@
             "Social Media",
             1,
             0
-          ],
-          [
-            "PPC Ad on GMB",
-            1,
-            0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            109,
+            122,
             0
           ],
           [
@@ -1801,13 +1865,13 @@
             0
           ]
         ],
-        "attributedLeads": 132,
+        "attributedLeads": 145,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            132,
+            145,
             "newLeads",
             null
           ],
@@ -1850,7 +1914,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 143,
+        "totalLeads": 144,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1896,7 +1960,7 @@
           ],
           [
             "Adwords Call Extension",
-            17,
+            18,
             0
           ],
           [
@@ -1918,7 +1982,7 @@
         "byChannel": [
           [
             "Third Party",
-            116,
+            117,
             0
           ],
           [
@@ -1927,13 +1991,13 @@
             0
           ]
         ],
-        "attributedLeads": 143,
+        "attributedLeads": 144,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            143,
+            144,
             "newLeads",
             null
           ],
@@ -2236,9 +2300,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795006692446,
+      "to": 1795036949573,
       "current": {
-        "totalLeads": 391,
+        "totalLeads": 404,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -2269,17 +2333,17 @@
         "bySource": [
           [
             "Website Number Pool",
-            134,
+            138,
             0
           ],
           [
             "Google Business Profile - Boca Raton",
-            113,
+            119,
             0
           ],
           [
             "GMB - IP - Gregg Weinstein, DDS",
-            70,
+            71,
             0
           ],
           [
@@ -2289,7 +2353,7 @@
           ],
           [
             "PPC Ad on GMB",
-            14,
+            16,
             0
           ],
           [
@@ -2311,7 +2375,7 @@
         "byChannel": [
           [
             "Third Party",
-            322,
+            335,
             0
           ],
           [
@@ -2325,13 +2389,13 @@
             0
           ]
         ],
-        "attributedLeads": 390,
+        "attributedLeads": 403,
         "stageMoved": 0,
-        "attributionPct": 99.7,
+        "attributionPct": 99.8,
         "funnel": [
           [
             "New leads",
-            391,
+            404,
             "newLeads",
             null
           ],
@@ -2374,7 +2438,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 356,
+        "totalLeads": 364,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -2405,22 +2469,22 @@
         "bySource": [
           [
             "Website Number Pool",
-            141,
+            143,
             0
           ],
           [
             "Google Business Profile - Boca Raton",
-            93,
+            94,
             0
           ],
           [
             "Adwords Call Extension",
-            51,
+            53,
             0
           ],
           [
             "GMB - IP - Gregg Weinstein, DDS",
-            45,
+            48,
             0
           ],
           [
@@ -2447,12 +2511,12 @@
         "byChannel": [
           [
             "Third Party",
-            273,
+            279,
             0
           ],
           [
             "CRM UI",
-            79,
+            81,
             0
           ],
           [
@@ -2461,13 +2525,13 @@
             0
           ]
         ],
-        "attributedLeads": 352,
+        "attributedLeads": 360,
         "stageMoved": 0,
         "attributionPct": 98.9,
         "funnel": [
           [
             "New leads",
-            356,
+            364,
             "newLeads",
             null
           ],
@@ -2546,7 +2610,7 @@
         "bySource": [
           [
             "Website Number Pool",
-            276,
+            275,
             0
           ],
           [
@@ -2561,7 +2625,7 @@
           ],
           [
             "GMB - IP - Gregg Weinstein, DDS",
-            87,
+            88,
             0
           ],
           [
@@ -2842,7 +2906,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-18T12:58:12.446Z",
+    "checkedAt": "2026-11-18T21:22:29.573Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
