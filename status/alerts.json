@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-19T15:30:49.117Z",
+  "updatedAt": "2026-11-19T17:11:52.006Z",
   "open": {
     "system:no-link": {
       "kind": "no-link",
@@ -49,6 +49,30 @@
       "title": "No successful sync in 4 hours",
       "firstSeen": "2026-11-19T12:18:24.031Z",
       "sentAt": "2026-11-19T15:30:49.117Z"
+    },
+    "system:keeper-stale": {
+      "kind": "keeper-stale",
+      "slug": null,
+      "name": "All firms",
+      "title": "Token keeper hasn't run in 4 hours",
+      "firstSeen": "2026-11-19T16:28:59.030Z",
+      "sentAt": "2026-11-19T17:11:52.006Z"
+    },
+    "dumas-and-sanclemente:mapping-review": {
+      "kind": "mapping-review",
+      "slug": "dumas-and-sanclemente",
+      "name": "Dumas & Sanclemente",
+      "title": "Review mapping",
+      "firstSeen": "2026-11-19T17:10:13.327Z",
+      "sentAt": "2026-11-19T17:11:52.006Z"
+    },
+    "boca-dental:stale": {
+      "kind": "stale",
+      "slug": "boca-dental",
+      "name": "Boca Dental",
+      "title": "No successful sync in 102 min",
+      "firstSeen": "2026-11-19T16:15:18.547Z",
+      "sentAt": "2026-11-19T17:11:52.006Z"
     }
   }
 }
