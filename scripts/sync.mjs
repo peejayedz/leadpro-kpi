@@ -173,8 +173,15 @@ if (!isCare(cfg)) {
   if (pipeRes.changed) {
     const cfgPath = new URL('config.json', firmDir);
     const raw = JSON.parse(await readFile(cfgPath, 'utf8'));
+    const from = { pipelines: raw.pipelines || [], pipelineIds: raw.pipelineIds || null };
     if (applyResolved(raw, pipeRes)) {
       await writeFile(cfgPath, JSON.stringify(raw, null, 2) + '\n');
+      // v1.30.1: each firm syncs in its own job and only data/ reaches the commit job, so the ids travel in a side file
+      // (PIPELINE_IDS_OUT/<slug>.json). scripts/apply-pipeline-ids.mjs merges them into the latest config.json.
+      if (process.env.PIPELINE_IDS_OUT) {
+        mkdirSync(process.env.PIPELINE_IDS_OUT, { recursive: true });
+        writeFileSync(`${process.env.PIPELINE_IDS_OUT}/${SLUG}.json`, JSON.stringify({ slug: SLUG, from, pipelineIds: pipeRes.refs, pipelines: pipeRes.names }) + '\n');
+      }
       cfg.pipelineIds = pipeRes.refs; cfg.pipelines = pipeRes.names;
       console.log(pipeRes.migrated ? `Pipelines now counted by ID: ${pipeRes.refs.map(r => r.name).join(', ')} (saved in config.json).` : `Pipeline name changed in GHL; still counted by ID: ${pipeRes.names.join(', ')}.`);
     }

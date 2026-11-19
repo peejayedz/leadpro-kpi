@@ -67,6 +67,8 @@ jobs:
         env:
           SLUG: ${{ matrix.firm.slug }}
           SYNC_RESULT_FILE: ${{ runner.temp }}/result/${{ matrix.firm.slug }}.json
+          # v1.30.1: pipeline ids found by this sync (law firms counted by ID); the commit job saves them in config.json
+          PIPELINE_IDS_OUT: ${{ runner.temp }}/out/_pipelines
           GHL_TOKEN: ${{ secrets[format('GHL_TOKEN_{0}', matrix.firm.secretKey)] }}
           DASHBOARD_PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', matrix.firm.secretKey)] }}
           # Safety margin only: messages are kept slim (scripts/message-slim.mjs), so a sync needs a few hundred MB.
@@ -149,6 +151,12 @@ jobs:
             find "$DL" -maxdepth 3 | head -50
             exit 1
           fi
+      # v1.30.1: the ids a sync found (first sync after v1.30.0, or a pipeline renamed in GHL) → firms/<slug>/config.json
+      # (pipelineIds + pipelines only; skipped if Edit mapping changed them meanwhile)
+      - name: Save pipeline ids
+        env:
+          DL: ${{ runner.temp }}/firms
+        run: node scripts/apply-pipeline-ids.mjs "$DL"
       - name: Update sync status
         env:
           MATRIX: ${{ needs.plan.outputs.matrix }}

@@ -17,6 +17,7 @@ import { resolvePipelines } from '../../scripts/pipelines.mjs';
 import { updateStatus, describeIssue, openIssues, inBadge } from '../../scripts/sync-status.mjs';
 import { startText } from '../../scripts/kpi-alerts.mjs';
 import { initialState, buildMapping, applyMapping } from '../../admin/mapping.mjs';
+import { applyPipelineIds } from '../../scripts/apply-pipeline-ids.mjs';
 
 const run = promisify(execFile);
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -53,11 +54,11 @@ async function repo(cfg) {
   await writeFile(join(dir, 'firms/index.json'), jsonText([{ slug: 'fx', secretKey: 'FX', name: 'Fx Law', locationId: 'MOCKLOCATION0001' }]));
   return dir;
 }
-async function sync(dir, mock) {
+async function sync(dir, mock, extraEnv = {}) {
   const resultFile = join(dir, 'result.json');
   await rm(resultFile, { force: true });
   let code = 0, out = '';
-  try { const r = await run(process.execPath, [join(dir, 'scripts/sync.mjs'), 'fx'], { env: { PATH: process.env.PATH, GHL_API_BASE: mock.url, GHL_TOKEN: 'mock', DASHBOARD_PASSPHRASE: '', GHL_BACKOFF_MS: '5', SYNC_RESULT_FILE: resultFile }, maxBuffer: 64e6 }); out = r.stdout + r.stderr; }
+  try { const r = await run(process.execPath, [join(dir, 'scripts/sync.mjs'), 'fx'], { env: { PATH: process.env.PATH, GHL_API_BASE: mock.url, GHL_TOKEN: 'mock', DASHBOARD_PASSPHRASE: '', GHL_BACKOFF_MS: '5', SYNC_RESULT_FILE: resultFile, ...extraEnv }, maxBuffer: 64e6 }); out = r.stdout + r.stderr; }
   catch (e) { code = e.code || 1; out = (e.stdout || '') + (e.stderr || ''); }
   return { code, out, result: await readJSON(resultFile).catch(() => null), kpisText: await readFile(join(dir, 'firms/fx/data/kpis.json'), 'utf8').catch(() => null), cfg: await readJSON(join(dir, 'firms/fx/config.json')) };
 }
@@ -152,6 +153,41 @@ test('Edit mapping: a renamed pipeline stays ticked (by id) and saves by id; an 
   const dumas = { ...CFG, pipelines: ['GHL Build Out Stages (Andrew Cass)'] }, st3 = initialState({ discovery: DISC, config: dumas, isNew: false });
   eq(st3.chosenPipes.size, 0, 'nothing ticked'); st3.chosenPipes.add(LEAD.id);
   eq(applyMapping(JSON.parse(JSON.stringify(dumas)), buildMapping(st3, DISC)).pipelineIds, [{ id: LEAD.id, name: 'Lead Stages' }], 'fixed by id');
+});
+
+// v1.30.1: in GitHub each firm syncs in its own job and only data/ reaches the commit job: the ids go in a side file
+test('sync.yml path: the ids travel in a side file and the commit job saves them in the latest config.json (only those two keys)', async () => {
+  const dir = await repo(CFG), mock = await startMock({ pipelines: PIPES, opps: OPPS });
+  try {
+    const out = join(dir, 'out/_pipelines');
+    const a = await sync(dir, mock, { PIPELINE_IDS_OUT: out });
+    eq(a.code, 0, 'exit');
+    const side = JSON.parse(await readFile(join(out, 'fx.json'), 'utf8'));
+    eq([side.slug, side.pipelineIds, side.pipelines, side.from.pipelines], ['fx', [{ id: LEAD.id, name: 'Lead Stages' }], ['Lead Stages'], ['Lead Stages']], 'side file');
+    // the commit job's checkout = the config as it was (the matrix job's change is gone), plus another key changed meanwhile
+    const latest = { ...CFG, locationId: 'MOCKLOCATION0001', notice: { show: false } };
+    await writeFile(join(dir, 'firms/fx/config.json'), jsonText(latest));
+    eq(await applyPipelineIds(join(dir, 'out'), dir), [{ slug: 'fx', result: 'saved' }], 'saved');
+    const c = await readJSON(join(dir, 'firms/fx/config.json'));
+    eq(c.pipelineIds, [{ id: LEAD.id, name: 'Lead Stages' }], 'ids saved'); eq(c.notice, { show: false }, 'the other change kept');
+    const rest = o => { const x = { ...o }; delete x.pipelineIds; return x; };
+    eq(rest(c), latest, 'nothing else changed');
+    // Edit mapping changed the pipelines meanwhile → the side file is skipped
+    await writeFile(join(dir, 'firms/fx/config.json'), jsonText({ ...latest, pipelines: ['Onboarding'] }));
+    eq(await applyPipelineIds(join(dir, 'out'), dir), [{ slug: 'fx', result: 'skipped (changed since)' }], 'skipped');
+    eq((await readJSON(join(dir, 'firms/fx/config.json'))).pipelines, ['Onboarding'], 'Edit mapping wins');
+    // kpis.json and other files in the artifact are never read as side files
+    await mkdir(join(dir, 'out/fx'), { recursive: true }); await writeFile(join(dir, 'out/fx/kpis.json'), JSON.stringify({ slug: 'fx', pipelineIds: [{ id: 'x' }], pipelines: ['x'] }));
+    await writeFile(join(dir, 'firms/fx/config.json'), jsonText(latest));
+    await rm(join(out, 'fx.json'));
+    eq(await applyPipelineIds(join(dir, 'out'), dir), [], 'only _pipelines/*.json');
+  } finally { await mock.close(); await rm(dir, { recursive: true, force: true }); }
+});
+test('sync.yml: the sync job writes the side file; the commit job runs apply-pipeline-ids before the status and the commit', async () => {
+  const y = await readFile(join(ROOT, '.github/workflows/sync.yml'), 'utf8');
+  ok(/PIPELINE_IDS_OUT: \$\{\{ runner\.temp \}\}\/out\/_pipelines/.test(y), 'env in the sync job (inside the uploaded out/ folder)');
+  const i = y.indexOf('node scripts/apply-pipeline-ids.mjs'), c = y.indexOf('name: Copy firm data'), st = y.indexOf('name: Update sync status'), cm = y.indexOf('git add -A firms status');
+  ok(i > c && i < st && i < cm, 'after the data copy, before the status and the commit');
 });
 
 let pass = 0;

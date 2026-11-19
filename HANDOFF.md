@@ -2,7 +2,12 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
-## v1.30.0 Menu link inside GHL + its CSS rule + pipelines by ID: READY LOCALLY 20 Nov 2026, NOT COMMITTED OR PUSHED (push A of 3; with Builder v1.24.0). PJ says GO before the push.
+## v1.30.1 Fix: save the pipeline ids a sync finds: READY LOCALLY 20 Nov 2026, NOT PUSHED (PJ to say GO)
+- **Why:** the 19:37 UTC chain sync (run 44600169295, the first after v1.30.0) migrated every law firm ("Pipelines now counted by ID" for Mahdavi, LFMP, Emery, Hedayati, ZZ TEST 2), but the per-firm jobs only hand `data/` to the commit job, so `config.json` lost the ids. Counting is correct (names still match); a rename would still drop those four to "Pipeline not found". Dumas is safe (seeded).
+- **Fix:** side file `PIPELINE_IDS_OUT/<slug>.json` → `scripts/apply-pipeline-ids.mjs` in the commit job (only `pipelineIds` + `pipelines`; skipped if Edit mapping changed them).
+- **After the push:** the next sync's commit should show `pipelineIds` in the five law firms' `config.json` ("Pipeline ids for <slug>: saved" in the commit job log).
+
+## v1.30.0 Menu link inside GHL + its CSS rule + pipelines by ID: LIVE 20 Nov 2026 (`265e273`, Builder `e176d24` after; admin-site 195f5a7b0ff76e55) (push A of 3; with Builder v1.24.0). Live check: the 19:37 UTC chain sync migrated every law firm with matching numbers, Dumas counted 64 leads; ids not saved, see v1.30.1.
 - **What it is:** CHANGELOG v1.30.0. Part 1: Add to GHL menu uses `openMode: "iframe"` (guard refuses anything else), keeps the link id (`config.menuLink.id`), and KPI admin Setup / Builder KPI tab show the agency Custom CSS rule (order -92) with Copy; **Show CSS rule** = `menu-css.yml`, one GET then commits the id. Part 3: law firms count `config.pipelineIds`; first sync migrates names once; a missing pipeline = "Pipeline not found" (bell badge + Slack, Edit mapping; last numbers kept).
 - **Dumas & Sanclemente:** config seeded with `pipelineIds` = `mklLxJVYxOavYUDBZ4MV` "Lead Stages" (PJ chose this, 20 Nov). It's the same pipeline, renamed 19 Nov (discovery.json history). Without it, the next sync would have raised "Pipeline not found".
 - **Push order:** KPI first, then the Builder (its `assemble.mjs` copies the new `scripts/menu-css.mjs`; Builder first = a failed deploy, safely), then `gh workflow run admin-site.yml -R peejayedz/ghl-subaccount-builder`. The team-site server must be deployed for `menu-css.yml` to be allowed (`K_WF`).
