@@ -1,0 +1,96 @@
+{
+  "generatedAt": "2026-11-19T17:09:56.909Z",
+  "slug": "dumas-and-sanclemente",
+  "locationId": "uCEPTnLiwbjG85oO8vMC",
+  "locationName": "Dumas & Sanclemente",
+  "scopes": {
+    "checkedAt": "2026-11-19T17:09:55.517Z",
+    "ok": [
+      "opportunities.readonly",
+      "contacts.readonly",
+      "users.readonly",
+      "locations.readonly",
+      "locations/customFields.readonly",
+      "calendars.readonly",
+      "calendars/events.readonly",
+      "conversations.readonly",
+      "conversations/message.readonly"
+    ],
+    "missing": [],
+    "unchecked": [],
+    "tokenRejected": false
+  },
+  "pipelines": [
+    {
+      "id": "mklLxJVYxOavYUDBZ4MV",
+      "name": "GHL Build Out Stages (Andrew Cass)",
+      "stages": [
+        {
+          "id": "5717437d-2b0f-4608-9d9e-a64354f1c04e",
+          "name": "Stage 1: Web Lead",
+          "position": 0
+        },
+        {
+          "id": "ce97b83f-6cc1-4586-b0ab-37111b8d5b6a",
+          "name": "Stage 2: Phone lead",
+          "position": 1
+        },
+        {
+          "id": "be81abf5-a84a-461f-8ad2-6d1710adbd2a",
+          "name": "Stage 3: Lead Contacted?",
+          "position": 2
+        },
+        {
+          "id": "16f9b821-fd1e-4e65-be84-f85209a01599",
+          "name": "Stage 4: Lead Qualified?",
+          "position": 3
+        },
+        {
+          "id": "4873e3c3-7b0b-4f2a-8a17-6f0fc4ffb496",
+          "name": "Stage 5: Booked Consultation",
+          "position": 4
+        },
+        {
+          "id": "124f25b1-ec81-429e-9ee1-e2e6ff3198ba",
+          "name": "Stage 6: Consultation Showed - Agreement Sent",
+          "position": 5
+        },
+        {
+          "id": "cc234aa0-bb03-4ce6-8da6-bf47dbc680f7",
+          "name": "Stage 7: Consultation Showed - Lead Rejected",
+          "position": 6
+        },
+        {
+          "id": "e19012ae-654e-4d5b-be97-c4dce97119b8",
+          "name": "Stage 8: Consultation Showed - Lead Referred",
+          "position": 7
+        },
+        {
+          "id": "4025ddf6-0f0a-471e-8436-c425a6f88d0b",
+          "name": "Stage 9: Consultation Showed - Lead Thinking",
+          "position": 8
+        },
+        {
+          "id": "26869a82-45e8-442d-8a7c-47d48fae207f",
+          "name": "Stage 10: Consultation No Show",
+          "position": 9
+        },
+        {
+          "id": "270a09d2-7b07-4266-b642-eff92b8e0654",
+          "name": "Stage 11: Agreement Signed",
+          "position": 10
+        },
+        {
+          "id": "df9dfbd9-00d0-41e3-afa1-b8ba5057d65d",
+          "name": "Stage 12: Referred Lead Accepted?",
+          "position": 11
+        }
+      ]
+    }
+  ],
+  "calendars": [],
+  "customFields": {
+    "contact": [],
+    "opportunity": []
+  }
+}
