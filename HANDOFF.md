@@ -2,7 +2,8 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
-## v1.29.2 The greeting's numbers at once (shared shell 2.4.2): TESTED LOCALLY 19 Nov 2026, NOT PUSHED (waiting for PJ)
+## v1.29.2 The greeting's numbers at once (shared shell 2.4.2): DEPLOYED 19 Nov 2026 (`3d4b9ca`; Review `b268957`, Builder `8ee757a` after; admin-site run 44496387224 green, admin-site c7bd791fc03d7012 = the local build)
+- **Live check: PJ to test by Sign out → sign in.** No Chrome live check was run.
 - **What it is:** see CHANGELOG v1.29.2 and the Builder HANDOFF v1.22.2. The team site's `/api/greet-counts` counts "Needs attention" with `admin/greet-count.mjs` `readCounts()` (hidden + shown) and keeps it in KV `KPI_PASS` key `greet:counts` (the passphrase list only reads `pass:` keys).
 - **Push order:** KPI and Review first, the Builder last.
 
