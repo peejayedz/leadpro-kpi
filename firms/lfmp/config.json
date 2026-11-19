@@ -82,5 +82,11 @@
     "show": false,
     "autoHide": null,
     "lowActivity": null
-  }
+  },
+  "pipelineIds": [
+    {
+      "id": "Oh3kbvKQCDkjbXNSsHk4",
+      "name": "01. Sales Pipeline"
+    }
+  ]
 }

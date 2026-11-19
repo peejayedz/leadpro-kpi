@@ -93,5 +93,11 @@
   "menuLink": {
     "status": "created",
     "at": "2026-11-13T06:22:38.346Z"
-  }
+  },
+  "pipelineIds": [
+    {
+      "id": "lmCQm4WWRHsOCFpK6wuk",
+      "name": "Lead Stages"
+    }
+  ]
 }

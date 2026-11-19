@@ -75,5 +75,11 @@
   },
   "notice": {
     "show": false
-  }
+  },
+  "pipelineIds": [
+    {
+      "id": "xYDK3IL8kmN7xW547vrM",
+      "name": "Marketing Pipeline"
+    }
+  ]
 }

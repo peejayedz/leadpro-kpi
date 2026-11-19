@@ -100,5 +100,11 @@
     "speedToLead": "Speed to Lead (min)",
     "firstContacted": "First Contacted Date",
     "contactMethod": "Contact Method"
-  }
+  },
+  "pipelineIds": [
+    {
+      "id": "Z2YURZ96VqEQi1radcpL",
+      "name": "Lead Stages"
+    }
+  ]
 }
