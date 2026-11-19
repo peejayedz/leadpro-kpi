@@ -5,6 +5,11 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.29.2 — 19 Nov 2026
+- **[internal]** Admin: the greeting's three numbers show at once, also on the first sign-in of the day (shared `lfmp-session.js` 2.4.2, with Builder v1.22.2 and Review admin v1.12.2). The team site keeps them (new `POST /api/greet-counts`, refreshed every 10 minutes) and counts them with the tools' own `greet-count` modules; per-tool reads are the fallback.
+- **[internal]** `admin/greet-count.mjs` `readCounts()`: one read, the count with test firms hidden and shown (the server keeps both). `readCount()` is unchanged for the browser.
+- **[internal]** Tests: `tests/shell/shell.test.mjs` (same in all three repos) covers the order; the endpoint is tested in the Builder (`tests/unit/greet-counts.test.mjs`, `tests/e2e/greet-fresh.mjs`).
+
 ## v1.29.1 — 19 Nov 2026
 - **[internal]** Admin: the greeting plays again after you sign out and back in, and always shows all three numbers (shared `lfmp-session.js` 2.4.1, the same as Builder v1.22.1 and Review admin v1.12.1; look unchanged). Sign out clears "greeted today"; nothing else replays it. When the greeting starts, the other two tools' counts are read fresh (read-only, through the team site); a late or failed read falls back to the last known count (≤ 12 h) or is left out.
 - **[internal]** Admin: new `admin/greet-count.mjs` holds the "Needs attention" count (`reasonsOf`, `needsAttention`, `isTestFirm`), the bell's issue list (`buildIssues`), the chain state (`readChain`) and the contents read (`readText`); the firm list uses them too, and `readCount()` makes the same GitHub reads for the other tools' greetings. No writes, no GHL.

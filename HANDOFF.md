@@ -2,6 +2,10 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.29.2 The greeting's numbers at once (shared shell 2.4.2): TESTED LOCALLY 19 Nov 2026, NOT PUSHED (waiting for PJ)
+- **What it is:** see CHANGELOG v1.29.2 and the Builder HANDOFF v1.22.2. The team site's `/api/greet-counts` counts "Needs attention" with `admin/greet-count.mjs` `readCounts()` (hidden + shown) and keeps it in KV `KPI_PASS` key `greet:counts` (the passphrase list only reads `pass:` keys).
+- **Push order:** KPI and Review first, the Builder last.
+
 ## v1.29.1 Greeting after Sign out + all three numbers (shared shell 2.4.1): LIVE 19 Nov 2026 (`f5b959c`; Review `67ad062`, Builder `8ae7acd`; admin-site run 44359509100, admin-site 4935c6c871b5ab14 = the local build)
 - **Live check (read-only):** serves 1.29.1 (CHANGELOG + whats-new); fresh `readCount` = Needs attention filter = 2. Sign out not pressed.
 - **OPEN:** this count's live read takes ~3.6 s (index + every firm's config/kpis + status + chain), past the greeting's ~1.35 s cut, so the other tools' greetings usually show the last known count (≤ 12 h). See the Builder HANDOFF v1.22.1 for the options.

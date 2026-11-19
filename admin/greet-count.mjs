@@ -50,8 +50,10 @@ export async function readText(gh, repo, path, ref = BRANCH) {
   return new TextDecoder().decode(fromB64(b64));
 }
 
-// readCount: the list's load + the bell's check, read only, then the count.
-export async function readCount({ ghFetch, store = globalThis.localStorage } = {}) {
+// readCounts (v1.29.2): the list's load + the bell's check, read only, then the count with test firms hidden and shown
+// (the team site's /api/greet-counts keeps both; each browser picks by its own "Show test clients").
+export const KIND = 'scorecards';
+export async function readCounts({ ghFetch } = {}) {
   const gh = async (method, path, body, { allow404 = false } = {}) => {
     const r = await ghFetch(method, path, body);
     if (r.status === 404 && allow404) return null;
@@ -72,6 +74,10 @@ export async function readCount({ ghFetch, store = globalThis.localStorage } = {
   ]);
   const chain = await readChain(gh, R, syncStatus);
   const issues = buildIssues({ keeperStatus, syncStatus, chain, firms, configs, kpis, now: Date.now() });
+  return { hidden: attentionCount(firms, { showTests: false, kpiFull, issues }), shown: attentionCount(firms, { showTests: true, kpiFull, issues }) };
+}
+export async function readCount({ ghFetch, store = globalThis.localStorage } = {}) {
+  const c = await readCounts({ ghFetch });
   let showTests = false; try { showTests = store?.getItem(TESTS_KEY) === '1'; } catch {}
-  return { scorecards: attentionCount(firms, { showTests, kpiFull, issues }) };
+  return { scorecards: showTests ? c.shown : c.hidden };
 }

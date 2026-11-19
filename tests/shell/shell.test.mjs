@@ -210,6 +210,45 @@ test('greeting v2.4.1: every count read at once; what is in by the deadline show
   // junk answers are ignored
   assert.deepEqual(await S.greetCounts([() => ({ clients: null, reviews: 'x', scorecards: undefined }), () => null], { store: memStore(), now, wait: 30 }), {});
 });
+test('greeting v2.4.2: the team site\'s numbers first; a per-tool read only if it came in first; then last known (12 h); else left out', async () => {
+  const now = Date.now(), sleep = ms => new Promise(r => setTimeout(r, ms));
+  const seed = () => { const s = memStore(); S.noteCount('reviews', 5, s, now - 3600e3); return s; };
+  // the team site answers at once with all three: used, and the greeting doesn't wait for the slower tool reads
+  let st = seed(); const t0 = Date.now();
+  assert.deepEqual(await S.greetCounts([() => sleep(300).then(() => ({ clients: 9 }))], { store: st, now, wait: 1000, server: () => ({ clients: 1, scorecards: 2, reviews: 3 }) }), { clients: 1, scorecards: 2, reviews: 3 });
+  assert.ok(Date.now() - t0 < 200, 'resolves as soon as every number has an answer');
+  // a per-tool read that came in before the team site wins (fresher); the team site fills the rest
+  st = seed();
+  assert.deepEqual(await S.greetCounts([() => ({ clients: 9 })], { store: st, now, wait: 300, server: () => sleep(40).then(() => ({ clients: 1, scorecards: 2 })) }), { clients: 9, scorecards: 2, reviews: 5 }, 'reviews: last known');
+  assert.equal(S.cachedCounts(st).clients, 9, 'the fresher per-tool number is the one noted');
+  // team site down: per-tool reads, then last known, else left out
+  st = seed();
+  assert.deepEqual(await S.greetCounts([() => ({ scorecards: 4 })], { store: st, now, wait: 80, server: () => Promise.reject(new Error('500')) }), { scorecards: 4, reviews: 5 });
+  // team site slow (past the cut): same as down
+  st = seed();
+  assert.deepEqual(await S.greetCounts([() => ({ clients: 2 })], { store: st, now, wait: 80, server: () => sleep(500).then(() => ({ clients: 1, reviews: 1 })) }), { clients: 2, reviews: 5 });
+  // nothing at all: nothing shown, never throws
+  assert.deepEqual(await S.greetCounts([], { store: memStore(), now, wait: 30, server: () => { throw new Error('x'); } }), {});
+});
+test('greeting v2.4.2: the team site\'s answer is picked by each tool\'s own "Show test clients" in this browser; junk ignored', () => {
+  const res = { counts: { clients: { hidden: 1, shown: 2, at: 0 }, scorecards: { hidden: 3, shown: 4, at: 0 }, reviews: { hidden: 0, shown: 6, at: 0 } } };
+  const st = memStore();
+  assert.deepEqual(S.pickServerCounts(res, st), { clients: 1, scorecards: 3, reviews: 0 }, 'test clients hidden everywhere (0 kept)');
+  st.setItem('sab-show-tests', '1'); st.setItem('ar-admin-tests', '1');
+  assert.deepEqual(S.pickServerCounts(res, st), { clients: 2, scorecards: 3, reviews: 6 }, 'per tool');
+  assert.deepEqual(S.GREET_TESTS_KEYS, { clients: 'sab-show-tests', scorecards: 'leadpro-admin-tests', reviews: 'ar-admin-tests' });
+  assert.deepEqual(S.pickServerCounts({ counts: { clients: { hidden: 'x' }, reviews: null } }, st), {});
+  assert.deepEqual(S.pickServerCounts(null, { getItem() { throw new Error('blocked'); } }), {});
+  assert.deepEqual(S.pickServerCounts(res, { getItem() { throw new Error('blocked'); } }), { clients: 1, scorecards: 3, reviews: 0 }, 'storage blocked = hidden');
+});
+test('loadBuilderRecords v2.4.2: another GitHub reader (the team site\'s server) gets its own read, never the page\'s cached one', async () => {
+  const seen = [];
+  const gh = async (m, p, b, o) => { seen.push([m, p]); if (p.endsWith('/contents/records?ref=main')) return Response.json([{ type: 'file', name: 'a1.json' }]); return new Response(JSON.stringify({ id: 'a1', businessName: 'Acme Law P.C', review: { code: 'acme' }, kpi: { slug: 'acme' } }), { status: 200 }); };
+  const recs = await S.loadBuilderRecords({ gh });
+  assert.deepEqual(recs, [{ id: 'a1', name: 'Acme Law P.C.', locationId: '', reviewCode: 'acme', kpiSlug: 'acme', linkSent: null }]);
+  assert.ok(seen.every(([m]) => m === 'GET') && seen.length === 2);
+  assert.equal(await S.loadBuilderRecords({ gh: async () => { throw new Error('down'); } }).then(r => r.length), 0, 'never throws');
+});
 test('greeting v2.4.1: each tool reads its own count from its list + the other two with their greet-count module on this site', async () => {
   assert.deepEqual(S.TOOL_KIND, { builder: 'clients', kpi: 'scorecards', review: 'reviews' });
   assert.deepEqual(S.GREET_SOURCES, { clients: '/ghl-subaccount-builder-page/greet-count.js', scorecards: '/leadpro-kpi/admin/greet-count.mjs', reviews: '/automation-review/admin/greet-count.mjs' });

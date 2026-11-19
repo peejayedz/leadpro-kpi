@@ -276,10 +276,17 @@ export const byName = get => (a, b) => nameKey(get(a)).localeCompare(nameKey(get
 // The Builder's client records (private repo, records/<id>.json) through the team site, read only:
 // [{ id, name, locationId, reviewCode, kpiSlug, linkSent }]. Never throws: any failure = [] (tools keep their own names).
 let recordsPromise = null;
-export function loadBuilderRecords({ fresh = false } = {}) {
+// v2.4.2: gh = another GitHub reader with the same answers (the team site's server passes its own for /api/greet-counts);
+// such a read is never shared with the page's.
+export function loadBuilderRecords({ fresh = false, gh = null } = {}) {
+  if (gh) return readBuilderRecords(gh);
   if (recordsPromise && !fresh) return recordsPromise;
+  recordsPromise = readBuilderRecords(ghFetch);
+  return recordsPromise;
+}
+function readBuilderRecords(ghFetch) {
   const REPO = '/repos/peejayedz/ghl-subaccount-builder';
-  recordsPromise = (async () => {
+  return (async () => {
     try {
       const r = await ghFetch('GET', `${REPO}/contents/records?ref=main`);
       if (!r.ok) return [];
@@ -290,7 +297,6 @@ export function loadBuilderRecords({ fresh = false } = {}) {
         reviewCode: x.review?.code || '', kpiSlug: x.kpi?.slug || '', linkSent: x.review?.linkSent || null }));
     } catch { return []; }
   })();
-  return recordsPromise;
 }
 
 // ---------------------------------------------------------------- What's new card (v1.16.0, all three tools)
@@ -670,15 +676,47 @@ export function cachedCounts(store = globalThis.localStorage, now = Date.now()) 
 // v2.4.1: reads = one read or a list (each a function returning a promise of { reviews?, scorecards?, clients? }), all
 // started at once. Resolves when all are in or after `wait` ms, whichever is first (never waits longer, never throws):
 // the fresh counts over the cached ones. Every fresh count is noted for later, even one that comes in after `wait`.
-export async function greetCounts(reads, { wait = GREET_WAIT_MS, store = globalThis.localStorage, now = Date.now() } = {}) {
-  const cached = cachedCounts(store, now), fresh = {};
-  const take = o => { for (const [k] of GREET_KINDS) { const v = o?.[k]; if (v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v))) { fresh[k] = Number(v); noteCount(k, fresh[k], store); } } };
+// v2.4.2: server = the team site's answer (/api/greet-counts, readServerCounts), read at the same time. For each number:
+// the team site's, unless a per-tool read came in first (fresher) → else the last known (≤ 12 h) → else left out.
+// Resolves as soon as every number has an answer, or all reads are done, or at `wait`. A team-site number is noted only
+// when no per-tool read beat it (it can be up to 10 minutes old).
+const validN = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
+export async function greetCounts(reads, { wait = GREET_WAIT_MS, store = globalThis.localStorage, now = Date.now(), server = null } = {}) {
+  const cached = cachedCounts(store, now), tool = {}, srv = {}, seq = { n: 0 };
+  let wake = () => {};
+  const allIn = () => GREET_KINDS.every(([k]) => k in tool || k in srv);
+  const takeTool = o => { for (const [k] of GREET_KINDS) if (validN(o?.[k])) { tool[k] = { n: Number(o[k]), i: seq.n++ }; noteCount(k, tool[k].n, store); } if (allIn()) wake(); };
+  const takeSrv = o => { for (const [k] of GREET_KINDS) if (validN(o?.[k])) { srv[k] = { n: Number(o[k]), i: seq.n++ }; if (!(k in tool)) noteCount(k, srv[k].n, store); } if (allIn()) wake(); };
+  const run = (r, take) => Promise.resolve().then(() => (typeof r === 'function' ? r() : r)).then(take, () => {});
   const list = (Array.isArray(reads) ? reads : [reads]).filter(Boolean);
-  const all = Promise.all(list.map(r => Promise.resolve().then(() => (typeof r === 'function' ? r() : r)).then(take, () => {})));
+  const all = Promise.all([...list.map(r => run(r, takeTool)), ...(server ? [run(server, takeSrv)] : [])]);
   let timer;
-  await Promise.race([all, new Promise(r => { timer = setTimeout(r, wait); })]);
+  await Promise.race([all, new Promise(r => { wake = r; timer = setTimeout(r, wait); })]);
   clearTimeout(timer);
-  return { ...cached, ...fresh };
+  const out = { ...cached };
+  for (const [k] of GREET_KINDS) {
+    const s = srv[k], t = tool[k];
+    if (s && (!t || s.i < t.i)) out[k] = s.n; else if (t) out[k] = t.n;
+  }
+  return out;
+}
+// The team site's counts (/api/greet-counts: { counts: { clients: { hidden, shown, at }, … } }) → { clients: n, … },
+// each by this browser's own "Show test clients" in that tool. Quiet: never sends anyone to sign in, never throws.
+export const GREET_TESTS_KEYS = { clients: 'sab-show-tests', scorecards: 'leadpro-admin-tests', reviews: 'ar-admin-tests' };
+export function pickServerCounts(res, store = globalThis.localStorage) {
+  const out = {};
+  for (const [k] of GREET_KINDS) {
+    const c = res?.counts?.[k]; if (!c) continue;
+    let shown = false; try { shown = store?.getItem(GREET_TESTS_KEYS[k]) === '1'; } catch {}
+    const v = shown ? c.shown : c.hidden; if (validN(v)) out[k] = Number(v);
+  }
+  return out;
+}
+export async function readServerCounts(store = globalThis.localStorage) {
+  const r = await lfmpFetch(`${API_BASE}greet-counts`, { method: 'POST', redirect: 'manual', credentials: 'same-origin', cache: 'no-store',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: '{}' });
+  if (!r.ok) throw new Error(`greet-counts ${r.status}`);
+  return pickServerCounts(await r.json(), store);
 }
 // v2.4.1: where each tool's count is read from (same team site). readCount gets the shell's own read helpers, so the
 // module makes exactly the read-only calls its tool makes (GitHub and the review backend through /api/, never GHL).
@@ -717,7 +755,7 @@ export function greetingHtml({ hour, date = new Date(), name = '', counts = {} }
 // fresh counts (reads: the tool's own + the other two, v2.4.1) join if they arrive before the number row shows
 // (STATS_AT); later = the remembered one or left out. No spinner, no error. count = a single read (older callers).
 export const STATS_AT = 1450;
-export async function playGreeting({ me, count, reads = count, store = globalThis.localStorage, now = new Date(), onEnd } = {}) {
+export async function playGreeting({ me, count, reads = count, server = null, store = globalThis.localStorage, now = new Date(), onEnd } = {}) {
   if (!hasDoc() || reducedMotion() || !claimGreetingDay(store, now)) return false;
   document.querySelector('[data-lv-greet]')?.remove();
   document.body.insertAdjacentHTML('beforeend', greetingHtml({ hour: now.getHours(), date: now, name: firstName(me), counts: cachedCounts(store, now.getTime()) }));
@@ -738,7 +776,7 @@ export async function playGreeting({ me, count, reads = count, store = globalThi
     } };
     countUp();
     // the fresh counts that come in time (merged over the remembered ones)
-    greetCounts(reads, { wait: Math.max(0, STATS_AT - 100), store, now: now.getTime() }).then(counts => {
+    greetCounts(reads, { wait: Math.max(0, STATS_AT - 100), store, now: now.getTime(), server }).then(counts => {
       const late = Date.now() - t0;
       if (done || late > STATS_AT - 60) return;
       const t = document.createElement('template'); t.innerHTML = greetingHtml({ hour: now.getHours(), date: now, counts });
@@ -855,6 +893,6 @@ export function mountShell(cfg) {
   // v2.4.0: the once-a-day greeting. cfg.greet: { count: () => Promise<{ reviews?, scorecards?, clients? }> } (the tool's
   // own count); greet: false = never (e.g. a reset / offline page). v2.4.1: the other two tools' counts are read fresh.
   api.greeting = cfg.greet === false ? Promise.resolve(false)
-    : playGreeting({ me: cfg.me, reads: greetReads(cfg.tool, cfg.greet?.count, cfg.greet?.readOther), onEnd: () => { if (menuHintDue()) showMenuHint(); } }).catch(() => false);
+    : playGreeting({ me: cfg.me, reads: greetReads(cfg.tool, cfg.greet?.count, cfg.greet?.readOther), server: cfg.greet?.server || (() => readServerCounts()), onEnd: () => { if (menuHintDue()) showMenuHint(); } }).catch(() => false);
   return api;
 }

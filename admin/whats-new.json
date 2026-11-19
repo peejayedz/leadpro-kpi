@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.29.2": {
+    "title": "The greeting's three numbers show at once",
+    "summary": "The team site keeps them ready, so they don't wait on the other tools.",
+    "items": [
+      { "type": "fixed", "tag": "internal", "text": "The greeting's three numbers now show at once, also on the first sign-in of the day. The team site keeps them ready (updated every 10 minutes)." }
+    ]
+  },
   "1.29.1": {
     "title": "The greeting plays again after you sign out and back in",
     "summary": "And it always shows all three numbers.",
