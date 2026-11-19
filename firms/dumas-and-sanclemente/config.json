@@ -91,10 +91,6 @@
     "firstContacted": "First Contacted Date",
     "contactMethod": "Contact Method"
   },
-  "mappingReview": {
-    "reason": "unknown-snapshot",
-    "at": "2026-11-19T17:10:13.327Z"
-  },
   "menuLink": {
     "status": "created",
     "at": "2026-11-19T17:13:02.378Z"
