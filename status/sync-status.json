@@ -1,17 +1,17 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-19T19:52:18.092Z",
+  "updatedAt": "2026-11-19T19:54:26.529Z",
   "lastRun": {
-    "at": "2026-11-19T19:52:18.092Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44600175487",
-    "event": "schedule",
+    "at": "2026-11-19T19:54:26.529Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44602998891",
+    "event": "workflow_dispatch",
     "chained": false
   },
   "syncChain": {
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-19T19:52:18.092Z",
+  "lastAnySuccessAt": "2026-11-19T19:54:26.529Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
@@ -225,9 +225,9 @@
     },
     "dumas-and-sanclemente": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-19T19:52:18.092Z",
-      "lastSuccessAt": "2026-11-19T19:52:18.092Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44600175487",
+      "lastAttemptAt": "2026-11-19T19:54:26.529Z",
+      "lastSuccessAt": "2026-11-19T19:54:26.529Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44602998891",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
