@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T23:07:23.513Z",
+  "generatedAt": "2026-11-19T23:37:23.558Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,9 +22,9 @@
     "today": {
       "label": "Today",
       "from": 1795068000000,
-      "to": 1795129643513,
+      "to": 1795131443558,
       "current": {
-        "totalLeads": 8,
+        "totalLeads": 9,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -60,24 +60,24 @@
           ],
           [
             "Google Business Profile - Houston",
-            3,
+            4,
             0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            8,
+            9,
             0
           ]
         ],
-        "attributedLeads": 8,
+        "attributedLeads": 9,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            8,
+            9,
             "newLeads",
             null
           ],
@@ -383,9 +383,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794808800000,
-      "to": 1795129643513,
+      "to": 1795131443558,
       "current": {
-        "totalLeads": 53,
+        "totalLeads": 54,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -416,7 +416,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            31,
+            32,
             0
           ],
           [
@@ -438,17 +438,17 @@
         "byChannel": [
           [
             "Third Party",
-            53,
+            54,
             0
           ]
         ],
-        "attributedLeads": 53,
+        "attributedLeads": 54,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            53,
+            54,
             "newLeads",
             null
           ],
@@ -479,7 +479,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 53,
+        "totalLeads": 54,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -520,7 +520,7 @@
           ],
           [
             "Website Number Pool - Houston",
-            6,
+            7,
             0
           ],
           [
@@ -537,7 +537,7 @@
         "byChannel": [
           [
             "Third Party",
-            45,
+            46,
             0
           ],
           [
@@ -561,13 +561,13 @@
             0
           ]
         ],
-        "attributedLeads": 53,
+        "attributedLeads": 54,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            53,
+            54,
             "newLeads",
             null
           ],
@@ -808,8 +808,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794524843513,
-      "to": 1795129643513,
+      "from": 1794526643558,
+      "to": 1795131443558,
       "current": {
         "totalLeads": 68,
         "contacted": 0,
@@ -842,12 +842,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            40,
+            41,
             0
           ],
           [
             "Website Number Pool - Houston",
-            24,
+            23,
             0
           ],
           [
@@ -910,7 +910,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 54,
+        "totalLeads": 55,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -945,13 +945,13 @@
             0
           ],
           [
-            "Chat",
+            "Website Number Pool - Houston",
             8,
             0
           ],
           [
-            "Website Number Pool - Houston",
-            7,
+            "Chat",
+            8,
             0
           ],
           [
@@ -968,7 +968,7 @@
         "byChannel": [
           [
             "Third Party",
-            45,
+            46,
             0
           ],
           [
@@ -992,13 +992,13 @@
             0
           ]
         ],
-        "attributedLeads": 54,
+        "attributedLeads": 55,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            54,
+            55,
             "newLeads",
             null
           ],
@@ -1031,10 +1031,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792537643513,
-      "to": 1795129643513,
+      "from": 1792539443558,
+      "to": 1795131443558,
       "current": {
-        "totalLeads": 122,
+        "totalLeads": 123,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1065,7 +1065,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            75,
+            76,
             0
           ],
           [
@@ -1102,7 +1102,7 @@
         "byChannel": [
           [
             "Third Party",
-            113,
+            114,
             0
           ],
           [
@@ -1126,13 +1126,13 @@
             0
           ]
         ],
-        "attributedLeads": 122,
+        "attributedLeads": 123,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            122,
+            123,
             "newLeads",
             null
           ],
@@ -1244,10 +1244,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787353643513,
-      "to": 1795129643513,
+      "from": 1787355443558,
+      "to": 1795131443558,
       "current": {
-        "totalLeads": 127,
+        "totalLeads": 128,
         "contacted": 1,
         "contactRatePct": 0.8,
         "speedToLeadAvgMin": null,
@@ -1278,7 +1278,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            75,
+            76,
             0
           ],
           [
@@ -1315,7 +1315,7 @@
         "byChannel": [
           [
             "Third Party",
-            113,
+            114,
             0
           ],
           [
@@ -1339,13 +1339,13 @@
             0
           ]
         ],
-        "attributedLeads": 127,
+        "attributedLeads": 128,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            127,
+            128,
             "newLeads",
             null
           ],
@@ -1468,9 +1468,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1795129643513,
+      "to": 1795131443558,
       "current": {
-        "totalLeads": 122,
+        "totalLeads": 123,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1501,7 +1501,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            75,
+            76,
             0
           ],
           [
@@ -1538,7 +1538,7 @@
         "byChannel": [
           [
             "Third Party",
-            113,
+            114,
             0
           ],
           [
@@ -1562,13 +1562,13 @@
             0
           ]
         ],
-        "attributedLeads": 122,
+        "attributedLeads": 123,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            122,
+            123,
             "newLeads",
             null
           ],
@@ -1849,9 +1849,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1795129643513,
+      "to": 1795131443558,
       "current": {
-        "totalLeads": 123,
+        "totalLeads": 124,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1882,7 +1882,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            75,
+            76,
             0
           ],
           [
@@ -1919,7 +1919,7 @@
         "byChannel": [
           [
             "Third Party",
-            113,
+            114,
             0
           ],
           [
@@ -1943,13 +1943,13 @@
             0
           ]
         ],
-        "attributedLeads": 123,
+        "attributedLeads": 124,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            123,
+            124,
             "newLeads",
             null
           ],
@@ -2264,7 +2264,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-19T23:07:23.513Z",
+    "checkedAt": "2026-11-19T23:37:23.558Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
