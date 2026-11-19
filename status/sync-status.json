@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-19T15:30:18.547Z",
+  "updatedAt": "2026-11-19T17:11:31.828Z",
   "lastRun": {
-    "at": "2026-11-19T15:30:18.547Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44555366648",
+    "at": "2026-11-19T17:11:31.828Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44574278908",
     "event": "workflow_dispatch",
     "chained": false
   },
@@ -11,7 +11,7 @@
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-19T15:30:18.547Z",
+  "lastAnySuccessAt": "2026-11-19T17:11:31.828Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
@@ -222,10 +222,56 @@
           "noInboundSignal": 29
         }
       }
+    },
+    "dumas-and-sanclemente": {
+      "status": "ok",
+      "lastAttemptAt": "2026-11-19T17:11:31.828Z",
+      "lastSuccessAt": "2026-11-19T17:11:31.828Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44574278908",
+      "failStreak": 0,
+      "notInPipeline": {
+        "last30": {
+          "form": 0,
+          "survey": 0,
+          "chat": 0,
+          "booking": 0,
+          "call": 0,
+          "sms": 0,
+          "email": 0,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 0,
+          "noInboundSignal": 0
+        },
+        "last90": {
+          "form": 0,
+          "survey": 0,
+          "chat": 0,
+          "booking": 0,
+          "call": 0,
+          "sms": 0,
+          "email": 0,
+          "other": 0,
+          "bulk": 0,
+          "notLeadType": 0,
+          "noInboundSignal": 0
+        }
+      }
     }
   },
   "open": [],
   "resolved": [
+    {
+      "id": "system:no-sync",
+      "slug": null,
+      "kind": "no-sync",
+      "firstSeen": "2026-11-19T16:15:18.547Z",
+      "lastSeen": "2026-11-19T17:11:31.828Z",
+      "count": 3,
+      "runUrl": null,
+      "resolvedAt": "2026-11-19T17:11:31.828Z",
+      "resolvedRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44574278908"
+    },
     {
       "id": "system:no-sync",
       "slug": null,
@@ -778,17 +824,6 @@
       "id": "system:no-sync",
       "slug": null,
       "kind": "no-sync",
-      "firstSeen": "2026-11-11T20:56:37.446Z",
-      "lastSeen": "2026-11-12T01:33:47.301Z",
-      "count": 10,
-      "runUrl": null,
-      "resolvedAt": "2026-11-12T01:33:47.301Z",
-      "resolvedRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/43134766927"
-    },
-    {
-      "id": "emery-law-office:stale",
-      "slug": "emery-law-office",
-      "kind": "stale",
       "firstSeen": "2026-11-11T20:56:37.446Z",
       "lastSeen": "2026-11-12T01:33:47.301Z",
       "count": 10,
