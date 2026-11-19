@@ -21,6 +21,7 @@ import { checkScopes, scopeForPath } from './scope-check.mjs';
 import { areaForPath } from './sync-status.mjs';
 import { pickNotInPipeline, breakdown, countedIn } from './not-in-pipeline.mjs';
 import { slimMessage } from './message-slim.mjs';
+import { resolvePipelines, applyResolved } from './pipelines.mjs';
 
 const SLUG = process.argv[2];
 
@@ -104,7 +105,7 @@ const authDenied = new Set();
 
 // Sorts an error that stopped the sync into a category for the admin page.
 async function classify(e) {
-  if (e.category) return { category: e.category, detail: e.detail, ...(e.area ? { area: e.area } : {}), ...(e.scopes ? { scopes: e.scopes } : {}) };
+  if (e.category) return { category: e.category, detail: e.detail, ...(e.area ? { area: e.area } : {}), ...(e.scopes ? { scopes: e.scopes } : {}), ...(e.missing ? { missing: e.missing } : {}) };
   const area = e.area ? { area: e.area } : {};
   if (e.status === 401 || e.status === 403) return authCategory([...authDenied]);
   if (e.status === 429) return { category: 'ghl', detail: 'rate-limit', ...area };
@@ -158,6 +159,27 @@ for (const p of pipelines) console.log(`  • ${p.name}: ${(p.stages || []).map(
 // kpis.json gets the counts only (sync.drift); the bell and Slack read them from there.
 const firmEntry = (await readIndex()).find(f => f.slug === SLUG) || {};
 if (firmEntry.status === 'needsMapping') { console.log(`${SLUG} needs its pipelines mapped first (KPI admin → Map pipelines). Not synced.`); process.exit(0); }
+// v1.30.0: law firms count pipelines by ID (scripts/pipelines.mjs). The first sync after v1.30.0 matches each counted
+// name once and saves the ids in config.json; a pipeline renamed in GHL keeps counting (its new name is saved for display).
+// A counted pipeline that can't be found stops this firm's sync: the dashboard keeps its last numbers (never 0) and the
+// bell + Slack say "Pipeline not found" with a link to Edit mapping.
+let pipeRes = null;
+if (!isCare(cfg)) {
+  pipeRes = resolvePipelines(cfg, pipelines);
+  if (pipeRes.missing.length) {
+    const names = pipeRes.missing.map(p => `"${p.name}"`).join(', ');
+    throw failure('pipeline', 'not-found', `Counted pipeline${pipeRes.missing.length === 1 ? '' : 's'} not found in GHL: ${names}. Not synced; the dashboard keeps its last numbers. Fix it in Edit mapping.`, { missing: pipeRes.missing.length });
+  }
+  if (pipeRes.changed) {
+    const cfgPath = new URL('config.json', firmDir);
+    const raw = JSON.parse(await readFile(cfgPath, 'utf8'));
+    if (applyResolved(raw, pipeRes)) {
+      await writeFile(cfgPath, JSON.stringify(raw, null, 2) + '\n');
+      cfg.pipelineIds = pipeRes.refs; cfg.pipelines = pipeRes.names;
+      console.log(pipeRes.migrated ? `Pipelines now counted by ID: ${pipeRes.refs.map(r => r.name).join(', ')} (saved in config.json).` : `Pipeline name changed in GHL; still counted by ID: ${pipeRes.names.join(', ')}.`);
+    }
+  }
+}
 const driftFound = isCare(cfg) ? careDrift(cfg, pipelines)
   : lawDrift(cfg, pipelines, await readFile(new URL('discovery.json', firmDir), 'utf8').then(JSON.parse, () => null));
 const drift = driftCounts(driftFound);
@@ -166,9 +188,8 @@ if (drift) {
     ...driftFound.newPipelines.map(p => `new pipeline ${p.name}`), ...driftFound.gonePipelines.map(p => `pipeline gone: ${p.name}`)];
   warn(`${SLUG}: ${drift.stages} stage(s) not mapped, ${drift.pipelinesNew} new pipeline(s), ${drift.pipelinesGone} pipeline(s) gone${isCare(cfg) ? ' (unmapped stages count nowhere until mapped)' : ' (warning only)'}: ${names.join('; ')}`);
 }
-const wanted = (cfg.pipelines || []).map(norm);
-const pipelineOk = id => !wanted.length || wanted.includes(norm(pipelineName[id]));
-if (wanted.length && !pipelines.some(p => wanted.includes(norm(p.name)))) console.warn(`None of config.pipelines (${cfg.pipelines.join(', ')}) match a GHL pipeline name.`);
+// v1.30.0: by ID (pipeRes.ids); null = every pipeline (config.pipelines empty), as before.
+const pipelineOk = id => !pipeRes?.ids || pipeRes.ids.has(id);
 
 const opps = [];
 {

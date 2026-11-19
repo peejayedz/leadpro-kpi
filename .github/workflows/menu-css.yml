@@ -1,0 +1,53 @@
+name: Show a firm's GHL menu CSS rule (read only)
+# v1.30.0. KPI admin → Setup "Show CSS rule" / the Builder's KPI tab, for a firm whose "KPI Dashboard" link was made
+# before v1.30.0 (its id wasn't kept). ONE GET of the agency's custom menu links (scripts/ghl-menu.mjs readMenuLinkId;
+# guardMenu allows nothing else here), then the link's id (not secret) is kept in firms/<slug>/config.json menuLink.id.
+# Nothing is written to GHL. The agency Custom CSS itself is never changed: PJ pastes the rule.
+# PUBLIC LOGS: step names, slugs and results only. The link's URL holds the dashboard passphrase: never read into logs.
+run-name: "Menu CSS ${{ inputs.slug }} [${{ inputs.request }}]"
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Firm slug (live)"
+        required: true
+      request:
+        description: "Request id (to find this run)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: new-firm
+  cancel-in-progress: false
+
+env:
+  NF_SLUG: ${{ inputs.slug }}
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Read the menu link id (GET only)
+        env:
+          GHL_MENU_TOKEN: ${{ secrets.GHL_MENU_TOKEN }}
+        run: node scripts/new-firm.mjs menu-read
+      - name: Keep the id
+        run: |
+          git config user.name "kpi-sync-bot"
+          git config user.email "kpi-sync-bot@users.noreply.github.com"
+          git add "firms/$NF_SLUG/config.json"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Menu link id for $NF_SLUG (read only)"
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1

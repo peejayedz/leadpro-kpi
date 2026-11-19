@@ -4,6 +4,7 @@
 //   node scripts/new-firm.mjs wait-app   waits (up to NEWFIRM_WAIT_MIN, default 15) for the app on the location
 //   node scripts/new-firm.mjs write      after Discover: config.json (snapshot preset or auto-guess), stub, index.json
 //   node scripts/new-firm.mjs menu       optional GHL "KPI Dashboard" menu link (only with GHL_MENU_TOKEN)
+//   node scripts/new-firm.mjs menu-read  v1.30.0: the existing link's id, GET only (menu-css.yml, "Show CSS rule")
 //
 // Inputs (env, all non-secret): NF_NAME, NF_LOCATION, NF_SLUG, NF_PRACTICE, NF_TIMEZONE, NF_SNAPSHOT_ID, NF_REQUEST.
 // PUBLIC LOGS: step names, slugs and counts only. Never a token, passphrase or contact data.
@@ -73,6 +74,7 @@ export function buildConfig({ template, discovery, preset, name, practiceArea, l
       const ids = list => [...new Set(list.flatMap(n => idsOf[norm(n)]))];
       cfg.stageMatch = 'id';
       cfg.pipelines = chosen.map(p => p.name);
+      cfg.pipelineIds = chosen.map(p => ({ id: p.id, name: p.name }));   // v1.30.0: counted by pipeline ID
       cfg.stages = Object.fromEntries(Object.entries(template.stages || {}).map(([k]) => [k, ids(preset.stages?.[k] || [])]));
       cfg.turnedAway = { ...(cfg.turnedAway || {}), stages: ids(preset.turnedAway?.stages || []),
         reasonLabels: Object.fromEntries(Object.entries(preset.turnedAway?.reasonLabels || {}).flatMap(([n, label]) => (idsOf[norm(n)] || []).map(id => [id, label]))) };
@@ -169,13 +171,37 @@ async function cmdMenu() {
   const { ensureMenuLink } = await import('./ghl-menu.mjs');
   const i = input(), slug = env.NF_SLUG;
   const cfgPath = `${ROOT}firms/${slug}/config.json`, cfg = await readJSON(cfgPath);
-  if (cfg?.menuLink?.status === 'created' || cfg?.menuLink?.status === 'exists') { log('Menu link: already done.'); await output({ menu: cfg.menuLink.status }); return 0; }
-  const res = await ensureMenuLink({ token: env.GHL_MENU_TOKEN, locationId: i.locationId, slug, passphrase: env.NF_PASSPHRASE });
-  log({ created: 'Menu link: created "KPI Dashboard" on this sub-account (opens in a new tab).', exists: 'Menu link: a "KPI Dashboard" link is already on this sub-account; nothing created.',
+  if (cfg?.menuLink?.status === 'created' || cfg?.menuLink?.status === 'exists') { log('Menu link: already done.'); await output({ menu: cfg.menuLink.status, menuid: cfg.menuLink.id ? 'yes' : 'no' }); return 0; }
+  const { result: res, id } = await ensureMenuLink({ token: env.GHL_MENU_TOKEN, locationId: i.locationId, slug, passphrase: env.NF_PASSPHRASE });
+  log({ created: 'Menu link: created "KPI Dashboard" on this sub-account (opens inside GHL).', exists: 'Menu link: a "KPI Dashboard" link is already on this sub-account; nothing created.',
     'skipped-no-token': 'Menu link: skipped (no GHL_MENU_TOKEN). Add it by hand with the link from the builder.', 'skipped-list-failed': 'Menu link: skipped (couldn\'t list the existing links, so a duplicate couldn\'t be ruled out). Add it by hand.' }[res] || `Menu link: not created (${res}). Add it by hand.`);
-  if (cfg && (res === 'created' || res === 'exists')) { cfg.menuLink = { status: res, at: new Date().toISOString() }; await writeFile(cfgPath, jsonText(cfg)); }
-  await output({ menu: res });
+  if (res === 'created' || res === 'exists') log(id ? 'Menu link id kept for the Custom CSS rule.' : 'Menu link id not found: use "Show CSS rule" in KPI admin → Setup later.');
+  // v1.30.0: the link id (not secret) is kept for the agency Custom CSS rule; the URL (with the passphrase) never is.
+  if (cfg && (res === 'created' || res === 'exists')) { cfg.menuLink = { status: res, at: new Date().toISOString(), ...(id ? { id } : {}) }; await writeFile(cfgPath, jsonText(cfg)); }
+  await output({ menu: res, menuid: id ? 'yes' : 'no' });
   return 0;   // never fails the setup: the builder shows the Copy link + clicks instead
+}
+
+// v1.30.0 "Show CSS rule" (menu-css.yml): the id of a firm's existing "KPI Dashboard" link, read with a GET only, kept in
+// config.menuLink.id (not secret). Nothing is written to GHL. The firm must be in the list and not a Draft / Needs mapping
+// (those have no link yet). Exit 1 with a plain reason when there's nothing to show.
+async function cmdMenuRead() {
+  const { readMenuLinkId } = await import('./ghl-menu.mjs');
+  const slug = (env.NF_SLUG || '').trim(), index = await readJSON(`${ROOT}firms/index.json`, []);
+  const row = index.find(f => f.slug === slug);
+  if (!row) { log(`"${slug}" isn't in the firm list.`); await output({ read: 'not-found' }); return 1; }
+  if (row.status) { log(`${slug} is ${row.status === 'draft' ? 'a Draft' : 'still being mapped'}: it has no GHL menu link yet.`); await output({ read: 'no-link' }); return 1; }
+  const cfgPath = `${ROOT}firms/${slug}/config.json`, cfg = await readJSON(cfgPath);
+  const locationId = cfg?.locationId || row.locationId;
+  const r = await readMenuLinkId({ token: env.GHL_MENU_TOKEN, locationId });
+  log({ found: 'Found this firm\'s "KPI Dashboard" link (read only).', none: 'No "KPI Dashboard" link on this sub-account.', 'not-single': 'The "KPI Dashboard" link here is shared with other sub-accounts: no rule for it.',
+    'skipped-no-token': 'Can\'t read GHL: GHL_MENU_TOKEN isn\'t set.', 'skipped-list-failed': 'GHL didn\'t answer the read. Nothing changed.' }[r.result] || `Couldn't read the link (${r.result}).`);
+  await output({ read: r.result });
+  if (r.result !== 'found') return 1;
+  if (cfg?.menuLink?.id === r.id) return 0;
+  cfg.menuLink = { ...(cfg.menuLink || {}), id: r.id, idReadAt: new Date().toISOString() };
+  await writeFile(cfgPath, jsonText(cfg));
+  return 0;
 }
 
 // ---------- v1.28.0: "Add to GHL menu" (menu-link.yml) ----------
@@ -208,7 +234,7 @@ async function cmdGoLive() {
   return 0;
 }
 
-const CMDS = { plan: cmdPlan, 'wait-app': cmdWaitApp, write: cmdWrite, menu: cmdMenu, 'menu-plan': cmdMenuPlan, 'go-live': cmdGoLive };
+const CMDS = { plan: cmdPlan, 'wait-app': cmdWaitApp, write: cmdWrite, menu: cmdMenu, 'menu-read': cmdMenuRead, 'menu-plan': cmdMenuPlan, 'go-live': cmdGoLive };
 const isMain = () => { try { return import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href; } catch { return false; } };
 if (process.argv[1] && isMain()) {
   const fn = CMDS[process.argv[2]];

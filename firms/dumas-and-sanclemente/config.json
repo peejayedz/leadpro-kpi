@@ -12,7 +12,13 @@
   "minSample": 5,
   "_pipelinesNote": "Pipeline names to include. Empty = every pipeline. firms/<slug>/discovery.json lists every pipeline and stage name.",
   "pipelines": [
-    "GHL Build Out Stages (Andrew Cass)"
+    "Lead Stages"
+  ],
+  "pipelineIds": [
+    {
+      "id": "mklLxJVYxOavYUDBZ4MV",
+      "name": "Lead Stages"
+    }
   ],
   "_stagesNote": "Stage names for each funnel step; must match GHL exactly (case does not matter). A later step counts as every earlier step, so list only the stages that first prove each step. Filled in by the admin page's mapping panel.",
   "stages": {

@@ -49,6 +49,12 @@ export function startText(i, { firms, now, configs = {} }) {
     isCareCfg(configs[i.slug]) ? 'People in an unmapped stage count nowhere until it\'s mapped.' : 'Numbers are counted as before (warning only); check the mapping still matches GHL.',
     slackLink(`${ADMIN_URL}#/map/${encodeURIComponent(i.slug)}`, isCareCfg(configs[i.slug]) ? 'Map pipelines →' : 'Edit mapping →'),
   ].join('\n');
+  // v1.30.0: a counted pipeline isn't in GHL (the dashboard keeps its last numbers, never 0)
+  if (i.kind === 'failed' && i.category === 'pipeline') return [
+    `:warning: *Pipeline not found · ${slackEscape(name)}*`,
+    `${i.missing > 1 ? `${i.missing} counted pipelines aren't` : 'A counted pipeline isn\'t'} in GHL any more, so this firm wasn't synced. The dashboard keeps its last numbers.`,
+    slackLink(`${ADMIN_URL}#/map/${encodeURIComponent(i.slug)}`, 'Edit mapping →'),
+  ].join('\n');
   return [
     `:rotating_light: *KPI sync problem: ${slackEscape(name)}*`,
     `${slackEscape(title)}. The admin bell shows the fix.`,

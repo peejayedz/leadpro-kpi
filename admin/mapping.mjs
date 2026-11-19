@@ -59,7 +59,10 @@ export function initialState({ discovery, config, isNew }) {
   const pipelines = discovery?.pipelines || [];
   const cfgPipes = (config?.pipelines || []).map(norm);
   let chosenPipes;
-  if (!isNew) chosenPipes = new Set(pipelines.filter(p => !cfgPipes.length || cfgPipes.includes(norm(p.name))).map(p => p.id));
+  // v1.30.0: by pipeline ID when the config has them (a pipeline renamed in GHL stays ticked); names only for older configs.
+  const cfgIds = Array.isArray(config?.pipelineIds) && config.pipelineIds.length ? new Set(config.pipelineIds.map(r => r?.id)) : null;
+  if (!isNew && cfgIds) chosenPipes = new Set(pipelines.filter(p => cfgIds.has(p.id)).map(p => p.id));
+  else if (!isNew) chosenPipes = new Set(pipelines.filter(p => !cfgPipes.length || cfgPipes.includes(norm(p.name))).map(p => p.id));
   else {
     const allNames = pipelines.flatMap(p => p.stages.map(s => s.name));
     const g = guessMapping(allNames); const hit = new Set(Object.values(g).flat().map(norm));
@@ -78,7 +81,7 @@ export function initialState({ discovery, config, isNew }) {
   const shown = v => (idMode && nameOf[v]) || v;
   const sel = {};
   for (const [k] of STEPS_MAP) sel[k] = new Map((initial[k] || []).map(v => [norm(shown(v)), shown(v)]));   // normName -> name as written
-  return { chosenPipes, sel, keywords: [...(config?.booking?.calendarKeywords || [])], allByDefault: !isNew && !cfgPipes.length, idMode };
+  return { chosenPipes, sel, keywords: [...(config?.booking?.calendarKeywords || [])], allByDefault: !isNew && !cfgPipes.length && !cfgIds, idMode };
 }
 
 // Stage names of the chosen pipelines, in pipeline order, de-duplicated (case-insensitive).
@@ -91,13 +94,15 @@ export function stageList(discovery, chosenPipes) {
 // What the panel saves: { pipelines, stages, turnedAway, calendarKeywords }.
 export function buildMapping(state, discovery) {
   const pipelines = discovery?.pipelines || [];
-  const chosen = pipelines.filter(p => state.chosenPipes.has(p.id)).map(p => p.name);
+  const chosenP = pipelines.filter(p => state.chosenPipes.has(p.id)), chosen = chosenP.map(p => p.name);
+  const all = state.allByDefault && chosen.length === pipelines.length;
   const { idsOf } = stageIdIndex(discovery, state.chosenPipes);
   // Id mode: each picked name becomes the id of every chosen-pipeline stage with that name (ids not found stay as they are).
   const pick = k => { const names = [...state.sel[k].values()]; return state.idMode ? [...new Set(names.flatMap(n => idsOf[norm(n)] || [n]))] : names; };
   return {
     // A config that said "every pipeline" ([]) keeps saying so while every pipeline is still ticked.
-    pipelines: state.allByDefault && chosen.length === pipelines.length ? [] : chosen,
+    pipelines: all ? [] : chosen,
+    pipelineIds: all ? [] : chosenP.map(p => ({ id: p.id, name: p.name })),   // v1.30.0: what is counted
     stages: Object.fromEntries(STEPS_MAP.filter(([k]) => k !== 'turnedAway').map(([k]) => [k, pick(k)])),
     turnedAway: pick('turnedAway'),
     calendarKeywords: state.keywords,
@@ -107,7 +112,13 @@ export function buildMapping(state, discovery) {
 // Writes a mapping into a firm config. Keys the config doesn't have are only added when they hold
 // something, so saving an unchanged mapping leaves config.json byte-identical.
 export function applyMapping(cfg, m) {
+  const cfgPipesBefore = cfg.pipelines || [];
   cfg.pipelines = m.pipelines;
+  // v1.30.0: counted by pipeline ID; "every pipeline" ([]) has none. An unchanged save of an older (name-only) config
+  // stays byte-identical: the next sync adds the ids itself (scripts/pipelines.mjs). A changed choice is saved by id.
+  const before = JSON.stringify(cfgPipesBefore);
+  if (m.pipelineIds?.length && (cfg.pipelineIds || before !== JSON.stringify(m.pipelines))) cfg.pipelineIds = m.pipelineIds;
+  else if (!m.pipelineIds?.length) delete cfg.pipelineIds;
   cfg.stages = { ...(cfg.stages || {}) };
   for (const [k, v] of Object.entries(m.stages)) if (k in cfg.stages || v.length) cfg.stages[k] = v;
   const ta = { ...(cfg.turnedAway || {}), stages: m.turnedAway };

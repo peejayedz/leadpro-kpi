@@ -18,6 +18,7 @@ export const CATEGORIES = {
   scope: 'Token missing a scope',
   ghl: 'GHL server or network error',
   config: 'Firm config error',
+  pipeline: 'Pipeline not found',   // v1.30.0: a counted pipeline isn't in GHL (law firms count by pipeline ID)
   unknown: 'Unknown error',
 };
 const DETAILS = {
@@ -25,6 +26,7 @@ const DETAILS = {
   scope: ['missing'],
   ghl: ['server', 'rate-limit', 'network', 'bad-response', 'request-refused'],
   config: ['no-config', 'bad-config', 'no-location', 'bad-slug', 'secret-key-mismatch'],
+  pipeline: ['not-found'],
   unknown: ['crash', 'no-result'],
 };
 export const AREAS = ['opportunities', 'contacts', 'users', 'locations', 'custom fields', 'calendars', 'calendar events', 'conversations', 'messages'];
@@ -91,6 +93,7 @@ export function cleanResult(raw, slug) {
   if (AREAS.includes(raw.area)) out.area = raw.area;
   if (category === 'scope') out.scopes = [...new Set((Array.isArray(raw.scopes) ? raw.scopes : []).filter(s => Object.hasOwn(SCOPE_NAMES, s)))];
   if (category === 'scope' && !out.scopes.length) { out.category = 'unknown'; out.detail = 'crash'; delete out.scopes; }
+  if (category === 'pipeline') out.missing = Math.max(1, intOr(raw.missing, 1));   // a count only (names stay in config.json)
   return out;
 }
 
@@ -120,7 +123,7 @@ export function updateStatus(prev, { now, runUrl, event, chained, attempted = []
     const f = s.firms[slug] || { status: 'ok', lastAttemptAt: null, lastSuccessAt: null, lastRunUrl: null, failStreak: 0 };
     const current = [];   // issues this run says the firm has
     if (!res.ok) {
-      current.push({ kind: 'failed', category: res.category, detail: res.detail, ...(res.area ? { area: res.area } : {}), ...(res.scopes ? { scopes: res.scopes } : {}) });
+      current.push({ kind: 'failed', category: res.category, detail: res.detail, ...(res.area ? { area: res.area } : {}), ...(res.scopes ? { scopes: res.scopes } : {}), ...(res.missing ? { missing: res.missing } : {}) });
     } else {
       const flags = syncFlags[slug] || {};
       if (intOr(flags.holds) > 0) current.push({ kind: 'held', count: intOr(flags.holds), since: isoOr(flags.heldSince), reason: REASON_RE.test(flags.reason || '') ? flags.reason : null });
@@ -289,6 +292,12 @@ export function describeIssue(i, ctx = {}) {
             steps: ['Nothing to do if the next sync (every 30 minutes) succeeds. This issue clears by itself.', 'If it keeps happening for more than an hour, press <b>Re-sync</b>, then <b>View run on GitHub</b> and read the red step.', 'If every firm shows this, GHL is probably having an outage. Wait and check again later.'],
             actions: ['resync', 'run', 'firm'] };
         }
+        case 'pipeline':
+          return {
+            title: 'Pipeline not found',
+            what: `${i.missing > 1 ? `<b>${i.missing}</b> pipelines` : 'A pipeline'} this firm's scorecard counts ${i.missing > 1 ? 'are' : 'is'} no longer in GHL (deleted, or the scorecard was set up before pipelines were counted by ID and the pipeline was renamed). The sync skipped this firm rather than show 0 leads. ${keeps}`,
+            steps: ['Press <b>Edit mapping</b>, then <b>Re-read GHL</b>. Tick the pipeline(s) to count and press <b>Save mapping</b>.', 'This clears as soon as the next sync finds every counted pipeline.'],
+            actions: ['map', 'run', 'firm'] };
         case 'config': {
           const what = {
             'no-config': `The firm's settings file <span class="mono">firms/${esc(i.slug)}/config.json</span> is missing.`,

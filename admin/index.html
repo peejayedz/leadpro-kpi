@@ -14,7 +14,7 @@
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=2.4.0">
-<link rel="stylesheet" href="admin.css?v=1.27.0">
+<link rel="stylesheet" href="admin.css?v=1.30.0">
 <link rel="stylesheet" href="care.css?v=1.28.0">
 </head>
 <body>
@@ -61,6 +61,7 @@ import { firmState, describeIssue, seenKey, inBadge, STALE_MIN, driftText } from
 import { tokenLabel } from '../scripts/keeper-status.mjs';
 import { checkScopes } from '../scripts/scope-check.mjs';
 import { pipelineNotices } from '../scripts/not-in-pipeline.mjs';
+import { menuCssRule, MENU_CSS_WHERE, validMenuId } from '../scripts/menu-css.mjs';   // v1.30.0
 import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
 import { buildCards, filterCards, newer, isMinor, cardVersion } from './news.mjs';
 import { SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS, severity, isAlert, leadTrend, sortFirms, staleLine } from './firm-details.mjs';
@@ -564,7 +565,7 @@ document.addEventListener('click', e => {
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-f]'); if (!b) return;
   const host = b.closest('[data-slug]'); const f = host && firmOf(host.dataset.slug); if (!f) return;
-  ({ link: copyLinkDialog, sync: resyncFirm, map: x => go(hashFor('map', x.slug)), banner: toggleBanner, publish: publishDialog, counts: toggleCounts, delete: deleteDialog, token: x => tokenDialog(x, h => firmSay(x.slug, h)), keeper: runKeeperFor })[b.dataset.f]?.(f, b);
+  ({ link: copyLinkDialog, sync: resyncFirm, map: x => go(hashFor('map', x.slug)), banner: toggleBanner, publish: publishDialog, css: copyCssRule, cssread: showCssRule, counts: toggleCounts, delete: deleteDialog, token: x => tokenDialog(x, h => firmSay(x.slug, h)), keeper: runKeeperFor })[b.dataset.f]?.(f, b);
 });
 // Per-firm messages ("Copied", "Synced", errors) show on the firm's row and in its Details panel.
 const firmMsg = {}, busy = new Set();
@@ -658,7 +659,7 @@ async function toggleBanner(f) {
 function publishDialog(f) {
   openDialog({
     title: `Add the KPI link to ${esc(fname(f))}'s GHL menu?`, ok: 'Add to GHL menu',
-    body: `<p class="sub">This publishes the scorecard: a <b>KPI Dashboard</b> link is added to <b>${esc(fname(f))}</b>'s GHL menu (this sub-account only, opens in a new tab), and the Draft banner goes away on the next sync. Nothing else in GHL changes and nothing is sent to the client.</p>
+    body: `<p class="sub">This publishes the scorecard: a <b>KPI Dashboard</b> link is added to <b>${esc(fname(f))}</b>'s GHL menu (this sub-account only, opens inside GHL), and the Draft banner goes away on the next sync. Nothing else in GHL changes and nothing is sent to the client.</p>
       <label class="check"><input type="checkbox" id="dlgOk2"> The scorecard has been reviewed and approved for the client.</label>
       <div class="ferr" id="dlgErr"></div>`,
     onOk: async () => {
@@ -673,7 +674,8 @@ function publishDialog(f) {
         await follow({ workflow: 'menu-link.yml', title: `Menu link ${f.slug} [${request}]`, t0, label: 'Adding to the GHL menu', limitMs: 5 * 60e3, say,
           check: async () => { const list = await getJSON('firms/index.json'); const row = (list || []).find(x => x.slug === f.slug); return row && !row.status ? row : null; } });
         delete f.status;
-        say('<span class="chip good">Live</span> "KPI Dashboard" is in the GHL menu. Re-syncing so the Draft banner goes away…');
+        configs[f.slug] = (await getJSON(`firms/${f.slug}/config.json`).catch(() => null)) || configs[f.slug];   // v1.30.0: the link id → CSS rule
+        say(`<span class="chip good">Live</span> "KPI Dashboard" is in the GHL menu. ${validMenuId(configs[f.slug]?.menuLink?.id) ? 'Copy the Custom CSS rule in Setup → GHL menu link. ' : ''}Re-syncing so the Draft banner goes away…`);
         resyncFirm(f);
       } catch (e) { say(`<span class="chip bad">Not added</span> ${errHtml(e)} The scorecard stays a Draft.`); }
       finally { busy.delete(key); repaintFirm(f.slug); }
@@ -1231,13 +1233,51 @@ function setupHtml(f) {
       ${noLink(f) ? `<p>Not available while the scorecard is ${needsMap(f) ? '<b>Needs mapping</b>' : 'a <b>Draft</b>'}: publish it first.</p>
       <div class="btnrow"><button class="btn" type="button" disabled aria-disabled="true">${ICON.copy}Copy GHL menu link</button></div></section>`
       : `<p>The scorecard link to paste into the sub-account's Custom Menu Link.</p>
-      <div class="btnrow"><button class="btn" type="button" data-f="link">${ICON.copy}Copy GHL menu link</button></div></section>`}
+      <div class="btnrow"><button class="btn" type="button" data-f="link">${ICON.copy}Copy GHL menu link</button></div>${menuCssHtml(f, cfg)}</section>`}
     <section class="dset"><h3 class="lbl">Testing banner</h3>
       <p>The dashboard's testing-period banner is <b>${banner ? 'on' : 'off'}</b>.</p>
       <div class="btnrow"><button class="btn" type="button" data-f="banner" aria-pressed="${banner}"${bannerBusy ? ' disabled' : ''}>${ICON.flag}Banner ${banner ? 'on · turn off' : 'off · turn on'}</button></div></section>
     <section class="dset danger"><h3 class="lbl">Delete firm</h3>
       <p>Removes the dashboard, its data, its place in the firm list and both secrets. You type the slug to confirm.</p>
       <div class="btnrow"><button class="btn danger" type="button" data-f="delete">${ICON.trash}Delete firm…</button></div></section>`;
+}
+
+// v1.30.0: the agency Custom CSS rule that puts this firm's "KPI Dashboard" link at order -92 (PJ's SOP). Shown when the
+// link's id is known (config.menuLink.id: kept by Add to GHL menu, or read with "Show CSS rule", a GET only). The agency
+// CSS itself is never changed from here: PJ pastes the rule.
+function menuCssHtml(f, cfg) {
+  const id = cfg?.menuLink?.id, reading = busy.has(`${f.slug}:css`);
+  if (validMenuId(id)) return `<div class="cssrule" data-css-rule><p class="lbl2">Custom CSS rule (menu order)</p>
+      <pre class="mono" tabindex="0">${esc(menuCssRule({ id, name: fname(f) }))}</pre>
+      <p class="hint">${esc(MENU_CSS_WHERE)}</p>
+      <div class="btnrow"><button class="btn" type="button" data-f="css">${ICON.copy}Copy CSS rule</button></div></div>`;
+  return `<div class="cssrule" data-css-rule><p class="lbl2">Custom CSS rule (menu order)</p>
+      <p class="hint">The rule needs the link's id from GHL. <b>Show CSS rule</b> reads it (read only: nothing in GHL changes) and keeps it with the firm.</p>
+      <div class="btnrow"><button class="btn" type="button" data-f="cssread"${reading ? ' disabled' : ''}>${reading ? 'Reading the link from GHL…' : 'Show CSS rule'}</button></div></div>`;
+}
+async function copyCssRule(f, btn) {
+  const id = configs[f.slug]?.menuLink?.id; if (!validMenuId(id)) return;
+  try { await navigator.clipboard.writeText(menuCssRule({ id, name: fname(f) })); flashCopied(btn); }
+  catch { firmSay(f.slug, '<span class="chip bad">Not copied</span> Couldn\'t reach the clipboard. Select the rule and copy it by hand.'); }
+}
+// "Show CSS rule": menu-css.yml = ONE GET of the agency's menu links (scripts/ghl-menu.mjs readMenuLinkId), then the id
+// is committed to config.json. Plain words only while it runs.
+async function showCssRule(f) {
+  const key = `${f.slug}:css`; if (busy.has(key)) return;
+  busy.add(key); repaintFirm(f.slug);
+  const say = h => firmSay(f.slug, h);
+  say('Reading the "KPI Dashboard" link from GHL (read only)…');
+  try {
+    const request = `css-${Date.now().toString(36)}`;
+    const t0 = await dispatch('menu-css.yml', { slug: f.slug, request });
+    const { value } = await follow({ workflow: 'menu-css.yml', title: `Menu CSS ${f.slug} [${request}]`, t0, label: 'Reading the link', limitMs: 4 * 60e3,
+      say: () => say('Reading the "KPI Dashboard" link from GHL (read only)…'),
+      check: async () => { const c = await getJSON(`firms/${f.slug}/config.json`); return validMenuId(c?.menuLink?.id) ? c : null; } });
+    configs[f.slug] = value;
+    say('<span class="chip good">Found</span> Copy the rule below into the agency Custom CSS.');
+  } catch (e) {
+    say(`<span class="chip bad">Not found</span> Couldn't read this firm's "KPI Dashboard" link from GHL (there may be none on this sub-account, or it's shared with other sub-accounts). Nothing changed. ${errHtml(e)}`);
+  } finally { busy.delete(key); repaintFirm(f.slug); }
 }
 
 // ---------- dialog ----------

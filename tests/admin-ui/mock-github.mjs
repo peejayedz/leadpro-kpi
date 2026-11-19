@@ -61,7 +61,15 @@ export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kp
       const slug = r.inputs.slug, idx = JSON.parse(await fileText('firms/index.json')), row = idx.find(f => f.slug === slug);
       if (!row || row.status !== 'draft') return finish('failure');
       delete row.status; M.overlay.set('firms/index.json', JSON.stringify(idx, null, 2) + '\n');
-      const c = JSON.parse(await fileText(`firms/${slug}/config.json`)); c.menuLink = { status: 'created', at: new Date().toISOString() };
+      const c = JSON.parse(await fileText(`firms/${slug}/config.json`)); c.menuLink = { status: 'created', at: new Date().toISOString(), id: M.menuId ?? '86cac337-1c2d-4e5f-8a9b-0c1d2e3f4a5b' };   // v1.30.0: id kept
+      M.overlay.set(`firms/${slug}/config.json`, JSON.stringify(c, null, 2) + '\n');
+      return finish('success');
+    }
+    if (r.workflow === 'menu-css.yml') {   // v1.30.0: GET of the link (mock), its id kept in config.json; M.menuCss = 'none' → nothing found
+      if (n < 3) return;
+      const slug = r.inputs.slug;
+      if (M.menuCss === 'none') return finish('failure');
+      const c = JSON.parse(await fileText(`firms/${slug}/config.json`)); c.menuLink = { ...(c.menuLink || {}), id: 'b7cc0202-aaaa-bbbb-cccc-000000000001', idReadAt: new Date().toISOString() };
       M.overlay.set(`firms/${slug}/config.json`, JSON.stringify(c, null, 2) + '\n');
       return finish('success');
     }
@@ -146,7 +154,7 @@ export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kp
     if ((m = /^\/actions\/workflows\/([\w.-]+)\/dispatches$/.exec(p)) && method === 'POST') {
       const wf = m[1], i = body.inputs || {};
       M.dispatches.push({ workflow: wf, inputs: i });
-      const title = wf === 'sync.yml' ? (i.slug ? `Sync ${i.slug}` : 'Sync all firms') : wf === 'discover.yml' ? `Discover ${i.slug}` : wf === 'new-firm.yml' ? `New firm ${i.slug} [${i.request}]` : wf === 'menu-link.yml' ? `Menu link ${i.slug} [${i.request}]` : wf === 'remove-firm.yml' ? `Remove firm ${i.slug} [${i.request}]` : wf;
+      const title = wf === 'sync.yml' ? (i.slug ? `Sync ${i.slug}` : 'Sync all firms') : wf === 'discover.yml' ? `Discover ${i.slug}` : wf === 'new-firm.yml' ? `New firm ${i.slug} [${i.request}]` : wf === 'menu-link.yml' ? `Menu link ${i.slug} [${i.request}]` : wf === 'remove-firm.yml' ? `Remove firm ${i.slug} [${i.request}]` : wf === 'menu-css.yml' ? `Menu CSS ${i.slug} [${i.request}]` : wf;
       run(wf, i, title);
       return { status: 204, json: null };
     }

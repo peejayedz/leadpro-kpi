@@ -15,6 +15,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { planFirm, buildConfig, presetFor, loadPresets } from '../../scripts/new-firm.mjs';
 import { guardMenu, menuBody } from '../../scripts/ghl-menu.mjs';
+import { cssMenuId, menuCssRule, MENU_CSS_WHERE } from '../../scripts/menu-css.mjs';
 import { guessMapping } from '../../admin/mapping.mjs';
 import { reviewIssues } from '../../scripts/keeper-status.mjs';
 import { describeIssue } from '../../scripts/sync-status.mjs';
@@ -26,6 +27,7 @@ const test = (name, fn) => tests.push({ name, fn });
 const eq = (a, b, what) => { if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error(`${what}: expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`); };
 const ok = (v, what) => { if (!v) throw new Error(what); };
 
+const MENU_ID = '86cac337-1c2d-4e5f-8a9b-0c1d2e3f4a5b';
 const LOC = 'bZ8sYUlHFufn3rH3TXip', SNAP = '2wuNIU3FfXTzuQKGjNw5', PASS = 'amber-otter-quill-raven#9';
 const ACME = ['Stage 1: Web Lead', 'Stage 2: Phone lead', 'Stage 3: Lead Contacted?', 'Stage 4: Lead Qualified?', 'Stage 5: Booked Consultation', 'Stage 6: Consultation Showed - Agreement Sent', 'Stage 7: Consultation Showed - Lead Rejected', 'Stage 8: Consultation Showed - Lead Referred', 'Stage 9: Consultation Showed - Lead Thinking', 'Stage 10: Consultation No Show', 'Stage 11: Agreement Signed', 'Stage 12: Referred Lead Accepted?'];
 const idOf = n => `stg-${ACME.indexOf(n) + 1}-id`;
@@ -121,7 +123,7 @@ async function startMock(o = {}) {
     const send = (s, j) => { res.writeHead(s, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(j)); };
     if (u.pathname === '/oauth/installed-locations') { polls++; const has = o.appAfter !== undefined && polls > o.appAfter; return send(200, { items: [{ _id: 'other0000000000000001', isInstalled: true }, ...(has ? [{ _id: LOC, isInstalled: true }] : [])], pagination: { hasNextPage: false } }); }
     if (/^\/custom-menus\/?$/.test(u.pathname) && req.method === 'GET') return o.listFail ? send(403, { message: 'scope' }) : send(200, { customMenus: o.existing || [] });
-    if (/^\/custom-menus\/?$/.test(u.pathname) && req.method === 'POST') return send(201, { customMenu: { id: 'menu1' } });
+    if (/^\/custom-menus\/?$/.test(u.pathname) && req.method === 'POST') { const b = body ? JSON.parse(body) : {}; const made = { id: o.newId ?? MENU_ID, ...b }; if (o.idAfterPost) o.existing = [...(o.existing || []), made]; return send(201, o.noIdInAnswer ? {} : { customMenu: made }); }
     send(404, {});
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
@@ -189,16 +191,17 @@ async function menuRun(mockOpt, extra = {}) {
 }
 const noLeak = r => { ok(!r.out.includes(PASS) && !r.out.includes(encodeURIComponent(PASS)) && !r.out.includes('MENU-TOKEN-VALUE'), 'passphrase or token printed'); };
 
-test('Menu link: one "KPI Dashboard" link, this sub-account only, new tab; passphrase never printed', async () => {
+test('Menu link: one "KPI Dashboard" link, this sub-account only, opens inside GHL (iframe); passphrase never printed', async () => {
   const r = await menuRun({});
   eq(r.code, 0, 'exit');
   const post = r.calls.filter(c => c.method === 'POST');
   eq(post.length, 1, 'one POST');
   eq(post[0].version, 'v3', 'Version v3');
   const b = post[0].body;
-  eq([b.title, b.showOnCompany, b.showOnLocation, b.showToAllLocations, b.locations, b.openMode, b.userRole], ['KPI Dashboard', false, true, false, [LOC], 'new_tab', 'all'], 'body');
+  eq([b.title, b.showOnCompany, b.showOnLocation, b.showToAllLocations, b.locations, b.openMode, b.userRole], ['KPI Dashboard', false, true, false, [LOC], 'iframe', 'all'], 'body');
   eq(b.url, `https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/zz-test-2/#k=${encodeURIComponent(PASS)}`, 'url (passphrase URL-encoded)');
   ok(/menu=created/.test(r.outFile), 'output'); eq(r.cfg.menuLink?.status, 'created', 'recorded in config (no URL)');
+  eq(r.cfg.menuLink?.id, MENU_ID, 'v1.30.0: the link id from GHL\'s answer is kept'); ok(/menuid=yes/.test(r.outFile), 'menuid output');
   ok(!JSON.stringify(r.cfg).includes('#k='), 'config holds no link with the passphrase');
   noLeak(r);
 });
@@ -215,13 +218,64 @@ test('Menu link: can\'t list existing links → skipped (no duplicate risk); no 
   eq(b.calls.length, 0, 'no GHL calls'); ok(/skipped-no-token/.test(b.outFile), 'skipped'); eq(b.code, 0, 'exit 0'); noLeak(a); noLeak(b);
 });
 
+// ---------- v1.30.0: id kept, CSS rule, GET-only read for existing links ----------
+test('Menu link: no id in GHL\'s answer → read back with a GET (no second POST); id kept', async () => {
+  const r = await menuRun({ noIdInAnswer: true, idAfterPost: true });
+  eq(r.calls.filter(c => c.method === 'POST').length, 1, 'one POST'); eq(r.calls.filter(c => c.method === 'GET').length, 2, 'list, then read back');
+  eq(r.cfg.menuLink?.id, MENU_ID, 'id read back'); noLeak(r);
+});
+test('Menu link: already there for this one sub-account → its id is kept; shared with every sub-account → no id', async () => {
+  const a = await menuRun({ existing: [{ id: 'b7cc0202-aaaa-bbbb-cccc-000000000001', title: 'KPI Dashboard', locations: [LOC], showToAllLocations: false }] });
+  eq(a.cfg.menuLink, { status: 'exists', at: a.cfg.menuLink.at, id: 'b7cc0202-aaaa-bbbb-cccc-000000000001' }, 'exists + id');
+  const b = await menuRun({ existing: [{ id: 'b7cc0202-aaaa-bbbb-cccc-000000000001', title: 'KPI Dashboard', locations: [], showToAllLocations: true }] });
+  ok(!b.cfg.menuLink.id && /menuid=no/.test(b.outFile), 'no id for a link on every sub-account');
+});
+test('CSS rule: digit start → "\\3d " escape; letter start as is; the comment names the client; where to paste', () => {
+  eq(cssMenuId('86cac337-1c2d-4e5f-8a9b-0c1d2e3f4a5b'), '\\38 6cac337-1c2d-4e5f-8a9b-0c1d2e3f4a5b', '86cac337');
+  eq(cssMenuId('0038eddf-1111-2222-3333-444455556666'), '\\30 038eddf-1111-2222-3333-444455556666', '0038eddf');
+  eq(cssMenuId('b7cc0202-aaaa-bbbb-cccc-000000000001'), 'b7cc0202-aaaa-bbbb-cccc-000000000001', 'b7cc0202');
+  eq(menuCssRule({ id: '86cac337-1c2d-4e5f-8a9b-0c1d2e3f4a5b', name: 'Dumas & Sanclemente' }),
+    '/* KPI Dashboard · Dumas & Sanclemente */\n#\\38 6cac337-1c2d-4e5f-8a9b-0c1d2e3f4a5b { order: -92 !important; }', 'rule');
+  eq(menuCssRule({ id: 'b7cc0202-aaaa-bbbb-cccc-000000000001', name: 'Evil */ x' }).split('\n')[0], '/* KPI Dashboard · Evil * / x */', 'comment can\'t be closed early');
+  for (const bad of ['', '-1abc-def', 'abc def', 'x{y}', '../a']) { let threw = false; try { cssMenuId(bad); } catch { threw = true; } ok(threw, `bad id "${bad}" refused`); }
+  eq(MENU_CSS_WHERE, 'Paste into Agency → Settings → Company → White Label → Custom CSS, then Save.', 'where');
+});
+async function readRun(mockOpt, { status, cfg = { locationId: LOC } } = {}) {
+  let res; await withRepo(async (tmp, m) => {
+    await mkdir(join(tmp, 'firms/zz-test-2'), { recursive: true });
+    await writeFile(join(tmp, 'firms/zz-test-2/config.json'), JSON.stringify(cfg));
+    await writeFile(join(tmp, 'firms/index.json'), JSON.stringify([...realIndex, { slug: 'zz-test-2', locationId: LOC, ...(status ? { status } : {}) }]));
+    const out = join(tmp, 'out.txt');
+    const r = await cmd(tmp, 'menu-read', nfEnv(m, { GHL_MENU_TOKEN: 'MENU-TOKEN-VALUE-123', GITHUB_OUTPUT: out }));
+    res = { ...r, calls: m.calls, outFile: await readFile(out, 'utf8').catch(() => ''), cfg: JSON.parse(await readFile(join(tmp, 'firms/zz-test-2/config.json'), 'utf8')) };
+  }, mockOpt);
+  return res;
+}
+test('Show CSS rule (existing live link): GET only, id kept, nothing written to GHL; missing / Draft / list failure → nothing kept', async () => {
+  const link = { id: '0038eddf-1111-2222-3333-444455556666', title: 'KPI Dashboard', locations: [LOC], showToAllLocations: false, url: 'https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/zz-test-2/#k=secret' };
+  const a = await readRun({ existing: [link] }, { cfg: { locationId: LOC, menuLink: { status: 'created', at: 'x' } } });
+  eq(a.code, 0, 'exit'); ok(a.calls.every(c => c.method === 'GET'), 'GET only'); eq(a.calls.length, 1, 'one call');
+  eq([a.cfg.menuLink.status, a.cfg.menuLink.at, a.cfg.menuLink.id], ['created', 'x', link.id], 'id added, the rest kept');
+  ok(!JSON.stringify(a.cfg).includes('#k=') && !a.out.includes('secret'), 'URL never kept or printed');
+  const b = await readRun({ existing: [] }); eq(b.code, 1, 'none → exit 1'); ok(/read=none/.test(b.outFile) && !b.cfg.menuLink, 'nothing kept');
+  const c = await readRun({ existing: [link] }, { status: 'draft' }); eq(c.calls.length, 0, 'Draft: no GHL call'); eq(c.code, 1, 'Draft refused');
+  const d = await readRun({ listFail: true }); ok(/read=skipped-list-failed/.test(d.outFile) && d.code === 1, 'list failed');
+});
+test('menu-css.yml: read only (menu-read), non-secret inputs, one at a time, only config.json committed', async () => {
+  const y = await readFile(join(ROOT, '.github/workflows/menu-css.yml'), 'utf8');
+  ok(/run: node scripts\/new-firm\.mjs menu-read/.test(y) && !/new-firm\.mjs menu\b(?!-)/.test(y), 'menu-read only');
+  ok(!/PASSPHRASE/.test(y), 'never sees the passphrase');
+  ok(/group: new-firm/.test(y), 'one at a time with the other menu jobs');
+  ok(/git add "firms\/\$NF_SLUG\/config\.json"\n/.test(y) && !/index\.json/.test(y), 'only config.json');
+});
+
 test('Menu guard: refuses every other write', () => {
   const good = menuBody({ locationId: LOC, url: 'https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/x/#k=a' });
   guardMenu('POST', '/custom-menus/', good); guardMenu('GET', '/custom-menus/');
   const bad = [
     ['PUT', '/custom-menus/abc', good], ['DELETE', '/custom-menus/abc', null], ['PATCH', '/custom-menus/', good], ['POST', '/custom-menus/abc', good],
     ['POST', '/custom-menus/', { ...good, showToAllLocations: true }], ['POST', '/custom-menus/', { ...good, locations: [LOC, 'other0000000000000001'] }],
-    ['POST', '/custom-menus/', { ...good, showOnCompany: true }], ['POST', '/custom-menus/', { ...good, title: 'Other' }], ['POST', '/custom-menus/', { ...good, openMode: 'iframe' }],
+    ['POST', '/custom-menus/', { ...good, showOnCompany: true }], ['POST', '/custom-menus/', { ...good, title: 'Other' }], ['POST', '/custom-menus/', { ...good, openMode: 'new_tab' }], ['POST', '/custom-menus/', { ...good, openMode: 'current_tab' }], ['POST', '/custom-menus/', { ...good, openMode: undefined }],
     ['POST', '/custom-menus/', { ...good, url: 'https://evil.example/' }], ['POST', '/custom-menus/', { ...good, url: 'https://dashboard.lawfirmmarketingpros.com.evil.example/leadpro-kpi/firms/x/' }], ['POST', '/custom-menus/', { ...good, url: 'http://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/x/' }], ['POST', '/locations/', good], ['GET', '/contacts/', null],
   ];
   for (const [m, p, b] of bad) { let threw = false; try { guardMenu(m, p, b); } catch (e) { threw = /Blocked/.test(e.message); } ok(threw, `${m} ${p} ${JSON.stringify(b)?.slice(0, 60)} allowed`); }

@@ -4,13 +4,18 @@
 //   GET  /custom-menus/...            (to see whether the link already exists)
 //   POST /custom-menus/               ONLY with title "KPI Dashboard", showOnCompany false,
 //                                     showOnLocation true, showToAllLocations false, exactly one
-//                                     location, openMode "new_tab", and a URL on this repo's Pages site.
+//                                     location, openMode "iframe" (v1.30.0: GHL's value for "Open link within the current
+//                                     window as an embedded page", PJ's SOP; was "new_tab"), and a URL on this repo's Pages site.
 //   DELETE /custom-menus/<id>        ONLY its exact reversal (v1.28.0, remove-firm.yml): a link removeMenuLink() has
 //                                     just read and checked is ours (title "KPI Dashboard", this one sub-account only,
 //                                     URL = this firm's dashboard). Anything else is refused before a request is sent.
 // No update, nothing for any other sub-account. tests/new-firm and tests/remove-firm check this.
+// v1.30.0: the new link's id (GHL's answer, or read back with a GET) is kept with the firm (config.menuLink.id, not secret)
+// for the agency Custom CSS rule (scripts/menu-css.mjs). readMenuLinkId() = a GET only, for links made before v1.30.0.
 // Token: GHL_MENU_TOKEN = an agency Private Integration with custom-menu-link.write (+ .readonly) only.
 // The URL holds the dashboard passphrase: it is never printed.
+
+import { validMenuId } from './menu-css.mjs';
 
 export const GHL_API = () => process.env.GHL_API_BASE || 'https://services.leadconnectorhq.com';
 export const MENU_TITLE = 'KPI Dashboard';
@@ -21,7 +26,7 @@ export function menuBody({ locationId, url }) {
   return {
     title: MENU_TITLE, url, icon: { name: 'chart-line', fontFamily: 'fas' },
     showOnCompany: false, showOnLocation: true, showToAllLocations: false, locations: [locationId],
-    openMode: 'new_tab', userRole: 'all',
+    openMode: 'iframe', userRole: 'all',
   };
 }
 
@@ -40,10 +45,10 @@ export function guardMenu(method, path, body, checked = null) {
   }
   if (m === 'POST' && /^\/custom-menus\/?$/.test(p)) {
     const ok = body && body.title === MENU_TITLE && body.showOnCompany === false && body.showOnLocation === true && body.showToAllLocations === false
-      && Array.isArray(body.locations) && body.locations.length === 1 && LOC_RE.test(body.locations[0]) && body.openMode === 'new_tab'
+      && Array.isArray(body.locations) && body.locations.length === 1 && LOC_RE.test(body.locations[0]) && body.openMode === 'iframe'
       && typeof body.url === 'string' && body.url.startsWith(`${PAGES}firms/`);
     if (ok) return;
-    throw new Error('Blocked: a menu link must be "KPI Dashboard", for exactly one sub-account, opening in a new tab, pointing at a LeadPro dashboard.');
+    throw new Error('Blocked: a menu link must be "KPI Dashboard", for exactly one sub-account, opening inside GHL (iframe), pointing at a LeadPro dashboard.');
   }
   throw new Error(`Blocked: the menu-link step may not call ${m} ${p.replace(/[A-Za-z0-9]{15,}/g, ':id')} on GHL.`);
 }
@@ -59,21 +64,51 @@ async function call(method, path, { token, body, checked } = {}) {
   return data;
 }
 
-// Returns 'created' | 'exists' | 'skipped-no-token' | 'skipped-list-failed' | 'failed:<status>'.
+const listOf = list => list?.customMenus || list?.items || list?.menus || (Array.isArray(list) ? list : []);
+const idOf = m => String(m?.id || m?._id || '');
+// A "KPI Dashboard" link shown on this sub-account (ours or made by hand): the same test ensureMenuLink() has always used.
+const kpiLinkHere = (m, locationId) => String(m.title || '').trim().toLowerCase() === MENU_TITLE.toLowerCase()
+  && (m.showToAllLocations || (Array.isArray(m.locations) && m.locations.includes(locationId)));
+// The id to keep for the CSS rule: the link must be shown on this one sub-account only (a link for every sub-account
+// would move the item everywhere; its rule isn't ours to give).
+const keepId = (m, locationId) => (m && kpiLinkHere(m, locationId) && m.showToAllLocations !== true && Array.isArray(m.locations)
+  && m.locations.length === 1 && validMenuId(idOf(m))) ? idOf(m) : null;
+
+// Returns { result, id }. result: 'created' | 'exists' | 'skipped-no-token' | 'skipped-list-failed' | 'failed:<status>'.
+// id: the link's GHL id when known (from the POST answer, or read back with one GET; null if it can't be found).
 // Lists first: a "KPI Dashboard" link already shown on this sub-account means nothing is created.
 export async function ensureMenuLink({ token, locationId, slug, passphrase }) {
-  if (!token) return 'skipped-no-token';
-  if (!LOC_RE.test(locationId || '') || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug || '') || !passphrase) return 'failed:input';
+  if (!token) return { result: 'skipped-no-token', id: null };
+  if (!LOC_RE.test(locationId || '') || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug || '') || !passphrase) return { result: 'failed:input', id: null };
   let list;
   try { list = await call('GET', '/custom-menus/', { token }); }
-  catch { return 'skipped-list-failed'; }   // can't prove there's no link already: don't risk a duplicate
-  const items = list.customMenus || list.items || list.menus || (Array.isArray(list) ? list : []);
-  const here = items.some(m => String(m.title || '').trim().toLowerCase() === MENU_TITLE.toLowerCase()
-    && (m.showToAllLocations || (Array.isArray(m.locations) && m.locations.includes(locationId))));
-  if (here) return 'exists';
+  catch { return { result: 'skipped-list-failed', id: null }; }   // can't prove there's no link already: don't risk a duplicate
+  const here = listOf(list).find(m => kpiLinkHere(m, locationId));
+  if (here) return { result: 'exists', id: keepId(here, locationId) };
   const url = `${PAGES}firms/${slug}/#k=${encodeURIComponent(passphrase)}`;
-  try { await call('POST', '/custom-menus/', { token, body: menuBody({ locationId, url }) }); return 'created'; }
-  catch (e) { return `failed:${e.status ?? 0}`; }
+  let made;
+  try { made = await call('POST', '/custom-menus/', { token, body: menuBody({ locationId, url }) }); }
+  catch (e) { return { result: `failed:${e.status ?? 0}`, id: null }; }
+  const m = made?.customMenu || made;
+  if (validMenuId(idOf(m))) return { result: 'created', id: idOf(m) };
+  // No id in GHL's answer: read it back (GET only). A failed read leaves the id unknown; the link itself is made.
+  try { return { result: 'created', id: keepId(listOf(await call('GET', '/custom-menus/', { token })).find(x => kpiLinkHere(x, locationId)), locationId) }; }
+  catch { return { result: 'created', id: null }; }
+}
+
+// v1.30.0 "Show CSS rule" for a firm whose link was made before v1.30.0: a GET only (guardMenu allows nothing else here).
+// Returns { result: 'found' | 'none' | 'not-single' | 'skipped-no-token' | 'skipped-list-failed' | 'failed:input', id }.
+// 'not-single': a "KPI Dashboard" link is there but not for this one sub-account only (no rule given).
+export async function readMenuLinkId({ token, locationId }) {
+  if (!token) return { result: 'skipped-no-token', id: null };
+  if (!LOC_RE.test(locationId || '')) return { result: 'failed:input', id: null };
+  let list;
+  try { list = await call('GET', '/custom-menus/', { token }); }
+  catch { return { result: 'skipped-list-failed', id: null }; }
+  const here = listOf(list).filter(m => kpiLinkHere(m, locationId));
+  if (!here.length) return { result: 'none', id: null };
+  const id = here.map(m => keepId(m, locationId)).find(Boolean) || null;
+  return id ? { result: 'found', id } : { result: 'not-single', id: null };
 }
 
 // v1.28.0: the exact reversal, for remove-firm.yml (a LIVE firm only). Lists, finds this firm's own "KPI Dashboard" link
@@ -85,8 +120,7 @@ export async function removeMenuLink({ token, locationId, slug }) {
   let list;
   try { list = await call('GET', '/custom-menus/', { token }); }
   catch { return 'skipped-list-failed'; }
-  const items = list.customMenus || list.items || list.menus || (Array.isArray(list) ? list : []);
-  const ours = items.find(m => isOurLink(m, { locationId, slug }));
+  const ours = listOf(list).find(m => isOurLink(m, { locationId, slug }));
   if (!ours) return 'none';
   try { await call('DELETE', `/custom-menus/${ours.id || ours._id}`, { token, checked: ours }); return 'removed'; }
   catch (e) { return `failed:${e.status ?? 0}`; }

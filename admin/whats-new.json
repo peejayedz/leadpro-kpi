@@ -1,5 +1,15 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.30.0": {
+    "title": "KPI links open inside GHL, with their menu CSS rule",
+    "summary": "And renaming a pipeline in GHL no longer drops a scorecard to 0 leads.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "Add to GHL menu now makes the KPI Dashboard link open inside GHL, as in our setup steps." },
+      { "type": "new", "tag": "internal", "text": "Setup → GHL menu link shows the Custom CSS rule that puts the link in its place in the menu, with Copy. For older links, Show CSS rule reads it from GHL (read only)." },
+      { "type": "fixed", "tag": "internal", "text": "Law-firm scorecards now remember their pipelines by GHL's ID, so renaming a pipeline in GHL keeps the numbers counting." },
+      { "type": "new", "tag": "internal", "text": "If a counted pipeline disappears from GHL, the bell and Slack say \"Pipeline not found\" with a link to Edit mapping, and the dashboard keeps its last numbers instead of showing 0." }
+    ]
+  },
   "1.29.2": {
     "title": "The greeting's three numbers show at once",
     "summary": "The team site keeps them ready, so they don't wait on the other tools.",

@@ -662,6 +662,33 @@ try {
     await page.click('[data-dp-tab="setup"]'); await page.waitForSelector('#dPanel .dset');
     cf = await contrastFailures(page, '#dPanel'); check(!cf.length, `${tag}: Setup passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);
     await shot(page, `setup_${tag}`);
+    // v1.30.0: GHL menu link → Custom CSS rule. LFMP's link was made by hand (no id kept): "Show CSS rule" runs menu-css.yml
+    // (GET only), then the rule shows with Copy and where to paste it. Plain words while it runs, never a raw status.
+    {
+      const sec = '#dPanel [data-sec="menu-link"]';
+      await page.locator(`${sec} [data-css-rule]`).scrollIntoViewIfNeeded();
+      check(await page.isVisible(`${sec} [data-f="cssread"]`) && !(await page.$(`${sec} pre`)), `${tag}: no id yet → "Show CSS rule"`);
+      if (w === 1440 && scheme === 'dark') {   // the failure first: nothing found → plain words, nothing changed
+        G2.M.menuCss = 'none';
+        await page.click(`${sec} [data-f="cssread"]`);
+        await page.waitForFunction(() => /Not found/.test(document.querySelector('#dPanel [data-msg]')?.textContent || ''), null, { timeout: 30000 });
+        const msg = await page.textContent('#dPanel [data-msg]');
+        check(/Nothing changed/.test(msg) && !/in_progress|queued|completed/.test(msg), `${tag}: no link found → plain words + Nothing changed (${msg.trim().slice(0, 90)})`);
+        G2.M.menuCss = 'ok';
+      }
+      await page.click(`${sec} [data-f="cssread"]`);
+      const during = await page.textContent('#dPanel [data-msg]').catch(() => '');
+      check(!/in_progress|queued/.test(during), `${tag}: while reading, plain words (${during.trim().slice(0, 70)})`);
+      await page.waitForSelector(`${sec} pre`, { timeout: 30000 });
+      const rule = (await page.textContent(`${sec} pre`)).trim();
+      check(rule === '/* KPI Dashboard · Law Firm Marketing Pros (LFMP) */\n#b7cc0202-aaaa-bbbb-cccc-000000000001 { order: -92 !important; }', `${tag}: the rule (letter start, as is): ${JSON.stringify(rule)}`);
+      check((await page.textContent(sec)).includes('Paste into Agency → Settings → Company → White Label → Custom CSS, then Save.'), `${tag}: says where to paste it`);
+      const d = G2.M.dispatches.filter(x => /menu-css/.test(x.workflow || x.path || JSON.stringify(x)));
+      check(d.length >= 1 && G2.M.dispatches.every(x => !/menu-link/.test(JSON.stringify(x))), `${tag}: only menu-css.yml was started (no menu-link)`);
+      await page.click(`${sec} [data-f="css"]`).catch(() => {});
+      cf = await contrastFailures(page, '#dPanel'); check(!cf.length && await noSideScroll(page), `${tag}: Setup with the CSS rule passes AA contrast, no sideways scroll${cf.length ? `: ${cf.join(' | ')}` : ''}`);
+      if (SHOTS) await page.locator(sec).screenshot({ path: join(SHOTS, `setup_css_${tag}.png`) });
+    }
     await page.keyboard.press('Escape');
     check(!(await panelOpen(page)), `${tag}: Esc closes Details`);
     { const m2 = await openMe(page); await page.click(`${m2} [data-lv="news"]`); } await page.waitForSelector('.vcard');

@@ -72,9 +72,19 @@ for (const f of firms) {
     for (const [which, ref] of [['before', BASE], ['after', null]]) {
       const dir = join(tmp, which);
       await repo(dir, ref, f.slug, { ...cfg, locationId: 'MOCKLOCATION0001' }, disc, { ...f, locationId: 'MOCKLOCATION0001' });
-      await run(process.execPath, [join(dir, 'scripts/sync.mjs'), f.slug], { env: { ...process.env, GHL_API_BASE: mock.url, GHL_TOKEN: 'mock', DASHBOARD_PASSPHRASE: '', GHL_BACKOFF_MS: '10' }, maxBuffer: 64e6 });
-      out[which] = await readJSON(join(dir, 'firms', f.slug, 'data/kpis.json'));
+      const resultFile = join(dir, 'result.json');
+      try { await run(process.execPath, [join(dir, 'scripts/sync.mjs'), f.slug], { env: { ...process.env, GHL_API_BASE: mock.url, GHL_TOKEN: 'mock', DASHBOARD_PASSPHRASE: '', GHL_BACKOFF_MS: '10', SYNC_RESULT_FILE: resultFile }, maxBuffer: 64e6 }); }
+      catch (e) { out[`${which}Failed`] = await readJSON(resultFile).catch(() => ({ category: 'crash' })); }
+      out[which] = await readJSON(join(dir, 'firms', f.slug, 'data/kpis.json')).catch(() => null);
     }
+    // v1.30.0: the one intended difference. A counted pipeline name that matches nothing in GHL used to count 0 leads;
+    // now the sync stops with "Pipeline not found" (the dashboard keeps its last numbers). Allowed only when the old
+    // sync really counted 0 leads (so it can never hide a real change in numbers).
+    if (out.afterFailed?.category === 'pipeline' && out.before && out.before.periods.last90.current.totalLeads === 0 && Object.values(out.before.periods).every(p => !p.current?.totalLeads)) {
+      console.log(`✓ ${f.slug}: counted pipeline name not in GHL → before: 0 leads; after: "Pipeline not found" (last numbers kept) · intended v1.30.0 change`);
+      continue;
+    }
+    if (out.afterFailed || out.beforeFailed) { fails++; console.log(`✗ ${f.slug}: sync failed (${JSON.stringify(out.afterFailed || out.beforeFailed)})`); continue; }
     const a = JSON.stringify(strip(out.before)), b = JSON.stringify(strip(out.after));
     const c = out.after.periods.last90.current;
     const same = a === b;

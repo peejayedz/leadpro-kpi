@@ -64,7 +64,7 @@ async function sync(tmp, intercept = () => null, { env = {}, slug = 'fx', api } 
   const kpisText = await readFile(join(tmp, `firms/${slug}/data/kpis.json`), 'utf8').catch(() => null);
   return { code, out, result: resultText && JSON.parse(resultText), resultText, kpisText, hits };
 }
-const ALLOWED_RESULT_KEYS = ['slug', 'at', 'ok', 'category', 'detail', 'area', 'scopes', 'notInPipeline'];
+const ALLOWED_RESULT_KEYS = ['slug', 'at', 'ok', 'category', 'detail', 'area', 'scopes', 'notInPipeline', 'missing'];
 function privateCheck(r) {
   ok(r.resultText, 'a result file was written');
   for (const k of Object.keys(r.result)) ok(ALLOWED_RESULT_KEYS.includes(k), `unexpected key "${k}" in the result file`);
@@ -319,6 +319,7 @@ test('Every issue type has a title, an explanation, steps and the right buttons'
     [{ kind: 'failed', category: 'scope', detail: 'missing', scopes: ['calendars.readonly', 'users.readonly'] }, ['ghl', 'resync', 'run', 'firm'], /View Calendars and View Users/],
     [{ kind: 'failed', category: 'ghl', detail: 'server', area: 'opportunities' }, ['resync', 'run', 'firm'], /server or network/],
     [{ kind: 'failed', category: 'config', detail: 'no-location' }, ['run', 'resync', 'firm'], /config/],
+    [{ kind: 'failed', category: 'pipeline', detail: 'not-found', missing: 1 }, ['map', 'run', 'firm'], /^Pipeline not found$/],
     [{ kind: 'failed', category: 'unknown', detail: 'crash' }, ['run', 'resync', 'firm'], /unknown/],
     [{ kind: 'held', count: 2 }, ['resync', 'run', 'firm'], /Holding/],
     [{ kind: 'incomplete' }, ['resync', 'run', 'firm'], /may be incomplete/],
@@ -335,7 +336,7 @@ test('Every issue type has a title, an explanation, steps and the right buttons'
   }
   const scope = describeIssue({ kind: 'failed', category: 'scope', scopes: ['calendars.readonly'] }, { subAccount: 'Sub One' });
   ok(scope.steps.join(' ').includes('tick <b>View Calendars</b>') && scope.steps[0].includes('Sub One'), 'scope steps name the scope and sub-account');
-  eq(Object.keys(CATEGORIES), ['token', 'scope', 'ghl', 'config', 'unknown'], 'categories');
+  eq(Object.keys(CATEGORIES), ['token', 'scope', 'ghl', 'config', 'pipeline', 'unknown'], 'categories');
   eq(Object.keys(SCOPE_NAMES).length, 9, 'nine scopes');
 });
 
