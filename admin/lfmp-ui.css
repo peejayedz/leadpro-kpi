@@ -379,6 +379,8 @@ div.lv-mi{cursor:default} div.lv-mi:hover{background:none}
 .lfmp-v2 .lv-pm-sh.lv-pm-on{background-color:rgba(0,0,0,.55);transition-duration:.42s}
 .lfmp-v2 .lv-pm-now,.lfmp-v2 .lv-pm-now > *{transition:none !important;animation:none !important}
 @media (prefers-reduced-motion:reduce){
+  .lv-res-shade,.lv-res{animation:none}   /* v2.5.0: the Done popup appears without the pop; the working line doesn't fade */
+  .lv-job-sub{transition:none}
   .lv-load-mk i{animation:none;opacity:1}
   .lv-load-mk i:nth-child(n){animation-name:none}   /* each block names its own keyframes (same specificity, later wins) */
   .lv-dots.lv-dots::after{animation:none;content:"…"}
@@ -622,3 +624,57 @@ div.lv-mi{cursor:default} div.lv-mi:hover{background:none}
   .lv-gr-st .ok em{font-size:18px;line-height:28px}
   .lv-gr-skip{font-size:8px;bottom:36px}
 }/* reduced motion: the greeting never shows (the shell doesn't start it either); in the one reduced-motion block above */
+
+/* ===== v2.5.0 long jobs: the working bar (PJ's LFMP_Working_Animation_Variations.html, variation B) ===== */
+.lv-job{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 16px 12px;font-size:13.5px;overflow:hidden;margin-top:12px;color:var(--ink)}
+.lv-job-t{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.lv-job-t b{font-weight:500;min-width:0}
+.lv-job-t span{color:var(--mut);font-size:12.5px;white-space:nowrap;flex:none}
+.lv-job-sub{color:var(--mut);font-size:12.5px;margin-top:2px;min-height:19px;transition:opacity .35s}
+.lv-job-track{position:relative;height:42px;margin-top:2px}
+.lv-job-bar{position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--soft);border-radius:3px;overflow:hidden}
+.lv-job-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--gold);border-radius:3px;width:0}
+.lv-job-rider{position:absolute;bottom:3px;left:0;will-change:transform}
+.lv-job-rider svg{display:block;overflow:visible}
+.lv-jk-ink{stroke:var(--ink);fill:none;stroke-linecap:round;stroke-linejoin:round}
+.lv-jk-inkf{fill:var(--ink)}
+.lv-jk-gold{stroke:var(--gold);fill:none;stroke-linecap:round}
+.lv-job-dust{position:absolute;bottom:4px;height:2px;border-radius:2px;background:var(--mut);opacity:0}
+.lv-job.is-still .lv-job-track{height:12px}
+.lv-job.is-bad .lv-job-bar i{background:var(--red)}
+@media (max-width:879.98px){.lv-job-t{flex-direction:column;gap:0}}
+
+/* ===== v2.5.0 the Done / Didn't work popup (PJ's LFMP_Done_Card_Preview.html) ===== */
+.lv-res-shade{position:fixed;inset:0;z-index:200;background:rgba(10,10,12,.55);display:flex;align-items:center;justify-content:center;padding:16px;animation:lv-res-fd .2s ease-out}
+@keyframes lv-res-fd{from{opacity:0}to{opacity:1}}
+.lv-res{width:min(420px,100%);min-width:0;max-height:calc(100vh - 32px);overflow:auto;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:26px 26px 20px;text-align:center;animation:lv-res-pp .3s cubic-bezier(.2,.9,.3,1.2);outline:none}
+@keyframes lv-res-pp{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+.lv-res-ic{width:54px;height:54px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;color:#fff;font:700 26px var(--b);background:var(--green)}
+.lv-res.bad .lv-res-ic{background:var(--red)}
+.lv-res h3{margin:0 0 6px;font:700 26px/1.05 var(--d);text-transform:uppercase;letter-spacing:0}
+.lv-res p{margin:0 auto;color:var(--mut);font-size:14px;line-height:1.5;max-width:330px}
+.lv-res p b{color:var(--ink)}
+.lv-res-list{list-style:none;padding:0;margin:14px 0 0;text-align:left;border:1px solid var(--line);border-radius:10px;font-size:13px}
+.lv-res-list li{display:flex;justify-content:space-between;gap:12px;padding:8px 12px;border-top:1px solid var(--line)}
+.lv-res-list li:first-child{border-top:0}
+.lv-res-list li span{color:var(--mut);text-align:right;overflow-wrap:anywhere}
+.lv-res-when{display:block;color:var(--mut);font-size:12px;margin-top:10px}
+.lv-res-bt{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.lv-res-bt button{font:600 13.5px var(--b);padding:10px 18px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.lv-res-bt .lv-res-pri{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+@media (max-width:879.98px){.lv-res{padding:22px 18px 18px}.lv-res h3{font-size:23px}.lv-res-bt button{min-height:44px}}
+
+/* ===== v2.5.0 the bell's Recent jobs (Builder, Review admin: the shell's panel; KPI admin: inside its own) ===== */
+.lv-jobpop{position:absolute;right:0;top:calc(100% + 8px);width:340px;max-width:calc(100vw - 20px);max-height:min(70vh,520px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px;font-size:13px;z-index:120;text-align:left;outline:none}
+.lv-jobpop-h{margin:6px 10px 4px;font:700 11px/1.6 var(--b);letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.lv-jobs{list-style:none;margin:0;padding:0}
+.lv-jobs-it{display:flex;gap:10px;padding:10px;border-radius:8px;color:var(--ink)}
+.lv-jobs-it.top{background:var(--soft)}
+.lv-jobs-retry{border:0;background:none;padding:0;font:inherit;color:var(--ink);text-decoration:underline;cursor:pointer}
+.lv-jobs-it b{font-weight:600}
+.lv-jobs-it small{display:block;color:var(--mut);font-size:12px}
+.lv-jobs-d{width:8px;height:8px;border-radius:50%;margin-top:6px;flex:none;background:var(--green)}
+.lv-jobs-d.bad{background:var(--red)}
+.lv-jobs-d.run{background:var(--gold)}
+.lv-jobs-none{margin:8px 10px 10px;color:var(--mut)}
+@media (max-width:879.98px){.lv-jobpop{position:fixed;left:10px;right:10px;top:58px;width:auto}}

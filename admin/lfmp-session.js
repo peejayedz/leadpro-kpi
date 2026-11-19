@@ -190,7 +190,7 @@ export function setTheme(mode) {
 }
 
 const avHtml = me => `<span class="lv-av">${escH(initials(me))}</span>`;   // initials only (no dot: not in the reference)
-const bellHtml = n => `<span class="lv-bellwrap" data-lv-bellwrap><button type="button" class="lv-bell lv-hit" data-lv="bell" aria-haspopup="dialog" aria-expanded="false" aria-label="Sync issues${n ? `: ${n}` : ''}"><span class="lv-bi" aria-hidden="true">🔔</span><b class="lv-badge" data-lv-badge${n ? '' : ' hidden'}>${Number(n) || 0}</b></button></span>`;
+const bellHtml = (n, label = 'Notifications') => `<span class="lv-bellwrap" data-lv-bellwrap><button type="button" class="lv-bell lv-hit" data-lv="bell" aria-haspopup="dialog" aria-expanded="false" aria-label="${escH(label)}${n ? `: ${n}` : ''}"><span class="lv-bi" aria-hidden="true">🔔</span><b class="lv-badge" data-lv-badge${n ? '' : ' hidden'}>${Number(n) || 0}</b></button></span>`;
 
 // The initials circle + its menu (v2.4.0: the bar has no name and no Sign out; they are in this menu).
 const avWrapHtml = (me, where) => `<span class="lv-avwrap" data-lv-avwrap="${where}"><button type="button" class="lv-avbtn${where === 'phone' ? ' lv-hit' : ''}" data-lv="me" aria-haspopup="menu" aria-expanded="false" aria-label="Your menu: name, theme, what's new, sign out">${avHtml(me)}</button><div class="lv-pop" data-lv-pop role="menu" aria-label="Your menu" tabindex="-1" hidden></div><span class="lv-mhint" data-lv-mhint aria-hidden="true" hidden>Your menu ›</span></span>`;
@@ -201,7 +201,7 @@ export function topBarHtml(cfg) {
   return `<header class="lv-top" data-lv-top>
   <a class="lv-mk" href="${t.path}" data-lv-home aria-label="LFMP · ${escH(t.label)}"><i></i><i></i><i></i></a><a class="lv-brand" href="${t.path}" data-lv-home>LFMP</a>
   <nav class="lv-nav" aria-label="LFMP tools">${SHELL_TOOLS.map(x => `<a href="${x.path}"${x.id === t.id ? ' aria-current="page" data-lv-home' : ''}>${x.label}</a>`).join('')}</nav>
-  <div class="lv-rt">${cfg.bell ? bellHtml(cfg.bellCount) : ''}${cfg.plus ? `<button type="button" class="lv-plus" data-lv="plus">+ ${escH(cfg.plus.label || t.plus)}</button>` : ''}
+  <div class="lv-rt">${cfg.bell ? bellHtml(cfg.bellCount, cfg.bell.label) : ''}${cfg.plus ? `<button type="button" class="lv-plus" data-lv="plus">+ ${escH(cfg.plus.label || t.plus)}</button>` : ''}
     ${avWrapHtml(me, 'top')}</div>
 </header>`;
 }
@@ -212,7 +212,7 @@ export function phoneBarHtml(cfg, title) {
   const t = toolOf(cfg.tool);
   const plus = cfg.plus && !cfg.meScreen ? `<button type="button" class="lv-pplus lv-hit" data-lv="plus" aria-label="${escH(cfg.plus.label || t.plus)}">+</button>` : '';
   const av = cfg.meScreen ? `<button type="button" class="lv-avbtn lv-hit" data-lv="me" aria-label="Close Me">${avHtml(cfg.me)}</button>` : avWrapHtml(cfg.me || {}, 'phone');
-  return `<div class="lv-ptop"${cfg.meScreen ? '' : ' data-lv-ptop'}><div class="lv-band"></div><div class="lv-bb"><a class="lv-mk lv-hit" href="${t.path}" data-lv-home aria-label="LFMP · ${escH(t.label)}"><i></i><i></i><i></i></a><h2${cfg.meScreen ? '' : ' data-lv-title'}>${escH(title ?? t.title)}</h2><div class="lv-ic">${cfg.bell && !cfg.meScreen ? bellHtml(cfg.bellCount) : ''}${plus}${av}</div></div></div>`;
+  return `<div class="lv-ptop"${cfg.meScreen ? '' : ' data-lv-ptop'}><div class="lv-band"></div><div class="lv-bb"><a class="lv-mk lv-hit" href="${t.path}" data-lv-home aria-label="LFMP · ${escH(t.label)}"><i></i><i></i><i></i></a><h2${cfg.meScreen ? '' : ' data-lv-title'}>${escH(title ?? t.title)}</h2><div class="lv-ic">${cfg.bell && !cfg.meScreen ? bellHtml(cfg.bellCount, cfg.bell.label) : ''}${plus}${av}</div></div></div>`;
 }
 
 // Bottom tabs: Clients · Scorecards · Reviews · Me (gold = where you are)
@@ -619,6 +619,330 @@ export function progressCard(el, cfg) {
 }
 
 // =====================================================================================================================
+// LONG JOBS (v2.5.0, Nov 2026): the working bar + the Done / Didn't work popup, one component for every long job in the
+// three tools. PJ's previews "Claude outputs/LFMP_Working_Animation_Variations.html" variation B ("Commuter + witty
+// lines") and "LFMP_Done_Card_Preview.html" (Working · Done · Didn't work · Came back later · Bell).
+//   const job = startJob({ tool, kind, client, what, title, host, typicalMs, check })
+//     kind    one of JOB_LINES' keys (the witty lines); client = the client's name (fills "<Client>" in the lines)
+//     what    the job in a few words ("Re-read GHL"); title = the working line ("Reading X's pipelines from GHL…")
+//     host    the element the working bar goes in (the card the button sits on), or a key: the bar then lives in
+//             [data-lv-jobhost="<key>"] and moves back in by itself after the tool repaints that area; none = popup only
+//     check   optional { repo, workflow, title, since } = the GitHub run it starts, so a job left behind (page closed, or
+//             another tool) is finished when any of the three tools opens again ("Finished 4 min ago")
+//   job.progress(0..1)   real progress when the job reports it (else the cyclist eases toward ~90%)
+//   job.done({ title, lead, items: [[label, value]], next: { label, onClick } })   → green ✓ popup + bell
+//   job.fail({ reason, nothingChanged, onRetry })                                  → red popup + bell
+// While it runs: plain words + the gold bar with the cyclist (never a raw status). The popup stays until it's closed.
+// Reduced motion: the plain gold bar, no cyclist, the first line only. Admin tools only: client pages never load this.
+// Results are kept on this browser (localStorage "lfmp-jobs", PJ 20 Nov 2026), shared by the three tools.
+// =====================================================================================================================
+// One list of lines for every job (edit them here). "{client}" is replaced by the client's name.
+export const JOB_LINES = {
+  reread: ['Pedaling over to GHL…', 'Asking GHL nicely for your pipelines…', 'Counting your stages twice, just in case…', 'Legs burning. Nearly there…'],
+  savemap: ['Tightening the bolts on your mapping…', 'Double-checking every stage…'],
+  sync: ['Fetching the latest leads…', 'Rounding up the numbers…', 'Doing the math so you don\'t have to…'],
+  create: ['Building {client}\'s new home in GHL…', 'Moving the furniture in (snapshot)…', 'Hanging the pictures…'],
+  kpi: ['Setting up {client}\'s scorecard…', 'Lining up the numbers…'],
+  menu: ['Hanging the KPI sign in GHL…'],
+  review: ['Photocopying the workflows…', 'Reading the fine print in every email…'],
+  publish: ['Delivering the new version to the client\'s page…', 'Wrapping it with a bow…'],
+  remove: ['Tidying up…', 'Putting things back where they were…'],
+  other: ['Pedaling…', 'Almost there…'],
+};
+export const JOB_SLOW_LINE = 'Uphill bit. Still pedaling.';
+export const JOB_SLOW_MS = 60000, JOB_LINE_MS = 3000, JOB_TYPICAL_MS = 40000;
+export const JOBS_KEY = 'lfmp-jobs', JOBS_KEEP = 30, JOBS_DAYS = 7, JOB_RESUME_MS = 2 * 3600e3;
+export const jobLines = (kind, client = '') => (JOB_LINES[kind] || JOB_LINES.other).map(l => l.replace(/\{client\}/g, client || 'the client'));
+// Where the cyclist is: real progress when known, else eases toward 90% (≈ 70% at the job's typical time).
+export function jobPct({ elapsed, typicalMs = JOB_TYPICAL_MS, real = null }) {
+  if (real != null && Number.isFinite(real)) return Math.max(0, Math.min(1, real));
+  return 0.9 * (1 - Math.exp(-Math.max(0, elapsed) / Math.max(1000, typicalMs * 0.83)));
+}
+// The grey line under the title: rotates every ~3 s; one line for good once a job is past a minute.
+export function jobLineAt(lines, elapsed) {
+  if (elapsed >= JOB_SLOW_MS) return JOB_SLOW_LINE;
+  return lines[Math.floor(Math.max(0, elapsed) / JOB_LINE_MS) % lines.length] || '';
+}
+export function agoText(ms) {
+  const m = Math.round(ms / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m} min ago`;
+  const h = Math.round(m / 60);
+  return h < 24 ? `${h} hour${h === 1 ? '' : 's'} ago` : `${Math.round(h / 24)} day${h < 48 ? '' : 's'} ago`;
+}
+
+// ---- the job list on this browser (shared by the three tools)
+const jobsStore = () => { try { return globalThis.localStorage || null; } catch { return null; } };
+export function readJobs(store = jobsStore()) {
+  try { const v = JSON.parse(store?.getItem(JOBS_KEY) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+}
+export function writeJobs(list, store = jobsStore(), now = Date.now()) {
+  const keep = list.filter(j => now - (j.finishedAt || j.startedAt || 0) < JOBS_DAYS * 864e5).slice(-JOBS_KEEP);
+  try { store?.setItem(JOBS_KEY, JSON.stringify(keep)); } catch {}
+  if (hasDoc()) document.dispatchEvent(new CustomEvent('lfmp-jobs'));
+  return keep;
+}
+export function patchJob(id, patch, store = jobsStore()) {
+  const list = readJobs(store), j = list.find(x => x.id === id);
+  if (!j) return null;
+  Object.assign(j, typeof patch === 'function' ? patch(j) : patch);
+  writeJobs(list, store);
+  return j;
+}
+export const unseenJobs = (store = jobsStore()) => readJobs(store).filter(j => (j.status === 'done' || j.status === 'failed') && !j.seen);
+export const runningJobs = (store = jobsStore()) => readJobs(store).filter(j => j.status === 'running');
+const TOOL_PAGE = { builder: 'Clients', kpi: 'Scorecards', review: 'Reviews' };
+// Which tool is in front (each shell notes it when it opens or comes back into view), for "while you were on Reviews".
+export const JOBS_HERE_KEY = 'lfmp-here';
+export function noteHere(tool, store = jobsStore()) { try { if (tool) store?.setItem(JOBS_HERE_KEY, tool); } catch {} }
+const hereTool = (store = jobsStore()) => { try { return store?.getItem(JOBS_HERE_KEY) || ''; } catch { return ''; } };
+
+// ---- the cyclist (inline SVG, ink + gold tokens; the same drawing as variation B)
+const SVGNS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs, parent) { const e = document.createElementNS(SVGNS, tag); for (const a in attrs) e.setAttribute(a, attrs[a]); parent?.appendChild(e); return e; }
+function makeBike(host) {
+  const s = svgEl('svg', { width: 53, height: 37, viewBox: '0 0 44 31', 'aria-hidden': 'true', focusable: 'false' }, host);
+  const wheel = cx => { const g = svgEl('g', {}, s); svgEl('circle', { cx, cy: 24, r: 6.2, class: 'lv-jk-ink', 'stroke-width': 1.7 }, g); const sp = svgEl('g', {}, g); for (let i = 0; i < 3; i++) svgEl('line', { x1: cx - 6, y1: 24, x2: cx + 6, y2: 24, class: 'lv-jk-ink', 'stroke-width': 0.7, transform: `rotate(${i * 60} ${cx} 24)` }, sp); return sp; };
+  const rw = wheel(9), fw = wheel(34);
+  svgEl('path', { d: 'M9 24 L20 24 L16.5 12.5 Z M16.5 12.5 L30 12.5 L20 24 M30 12.5 L34 24 M29 12.5 L30.5 9.5 L33 9.5', class: 'lv-jk-gold', 'stroke-width': 1.8 }, s);
+  svgEl('path', { d: 'M14.5 12 L19 12', class: 'lv-jk-ink', 'stroke-width': 2 }, s);
+  const legB = svgEl('polyline', { class: 'lv-jk-ink', 'stroke-width': 2, opacity: 0.45 }, s);
+  svgEl('path', { d: 'M16.5 10.5 L25 4.5 L31 9.5', class: 'lv-jk-ink', 'stroke-width': 2.1 }, s);
+  svgEl('circle', { cx: 27, cy: 2.2, r: 2.6, class: 'lv-jk-inkf' }, s);
+  const legF = svgEl('polyline', { class: 'lv-jk-ink', 'stroke-width': 2.1 }, s);
+  const crank = svgEl('line', { class: 'lv-jk-ink', 'stroke-width': 1.4 }, s);
+  const hip = [16.5, 10.5], c = [20, 24], R = 3.6, L1 = 8.6, L2 = 8.6;
+  const leg = th => {
+    const p = [c[0] + R * Math.cos(th), c[1] + R * Math.sin(th)];
+    const dx = p[0] - hip[0], dy = p[1] - hip[1], d = Math.min(Math.hypot(dx, dy), L1 + L2 - 0.05);
+    const a = (L1 * L1 - L2 * L2 + d * d) / (2 * d), h = Math.sqrt(Math.max(0, L1 * L1 - a * a));
+    const ux = dx / Math.hypot(dx, dy), uy = dy / Math.hypot(dx, dy), P = [hip[0] + a * ux, hip[1] + a * uy];
+    const k1 = [P[0] + h * uy, P[1] - h * ux], k2 = [P[0] - h * uy, P[1] + h * ux], k = k1[0] > k2[0] ? k1 : k2;
+    return `${hip} ${k} ${p}`;
+  };
+  return { w: 53, update(t, speed) {
+    const th = t * speed * 7;
+    legF.setAttribute('points', leg(th)); legB.setAttribute('points', leg(th + Math.PI));
+    crank.setAttribute('x1', c[0] + R * Math.cos(th)); crank.setAttribute('y1', c[1] + R * Math.sin(th));
+    crank.setAttribute('x2', c[0] - R * Math.cos(th)); crank.setAttribute('y2', c[1] - R * Math.sin(th));
+    const r = (th * 57.3 * 1.3) % 360; rw.setAttribute('transform', `rotate(${r} 9 24)`); fw.setAttribute('transform', `rotate(${r} 34 24)`);
+  } };
+}
+
+// ---- the working bar (markup: also used by tests and tools that repaint)
+// The hint on the right: "usually under a minute", or the job's own typical time when it's longer ("usually about 2 minutes").
+export const jobHint = typicalMs => { const m = Math.round((Number(typicalMs) || JOB_TYPICAL_MS) / 60000); return m <= 1 ? 'usually under a minute' : `usually about ${m} minutes`; };
+export function workBarHtml({ title, hint = 'usually under a minute', line = '' }) {
+  return `<div class="lv-job" data-lv-job role="status" aria-live="polite"><div class="lv-job-t"><b data-lv-job-title>${escH(title)}</b><span>${escH(hint)}</span></div>
+    <div class="lv-job-sub" data-lv-job-line>${escH(line)}</div>
+    <div class="lv-job-track" aria-hidden="true"><div class="lv-job-bar"><i data-lv-job-fill></i></div></div></div>`;
+}
+// Mounts the bar in host and animates it. Returns { progress(p), finish(ok) → Promise (fills to 100% / stops), remove() }.
+export const jobHostOf = key => (hasDoc() ? document.querySelector(`[data-lv-jobhost="${CSS.escape(key)}"]`) : null);
+export function mountWorkBar(host, { title, hint, kind = 'other', client = '', typicalMs = JOB_TYPICAL_MS, t0 = Date.now() } = {}) {
+  const key = typeof host === 'string' ? host : null;
+  if (!hasDoc() || !host) return { progress() {}, finish: () => Promise.resolve(), remove() {}, el: null };
+  const lines = jobLines(kind, client), reduce = reducedMotion();
+  const tpl = document.createElement('div'); tpl.innerHTML = workBarHtml({ title, hint: hint || jobHint(typicalMs), line: lines[0] });
+  const el = tpl.firstElementChild;
+  if (key) el.dataset.lvJobkey = key;
+  // (re)attach: into the host element, or the current [data-lv-jobhost=key] (a repaint replaced the old one)
+  const attach = () => {
+    if (el.isConnected) return;
+    const h = key ? jobHostOf(key) : host;
+    if (!h) return;
+    h.querySelectorAll(':scope > [data-lv-job]').forEach(x => { if (x !== el) x.parentNode.removeChild(x); });
+    h.appendChild(el);
+  };
+  attach();
+  const track = el.querySelector('.lv-job-track'), fill = el.querySelector('[data-lv-job-fill]'), sub = el.querySelector('[data-lv-job-line]');
+  let real = null, raf = 0, timer = 0, gone = false, end = null, lineShown = lines[0], swap = 0;
+  let rider = null, bike = null; const dusts = [];
+  if (!reduce) {
+    rider = document.createElement('div'); rider.className = 'lv-job-rider'; track.appendChild(rider); bike = makeBike(rider);
+    for (let i = 0; i < 3; i++) { const d = document.createElement('div'); d.className = 'lv-job-dust'; track.appendChild(d); dusts.push(d); }
+  } else el.classList.add('is-still');
+  const pctNow = () => (end ? end.p : jobPct({ elapsed: Date.now() - t0, typicalMs, real }));
+  const frame = ms => {
+    if (gone) return;
+    attach();
+    const T = ms / 1000, W = track.clientWidth, p = pctNow();
+    fill.style.width = `${(p * 100).toFixed(2)}%`;
+    if (bike) {
+      const x = Math.max(0, p * W - bike.w * 0.8);
+      rider.style.transform = `translate(${x}px,${Math.sin(T * 14) * 0.4}px)`;
+      bike.update(T, end ? 2.2 : 1.4);
+      dusts.forEach((d, i) => { const ph = (T * 1.6 + i / 3) % 1; d.style.left = `${x - 2 - ph * 14}px`; d.style.width = `${6 - ph * 4}px`; d.style.bottom = `${5 + i * 3}px`; d.style.opacity = String((1 - ph) * 0.5); });
+    }
+    const want = jobLineAt(lines, Date.now() - t0);
+    if (!reduce && want !== lineShown && !swap) {
+      lineShown = want; sub.style.opacity = '0';
+      swap = setTimeout(() => { swap = 0; if (!gone) { sub.textContent = want; sub.style.opacity = '1'; } }, 200);
+    }
+    raf = requestAnimationFrame(frame);
+  };
+  if (reduce) { const tick = () => { if (gone) return; attach(); fill.style.width = `${(pctNow() * 100).toFixed(2)}%`; }; tick(); timer = setInterval(tick, 500); }
+  else raf = requestAnimationFrame(frame);
+  const stop = () => { gone = true; cancelAnimationFrame(raf); clearInterval(timer); clearTimeout(swap); };
+  return {
+    el,
+    progress(p) { real = p; },
+    // ok: the gold fills to 100% (~0.45 s, the cyclist rides to the end); not ok: it stops where it is
+    finish(ok = true) {
+      if (gone) return Promise.resolve();
+      if (!ok) { stop(); el.classList.add('is-bad'); return Promise.resolve(); }
+      const from = pctNow(), t1 = Date.now();
+      return new Promise(res => {
+        if (reduce) { fill.style.width = '100%'; stop(); return res(); }
+        end = { p: from };
+        const step = () => { const k = Math.min(1, (Date.now() - t1) / 450); end.p = from + (1 - from) * (1 - (1 - k) ** 2); if (k < 1 && !gone) setTimeout(step, 16); else { stop(); fill.style.width = '100%'; res(); } };
+        step();
+      });
+    },
+    remove() { stop(); if (el.parentNode) el.parentNode.removeChild(el); },
+  };
+}
+
+// ---- the popup (Done ✓ / Didn't work !), centred over a dimmed page; stays until Close / the next step / Try again
+export function resultPopupHtml(r) {
+  const ok = r.status !== 'failed';
+  const items = ok && r.items?.length ? `<ul class="lv-res-list">${r.items.map(([k, v]) => `<li>${escH(k)}<span>${escH(v)}</span></li>`).join('')}</ul>` : '';
+  const lead = ok ? (r.lead ? `<p>${escH(r.lead)}</p>` : '')
+    : `<p>${escH(r.reason || 'Something went wrong.')}${typeof r.nothingChanged === 'string' && r.nothingChanged ? ` <b>Nothing changed:</b> ${escH(r.nothingChanged)}` : r.nothingChanged ? ' <b>Nothing changed.</b>' : ''}</p>`;
+  const when = r.when ? `<span class="lv-res-when">${escH(r.when)}</span>` : '';
+  const next = ok ? (r.next?.label ? `<button type="button" class="lv-res-pri" data-lv-res="next">${escH(r.next.label)}</button>` : '')
+    : (r.retry ? `<button type="button" class="lv-res-pri" data-lv-res="retry">Try again</button>` : '');
+  const close = `<button type="button" class="${!next && r.when ? 'lv-res-pri' : ''}" data-lv-res="close">${!next && r.when ? 'OK' : 'Close'}</button>`;
+  return `<div class="lv-res-shade" data-lv-res-shade><div class="lv-res${ok ? '' : ' bad'}" role="alertdialog" aria-modal="true" aria-labelledby="lvResT" aria-describedby="lvResB" tabindex="-1">
+    <div class="lv-res-ic" aria-hidden="true">${ok ? '✓' : '!'}</div><h3 id="lvResT">${escH(ok ? r.title || `Done: ${r.what || 'finished'}` : 'Didn\'t work')}</h3>
+    <div id="lvResB">${lead}${items}${when}</div><div class="lv-res-bt">${close}${next}</div></div></div>`;
+}
+let resQueue = [], resOpen = null;
+// Shows one result (queued if another is open). opts.onNext / opts.onRetry run after the popup closes.
+export function showResult(r, opts) {
+  const { onNext, onRetry, onClose } = opts || {};
+  if (!hasDoc()) return;
+  resQueue.push({ r, onNext, onRetry, onClose });
+  if (!resOpen) nextResult();
+}
+function nextResult() {
+  const it = resQueue.shift(); if (!it) { resOpen = null; return; }
+  const prevFocus = document.activeElement;
+  document.body.insertAdjacentHTML('beforeend', resultPopupHtml({ ...it.r, retry: !!it.onRetry }));
+  const shade = document.body.lastElementChild, box = shade.querySelector('.lv-res');
+  resOpen = shade; document.body.classList.add('lv-res-on');
+  if (it.r.id) patchJob(it.r.id, { seen: true });
+  const done = why => {
+    shade.remove(); document.removeEventListener('keydown', onKey, true); document.body.classList.remove('lv-res-on');
+    resOpen = null;
+    try { prevFocus?.focus?.({ preventScroll: true }); } catch {}
+    if (why === 'next') it.onNext?.(); else if (why === 'retry') it.onRetry?.(); else it.onClose?.();
+    nextResult();
+  };
+  const onKey = e => {
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); done('close'); return; }
+    if (e.key === 'Tab') { const f = [...box.querySelectorAll('button')]; const i = f.indexOf(document.activeElement); if (e.shiftKey && i <= 0) { e.preventDefault(); f.at(-1).focus(); } else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); } }
+  };
+  document.addEventListener('keydown', onKey, true);
+  shade.addEventListener('click', e => { const b = e.target.closest('[data-lv-res]'); if (b) done(b.dataset.lvRes); });   // the dimmed page itself doesn't close it
+  (box.querySelector('.lv-res-pri') || box.querySelector('button')).focus({ preventScroll: true });
+}
+export const resultOpen = () => !!resOpen;
+
+// ---- one long job, start to finish
+let jobSeq = 0;
+export function startJob(o = {}) {
+  const id = `j${Date.now().toString(36)}${(jobSeq++).toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+  const t0 = Date.now(), tool = o.tool || '';
+  const entry = { id, tool, kind: o.kind || 'other', what: o.what || '', client: o.client || '', title: o.title || '', status: 'running', startedAt: t0,
+    page: TOOL_PAGE[tool] || '', ...(o.check ? { check: { ...o.check, since: o.check.since || t0 } } : {}), ...(o.doneText ? { doneText: o.doneText } : {}) };
+  writeJobs([...readJobs(), entry]);
+  const bar = o.host ? mountWorkBar(o.host, { title: o.title || `${o.what || 'Working'}…`, hint: o.hint, kind: entry.kind, client: entry.client, typicalMs: o.typicalMs, t0 }) : null;
+  let over = false;
+  const finishWith = async (status, r, cb) => {
+    if (over) return; over = true;
+    await bar?.finish(status === 'done');
+    bar?.remove();
+    const result = { ...r, status, what: entry.what, id, finishedAt: Date.now() };
+    const away = hasDoc() && document.visibilityState === 'hidden' ? hereTool() : '';
+    patchJob(id, { status, finishedAt: result.finishedAt, ...(away ? { awayOn: away } : {}), result: { title: r.title, lead: r.lead, items: r.items, reason: r.reason, nothingChanged: r.nothingChanged, line: r.line, detail: r.detail } });
+    if (cb?.onRetry) liveRetry.set(id, cb.onRetry);
+    // shown now if this page is in front; otherwise it waits (visibilitychange / the next page load) as "Finished … ago"
+    if (hasDoc() && document.visibilityState !== 'hidden') showResult(result, cb);
+    else if (cb) pendingCbs.set(id, cb);
+  };
+  return {
+    id, bar,
+    progress(p) { bar?.progress(p); },
+    line(title) { if (bar?.el) bar.el.querySelector('[data-lv-job-title]').textContent = title; },
+    // line / detail: the bell's one-line result ("Pipelines updated from GHL" · "12 stages · 1 new stage to map")
+    done(r = {}) { return finishWith('done', { title: r.title || `Done: ${entry.what || 'finished'}`, lead: r.lead, items: r.items || [], next: r.next, line: r.line, detail: r.detail }, r.next?.onClick ? { onNext: r.next.onClick } : null); },
+    fail(r = {}) { return finishWith('failed', { reason: r.reason || 'Something went wrong.', nothingChanged: r.nothingChanged || false, line: r.line, detail: r.detail }, r.onRetry ? { onRetry: r.onRetry } : null); },
+    // the job ended without a result to show (cancelled by the user): no popup, nothing in the bell
+    drop() { if (over) return; over = true; bar?.remove(); writeJobs(readJobs().filter(j => j.id !== id)); },
+  };
+}
+const pendingCbs = new Map(), liveRetry = new Map();   // liveRetry: "Try again" in the bell while the page that ran the job is open
+export function retryJob(id) { const f = liveRetry.get(id); if (!f) return false; liveRetry.delete(id); f(); return true; }
+// A finished job shown later (another tab was in front, the page was closed, another tool): "Finished 4 min ago, while you were on Reviews".
+function laterResult(j, here) {
+  const r = j.result || {};
+  const away = Date.now() - (j.finishedAt || Date.now());
+  const on = j.awayOn && j.awayOn !== j.tool ? j.awayOn : (here && j.tool && here !== j.tool ? here : '');
+  const where = TOOL_PAGE[on] ? `, while you were on ${TOOL_PAGE[on]}` : '';
+  return { ...r, status: j.status, what: j.what, id: j.id, title: r.title || `Done: ${j.what}`, when: away > 45000 ? `Finished ${agoText(away)}${where}` : '' };
+}
+export function showWaitingResults(tool) {
+  for (const j of unseenJobs()) { const cb = pendingCbs.get(j.id); pendingCbs.delete(j.id); showResult(laterResult(j, tool), cb || {}); }
+}
+// Jobs this browser started and then left (page closed, reload, another tool): finished from their GitHub run, read only.
+export async function resumeJobs({ gh = ghFetch, now = Date.now() } = {}) {
+  for (const j of runningJobs()) {
+    if (j.startedAt && now - j.startedAt > JOB_RESUME_MS) { patchJob(j.id, { status: 'failed', finishedAt: now, seen: true, result: { reason: 'It was started more than 2 hours ago and never reported back.' } }); continue; }
+    if (!j.check?.repo || !j.check?.workflow || !j.check?.title) continue;
+    if (Date.now() - j.startedAt < 15000) continue;   // the page that started it is probably still following it
+    try {
+      const r = await gh('GET', `/repos/${j.check.repo}/actions/workflows/${j.check.workflow}/runs?event=workflow_dispatch&per_page=20`);
+      if (!r.ok) continue;
+      const run = ((await r.json()).workflow_runs || []).find(x => x.display_title === j.check.title && Date.parse(x.created_at) >= (j.check.since || j.startedAt) - 60000);
+      if (!run || run.status !== 'completed') continue;
+      const ok = run.conclusion === 'success';
+      patchJob(j.id, { status: ok ? 'done' : 'failed', finishedAt: Date.parse(run.updated_at) || now,
+        result: ok ? { title: j.doneText?.title || `Done: ${j.what}`, lead: j.doneText?.lead || '' } : { reason: `GitHub stopped it (the run ended "${run.conclusion}"). Open the page and try again.` } });
+    } catch {}
+  }
+}
+
+// ---- the bell's "Recent jobs" (newest first). Builder and Review admin: the shell's own bell panel; KPI admin adds it
+// to its sync-issues panel.
+const clockOf = ms => new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+export function jobLineOf(j) {
+  const r = j.result || {};
+  if (j.status === 'running') return `${j.what || 'Working'}…`;
+  if (r.line) return r.line;
+  if (j.status === 'failed') return `Didn't work: ${j.what}`;
+  return String(r.title || `Done: ${j.what}`).replace(/^Done:\s*/, '').replace(/^./, c => c.toUpperCase());
+}
+export function jobsListHtml(list = readJobs(), now = Date.now()) {
+  const items = list.filter(j => j.status !== 'running' || now - j.startedAt < JOB_RESUME_MS).slice().reverse().slice(0, 12);
+  if (!items.length) return '<p class="lv-jobs-none">No recent jobs on this browser.</p>';
+  return `<ul class="lv-jobs">${items.map((j, i) => {
+    const st = j.status === 'running' ? 'run' : j.status === 'failed' ? 'bad' : 'ok';
+    const when = j.status === 'running' ? `started ${clockOf(j.startedAt)}` : clockOf(j.finishedAt || now);
+    const retry = j.status === 'failed' && liveRetry.has(j.id) ? ` · <button type="button" class="lv-jobs-retry" data-lv-jobretry="${escH(j.id)}">Try again</button>` : '';
+    const sub = [j.client, j.result?.detail, when].filter(Boolean).map(escH).join(' · ');
+    return `<li class="lv-jobs-it${i === 0 ? ' top' : ''}" data-lv-jobit="${escH(j.id)}"><span class="lv-jobs-d ${st}" aria-hidden="true"></span><div><b>${escH(jobLineOf(j))}</b><small>${sub}${retry}</small></div></li>`;
+  }).join('')}</ul>`;
+}
+export const JOBS_BELL_KEY = 'lfmp-jobs-bell-at';
+// Results that arrived since the bell was last opened (the badge counts them).
+export function newJobResults(store = jobsStore()) {
+  let at = 0; try { at = Number(store?.getItem(JOBS_BELL_KEY)) || 0; } catch {}
+  return readJobs(store).filter(j => j.status !== 'running' && (j.finishedAt || 0) > at).length;
+}
+export function markJobsBellSeen(store = jobsStore(), now = Date.now()) { try { store?.setItem(JOBS_BELL_KEY, String(now)); } catch {} if (hasDoc()) document.dispatchEvent(new CustomEvent('lfmp-jobs')); }
+
+// =====================================================================================================================
 // GREETING (v2.4.0, PJ's LFMP_Greeting_Final_1plus9.html). Once per person per day (their device's date), on the first
 // page load of the day in any of the three tools: the page blurs behind a dark wash, the LFMP blocks drop in, the date,
 // "GOOD AFTERNOON, PJ" letter by letter, a gold line, today's numbers count up, then it lifts away (~3.5 s). A click, tap
@@ -804,8 +1128,11 @@ export function menuHintDue(store = globalThis.localStorage, now = new Date()) {
 export function mountShell(cfg) {
   const doc = document, html = doc.documentElement, root = cfg.root || doc.body;
   html.classList.add('lfmp-v2');
+  // v2.5.0: every tool has a bell. A tool without its own (Builder, Review admin) gets the shell's: recent jobs.
+  if (!cfg.bell) cfg = { ...cfg, bell: { jobs: true, label: 'Notifications' } };
   const st = { theme: getTheme(), showTests: !!cfg.showTests?.on, updated: cfg.updated || '', newsDot: !!cfg.newsDot, bell: Number(cfg.bellCount) || 0, meOpen: false };
-  const full = () => ({ ...cfg, newsDot: st.newsDot, bellCount: st.bell });
+  const bellTotal = () => st.bell + newJobResults();
+  const full = () => ({ ...cfg, newsDot: st.newsDot, bellCount: bellTotal() });
   doc.querySelectorAll('[data-lv-top],[data-lv-ptop],[data-lv-tabs],[data-lv-me]').forEach(n => n.remove());
   root.insertAdjacentHTML('afterbegin', topBarHtml(full()) + phoneBarHtml(full()));
   doc.body.insertAdjacentHTML('beforeend', `${tabsHtml(cfg)}<div class="lv-mescreen" data-lv-me role="dialog" aria-label="Me" tabindex="-1" hidden></div>`);
@@ -862,7 +1189,7 @@ export function mountShell(cfg) {
     }
     else if (a === 'metab') { st.meOpen ? closeScreen() : openScreen(); }
     else if (a === 'plus') { closeMe(); cfg.plus?.onClick?.(e); }
-    else if (a === 'bell') { closeMe(); cfg.bell?.onClick?.(b, e); }
+    else if (a === 'bell') { closeMe(); if (cfg.bell?.jobs) toggleJobsPop(b); else cfg.bell?.onClick?.(b, e); }
     else if (a === 'signout') { signOut(); }
     else if (a === 'theme') { st.theme = setTheme(b.dataset.v); paintMe(); doc.querySelector(`[data-lv="theme"][data-v="${st.theme}"]`)?.focus(); }
     else if (a === 'tests') { st.showTests = !st.showTests; paintMe(); doc.querySelector('[data-lv="tests"]')?.focus(); cfg.showTests?.onChange?.(st.showTests); }
@@ -871,8 +1198,27 @@ export function mountShell(cfg) {
     else if (a === 'news') { closeMe(); cfg.onNews?.(); }
     else if (a === 'install') { closeMe(); install(); }
   };
+  // v2.5.0: the shell's own bell panel (Builder, Review admin): recent jobs on this browser
+  const jobsPop = () => doc.querySelector('[data-lv-jobpop]');
+  const closeJobsPop = () => { const p = jobsPop(); if (!p) return; p.parentNode.removeChild(p); $$('[data-lv="bell"]').forEach(x => x.setAttribute('aria-expanded', 'false')); };
+  const toggleJobsPop = btn => {
+    if (jobsPop()) { closeJobsPop(); return; }
+    const wrap = btn.closest('[data-lv-bellwrap]');
+    wrap.insertAdjacentHTML('beforeend', `<div class="lv-jobpop" data-lv-jobpop role="dialog" aria-label="Recent jobs" tabindex="-1">${jobsListHtml()}</div>`);
+    btn.setAttribute('aria-expanded', 'true'); markJobsBellSeen(); jobsPop().focus({ preventScroll: true });
+  };
+  doc.addEventListener('click', e => {
+    const rt = e.target.closest('[data-lv-jobretry]'); if (rt) { closeJobsPop(); retryJob(rt.dataset.lvJobretry); return; }
+    if (jobsPop() && !e.target.closest('[data-lv-jobpop]') && !e.target.closest('[data-lv="bell"]')) closeJobsPop();
+  });
+  const paintBell = () => { const n = bellTotal(); $$('[data-lv-badge]').forEach(x => { x.textContent = n; x.hidden = !n; }); $$('[data-lv="bell"]').forEach(x => x.setAttribute('aria-label', `${cfg.bell?.label || 'Notifications'}${n ? `: ${n}` : ''}`)); const p = jobsPop(); if (p) p.innerHTML = jobsListHtml(); };
+  doc.addEventListener('lfmp-jobs', paintBell);
+  addEventListener('storage', e => { if (e.key === JOBS_KEY || e.key === JOBS_BELL_KEY) paintBell(); });
+  noteHere(cfg.tool);
+  doc.addEventListener('visibilitychange', () => { if (doc.visibilityState !== 'visible') return; noteHere(cfg.tool); if (!doc.querySelector('[data-lv-greet]')) showWaitingResults(cfg.tool); });
   doc.addEventListener('click', onClick);
   const onKey = e => {
+    if (e.key === 'Escape' && jobsPop()) { closeJobsPop(); doc.querySelector(barSel('[data-lv="bell"]'))?.focus(); return; }
     if (e.key === 'Escape' && (openPop() || !scr.hidden)) { const btn = meBtnOf(openPop()) || doc.querySelector(barSel('[data-lv="me"]')); closeMe(); btn?.focus(); return; }
     // list rows are role="button": Enter / Space open them like a click
     if ((e.key === 'Enter' || e.key === ' ') && e.target.classList?.contains('lv-row')) { e.preventDefault(); e.target.click(); }
@@ -880,7 +1226,9 @@ export function mountShell(cfg) {
   doc.addEventListener('keydown', onKey);
   const api = {
     cfg, st, openMe, closeMe, isPhone, install,
-    setBell(n) { st.bell = Number(n) || 0; $$('[data-lv-badge]').forEach(x => { x.textContent = st.bell; x.hidden = !st.bell; }); $$('[data-lv="bell"]').forEach(x => x.setAttribute('aria-label', `Sync issues${st.bell ? `: ${st.bell}` : ''}`)); },
+    // v2.5.0: the badge = the tool's own count (KPI admin's sync issues) + job results since the bell was last opened
+    setBell(n) { st.bell = Number(n) || 0; paintBell(); },
+    paintBell,
     setUpdated(t) { if ((t || '') === st.updated) return; st.updated = t || ''; paintMe(); },
     // the "new" dot is only on the What's new row inside Me (no dot on the avatar: not in the reference)
     setNewsDot(on) { st.newsDot = !!on; paintMe(); },
@@ -894,5 +1242,9 @@ export function mountShell(cfg) {
   // own count); greet: false = never (e.g. a reset / offline page). v2.4.1: the other two tools' counts are read fresh.
   api.greeting = cfg.greet === false ? Promise.resolve(false)
     : playGreeting({ me: cfg.me, reads: greetReads(cfg.tool, cfg.greet?.count, cfg.greet?.readOther), server: cfg.greet?.server || (() => readServerCounts()), onEnd: () => { if (menuHintDue()) showMenuHint(); } }).catch(() => false);
+  // v2.5.0: results that finished while you were away (another tab, a closed page, another tool) show after the greeting;
+  // jobs a closed page left running are finished from their GitHub run (read only).
+  if (cfg.jobs !== false) api.greeting.then(() => { showWaitingResults(cfg.tool); return resumeJobs(); }).then(() => { paintBell(); showWaitingResults(cfg.tool); }).catch(() => {});
+  paintBell();
   return api;
 }

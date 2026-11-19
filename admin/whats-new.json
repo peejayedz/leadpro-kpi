@@ -1,5 +1,14 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.31.0": {
+    "title": "A clear Done for every long job",
+    "summary": "A small cyclist while it works, then a popup with what changed (or what went wrong).",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "While Re-read GHL, Save mapping, Sync now, Add to GHL menu or New firm runs, you see plain words and a gold bar with a small cyclist." },
+      { "type": "new", "tag": "internal", "text": "When it finishes, a popup says Done and what changed, or why it didn't work and whether anything changed, with Try again." },
+      { "type": "new", "tag": "internal", "text": "Finished while you were away? The popup waits for you, and every result is in the bell under Recent jobs." }
+    ]
+  },
   "1.30.0": {
     "title": "KPI links open inside GHL, with their menu CSS rule",
     "summary": "And renaming a pipeline in GHL no longer drops a scorecard to 0 leads.",

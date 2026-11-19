@@ -13,8 +13,8 @@
 <script>/* apply the saved theme before first paint so the page and logo don't flash */ try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="lfmp-ui.css?v=2.4.0">
-<link rel="stylesheet" href="admin.css?v=1.30.0">
+<link rel="stylesheet" href="lfmp-ui.css?v=2.5.0">
+<link rel="stylesheet" href="admin.css?v=1.31.0">
 <link rel="stylesheet" href="care.css?v=1.28.0">
 </head>
 <body>
@@ -68,7 +68,7 @@ import { SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS
 import { decryptJSON } from '../scripts/kpi-core.mjs';
 import * as GC from './greet-count.mjs';   // v1.29.1: the "Needs attention" count (list + greeting)
 import { PRACTICE_TYPES, practiceTypeOf, practiceLabel, isCare, countsOnly as countsOnlyOf, BUCKETS, BUCKET_HINTS, careInitialState, unchosen, buildPipelineMap, applyCare, mapOf } from '../scripts/care-core.mjs';
-import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName, busyButton, noteCount } from './lfmp-session.js';
+import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName, busyButton, noteCount, startJob, jobsListHtml, markJobsBellSeen, newJobResults } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -208,7 +208,7 @@ async function boot() {
   shell = mountShell({
     tool: 'kpi', me, root: $('appView'), version: '', newsDot: false,
     plus: { label: 'New firm', onClick: () => go('#/new') },
-    bell: { onClick: () => ($('nPanel').hidden ? openPanel() : closePanel()) },
+    bell: { label: 'Sync issues', onClick: () => ($('nPanel').hidden ? openPanel() : closePanel()) },
     showTests: { on: showTests, label: 'Show test clients', onChange: on => setShowTests(on) },
     onRefresh: () => { shell.closeMe(); refreshAll(); },
     onNews: () => openNews(),
@@ -321,6 +321,11 @@ async function findRun(workflow, title, t0) {
 // Errors whose message is our own HTML (run links) carry .html = true; everything else is escaped.
 const htmlError = msg => Object.assign(new Error(msg), { html: true });
 const errHtml = e => (e?.html ? e.message : esc(e?.message || e));
+// v1.31.0 (Part 2): plain words for the Didn't work popup (links stripped: the popup is text only)
+const errText = e => String(e?.message || e || 'Something went wrong.').replace(/<[^>]+>/g, '').replace(/\s*View run\s*$/, '').trim();
+// One long job: the working bar (cyclist) in [data-lv-jobhost=host] and the Done / Didn't work popup (shared shell 2.5.0).
+const kpiJob = o => startJob({ tool: 'kpi', ...o, check: o.check ? { repo: `${OWNER}/${REPO}`, ...o.check } : undefined });
+const leads90 = k => k?.periods?.last90?.current?.totalLeads ?? k?.periods?.last90?.current?.people ?? null;
 async function follow({ workflow, title, t0, check, limitMs, say, label, stop = () => false }) {
   let run = null, startedAt = null;
   const hardStop = t0 + Math.max(limitMs, 10 * 60e3);
@@ -334,14 +339,15 @@ async function follow({ workflow, title, t0, check, limitMs, say, label, stop = 
     const link = run ? ` · <a href="${esc(run.html_url)}" target="_blank" rel="noopener">view run</a>` : '';
     const state = !run ? 'starting' : run.status === 'completed' ? run.conclusion : run.status;
     if (run && run.status === 'in_progress' && !startedAt) startedAt = Date.now();
-    say(`${label}: ${state === 'queued' || state === 'waiting' || state === 'pending' ? 'waiting for another sync to finish…' : run?.status === 'completed' ? `run ${state}` : `${state}…`}${link}`);
-    if (run?.status === 'completed' && run.conclusion !== 'success') throw htmlError(`The ${workflow} run ended "${run.conclusion}". Open the run log for details.${run.html_url ? ` <a href="${esc(run.html_url)}" target="_blank" rel="noopener">View run</a>` : ''}`);
+    void state;   // v1.31.0: never shown (no raw "in_progress" / "queued"); the working bar shows the progress
+    say(`${esc(label)}…${link}`);
+    if (run?.status === 'completed' && run.conclusion !== 'success') throw htmlError(`GitHub stopped it before it finished${run.conclusion === 'cancelled' ? ' (it was cancelled)' : ''}.${run.html_url ? ` <a href="${esc(run.html_url)}" target="_blank" rel="noopener">View run</a>` : ''}`);
     const got = await check();
     if (got) return { value: got, run };
-    if (run?.status === 'completed' && Date.now() - Date.parse(run.updated_at) > 60e3) throw htmlError(`The run finished but the expected file did not appear. <a href="${esc(run.html_url)}" target="_blank" rel="noopener">View run</a>`);
+    if (run?.status === 'completed' && Date.now() - Date.parse(run.updated_at) > 60e3) throw htmlError(`GitHub finished, but the result didn't arrive. <a href="${esc(run.html_url)}" target="_blank" rel="noopener">View run</a>`);
     const now = Date.now();
     if ((startedAt && now - startedAt > limitMs) || (!startedAt && !run && now - t0 > 90e3) || now > hardStop)
-      throw htmlError(`Timed out after ${Math.round((now - t0) / 60e3)} min.${run ? ` <a href="${esc(run.html_url)}" target="_blank" rel="noopener">View run</a>` : ''}`);
+      throw htmlError(`${run ? 'It took too long' : 'GitHub didn\'t start it'} (${Math.max(1, Math.round((now - t0) / 60e3))} min).${run ? ` <a href="${esc(run.html_url)}" target="_blank" rel="noopener">View run</a>` : ''}`);
   }
 }
 
@@ -610,17 +616,26 @@ async function resyncFirm(f) {
   const key = `${f.slug}:sync`; if (busy.has(key)) return;
   busy.add(key); repaintFirm(f.slug);
   const say = h => firmSay(f.slug, h);
-  say('<span class="chip">Re-syncing</span> Starting…');
+  say('<span class="chip">Re-syncing</span> Fetching the latest numbers from GHL…');
+  const name = fname(f);
+  const job = kpiJob({ kind: 'sync', client: name, what: 'Sync now', title: `Syncing ${name} with GHL…`, host: `firm:${f.slug}`, typicalMs: 150000,
+    check: { workflow: 'sync.yml', title: `Sync ${f.slug}` }, doneText: { title: 'Done: synced', lead: `${name}'s dashboard has the latest numbers.` } });
   try {
     const t0 = await dispatch('sync.yml', { slug: f.slug });
     const before = kpis[f.slug]?.generatedAt || '';
-    const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Sync', limitMs: 8 * 60e3, say, stop: () => !me,
+    const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Syncing', limitMs: 8 * 60e3, say: () => say('<span class="chip">Re-syncing</span> Fetching the latest numbers from GHL…'), stop: () => !me,
       // a held sync leaves generatedAt alone and only updates sync.checkedAt
       check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return (k?.generatedAt && k.generatedAt !== before && Date.parse(k.generatedAt) > t0 - 60e3) || Date.parse(k?.sync?.checkedAt) > t0 - 60e3 ? k : null; } });
     kpis[f.slug] = kpiSummary(value); kpiFull[f.slug] = value;
     const held = value.generatedAt === before;
     say(held ? `<span class="chip warn">Held</span> GHL returned fewer calls or messages than last sync, so the dashboard keeps the numbers from ${esc(fmtTime(value.generatedAt))}.` : `<span class="chip good">Synced</span> ${esc(fmtTime(value.generatedAt))}. The dashboard shows it within a minute.`);
-  } catch (e) { say(`<span class="chip bad">Sync failed</span> ${errHtml(e)}`); }
+    const n = leads90(value);
+    job.done(held ? { title: 'Done: numbers held', lead: `GHL returned fewer calls or messages than last time, so ${name}'s dashboard keeps the numbers from ${fmtTime(value.generatedAt)}. The next sync tries again.`, line: 'Sync held', detail: 'last numbers kept' }
+      : { title: 'Done: synced', lead: `${name}'s dashboard shows the new numbers within a minute.`, line: n != null ? `Synced · ${n} leads` : 'Synced', items: [...(n != null ? [['Leads (last 90 days)', String(n)]] : []), ['Synced', fmtTime(value.generatedAt)]] });
+  } catch (e) {
+    say(`<span class="chip bad">Sync failed</span> ${errHtml(e)}`);
+    job.fail({ reason: errText(e), nothingChanged: 'the dashboard keeps its last numbers.', line: 'Sync didn\'t finish', onRetry: () => resyncFirm(f) });
+  }
   finally { busy.delete(key); repaintFirm(f.slug); refreshIssues(); }
 }
 async function runKeeperFor(f, b) {
@@ -667,17 +682,26 @@ function publishDialog(f) {
       closeDialog();
       const key = `${f.slug}:publish`; busy.add(key); repaintFirm(f.slug);
       const say = h => firmSay(f.slug, h);
+      const request = `adm-${Date.now().toString(36)}`;
+      const job = kpiJob({ kind: 'menu', client: fname(f), what: 'Add to GHL menu', title: `Adding "KPI Dashboard" to ${fname(f)}'s GHL menu…`, host: `firm:${f.slug}`, typicalMs: 60000,
+        check: { workflow: 'menu-link.yml', title: `Menu link ${f.slug} [${request}]` }, doneText: { title: 'Done: added to GHL menu', lead: `${fname(f)}'s scorecard is live in its GHL menu.` } });
       try {
-        const request = `adm-${Date.now().toString(36)}`;
         const t0 = await dispatch('menu-link.yml', { slug: f.slug, request });
-        say('<span class="chip">Adding</span> Starting…');
-        await follow({ workflow: 'menu-link.yml', title: `Menu link ${f.slug} [${request}]`, t0, label: 'Adding to the GHL menu', limitMs: 5 * 60e3, say,
+        say('<span class="chip">Adding</span> Adding "KPI Dashboard" to the GHL menu…');
+        await follow({ workflow: 'menu-link.yml', title: `Menu link ${f.slug} [${request}]`, t0, label: 'Adding to the GHL menu', limitMs: 5 * 60e3, say: () => {},
           check: async () => { const list = await getJSON('firms/index.json'); const row = (list || []).find(x => x.slug === f.slug); return row && !row.status ? row : null; } });
         delete f.status;
         configs[f.slug] = (await getJSON(`firms/${f.slug}/config.json`).catch(() => null)) || configs[f.slug];   // v1.30.0: the link id → CSS rule
         say(`<span class="chip good">Live</span> "KPI Dashboard" is in the GHL menu. ${validMenuId(configs[f.slug]?.menuLink?.id) ? 'Copy the Custom CSS rule in Setup → GHL menu link. ' : ''}Re-syncing so the Draft banner goes away…`);
+        const hasId = validMenuId(configs[f.slug]?.menuLink?.id);
+        await job.done({ title: 'Done: added to GHL menu', lead: `"KPI Dashboard" is in ${fname(f)}'s GHL menu (opens inside GHL). The Draft banner goes at the next sync.`, line: 'Added to GHL menu',
+          items: [['Opens', 'inside GHL'], ['Menu order', hasId ? 'CSS rule ready to copy' : 'Show CSS rule in Setup']],
+          ...(hasId ? { next: { label: 'Copy CSS rule', onClick: () => copyCssRule(f) } } : {}) });
         resyncFirm(f);
-      } catch (e) { say(`<span class="chip bad">Not added</span> ${errHtml(e)} The scorecard stays a Draft.`); }
+      } catch (e) {
+        say(`<span class="chip bad">Not added</span> ${errHtml(e)} The scorecard stays a Draft.`);
+        job.fail({ reason: errText(e), nothingChanged: 'the scorecard stays a Draft and nothing was added to GHL.', line: 'Not added to GHL menu', onRetry: () => publishDialog(f) });
+      }
       finally { busy.delete(key); repaintFirm(f.slug); }
     },
   });
@@ -782,10 +806,10 @@ function trackLive() {
 const bells = () => [...document.querySelectorAll('[data-lv="bell"]')];
 const visibleBell = () => bells().find(b => b.offsetParent) || bells()[0];
 function paintBell() {
-  const n = unseen().length;
+  const n = unseen().length, jobs = newJobResults();   // v1.31.0: + job results since the bell was last opened (shared shell 2.5.0)
   shell?.setBell(n);
-  document.querySelectorAll('[data-lv-badge]').forEach(b => { b.textContent = n > 99 ? '99+' : String(n); });
-  const label = listed().length ? `Sync issues: ${listed().length} open${n ? `, ${n} new` : ''}` : 'Sync issues: none';
+  document.querySelectorAll('[data-lv-badge]').forEach(b => { const t = n + jobs; b.textContent = t > 99 ? '99+' : String(t); b.hidden = !t; });
+  const label = `${listed().length ? `Sync issues: ${listed().length} open${n ? `, ${n} new` : ''}` : 'Sync issues: none'}${jobs ? `; ${jobs} job result${jobs === 1 ? '' : 's'}` : ''}`;
   bells().forEach(b => { b.setAttribute('aria-label', label); b.title = label; b.setAttribute('aria-controls', 'nPanel'); });
   document.title = n ? `(${n}) ${BASE_TITLE}` : BASE_TITLE;
 }
@@ -857,6 +881,7 @@ function paintPanel() {
         <button class="linkbtn" type="button" data-n="check">Check now</button>${n ? '<button class="linkbtn" type="button" data-n="seen-all">Mark all as seen</button>' : ''}</p>
       ${checkErr ? `<div class="errbox small">Couldn't check everything: ${esc(checkErr)}</div>` : ''}
     </div>
+    <section class="njobs" aria-label="Recent jobs"><h4 class="lbl2">Recent jobs</h4>${jobsListHtml()}</section>
     ${removedHtml()}
     ${notices.length || nip.length ? `<div class="nnotices">${nip.map(x => { const u = contactsUrl(x.slug); return `<div class="warnbox nnotice"><b>New contacts not in pipeline</b> · ${esc(x.name)} · ${x.count} in the last 30 days<br>${x.count === 1 ? 'A contact' : `${x.count} contacts`} came in by form, chat, booking, call, text or email but ${x.count === 1 ? 'has' : 'have'} no opportunity in any pipeline, so ${x.count === 1 ? 'it isn\'t' : 'they aren\'t'} counted in New leads. What to do: check the firm's lead intake in GHL (the chat widget, form and call workflows) and make sure each one creates an opportunity in the lead pipeline, then add these contacts to it. ${u ? `<a class="linkbtn" href="${esc(u)}" target="_blank" rel="noopener">Open contacts in GHL</a> · ` : ''}<button class="linkbtn" type="button" data-n="firm" data-slug="${esc(x.slug)}">Go to firm</button></div>`; }).join('')}${notices.map(i => { const f = firmOf(i.slug); if (i.kind === 'unmapped') { const d = issueText(i); return `<div class="warnbox nnotice" data-notice="unmapped"><b>${esc(d.title)}</b> · ${esc(f ? fname(f) : i.slug)} · since ${esc(ago(i.firstSeen))}<br>${d.what} <button class="linkbtn" type="button" data-n="map" data-slug="${esc(i.slug)}">${f && careOf(f) ? 'Map pipelines' : 'Edit mapping'}</button> · <button class="linkbtn" type="button" data-n="firm" data-slug="${esc(i.slug)}">Go to firm</button></div>`; } return `<div class="warnbox nnotice"><b>Holding previous numbers</b> · ${esc(f?.name || i.slug)} · hold ${i.count} of 3, since ${esc(ago(i.firstSeen))}<br>GHL returned fewer calls or messages than the last sync${i.reason ? ` (${esc(i.reason)})` : ''}, so the dashboard keeps the previous numbers. Nothing to do: it usually clears on the next sync. After 3 holds it publishes with a "may be incomplete" note, which shows here as an issue. <button class="linkbtn" type="button" data-n="firm" data-slug="${esc(i.slug)}">Go to firm</button></div>`; }).join('')}</div>` : ''}
     ${open.length ? open.map(i => issueHtml(i, seen)).join('')
@@ -871,10 +896,12 @@ function openPanel(focusId) {
   if (focusId) expanded.add(focusId);
   shell?.closeMe();
   const wrap = shell?.bellWrap(); if (wrap && $('nPanel').parentElement !== wrap) wrap.append($('nPanel'));   // anchored to the bell you can see
-  $('nPanel').hidden = false; bells().forEach(b => b.setAttribute('aria-expanded', 'true')); paintPanel();
+  $('nPanel').hidden = false; bells().forEach(b => b.setAttribute('aria-expanded', 'true')); markJobsBellSeen(); paintPanel();
   if (focusId) $('nPanel').querySelector(`[data-issue="${CSS.escape(focusId)}"]`)?.scrollIntoView({ block: 'nearest' });
   if (Date.now() - lastCheck > 60e3) refreshIssues();
 }
+// v1.31.0: a job finished (here or in another tool): the badge and an open panel show it
+document.addEventListener('lfmp-jobs', () => { paintBell(); if (!$('nPanel').hidden) paintPanel(); });
 function closePanel() { $('nPanel').hidden = true; bells().forEach(b => b.setAttribute('aria-expanded', 'false')); }
 // "Go to firm" (bell): opens the firm's Details panel.
 function goToFirm(slug) { closePanel(); if (firmOf(slug)) go(hashFor('list', slug)); }
@@ -1038,7 +1065,7 @@ function paintDetails({ soft = false } = {}) {
       <p class="sub">${esc(f.practiceArea || 'No practice area')}${subNames[f.slug] ? ` · GHL: ${esc(subNames[f.slug])}` : ''}</p></div>
       <button class="xbtn lv-d" type="button" data-dp-close aria-label="Close details">${ICON.cross}</button></div>
     <div class="dptabs" role="tablist" aria-label="${esc(fname(f))}">${TABS.map(([k, l]) => `<a role="tab" href="${esc(hashFor('list', f.slug, k))}" data-dp-tab="${k}" aria-selected="${k === dpTab}"${k === dpTab ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</div></div>
-    <div class="dpmsg" data-msg="${esc(f.slug)}" aria-live="polite">${firmMsg[f.slug] || ''}</div>
+    <div class="dpmsg" data-msg="${esc(f.slug)}" aria-live="polite">${firmMsg[f.slug] || ''}</div><div data-lv-jobhost="firm:${esc(f.slug)}"></div>
     <div class="dpbody" role="tabpanel" data-tab="${dpTab}">${tabBody}</div>`;
   if (soft) P.scrollTop = scroll;
   wireEyes(P);
@@ -1202,6 +1229,19 @@ function perfHtml(f) {
     <p class="hint">Same totals the client dashboard shows for these dates (from its public numbers file).</p>`;
 }
 
+// v1.31.0: what Re-read GHL found, for the Done popup: pipelines and stages now, stages that weren't there before,
+// pipelines renamed (same id, new name) and pipelines gone.
+function rereadSummary(before, after) {
+  const P = after?.pipelines || [], B = new Map((before?.pipelines || []).map(p => [p.id, p]));
+  const seen = new Set((before?.pipelines || []).flatMap(p => (p.stages || []).map(x => x.id)));
+  return {
+    pipelines: P.length, stages: P.reduce((n, p) => n + (p.stages || []).length, 0),
+    fresh: before ? P.reduce((n, p) => n + (p.stages || []).filter(x => !seen.has(x.id)).length, 0) : 0,
+    renamed: P.filter(p => B.has(p.id) && B.get(p.id).name !== p.name).map(p => p.name),
+    gone: before ? [...B.keys()].filter(id => !P.some(p => p.id === id)).length : 0,
+  };
+}
+
 // ----- Setup: mapping, connection, banner, delete -----
 function setupHtml(f) {
   const cfg = configs[f.slug] || {}, banner = configs[f.slug] ? bannerOn(cfg, bases[f.slug] || shared.defaults) : true;
@@ -1257,7 +1297,7 @@ function menuCssHtml(f, cfg) {
 }
 async function copyCssRule(f, btn) {
   const id = configs[f.slug]?.menuLink?.id; if (!validMenuId(id)) return;
-  try { await navigator.clipboard.writeText(menuCssRule({ id, name: fname(f) })); flashCopied(btn); }
+  try { await navigator.clipboard.writeText(menuCssRule({ id, name: fname(f) })); if (btn) flashCopied(btn); else firmSay(f.slug, '<span class="chip good">Copied</span> The CSS rule is on the clipboard.'); }
   catch { firmSay(f.slug, '<span class="chip bad">Not copied</span> Couldn\'t reach the clipboard. Select the rule and copy it by hand.'); }
 }
 // "Show CSS rule": menu-css.yml = ONE GET of the agency's menu links (scripts/ghl-menu.mjs readMenuLinkId), then the id
@@ -1267,16 +1307,21 @@ async function showCssRule(f) {
   busy.add(key); repaintFirm(f.slug);
   const say = h => firmSay(f.slug, h);
   say('Reading the "KPI Dashboard" link from GHL (read only)…');
+  const request = `css-${Date.now().toString(36)}`;
+  const job = kpiJob({ kind: 'other', client: fname(f), what: 'Show CSS rule', title: `Reading ${fname(f)}'s "KPI Dashboard" link from GHL (read only)…`, host: `firm:${f.slug}`, typicalMs: 45000,
+    check: { workflow: 'menu-css.yml', title: `Menu CSS ${f.slug} [${request}]` }, doneText: { title: 'Done: CSS rule ready', lead: 'Copy it from Setup → GHL menu link.' } });
   try {
-    const request = `css-${Date.now().toString(36)}`;
     const t0 = await dispatch('menu-css.yml', { slug: f.slug, request });
     const { value } = await follow({ workflow: 'menu-css.yml', title: `Menu CSS ${f.slug} [${request}]`, t0, label: 'Reading the link', limitMs: 4 * 60e3,
       say: () => say('Reading the "KPI Dashboard" link from GHL (read only)…'),
       check: async () => { const c = await getJSON(`firms/${f.slug}/config.json`); return validMenuId(c?.menuLink?.id) ? c : null; } });
     configs[f.slug] = value;
     say('<span class="chip good">Found</span> Copy the rule below into the agency Custom CSS.');
+    job.done({ title: 'Done: CSS rule ready', lead: `${fname(f)}'s "KPI Dashboard" link was read from GHL (nothing in GHL changed). Paste the rule into Agency → Settings → Company → White Label → Custom CSS, then Save.`, line: 'CSS rule ready',
+      next: { label: 'Copy CSS rule', onClick: () => copyCssRule(f) } });
   } catch (e) {
     say(`<span class="chip bad">Not found</span> Couldn't read this firm's "KPI Dashboard" link from GHL (there may be none on this sub-account, or it's shared with other sub-accounts). Nothing changed. ${errHtml(e)}`);
+    job.fail({ reason: `Couldn't read ${fname(f)}'s "KPI Dashboard" link from GHL: there may be none on this sub-account, or it's shared with other sub-accounts.`, nothingChanged: 'nothing in GHL changed.', line: 'CSS rule not found', onRetry: () => showCssRule(f) });
   } finally { busy.delete(key); repaintFirm(f.slug); }
 }
 
@@ -1675,8 +1720,10 @@ function startAppRun(ctx) {
   appRun = me;
   $('runHost').innerHTML = `<div class="runhead"><span><b>${esc(ctx.name)}</b> · ${esc(ctx.practiceArea)} · <span class="mono">${esc(ctx.locationId)}</span> · LeadPro app</span><span><span id="appRunLink"></span> Elapsed <b class="elapsed" id="runElapsed">0:00</b></span></div>
     <ol class="steps" id="appSteps">${APP_STEPS.map(([k, t, hint], i) => `<li class="step pending" data-k="${k}"><span class="ic" aria-hidden="true"></span><span class="t">${i + 1}. ${esc(t)}</span><span class="d">${esc(hint || '')}</span><div class="e"></div></li>`).join('')}</ol>
+    <div data-lv-jobhost="newfirm"></div>
     <p class="sub" style="margin-top:12px">You can leave this page: GitHub keeps going, and the firm shows up in the list when it's ready.</p>
     <div id="appResult"></div>`;
+  me.job = newFirmJob(ctx.name);
   const tick = () => { if (me.gone) return; const s = Math.floor((Date.now() - me.t0) / 1000); const el = $('runElapsed'); if (el) el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
   me.timer = setInterval(tick, 1000); tick();
   const STOP = new Error('Stopped because you left this page.');
@@ -1716,9 +1763,21 @@ function startAppRun(ctx) {
     onStep: setAppStep,
     onRun: url => { const l = $('appRunLink'); if (l && !me.gone) l.innerHTML = `<a href="${esc(url)}" target="_blank" rel="noopener">GitHub run</a> ·`; },
   });
-  const go = p => p.then(done => { if (!me.gone) appDone(me, done); }, err => { if (err !== STOP && !me.gone) appFail(me, err); });
+  const go = p => p.then(done => { appJobDone(me, done); if (!me.gone) appDone(me, done); }, err => { if (err === STOP) { me.job?.drop(); return; } appJobFail(me, err); if (!me.gone) appFail(me, err); });
   me.go = go;
   go(me.r.start(ctx));
+}
+// v1.31.0 (Part 2): New firm as one long job (both paths): the cyclist while GitHub works, the popup at the end.
+const newFirmJob = name => kpiJob({ kind: 'kpi', client: name, what: 'New firm', title: `Setting up ${name}'s scorecard…`, host: 'newfirm', typicalMs: 240000 });
+function appJobDone(me, done) {
+  const name = me.ctx.name, st = done.care ? 'Needs mapping' : done.draft ? 'Draft' : 'Live';
+  me.job?.done({ title: `Done: ${name}'s scorecard set up`, lead: done.care ? 'Its pipelines were read from GHL. Map them next; it then becomes a Draft for review.' : done.draft ? 'Synced and ready for Andy\'s review. Save the passphrase shown on the page now.' : 'Synced and live. Save the passphrase shown on the page now.',
+    line: 'Scorecard set up', detail: st, items: [['Status', st], ['Dashboard', done.slug], ['GHL menu', done.menu === 'created' ? 'added' : done.menu === 'exists' ? 'already there' : 'not added (Draft)']] });
+  me.job = null;
+}
+function appJobFail(me, err) {
+  me.job?.fail({ reason: errText(err), nothingChanged: err.refused ? 'no firm was added.' : false, line: 'Scorecard setup didn\'t finish', ...(err.refused ? {} : { onRetry: () => $('appRetry')?.click() }) });
+  me.job = null;
 }
 function appFail(me, err) {
   clearInterval(me.timer); me.timer = null;
@@ -1734,6 +1793,7 @@ function appFail(me, err) {
     el.querySelector('.e').innerHTML = '';
     me.t0 = me.t0 || Date.now();
     if (!me.timer) me.timer = setInterval(() => { if (me.gone) return; const s = Math.floor((Date.now() - me.t0) / 1000); const x = $('runElapsed'); if (x) x.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }, 1000);
+    me.job = newFirmJob(me.ctx.name);
     me.go(me.r.retry(me.ctx));
   };
 }
@@ -1777,6 +1837,7 @@ function startRun(ctx) {
   $('nfForm').hidden = true;
   run = { ctx, t0: Date.now(), stopped: false };
   $('runHost').innerHTML = `<div class="runhead"><span><b>${esc(ctx.name)}</b> · <span class="mono">${esc(ctx.slug)}</span> · ${esc(ctx.practiceArea)}</span><span>Elapsed <b class="elapsed" id="runElapsed">0:00</b></span></div>
+    <div data-lv-jobhost="newfirm"></div>
     <ol class="steps" id="runSteps">${RUN_STEPS.map((t, i) => `<li class="step pending" data-i="${i}"><span class="ic" aria-hidden="true"></span><span class="t">${i + 1}. ${esc(t)}</span><span class="d"></span><div class="e"></div><div class="slot"></div></li>`).join('')}</ol>`;
   const tick = () => { const s = Math.floor((Date.now() - run.t0) / 1000); $('runElapsed').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
   run.timer = setInterval(tick, 1000); tick();
@@ -1796,14 +1857,18 @@ async function runFrom(i) {
   myRun.ctx.stop = () => run !== myRun || myRun.stopped;
   if (!myRun.timer) { myRun.timer = setInterval(() => { const s = Math.floor((Date.now() - myRun.t0) / 1000); const el = $('runElapsed'); if (el) el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }, 1000); }
   for (; i < RUN_STEPS.length; i++) {
-    if (run !== myRun) return;
+    if (run !== myRun) { myRun.job?.drop(); return; }
     setStep(i, i === 2 ? 'wait' : 'run');
+    // the working bar while GitHub works; none while you map the stages (step 3 waits for you)
+    if (i === 2) { myRun.job?.drop(); myRun.job = null; }
+    else { if (!myRun.job) myRun.job = newFirmJob(myRun.ctx.name); myRun.job.line(`${RUN_STEPS[i]}: ${myRun.ctx.name}…`); }
     const say = h => { if (run === myRun) stepEl(i).querySelector('.d').innerHTML = h; };
     try { await STEP_FNS[i](myRun.ctx, say, stepEl(i).querySelector('.slot')); if (run !== myRun) return; setStep(i, 'ok'); }
     catch (e) {
-      if (run !== myRun) return;
+      if (run !== myRun) { myRun.job?.drop(); return; }
       clearInterval(myRun.timer); myRun.timer = null;
       setStep(i, 'fail');
+      myRun.job?.fail({ reason: errText(e), nothingChanged: i === 0 ? 'no firm was added.' : false, line: 'Scorecard setup didn\'t finish', onRetry: () => $('retryBtn')?.click() }); myRun.job = null;
       const indexWritten = i >= 4, scopeUi = e.kind === 'scopes';
       stepEl(i).querySelector('.e').innerHTML = `<div class="${scopeUi ? 'warnbox' : 'errbox'}">${errHtml(e)}</div>
         ${e.newToken ? `<label class="f" for="reTok" style="margin-top:10px">New GHL token<span class="pw"><input type="password" id="reTok" autocomplete="off" spellcheck="false" placeholder="pit-…"><button type="button" class="eye" data-eye="reTok" aria-label="Show token"></button></span></label><div class="ferr" id="reTokErr"></div>` : ''}
@@ -1831,6 +1896,8 @@ async function runFrom(i) {
     }
   }
   clearInterval(myRun.timer); myRun.timer = null;
+  myRun.job?.done({ title: `Done: ${myRun.ctx.name}'s scorecard set up`, lead: 'Synced. The dashboard and the GHL menu link are on this page.', line: 'Scorecard set up', items: [['Dashboard', myRun.ctx.slug], ['Token', 'Private Integration']] });
+  myRun.job = null;
 }
 
 const STEP_FNS = [
@@ -1922,7 +1989,7 @@ async function renderEditMapping(f) {
   closeMenus();
   $('screen').innerHTML = `<header class="head"><div class="titles"><button class="back" type="button" id="backBtn">${ICON.back}All firms</button><h1 class="disp" id="emTitle">${careOf(f) ? 'Map <span class="g">pipelines.</span>' : 'Edit <span class="g">mapping.</span>'}</h1><p class="sub">${esc(f.name)} · <span class="mono">${esc(f.slug)}</span><span id="emAsOf"></span></p></div>
     <div class="controls"><button class="btn big" type="button" id="rereadBtn">${ICON.sync}Re-read GHL</button><button class="btn p big" type="button" id="emSave" disabled>Save mapping</button></div></header>
-    <div id="emStatus" aria-live="polite"></div><div id="emWarn"></div><div id="emType"></div><div id="emHost"><p class="sub">Loading…</p></div>`;
+    <div id="emStatus" aria-live="polite"></div><div data-lv-jobhost="map:${esc(f.slug)}"></div><div id="emWarn"></div><div id="emType"></div><div id="emHost"><p class="sub">Loading…</p></div>`;
   $('backBtn').onclick = () => go('#/');
   const host = $('emHost'); const stop = () => !document.body.contains(host);
   const status = h => { $('emStatus').innerHTML = h ? `<div class="note" style="margin-bottom:16px">${h}</div>` : ''; };
@@ -1962,17 +2029,20 @@ async function renderEditMapping(f) {
       const m = await mappingPanel($('emHost'), { discovery: disc, config: cfg, isNew: false, saveLabel: 'Save mapping', saveBtn: $('emSave'), warnHost: $('emWarn') });
       return saveLaw(m);
     };
-    const resync = async (what) => {
-      status(`Saved. Re-syncing so the dashboard uses the new ${what}…`);
+    const resync = async (what, job) => {
+      job?.line(`${what.charAt(0).toUpperCase() + what.slice(1)} saved. Syncing ${fname(f)} so the dashboard uses it…`);
       const t0 = await dispatch('sync.yml', { slug: f.slug });
-      await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Syncing', limitMs: 8 * 60e3, stop, say: h => status(`${what.charAt(0).toUpperCase() + what.slice(1)} saved. ${h}`),
+      const { value } = await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Syncing', limitMs: 8 * 60e3, stop: () => false, say: () => {},
         check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return k && Date.parse(k.generatedAt) > t0 - 60e3 ? k : null; } });
+      return value;
     };
     const saveCare = async r => {
       const doSaveCare = async () => {
         $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = true; }); $('emType').querySelectorAll('input').forEach(el => { el.disabled = true; });
         $('emSave').disabled = true; $('emSave').onclick = null;
-        status('Saving config.json and the firm list…');
+        status('');
+        const job = kpiJob({ kind: 'savemap', client: fname(f), what: 'Save mapping', title: `Saving ${fname(f)}'s pipeline mapping…`, host: `map:${f.slug}`, typicalMs: 120000 });
+        let saved = false;
         try {
           let row = null;
           await commitFiles(`Map pipelines for ${f.name} (${practiceLabel(type)})`, async head => {
@@ -1985,10 +2055,17 @@ async function renderEditMapping(f) {
             return [{ path: `firms/${f.slug}/config.json`, content: jsonText(next) }, { path: 'firms/index.json', content: jsonText(list) }];
           });
           Object.assign(f, { practiceType: row.practiceType, status: row.status });
-          await resync('mapping');
-          go('#/', `Saved the pipeline mapping for ${esc(f.name)} and synced${f.status === 'draft' ? ' (Draft)' : ''}.`);
+          saved = true;
+          const k = await resync('mapping', job);
+          kpis[f.slug] = kpiSummary(k); kpiFull[f.slug] = k;
+          if (!stop()) go('#/');
+          job.done({ title: 'Done: mapping saved', lead: `${fname(f)} · synced with the new mapping${f.status === 'draft' ? ' (Draft)' : ''}.`, line: 'Mapping saved', detail: f.status === 'draft' ? 'Draft' : '',
+            items: [['Pipelines counted', String(r.pipelineMap.pipelines.filter(x => x.use).length)], ['Stages mapped', String(Object.keys(r.pipelineMap.stages).length)], ['Status', f.status === 'draft' ? 'Draft' : 'Live']] });
         } catch (e) {
+          job.fail(saved ? { reason: `The mapping was saved, but the sync didn't finish: ${errText(e)} The next sync (within 30 min) uses it.`, line: 'Mapping saved, sync didn\'t finish', onRetry: () => resyncFirm(f) }
+            : { reason: errText(e), nothingChanged: 'the mapping is the same as before.', line: 'Mapping not saved', onRetry: () => $('emSave')?.onclick?.() });
           if (stop()) return;
+          if (saved) { go('#/'); return; }
           status(''); $('emWarn').innerHTML = `<div class="errbox" style="margin-bottom:16px">${errHtml(e)}</div>`;
           $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = false; }); $('emType').querySelectorAll('input').forEach(el => { el.disabled = false; });
           $('emSave').disabled = false; $('emSave').textContent = 'Save mapping'; $('emSave').onclick = doSaveCare;
@@ -2002,7 +2079,9 @@ async function renderEditMapping(f) {
   const saveLaw = async m => {
     const doSave = async () => {
     $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = true; }); $('emSave').disabled = true; $('emSave').onclick = null;
-    status('Saving config.json…');
+    status('');
+    const job = kpiJob({ kind: 'savemap', client: fname(f), what: 'Save mapping', title: `Saving ${fname(f)}'s mapping…`, host: `map:${f.slug}`, typicalMs: 120000 });
+    let saved = false;
     try {
       const wasCare = careOf(f);
       await commitFiles(`Update stage mapping for ${f.name}`, async head => {
@@ -2016,13 +2095,20 @@ async function renderEditMapping(f) {
         return [{ path: `firms/${f.slug}/config.json`, content: jsonText(next) }, ...(row ? [{ path: 'firms/index.json', content: jsonText(list) }] : [])];
       });
       if (wasCare) { delete f.practiceType; if (f.status === 'needsMapping') f.status = 'draft'; }
-      status('Saved. Re-syncing so the dashboard uses the new mapping…');
+      saved = true;
+      job.line(`Mapping saved. Re-syncing ${fname(f)} so the dashboard uses it…`);
       const t0 = await dispatch('sync.yml', { slug: f.slug });
-      await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Syncing', limitMs: 8 * 60e3, stop, say: h => status(`Mapping saved. ${h}`),
-        check: async () => { const k = await getJSON(`firms/${f.slug}/data/kpis.json`); return k && Date.parse(k.generatedAt) > t0 - 60e3 ? k : null; } });
-      go('#/', `Saved the mapping for ${esc(f.name)} and re-synced.`);
+      const { value: k } = await follow({ workflow: 'sync.yml', title: `Sync ${f.slug}`, t0, label: 'Syncing', limitMs: 8 * 60e3, stop: () => false, say: () => {},
+        check: async () => { const x = await getJSON(`firms/${f.slug}/data/kpis.json`); return x && Date.parse(x.generatedAt) > t0 - 60e3 ? x : null; } });
+      kpis[f.slug] = kpiSummary(k); kpiFull[f.slug] = k;
+      if (!stop()) go('#/');
+      job.done({ title: 'Done: mapping saved', lead: `${fname(f)} · re-synced, so the dashboard uses the new mapping.`, line: 'Mapping saved', detail: leads90(k) != null ? `${leads90(k)} leads` : '',
+        items: [...(leads90(k) != null ? [['Leads (last 90 days)', String(leads90(k))]] : []), ['Status', f.status === 'draft' ? 'Draft' : 'Live']] });
     } catch (e) {
+      job.fail(saved ? { reason: `The mapping was saved, but the re-sync didn't finish: ${errText(e)} The next sync (within 30 min) uses it.`, line: 'Mapping saved, re-sync didn\'t finish', onRetry: () => resyncFirm(f) }
+        : { reason: errText(e), nothingChanged: 'the mapping is the same as before.', line: 'Mapping not saved', onRetry: () => $('emSave')?.onclick?.() });
       if (stop()) return;
+      if (saved) { go('#/'); return; }
       status(''); $('emWarn').innerHTML = `<div class="errbox" style="margin-bottom:16px">${errHtml(e)}</div>`;
       $('emHost').querySelectorAll('button,input').forEach(el => { el.disabled = false; });
       $('emSave').disabled = false; $('emSave').textContent = 'Save mapping'; $('emSave').onclick = doSave;   // save the same mapping again
@@ -2032,14 +2118,26 @@ async function renderEditMapping(f) {
   };
   $('rereadBtn').onclick = async () => {
     $('rereadBtn').disabled = true;
+    // v1.31.0 (Part 2): the cyclist while GHL is read, then the Done / Didn't work popup with what changed
+    const name = fname(f);
+    const job = kpiJob({ kind: 'reread', client: name, what: 'Re-read GHL', title: `Reading ${name}'s pipelines from GHL…`, host: `map:${f.slug}`, typicalMs: 50000,
+      check: { workflow: 'discover.yml', title: `Discover ${f.slug}` }, doneText: { title: 'Done: pipelines updated', lead: `${name}'s pipelines were read again from GHL.` } });
     try {
-      const cfg = await getJSON(`firms/${f.slug}/config.json`);
+      status('');
+      const [cfg, before] = await Promise.all([getJSON(`firms/${f.slug}/config.json`), getJSON(`firms/${f.slug}/discovery.json`).catch(() => null)]);
       const t0 = await dispatch('discover.yml', { slug: f.slug, secretKey: f.secretKey, locationId: cfg?.locationId || f.locationId || '' });
-      await follow({ workflow: 'discover.yml', title: `Discover ${f.slug}`, t0, label: 'Reading GHL', limitMs: 3 * 60e3, stop, say: h => status(h),
-        check: async () => { const d = await getJSON(`firms/${f.slug}/discovery.json`); return d && Date.parse(d.generatedAt) > t0 - 120e3 ? d : null; } });
+      const { value: d } = await follow({ workflow: 'discover.yml', title: `Discover ${f.slug}`, t0, label: 'Reading GHL', limitMs: 3 * 60e3, stop, say: () => {},
+        check: async () => { const x = await getJSON(`firms/${f.slug}/discovery.json`); return x && Date.parse(x.generatedAt) > t0 - 120e3 ? x : null; } });
       // Redraw the panel from the fresh snapshot. load() only finishes when the mapping is saved, so don't wait for it.
       load().catch(e => { if (!stop()) $('emHost').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; });
-    } catch (e) { status(`<span class="chip bad">Couldn't read GHL</span> ${errHtml(e)}`); }
+      const r = rereadSummary(before, d);
+      job.done({ title: 'Done: pipelines updated', lead: `${name}'s pipelines were read again from GHL.`, line: 'Pipelines updated from GHL',
+        detail: `${r.stages} stage${r.stages === 1 ? '' : 's'}${r.fresh ? ` · ${r.fresh} new stage${r.fresh === 1 ? '' : 's'} to map` : ''}`,
+        items: [['Pipelines', String(r.pipelines)], ['Stages', `${r.stages}${r.fresh ? ` · ${r.fresh} new` : ' · no new stages'}`], ...r.renamed.map(x => ['Changed', `name now "${x}"`]), ...(r.gone ? [['Gone from GHL', `${r.gone} pipeline${r.gone === 1 ? '' : 's'}`]] : [])],
+        next: { label: 'Review mapping', onClick: () => $('emType')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) } });
+    } catch (e) {
+      job.fail({ reason: errText(e), nothingChanged: 'the mapping is the same as before.', line: 'Couldn\'t read GHL', onRetry: () => $('rereadBtn')?.click() });
+    }
     finally { const b = $('rereadBtn'); if (b) b.disabled = false; }
   };
   try { await load(); } catch (e) { if (!stop()) $('emHost').innerHTML = `<div class="errbox">${esc(e.message)}</div>`; }

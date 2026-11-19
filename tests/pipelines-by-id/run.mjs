@@ -28,7 +28,8 @@ const ok = (v, what) => { if (!v) throw new Error(what); };
 const readJSON = async p => JSON.parse(await readFile(p, 'utf8'));
 const jsonText = o => JSON.stringify(o, null, 2) + '\n';
 
-const CFG = await readJSON(join(ROOT, 'firms/mahdavi/config.json'));
+// Mahdavi's real config as it was before v1.30.0 (its saved ids taken off: this suite starts from "never migrated")
+const CFG = (({ pipelineIds, ...c }) => c)(await readJSON(join(ROOT, 'firms/mahdavi/config.json')));
 const DISC = await readJSON(join(ROOT, 'firms/mahdavi/discovery.json'));
 const LEAD = DISC.pipelines.find(p => p.name === 'Lead Stages');
 // a second pipeline that isn't counted: its opportunities must never be counted

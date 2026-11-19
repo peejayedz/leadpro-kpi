@@ -2,6 +2,12 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.31.0 Part 2: working bar + Done popup (shared shell 2.5.0): READY LOCALLY 20 Nov 2026, NOT PUSHED (push B; Review admin v1.13.0, Builder v1.25.0)
+- **What it is:** CHANGELOG v1.31.0. `startJob()` in the shared shell: the cyclist bar (variation B) and the centred Done / Didn't work popup (PJ approved the side-by-side screenshots, 20 Nov), results kept on this browser (`lfmp-jobs`) and in the bell (KPI: a Recent jobs section in the sync-issues panel; its badge adds new results). KPI admin: Re-read GHL, Save mapping, Re-sync, Add to GHL menu, Show CSS rule, New firm. `follow()` never shows GitHub's raw words.
+- **Push order:** KPI → Review admin → Builder (the Builder's push deploys the admin site).
+- **Live check after the deploy (PJ, 20 Nov):** fingerprint = the local build; Re-read GHL on ZZ TEST 2 only (a test sub-account; GHL read only) shows the cyclist and the Done popup; a look at the Builder and Review admin; no console errors. Never run a job against a real client to test.
+- **Tests (20 Nov, local):** admin-ui 324/324 (the stale-data failures cleared once syncs ran again), shell 42/42 (same file in the three repos), new-firm 23/23, pipelines-by-id 10/10 (the fixture now takes Mahdavi's saved ids off), law-identical 6/6, status, mapping, chain, messages, care, keeper, remove-firm, wording, one-login, admin-app.
+
 ## v1.30.1 Fix: save the pipeline ids a sync finds: READY LOCALLY 20 Nov 2026, NOT PUSHED (PJ to say GO)
 - **Why:** the 19:37 UTC chain sync (run 44600169295, the first after v1.30.0) migrated every law firm ("Pipelines now counted by ID" for Mahdavi, LFMP, Emery, Hedayati, ZZ TEST 2), but the per-firm jobs only hand `data/` to the commit job, so `config.json` lost the ids. Counting is correct (names still match); a rename would still drop those four to "Pipeline not found". Dumas is safe (seeded).
 - **Fix:** side file `PIPELINE_IDS_OUT/<slug>.json` → `scripts/apply-pipeline-ids.mjs` in the commit job (only `pipelineIds` + `pipelines`; skipped if Edit mapping changed them).

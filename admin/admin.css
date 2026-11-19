@@ -482,3 +482,7 @@ input[readonly]{color:var(--mut)}
   .dpanel.scrolled .dphead .disp{font-size:26px}
   .dpanel.scrolled .dphead{padding-top:8px;padding-bottom:8px}
 }
+/* v1.31.0: Recent jobs in the bell (shared shell 2.5.0 list) */
+.njobs{padding:10px 14px 4px;border-bottom:1px solid var(--line)}
+.njobs .lbl2{margin:0 0 4px;font:700 11px/1.6 var(--b);letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.njobs .lv-jobs-it{padding:8px 6px}

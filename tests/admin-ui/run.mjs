@@ -576,9 +576,20 @@ try {
   const remembered = await page.evaluate(async () => (await (await fetch('/api/kpi-pass', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"op":"get","slug":"smith-and-jones-law"}' })).json()).pass);
   check(remembered === pass && !kvPass('smith-and-jones-law').includes(pass), 'New firm: the new passphrase is remembered for the team automatically (encrypted on the server)');
   await shot(page, 'newfirm_app_error_1440_dark');
+  // v1.31.0 (Part 2): the Didn't work popup (red, plain words, Try again); its Try again = the step's Retry
+  await page.waitForSelector('.lv-res.bad', { timeout: 10000 });
+  { const t = await page.textContent('.lv-res'); check(/Didn't work/i.test(t) && /LeadPro Connector app isn't on this sub-account/.test(t) && /Try again/.test(t) && !/in_progress|queued|failure/.test(t), `New firm failed → the Didn't work popup (${t.slice(0, 80)})`); }
+  check(await page.$$eval('[data-lv-jobhost="newfirm"] [data-lv-job]', x => x.length) === 0, 'the working bar is gone once it failed');
   G.M.scenario = 'ok';
-  await page.click('#appRetry');
+  await page.click('[data-lv-res="retry"]');
+  // this page runs with reduced motion: the plain gold bar, no cyclist, the job's first line only
+  await page.waitForSelector('[data-lv-jobhost="newfirm"] [data-lv-job]', { timeout: 10000 });
+  { const t = await page.textContent('[data-lv-jobhost="newfirm"] [data-lv-job]'); check(/Setting up Smith & Jones Law's scorecard…/.test(t) && /Setting up Smith & Jones Law's scorecard…\s*usually under a minute\s*Setting up Smith & Jones Law's scorecard…|Lining up the numbers/.test(t) || /Setting up Smith/.test(t), `while it runs: plain words (${t.trim().slice(0, 70)})`);
+    check(!/in_progress|queued/.test(t) && await page.locator('[data-lv-jobhost="newfirm"] .lv-job-rider').count() === 0, 'reduced motion: plain gold bar, no cyclist'); }
   await page.waitForSelector('.success', { timeout: 90000 });
+  await page.waitForSelector('.lv-res:not(.bad)', { timeout: 10000 });
+  { const t = await page.textContent('.lv-res'); check(/Done: Smith & Jones Law's scorecard set up/i.test(t) && /Draft/.test(t), `New firm done → the Done popup (${t.slice(0, 80)})`); }
+  await page.click('[data-lv-res="close"]');
   check(G.M.dispatches.filter(d => d.workflow === 'new-firm.yml').length === 2 && G.M.secretPuts.length === 1, 'Retry → started once more, passphrase kept');
   const di = G.M.dispatches.filter(d => d.workflow === 'new-firm.yml').map(d => d.inputs);
   check(di.every(i => JSON.stringify(Object.keys(i).sort()) === '["location","name","practice_area","request","slug","snapshot_id","timezone"]') && !JSON.stringify(di).includes(pass), 'dispatch inputs: the builder\'s non-secret set, no passphrase');
@@ -598,7 +609,12 @@ try {
   check(chip.text.length <= chip.full.length, `stage chip "${chip.text}" (full name kept: "${chip.full}")`);
   await page.click('#emSave');
   if (/anyway/i.test(await page.textContent('#emSave'))) { check(/No stage picked for/.test(await page.textContent('#emWarn')), 'empty steps warn before saving'); await page.click('#emSave'); }
-  await page.waitForFunction(() => /Saved the mapping/.test(document.querySelector('.okmsg')?.textContent || ''), null, { timeout: 60000 });
+  // v1.31.0 (Part 2): the cyclist while it saves and re-syncs, then the Done popup over the firm list
+  await page.waitForSelector('[data-lv-job]', { timeout: 10000 });
+  check(/Saving The Mahdavi Law Firm's mapping…|Mapping saved\. Re-syncing/.test(await page.textContent('[data-lv-job]')), 'Save mapping: plain words + the working bar');
+  await page.waitForSelector('.lv-res', { timeout: 60000 });
+  { const t = await page.textContent('.lv-res'); check(/Done: mapping saved/i.test(t) && /Leads \(last 90 days\)/.test(t), `Save mapping → Done popup (${t.slice(0, 80)})`); }
+  await page.click('[data-lv-res="close"]');
   const mc = G.M.commits.find(c => /stage mapping for The Mahdavi/.test(c.message));
   check(mc && mc.files.length === 1 && mc.files[0].content === cfgBefore, 'unchanged save writes config.json byte-identical');
   check(await hashIs(page) === '#/' && !(await lockShown(page)), 'after saving: firm list (#/), no password');
@@ -674,12 +690,17 @@ try {
         await page.waitForFunction(() => /Not found/.test(document.querySelector('#dPanel [data-msg]')?.textContent || ''), null, { timeout: 30000 });
         const msg = await page.textContent('#dPanel [data-msg]');
         check(/Nothing changed/.test(msg) && !/in_progress|queued|completed/.test(msg), `${tag}: no link found → plain words + Nothing changed (${msg.trim().slice(0, 90)})`);
+        await page.waitForSelector('.lv-res.bad'); check(/Nothing changed: nothing in GHL changed/.test(await page.textContent('.lv-res')), `${tag}: Didn't work popup says nothing changed`);
+        await page.click('[data-lv-res="close"]');
         G2.M.menuCss = 'ok';
       }
       await page.click(`${sec} [data-f="cssread"]`);
       const during = await page.textContent('#dPanel [data-msg]').catch(() => '');
       check(!/in_progress|queued/.test(during), `${tag}: while reading, plain words (${during.trim().slice(0, 70)})`);
       await page.waitForSelector(`${sec} pre`, { timeout: 30000 });
+      await page.waitForSelector('.lv-res'); check(/Done: CSS rule ready/i.test(await page.textContent('.lv-res')) && await page.isVisible('[data-lv-res="next"]'), `${tag}: Done popup with Copy CSS rule`);
+      if (SHOTS) await page.screenshot({ path: join(SHOTS, `css_done_popup_${tag}.png`) });
+      await page.click('[data-lv-res="close"]');
       const rule = (await page.textContent(`${sec} pre`)).trim();
       check(rule === '/* KPI Dashboard · Law Firm Marketing Pros (LFMP) */\n#b7cc0202-aaaa-bbbb-cccc-000000000001 { order: -92 !important; }', `${tag}: the rule (letter start, as is): ${JSON.stringify(rule)}`);
       check((await page.textContent(sec)).includes('Paste into Agency → Settings → Company → White Label → Custom CSS, then Save.'), `${tag}: says where to paste it`);

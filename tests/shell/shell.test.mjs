@@ -328,7 +328,9 @@ test('gold only on: + button, current tab/nav, top line, initials, on-switches',
     /^\.lv-net$/, /^\.lv-work$/, /^\.lv-bz>\.lv-bz-fill$/,
     // v2.4.0 (PJ's Greeting 1+9): the ring on the initials (hover / menu open), the "Your menu ›" hint, and the greeting's
     // own pieces (glow, hairlines, base block, gold name, line, number separators, amber number)
-    /^\.lfmp-v2 \.lv-avbtn:hover \.lv-av,\.lfmp-v2 \.lv-avbtn\[aria-expanded="true"\] \.lv-av$/, /^\.lfmp-v2 \.lv-mhint$/, /^\.lv-gr[\w\-:>.() ,\[\]="]*$/, /^(:root\.lfmp-v2(\.lfmp-v2)? (\.btn|button)?\.lv-bz,?\s*)+$/, /^:root\.lfmp-v2 \.btn\.lv-bz,:root\.lfmp-v2 button\.lv-bz$/, /^\.lv-area-bar i$/, /^\.lv-pc-bar i$/, /^\.lv-pc-s\.run \.lv-pc-d$/, /^50%$/];
+    /^\.lfmp-v2 \.lv-avbtn:hover \.lv-av,\.lfmp-v2 \.lv-avbtn\[aria-expanded="true"\] \.lv-av$/, /^\.lfmp-v2 \.lv-mhint$/, /^\.lv-gr[\w\-:>.() ,\[\]="]*$/, /^(:root\.lfmp-v2(\.lfmp-v2)? (\.btn|button)?\.lv-bz,?\s*)+$/, /^:root\.lfmp-v2 \.btn\.lv-bz,:root\.lfmp-v2 button\.lv-bz$/, /^\.lv-area-bar i$/, /^\.lv-pc-bar i$/, /^\.lv-pc-s\.run \.lv-pc-d$/, /^50%$/,
+    // v2.5.0 long jobs (PJ's Working Animation variation B + Done card): the working bar's fill, the bike frame, a running job's dot in the bell
+    /^\.lv-job-bar i$/, /^\.lv-jk-gold$/, /^\.lv-jobs-d\.run$/];
   assert.ok(rules.length >= 7);
   for (const r of rules) assert.ok(allowed.some(a => a.test(r)), `gold used on ${r}`);
 });
@@ -434,7 +436,7 @@ tb('in Chromium: Me items, bottom tabs, bell count, Sign out, Install the app, t
   const PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/lfmp-ui.css"></head><body><div id="app"><main class="lv-in" id="main"></main></div>
 <script type="module">import * as S from '/lfmp-session.js'; const q = new URLSearchParams(location.search); window.log = [];
 window.shell = S.mountShell({ tool: q.get('tool'), me: { name: 'Pee Jay Edrozo', email: 'pj@example.com', lastSignIn: '2026-11-16T11:31:00Z' }, root: document.getElementById('app'), version: '1.0.0',
- plus: q.get('tool') === 'review' ? null : { label: 'New', onClick: () => log.push('plus') }, bell: q.get('tool') === 'kpi' ? { onClick: () => log.push('bell') } : null,
+ plus: q.get('tool') === 'review' ? null : { label: 'New', onClick: () => log.push('plus') }, bell: q.get('tool') === 'kpi' ? { label: 'Sync issues', onClick: () => log.push('bell') } : null,
  showTests: { on: false, onChange: v => log.push('tests:' + v) }, onRefresh: () => log.push('refresh'), onNews: () => log.push('news'), onHome: () => log.push('home'),
  newsDot: true, greet: q.get('greet') ? { count: () => new Promise(r => setTimeout(() => r({ clients: Number(q.get('greet')) }), Number(q.get('late') || 0))) } : false });
 document.getElementById('main').innerHTML = S.pageHeadHtml({ title: 'X', search: { placeholder: 'Search' }, segs: [{ key: 'a', label: 'All' }, { key: 'b', label: 'B' }], active: 'a' }) + '<div class="lv-list">' + S.rowHtml({ name: 'A', sub: 'b', cells: [S.statusHtml('green', 'All set')] }) + '</div>';
@@ -463,7 +465,7 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${tool} ${w}: no sideways scroll`);
         // + and bell
         assert.equal(await page.locator(`${bar} [data-lv="plus"]`).count(), tool === 'review' ? 0 : 1, `${tool}: + button`);
-        assert.equal(await page.locator(`${bar} [data-lv="bell"]`).count(), tool === 'kpi' ? 1 : 0, `${tool}: bell`);
+        assert.equal(await page.locator(`${bar} [data-lv="bell"]`).count(), 1, `${tool}: bell (v2.5.0: every tool; the Builder and Review admin get the shell's recent-jobs bell)`);
         if (tool !== 'review') { await page.click(`${bar} [data-lv="plus"]`); assert.deepEqual(await log(), ['plus']); }
         if (tool === 'kpi') {
           assert.equal(await page.isVisible(`${bar} [data-lv-badge]`), false, 'bell: no count = no badge');
@@ -839,4 +841,78 @@ document.getElementById('bad').addEventListener('click', () => { S.lfmpFetch('/f
       await ctx.close();
     }
   } finally { await browser.close(); server.close(); }
+});
+
+// ---------------------------------------------------------------- v2.5.0 long jobs (Part 2): working bar + Done popup
+test('jobs: one list of witty lines per job (edited in one place), "<Client>" filled in, the slow line after a minute', () => {
+  assert.deepEqual(Object.keys(S.JOB_LINES), ['reread', 'savemap', 'sync', 'create', 'kpi', 'menu', 'review', 'publish', 'remove', 'other']);
+  assert.deepEqual(S.JOB_LINES.reread, ['Pedaling over to GHL…', 'Asking GHL nicely for your pipelines…', 'Counting your stages twice, just in case…', 'Legs burning. Nearly there…']);
+  assert.deepEqual(S.JOB_LINES.savemap, ['Tightening the bolts on your mapping…', 'Double-checking every stage…']);
+  assert.deepEqual(S.JOB_LINES.sync, ['Fetching the latest leads…', 'Rounding up the numbers…', 'Doing the math so you don\'t have to…']);
+  assert.deepEqual(S.jobLines('create', 'Acme Law'), ['Building Acme Law\'s new home in GHL…', 'Moving the furniture in (snapshot)…', 'Hanging the pictures…']);
+  assert.deepEqual(S.jobLines('kpi', 'Acme Law'), ['Setting up Acme Law\'s scorecard…', 'Lining up the numbers…']);
+  assert.deepEqual(S.JOB_LINES.menu, ['Hanging the KPI sign in GHL…']);
+  assert.deepEqual(S.JOB_LINES.review, ['Photocopying the workflows…', 'Reading the fine print in every email…']);
+  assert.deepEqual(S.JOB_LINES.publish, ['Delivering the new version to the client\'s page…', 'Wrapping it with a bow…']);
+  assert.deepEqual(S.JOB_LINES.remove, ['Tidying up…', 'Putting things back where they were…']);
+  assert.deepEqual(S.jobLines('nope'), ['Pedaling…', 'Almost there…']);
+  assert.equal(S.JOB_SLOW_LINE, 'Uphill bit. Still pedaling.');
+  const L = S.jobLines('reread');
+  assert.equal(S.jobLineAt(L, 0), L[0]); assert.equal(S.jobLineAt(L, 3100), L[1]); assert.equal(S.jobLineAt(L, 12500), L[0]);   // every ~3 s, round
+  assert.equal(S.jobLineAt(L, 59999), L[19 % 4]); assert.equal(S.jobLineAt(L, 60000), 'Uphill bit. Still pedaling.'); assert.equal(S.jobLineAt(L, 600000), 'Uphill bit. Still pedaling.');
+});
+test('jobs: the cyclist follows real progress, else eases toward ~90% and never reaches the end on its own', () => {
+  assert.equal(S.jobPct({ elapsed: 1000, real: 0.5 }), 0.5); assert.equal(S.jobPct({ elapsed: 0, real: 2 }), 1); assert.equal(S.jobPct({ elapsed: 0, real: -1 }), 0);
+  const at = ms => S.jobPct({ elapsed: ms, typicalMs: 40000 });
+  assert.equal(at(0), 0); assert.ok(at(40000) > 0.6 && at(40000) < 0.8, `typical time ≈ 70% (${at(40000)})`);
+  assert.ok(at(10 * 60e3) < 0.9 && at(10 * 60e3) > 0.89, 'never past 90% without a real result');
+  for (let t = 0; t < 120000; t += 5000) assert.ok(at(t + 5000) >= at(t), 'only forwards');
+});
+test('jobs: working bar + popups are plain words only, escaped; Done = ✓ + "Done: …" + what changed; Didn\'t work = reason + Nothing changed + Try again', () => {
+  const w = S.workBarHtml({ title: 'Reading <Dumas>\'s pipelines from GHL…', line: 'Pedaling over to GHL…' });
+  assert.match(w, /data-lv-job .*role="status"/); assert.match(w, /Reading &lt;Dumas&gt;&#39;s pipelines/); assert.match(w, /usually under a minute/);
+  assert.ok(!/in_progress|queued|completed/.test(w));
+  const ok = S.resultPopupHtml({ title: 'Done: pipelines updated', lead: 'Read again.', items: [['Stages', '12 · all still mapped']], next: { label: 'Review mapping' } });
+  assert.match(ok, /role="alertdialog" aria-modal="true"/); assert.match(ok, /lv-res-ic[^>]*>✓/); assert.match(ok, /Done: pipelines updated/); assert.match(ok, /<li>Stages<span>12 · all still mapped<\/span><\/li>/);
+  assert.match(ok, /data-lv-res="close">Close</); assert.match(ok, /data-lv-res="next">Review mapping</);
+  const bad = S.resultPopupHtml({ status: 'failed', reason: 'GHL took too long to answer.', nothingChanged: 'the mapping is the same as before.', retry: true });
+  assert.match(bad, /class="lv-res bad"/); assert.match(bad, /Didn&#39;t work|Didn't work/); assert.match(bad, /GHL took too long to answer\. <b>Nothing changed:<\/b> the mapping is the same as before\./); assert.match(bad, /data-lv-res="retry">Try again</);
+  assert.match(S.resultPopupHtml({ status: 'failed', reason: 'x', nothingChanged: true }), /<b>Nothing changed\.<\/b>/);
+  assert.ok(!/Nothing changed/.test(S.resultPopupHtml({ status: 'failed', reason: 'x' })), 'only when true');
+  const later = S.resultPopupHtml({ title: 'Done: mapping saved', when: 'Finished 4 min ago, while you were on Reviews' });
+  assert.match(later, /Finished 4 min ago, while you were on Reviews/); assert.match(later, /class="lv-res-pri" data-lv-res="close">OK</);
+});
+test('jobs: the hint on the right is the job\'s own typical time', () => {
+  assert.equal(S.jobHint(40000), 'usually under a minute'); assert.equal(S.jobHint(60000), 'usually under a minute');
+  assert.equal(S.jobHint(120000), 'usually about 2 minutes'); assert.equal(S.jobHint(300000), 'usually about 5 minutes'); assert.equal(S.jobHint(), 'usually under a minute');
+});
+test('jobs: kept on this browser (shared by the three tools), newest 30 for 7 days; the bell lists one-line results, newest first', () => {
+  const mem = new Map(), store = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, String(v)) };
+  const now = Date.now();
+  S.writeJobs([{ id: 'a', status: 'done', what: 'Sync now', client: 'Mahdavi', startedAt: now - 9 * 864e5, finishedAt: now - 8 * 864e5 }, ...Array.from({ length: 35 }, (_, i) => ({ id: `j${i}`, status: 'done', what: 'Save mapping', client: 'X', startedAt: now - 1000, finishedAt: now - 1000 + i }))], store, now);
+  const kept = S.readJobs(store);
+  assert.equal(kept.length, 30); assert.ok(!kept.some(j => j.id === 'a'), 'older than 7 days dropped');
+  S.writeJobs([{ id: 'x1', tool: 'kpi', status: 'done', what: 'Re-read GHL', client: 'Dumas', startedAt: now - 5000, finishedAt: now - 4000, result: { title: 'Done: pipelines updated', line: 'Pipelines updated from GHL', detail: '12 stages' } },
+    { id: 'x2', tool: 'kpi', status: 'failed', what: 'Re-read GHL', client: 'Palm Beach', startedAt: now - 3000, finishedAt: now - 2000, result: { reason: 'x', line: 'Couldn\'t read GHL' } }], store, now);
+  const h = S.jobsListHtml(S.readJobs(store), now);
+  assert.ok(h.indexOf('Couldn&#39;t read GHL') < h.indexOf('Pipelines updated from GHL'), 'newest first');
+  assert.match(h, /Dumas · 12 stages · \d{1,2}:\d\d [AP]M/); assert.match(h, /lv-jobs-d bad/);
+  assert.equal(S.unseenJobs(store).length, 2); assert.equal(S.newJobResults(store), 2);
+  S.markJobsBellSeen(store, now + 1); assert.equal(S.newJobResults(store), 0, 'opening the bell clears its count');
+  assert.equal(S.agoText(4 * 60000), '4 min ago'); assert.equal(S.agoText(20000), 'just now'); assert.equal(S.agoText(3 * 3600e3), '3 hours ago');
+});
+test('jobs: CSS = the previews (bar 4px gold on the track, rider above it, popup centred over a dimmed page); reduced motion: no animation', () => {
+  assert.match(CSS, /\.lv-job-bar\{position:absolute;left:0;right:0;bottom:0;height:4px;background:var\(--soft\)/);
+  assert.match(CSS, /\.lv-job-bar i\{[^}]*background:var\(--gold\)/);
+  assert.match(CSS, /\.lv-jk-ink\{stroke:var\(--ink\)/); assert.match(CSS, /\.lv-jk-gold\{stroke:var\(--gold\)/);
+  assert.match(CSS, /\.lv-res-shade\{position:fixed;inset:0;z-index:200;background:rgba\(10,10,12,\.55\);display:flex;align-items:center;justify-content:center/);
+  assert.match(CSS, /\.lv-res-ic\{[^}]*background:var\(--green\)/); assert.match(CSS, /\.lv-res\.bad \.lv-res-ic\{background:var\(--red\)/);
+  assert.match(CSS, /@media \(max-width:879\.98px\)\{\.lv-job-t\{flex-direction:column;gap:0\}\}/, 'phone: "usually under a minute" under the title');
+  assert.match(CSS, /@media \(prefers-reduced-motion:reduce\)\{\s*\.lv-res-shade,\.lv-res\{animation:none\}[^\n]*\n\s*\.lv-job-sub\{transition:none\}/);
+});
+test('jobs: the three tools load this file; client-facing pages never do (dashboards, Link A / Link B, the old review page)', () => {
+  let code = HERE; while (code !== path.dirname(code) && !fs.existsSync(path.join(code, 'ghl-subaccount-builder'))) code = path.dirname(code);
+  const pages = ['leadpro-kpi/app/dashboard.html', 'automation-review/plan.html', 'automation-review/messages.html', 'automation-review/index.html'].map(p => path.join(code, p)).filter(p => fs.existsSync(p));
+  if (!pages.length) return;   // only the one repo checked out
+  for (const p of pages) { const t = fs.readFileSync(p, 'utf8'); assert.ok(!/lfmp-session|lv-job|startJob|lv-res/.test(t), `${path.basename(p)} must not load the admin job component`); }
 });
