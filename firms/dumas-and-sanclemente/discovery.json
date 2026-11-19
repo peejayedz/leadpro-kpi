@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-19T17:09:56.909Z",
+  "generatedAt": "2026-11-19T17:32:04.374Z",
   "slug": "dumas-and-sanclemente",
   "locationId": "uCEPTnLiwbjG85oO8vMC",
   "locationName": "Dumas & Sanclemente",
   "scopes": {
-    "checkedAt": "2026-11-19T17:09:55.517Z",
+    "checkedAt": "2026-11-19T17:32:02.735Z",
     "ok": [
       "opportunities.readonly",
       "contacts.readonly",
