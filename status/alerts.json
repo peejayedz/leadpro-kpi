@@ -1,77 +1,13 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-19T17:11:52.006Z",
+  "updatedAt": "2026-11-19T19:42:53.357Z",
   "open": {
-    "system:no-link": {
-      "kind": "no-link",
-      "slug": null,
-      "name": "All firms",
-      "title": "Sync chain has stopped",
-      "firstSeen": "2026-11-19T11:37:04Z",
-      "sentAt": "2026-11-19T15:30:49.117Z"
-    },
-    "mahdavi:stale": {
-      "kind": "stale",
-      "slug": "mahdavi",
-      "name": "The Mahdavi Law Firm",
-      "title": "No successful sync in 4 hours",
-      "firstSeen": "2026-11-19T12:18:24.031Z",
-      "sentAt": "2026-11-19T15:30:49.117Z"
-    },
-    "lfmp:stale": {
-      "kind": "stale",
-      "slug": "lfmp",
-      "name": "Law Firm Marketing Pros (LFMP)",
-      "title": "No successful sync in 4 hours",
-      "firstSeen": "2026-11-19T12:18:24.031Z",
-      "sentAt": "2026-11-19T15:30:49.117Z"
-    },
-    "hedayati-law-group-p-c:stale": {
-      "kind": "stale",
-      "slug": "hedayati-law-group-p-c",
-      "name": "Hedayati Law Group, P.C",
-      "title": "No successful sync in 4 hours",
-      "firstSeen": "2026-11-19T12:18:24.031Z",
-      "sentAt": "2026-11-19T15:30:49.117Z"
-    },
-    "emery-law-office:stale": {
-      "kind": "stale",
-      "slug": "emery-law-office",
-      "name": "Emery Law Office",
-      "title": "No successful sync in 4 hours",
-      "firstSeen": "2026-11-19T12:18:24.031Z",
-      "sentAt": "2026-11-19T15:30:49.117Z"
-    },
-    "zz-test-2:stale": {
-      "kind": "stale",
-      "slug": "zz-test-2",
-      "name": "ZZ TEST 2",
-      "title": "No successful sync in 4 hours",
-      "firstSeen": "2026-11-19T12:18:24.031Z",
-      "sentAt": "2026-11-19T15:30:49.117Z"
-    },
-    "system:keeper-stale": {
-      "kind": "keeper-stale",
-      "slug": null,
-      "name": "All firms",
-      "title": "Token keeper hasn't run in 4 hours",
-      "firstSeen": "2026-11-19T16:28:59.030Z",
-      "sentAt": "2026-11-19T17:11:52.006Z"
-    },
     "dumas-and-sanclemente:mapping-review": {
       "kind": "mapping-review",
       "slug": "dumas-and-sanclemente",
       "name": "Dumas & Sanclemente",
       "title": "Review mapping",
       "firstSeen": "2026-11-19T17:10:13.327Z",
-      "sentAt": "2026-11-19T17:11:52.006Z"
-    },
-    "boca-dental:stale": {
-      "kind": "stale",
-      "slug": "boca-dental",
-      "name": "Boca Dental",
-      "title": "No successful sync in 102 min",
-      "firstSeen": "2026-11-19T16:15:18.547Z",
       "sentAt": "2026-11-19T17:11:52.006Z"
     }
   }
