@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T17:10:52.577Z",
+  "generatedAt": "2026-11-19T19:37:50.707Z",
   "location": "Dumas & Sanclemente",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,9 +22,9 @@
     "today": {
       "label": "Today",
       "from": 1795064400000,
-      "to": 1795108252577,
+      "to": 1795117070707,
       "current": {
-        "totalLeads": 2,
+        "totalLeads": 3,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -54,6 +54,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "PMAX- Google Ads Extension Number",
+            1,
+            0
+          ],
+          [
             "Google Business Profile - Lutz",
             1,
             0
@@ -67,17 +72,17 @@
         "byChannel": [
           [
             "Third Party",
-            2,
+            3,
             0
           ]
         ],
-        "attributedLeads": 2,
+        "attributedLeads": 3,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            2,
+            3,
             "newLeads",
             null
           ],
@@ -406,9 +411,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1795108252577,
+      "to": 1795117070707,
       "current": {
-        "totalLeads": 8,
+        "totalLeads": 9,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -448,6 +453,11 @@
             0
           ],
           [
+            "PMAX- Google Ads Extension Number",
+            1,
+            0
+          ],
+          [
             "Google Business Profile - Fort Lauderdale",
             1,
             0
@@ -456,17 +466,17 @@
         "byChannel": [
           [
             "Third Party",
-            8,
+            9,
             0
           ]
         ],
-        "attributedLeads": 8,
+        "attributedLeads": 9,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            8,
+            9,
             "newLeads",
             null
           ],
@@ -819,10 +829,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794503452577,
-      "to": 1795108252577,
+      "from": 1794512270707,
+      "to": 1795117070707,
       "current": {
-        "totalLeads": 8,
+        "totalLeads": 9,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -862,6 +872,11 @@
             0
           ],
           [
+            "PMAX- Google Ads Extension Number",
+            1,
+            0
+          ],
+          [
             "Google Business Profile - Fort Lauderdale",
             1,
             0
@@ -870,17 +885,17 @@
         "byChannel": [
           [
             "Third Party",
-            8,
+            9,
             0
           ]
         ],
-        "attributedLeads": 8,
+        "attributedLeads": 9,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            8,
+            9,
             "newLeads",
             null
           ],
@@ -1031,10 +1046,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792516252577,
-      "to": 1795108252577,
+      "from": 1792525070707,
+      "to": 1795117070707,
       "current": {
-        "totalLeads": 40,
+        "totalLeads": 39,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1065,17 +1080,22 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            21,
+            20,
             0
           ],
           [
             "Google Business Profile - Fort Lauderdale",
-            12,
+            11,
             0
           ],
           [
             "Website Number Pool",
             5,
+            0
+          ],
+          [
+            "PMAX- Google Ads Extension Number",
+            1,
             0
           ],
           [
@@ -1092,17 +1112,17 @@
         "byChannel": [
           [
             "Third Party",
-            40,
+            39,
             0
           ]
         ],
-        "attributedLeads": 40,
+        "attributedLeads": 39,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            40,
+            39,
             "newLeads",
             null
           ],
@@ -1145,7 +1165,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 23,
+        "totalLeads": 25,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1176,12 +1196,12 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            16,
+            17,
             0
           ],
           [
             "Google Business Profile - Fort Lauderdale",
-            4,
+            5,
             0
           ],
           [
@@ -1198,17 +1218,17 @@
         "byChannel": [
           [
             "Third Party",
-            23,
+            25,
             0
           ]
         ],
-        "attributedLeads": 23,
+        "attributedLeads": 25,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            23,
+            25,
             "newLeads",
             null
           ],
@@ -1253,10 +1273,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787332252577,
-      "to": 1795108252577,
+      "from": 1787341070707,
+      "to": 1795117070707,
       "current": {
-        "totalLeads": 63,
+        "totalLeads": 64,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1301,6 +1321,11 @@
             0
           ],
           [
+            "PMAX- Google Ads Extension Number",
+            1,
+            0
+          ],
+          [
             "Google Ads Extension Number",
             1,
             0
@@ -1319,17 +1344,17 @@
         "byChannel": [
           [
             "Third Party",
-            63,
+            64,
             0
           ]
         ],
-        "attributedLeads": 63,
+        "attributedLeads": 64,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            63,
+            64,
             "newLeads",
             null
           ],
@@ -1454,9 +1479,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795108252577,
+      "to": 1795117070707,
       "current": {
-        "totalLeads": 21,
+        "totalLeads": 22,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1501,6 +1526,11 @@
             0
           ],
           [
+            "PMAX- Google Ads Extension Number",
+            1,
+            0
+          ],
+          [
             "Google Ads Extension Number",
             1,
             0
@@ -1509,17 +1539,17 @@
         "byChannel": [
           [
             "Third Party",
-            21,
+            22,
             0
           ]
         ],
-        "attributedLeads": 21,
+        "attributedLeads": 22,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            21,
+            22,
             "newLeads",
             null
           ],
@@ -1883,9 +1913,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795108252577,
+      "to": 1795117070707,
       "current": {
-        "totalLeads": 61,
+        "totalLeads": 62,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1930,6 +1960,11 @@
             0
           ],
           [
+            "PMAX- Google Ads Extension Number",
+            1,
+            0
+          ],
+          [
             "Google Ads Extension Number",
             1,
             0
@@ -1948,17 +1983,17 @@
         "byChannel": [
           [
             "Third Party",
-            61,
+            62,
             0
           ]
         ],
-        "attributedLeads": 61,
+        "attributedLeads": 62,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            61,
+            62,
             "newLeads",
             null
           ],
@@ -2265,7 +2300,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-19T17:10:52.577Z",
+    "checkedAt": "2026-11-19T19:37:50.707Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
