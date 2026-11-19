@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T21:37:46.195Z",
+  "generatedAt": "2026-11-19T22:07:51.934Z",
   "location": "Boca Dental",
   "targets": {
     "leadToSignedPct": 8,
@@ -33,11 +33,11 @@
     "today": {
       "label": "Today",
       "from": 1795064400000,
-      "to": 1795124266195,
+      "to": 1795126071934,
       "current": {
-        "totalLeads": 9,
-        "enquiries": 9,
-        "contacted": 9,
+        "totalLeads": 10,
+        "enquiries": 10,
+        "contacted": 10,
         "booked": 0,
         "attended": 0,
         "yes": 0,
@@ -48,12 +48,12 @@
         "noShows": null,
         "noShowPct": null,
         "yesPct": 0,
-        "stageMoved": 9
+        "stageMoved": 10
       },
       "previous": {
-        "totalLeads": 13,
-        "enquiries": 13,
-        "contacted": 13,
+        "totalLeads": 14,
+        "enquiries": 14,
+        "contacted": 14,
         "booked": 0,
         "attended": 0,
         "yes": 0,
@@ -64,7 +64,7 @@
         "noShows": null,
         "noShowPct": null,
         "yesPct": 0,
-        "stageMoved": 13
+        "stageMoved": 14
       }
     },
     "yesterday": {
@@ -107,11 +107,11 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1795124266195,
+      "to": 1795126071934,
       "current": {
-        "totalLeads": 47,
-        "enquiries": 47,
-        "contacted": 47,
+        "totalLeads": 48,
+        "enquiries": 48,
+        "contacted": 48,
         "booked": 0,
         "attended": 0,
         "yes": 0,
@@ -122,12 +122,12 @@
         "noShows": null,
         "noShowPct": null,
         "yesPct": 0,
-        "stageMoved": 47
+        "stageMoved": 48
       },
       "previous": {
-        "totalLeads": 38,
-        "enquiries": 38,
-        "contacted": 38,
+        "totalLeads": 39,
+        "enquiries": 39,
+        "contacted": 39,
         "booked": 0,
         "attended": 0,
         "yes": 0,
@@ -138,7 +138,7 @@
         "noShows": null,
         "noShowPct": null,
         "yesPct": 0,
-        "stageMoved": 38
+        "stageMoved": 39
       }
     },
     "lastWeek": {
@@ -180,8 +180,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794519466195,
-      "to": 1795124266195,
+      "from": 1794521271934,
+      "to": 1795126071934,
       "current": {
         "totalLeads": 58,
         "enquiries": 58,
@@ -199,9 +199,9 @@
         "stageMoved": 58
       },
       "previous": {
-        "totalLeads": 47,
-        "enquiries": 47,
-        "contacted": 47,
+        "totalLeads": 48,
+        "enquiries": 48,
+        "contacted": 48,
         "booked": 0,
         "attended": 0,
         "yes": 0,
@@ -212,17 +212,17 @@
         "noShows": null,
         "noShowPct": null,
         "yesPct": 0,
-        "stageMoved": 47
+        "stageMoved": 48
       }
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792532266195,
-      "to": 1795124266195,
+      "from": 1792534071934,
+      "to": 1795126071934,
       "current": {
-        "totalLeads": 250,
-        "enquiries": 250,
-        "contacted": 250,
+        "totalLeads": 251,
+        "enquiries": 251,
+        "contacted": 251,
         "booked": 0,
         "attended": 0,
         "yes": 0,
@@ -233,7 +233,7 @@
         "noShows": null,
         "noShowPct": null,
         "yesPct": 0,
-        "stageMoved": 250
+        "stageMoved": 251
       },
       "previous": {
         "totalLeads": 248,
@@ -254,12 +254,12 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787348266195,
-      "to": 1795124266195,
+      "from": 1787350071934,
+      "to": 1795126071934,
       "current": {
-        "totalLeads": 720,
-        "enquiries": 720,
-        "contacted": 720,
+        "totalLeads": 721,
+        "enquiries": 721,
+        "contacted": 721,
         "booked": 0,
         "attended": 0,
         "yes": 0,
@@ -270,7 +270,7 @@
         "noShows": null,
         "noShowPct": null,
         "yesPct": 0,
-        "stageMoved": 720
+        "stageMoved": 721
       },
       "previous": {
         "totalLeads": 391,
@@ -292,11 +292,11 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795124266195,
+      "to": 1795126071934,
       "current": {
-        "totalLeads": 155,
-        "enquiries": 155,
-        "contacted": 155,
+        "totalLeads": 156,
+        "enquiries": 156,
+        "contacted": 156,
         "booked": 0,
         "attended": 0,
         "yes": 0,
@@ -307,7 +307,7 @@
         "noShows": null,
         "noShowPct": null,
         "yesPct": 0,
-        "stageMoved": 155
+        "stageMoved": 156
       },
       "previous": {
         "totalLeads": 155,
@@ -366,11 +366,11 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795124266195,
+      "to": 1795126071934,
       "current": {
-        "totalLeads": 414,
-        "enquiries": 414,
-        "contacted": 414,
+        "totalLeads": 415,
+        "enquiries": 415,
+        "contacted": 415,
         "booked": 0,
         "attended": 0,
         "yes": 0,
@@ -381,7 +381,7 @@
         "noShows": null,
         "noShowPct": null,
         "yesPct": 0,
-        "stageMoved": 414
+        "stageMoved": 415
       },
       "previous": {
         "totalLeads": 373,
@@ -442,7 +442,7 @@
     "graduatedAt": "2026-11-19T15:29:55.288Z"
   },
   "sync": {
-    "checkedAt": "2026-11-19T21:37:46.195Z",
+    "checkedAt": "2026-11-19T22:07:51.934Z",
     "holds": 0,
     "heldSince": null,
     "incomplete": false
