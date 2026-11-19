@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-19T17:32:04.374Z",
+  "generatedAt": "2026-11-19T17:36:46.727Z",
   "slug": "dumas-and-sanclemente",
   "locationId": "uCEPTnLiwbjG85oO8vMC",
   "locationName": "Dumas & Sanclemente",
   "scopes": {
-    "checkedAt": "2026-11-19T17:32:02.735Z",
+    "checkedAt": "2026-11-19T17:36:45.133Z",
     "ok": [
       "opportunities.readonly",
       "contacts.readonly",
@@ -23,7 +23,7 @@
   "pipelines": [
     {
       "id": "mklLxJVYxOavYUDBZ4MV",
-      "name": "GHL Build Out Stages (Andrew Cass)",
+      "name": "Lead Stages",
       "stages": [
         {
           "id": "5717437d-2b0f-4608-9d9e-a64354f1c04e",
