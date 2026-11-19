@@ -1,14 +1,5 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-19T19:42:53.357Z",
-  "open": {
-    "dumas-and-sanclemente:mapping-review": {
-      "kind": "mapping-review",
-      "slug": "dumas-and-sanclemente",
-      "name": "Dumas & Sanclemente",
-      "title": "Review mapping",
-      "firstSeen": "2026-11-19T17:10:13.327Z",
-      "sentAt": "2026-11-19T17:11:52.006Z"
-    }
-  }
+  "updatedAt": "2026-11-19T19:54:46.552Z",
+  "open": {}
 }
