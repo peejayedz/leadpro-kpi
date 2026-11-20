@@ -60,7 +60,6 @@
     "createdAt": "2026-11-20T14:22:31.598Z",
     "tokenSource": "app",
     "createdBy": "builder",
-    "practiceType": "medical",
-    "status": "draft"
+    "practiceType": "medical"
   }
 ]

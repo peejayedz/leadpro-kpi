@@ -1,8 +1,6 @@
 {
   "slug": "boca-dental",
-  "request": "cli-95186875",
-  "at": "2026-11-20T15:01:39.171Z",
-  "result": "failed",
-  "code": "failed:422",
-  "reason": "GHL refused the link: allowCamera must be a boolean; allowMicrophone must be a boolean; Unprocessable Entity (422)."
+  "request": "cli-95187177",
+  "at": "2026-11-20T15:06:42.457Z",
+  "result": "created"
 }
