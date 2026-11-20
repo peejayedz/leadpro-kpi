@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-20T19:37:45.575Z",
+  "generatedAt": "2026-11-20T20:07:46.912Z",
   "location": "Dumas & Sanclemente",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795150800000,
-      "to": 1795203465575,
+      "to": 1795205266912,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -115,7 +115,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 3,
+        "totalLeads": 4,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -145,6 +145,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Website Number Pool",
+            1,
+            0
+          ],
+          [
             "PMAX- Google Ads Extension Number",
             1,
             0
@@ -163,17 +168,17 @@
         "byChannel": [
           [
             "Third Party",
-            3,
+            4,
             0
           ]
         ],
-        "attributedLeads": 3,
+        "attributedLeads": 4,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            3,
+            4,
             "newLeads",
             null
           ],
@@ -426,7 +431,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1795203465575,
+      "to": 1795205266912,
       "current": {
         "totalLeads": 11,
         "contacted": 0,
@@ -844,8 +849,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794598665575,
-      "to": 1795203465575,
+      "from": 1794600466912,
+      "to": 1795205266912,
       "current": {
         "totalLeads": 11,
         "contacted": 0,
@@ -1056,10 +1061,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792611465575,
-      "to": 1795203465575,
+      "from": 1792613266912,
+      "to": 1795205266912,
       "current": {
-        "totalLeads": 38,
+        "totalLeads": 37,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1090,7 +1095,7 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            19,
+            18,
             0
           ],
           [
@@ -1122,17 +1127,17 @@
         "byChannel": [
           [
             "Third Party",
-            38,
+            37,
             0
           ]
         ],
-        "attributedLeads": 38,
+        "attributedLeads": 37,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            38,
+            37,
             "newLeads",
             null
           ],
@@ -1175,7 +1180,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 28,
+        "totalLeads": 29,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1206,7 +1211,7 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            18,
+            19,
             0
           ],
           [
@@ -1228,17 +1233,17 @@
         "byChannel": [
           [
             "Third Party",
-            28,
+            29,
             0
           ]
         ],
-        "attributedLeads": 28,
+        "attributedLeads": 29,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            28,
+            29,
             "newLeads",
             null
           ],
@@ -1283,8 +1288,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787427465575,
-      "to": 1795203465575,
+      "from": 1787429266912,
+      "to": 1795205266912,
       "current": {
         "totalLeads": 66,
         "contacted": 0,
@@ -1489,7 +1494,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795203465575,
+      "to": 1795205266912,
       "current": {
         "totalLeads": 24,
         "contacted": 0,
@@ -1602,7 +1607,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 21,
+        "totalLeads": 23,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1633,12 +1638,12 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            15,
+            16,
             0
           ],
           [
             "Google Business Profile - Fort Lauderdale",
-            4,
+            5,
             0
           ],
           [
@@ -1655,17 +1660,17 @@
         "byChannel": [
           [
             "Third Party",
-            21,
+            23,
             0
           ]
         ],
-        "attributedLeads": 21,
+        "attributedLeads": 23,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            21,
+            23,
             "newLeads",
             null
           ],
@@ -1923,7 +1928,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795203465575,
+      "to": 1795205266912,
       "current": {
         "totalLeads": 64,
         "contacted": 0,
@@ -2310,7 +2315,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-20T19:37:45.575Z",
+    "checkedAt": "2026-11-20T20:07:46.912Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
