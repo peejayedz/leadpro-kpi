@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-20T14:29:23.502Z",
+  "updatedAt": "2026-11-20T14:30:24.143Z",
   "lastRun": {
-    "at": "2026-11-20T14:29:23.502Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44753818254",
+    "at": "2026-11-20T14:30:24.143Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44753970581",
     "event": "workflow_dispatch",
     "chained": false
   },
@@ -11,7 +11,7 @@
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-20T14:29:23.502Z",
+  "lastAnySuccessAt": "2026-11-20T14:30:24.143Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
@@ -190,9 +190,9 @@
     },
     "boca-dental": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-20T14:29:23.502Z",
-      "lastSuccessAt": "2026-11-20T14:29:23.502Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44753818254",
+      "lastAttemptAt": "2026-11-20T14:30:24.143Z",
+      "lastSuccessAt": "2026-11-20T14:30:24.143Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/44753970581",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
