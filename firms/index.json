@@ -42,17 +42,6 @@
     "createdBy": "builder"
   },
   {
-    "slug": "boca-dental",
-    "secretKey": "BOCA_DENTAL",
-    "name": "Boca Dental",
-    "practiceArea": "",
-    "locationId": "cUGbQORfR3Qp9nnzcgft",
-    "createdAt": "2026-11-18T08:20:18.081Z",
-    "tokenSource": "app",
-    "createdBy": "builder",
-    "practiceType": "medical"
-  },
-  {
     "slug": "dumas-and-sanclemente",
     "secretKey": "DUMAS_AND_SANCLEMENTE",
     "name": "Dumas & Sanclemente",
