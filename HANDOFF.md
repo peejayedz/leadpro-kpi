@@ -2,7 +2,7 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
-## v1.32.0 Part 4: confirm first + Remove firm (shared shell 2.6.0): READY LOCALLY 20 Nov 2026, NOT PUSHED (push C). PJ says GO before the push.
+## v1.32.0 Part 4: confirm first + Remove firm (shared shell 2.6.0): LIVE 20 Nov 2026 (push C: KPI `357a741` → Review `560b184` → Builder `3a8376b`; admin-site run 44694869949 green, "Changed: deploying admin-site 09587d87b3786cb8" = the local build). Live check (PJ's Chrome, signed in as the LFMP account, every non-GET call blocked in the page): KPI admin Edit mapping on ZZ TEST 2 → Re-read GHL opened the confirm (what happens / what does not), Cancel → closed, nothing dispatched; Builder ZZ TEST 2 → Review → Remove review package → red confirm (what goes / what is kept, Remove disabled until the name is typed) → Cancel → nothing sent, still Published; no console errors. Client pages: Mahdavi Link A (plans/ + plan.html) and Link B, Dumas Link A and Link B at 1440 + 390, light + dark: text identical and screenshots identical to before the push. Nothing removed on any client.
 - **What it is:** CHANGELOG v1.32.0. New firm / Save mapping / Re-read GHL / Show CSS rule / Discard a half-made firm ask first. Remove firm (was Delete firm) = `remove-firm.yml` like the Builder's Remove scorecard (also the firm's own GHL menu link when live; logged in `status/removed.json` + Slack); the Builder record is noted.
 - **Tests (20 Nov, local):** admin-ui 331/331, shell 44/44, every node suite.
 
@@ -12,7 +12,7 @@ The README is the full reference and CHANGELOG.md the history. This file covers 
 - **Live check after the deploy (PJ, 20 Nov):** fingerprint = the local build; Re-read GHL on ZZ TEST 2 only (a test sub-account; GHL read only) shows the cyclist and the Done popup; a look at the Builder and Review admin; no console errors. Never run a job against a real client to test.
 - **Tests (20 Nov, local):** admin-ui 324/324 (the stale-data failures cleared once syncs ran again), shell 42/42 (same file in the three repos), new-firm 23/23, pipelines-by-id 10/10 (the fixture now takes Mahdavi's saved ids off), law-identical 6/6, status, mapping, chain, messages, care, keeper, remove-firm, wording, one-login, admin-app.
 
-## v1.30.1 Fix: save the pipeline ids a sync finds: READY LOCALLY 20 Nov 2026, NOT PUSHED (PJ to say GO)
+## v1.30.1 Fix: save the pipeline ids a sync finds: LIVE 20 Nov 2026 (`f9ff3e7`; the next sync wrote pipelineIds for all 5 law firms, numbers unchanged)
 - **Why:** the 19:37 UTC chain sync (run 44600169295, the first after v1.30.0) migrated every law firm ("Pipelines now counted by ID" for Mahdavi, LFMP, Emery, Hedayati, ZZ TEST 2), but the per-firm jobs only hand `data/` to the commit job, so `config.json` lost the ids. Counting is correct (names still match); a rename would still drop those four to "Pipeline not found". Dumas is safe (seeded).
 - **Fix:** side file `PIPELINE_IDS_OUT/<slug>.json` → `scripts/apply-pipeline-ids.mjs` in the commit job (only `pipelineIds` + `pipelines`; skipped if Edit mapping changed them).
 - **After the push:** the next sync's commit should show `pipelineIds` in the five law firms' `config.json` ("Pipeline ids for <slug>: saved" in the commit job log).
