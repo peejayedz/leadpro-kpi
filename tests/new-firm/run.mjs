@@ -201,6 +201,7 @@ test('Menu link: one "KPI Dashboard" link, this sub-account only, opens inside G
   eq(post[0].version, 'v3', 'Version v3');
   const b = post[0].body;
   eq([b.title, b.showOnCompany, b.showOnLocation, b.showToAllLocations, b.locations, b.openMode, b.userRole], ['KPI Dashboard', false, true, false, [LOC], 'iframe', 'all'], 'body');
+  eq([b.allowCamera, b.allowMicrophone], [false, false], 'v1.32.2: iframe needs allowCamera / allowMicrophone booleans (GHL 422 without them): both false');
   eq(b.url, `https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/zz-test-2/#k=${encodeURIComponent(PASS)}`, 'url (passphrase URL-encoded)');
   ok(/menu=created/.test(r.outFile), 'output'); eq(r.cfg.menuLink?.status, 'created', 'recorded in config (no URL)');
   eq(r.cfg.menuLink?.id, MENU_ID, 'v1.30.0: the link id from GHL\'s answer is kept'); ok(/menuid=yes/.test(r.outFile), 'menuid output');
@@ -313,6 +314,7 @@ test('Menu guard: refuses every other write', () => {
   const bad = [
     ['PUT', '/custom-menus/abc', good], ['DELETE', '/custom-menus/abc', null], ['PATCH', '/custom-menus/', good], ['POST', '/custom-menus/abc', good],
     ['POST', '/custom-menus/', { ...good, showToAllLocations: true }], ['POST', '/custom-menus/', { ...good, locations: [LOC, 'other0000000000000001'] }],
+    ['POST', '/custom-menus/', { ...good, allowCamera: true }], ['POST', '/custom-menus/', { ...good, allowMicrophone: true }], ['POST', '/custom-menus/', { ...good, allowCamera: undefined }],
     ['POST', '/custom-menus/', { ...good, showOnCompany: true }], ['POST', '/custom-menus/', { ...good, title: 'Other' }], ['POST', '/custom-menus/', { ...good, openMode: 'new_tab' }], ['POST', '/custom-menus/', { ...good, openMode: 'current_tab' }], ['POST', '/custom-menus/', { ...good, openMode: undefined }],
     ['POST', '/custom-menus/', { ...good, url: 'https://evil.example/' }], ['POST', '/custom-menus/', { ...good, url: 'https://dashboard.lawfirmmarketingpros.com.evil.example/leadpro-kpi/firms/x/' }], ['POST', '/custom-menus/', { ...good, url: 'http://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/x/' }], ['POST', '/locations/', good], ['GET', '/contacts/', null],
   ];

@@ -5,6 +5,9 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.32.2 — 20 Nov 2026
+- **[internal]** Fix: Add to GHL menu works with the in-GHL link. With `openMode: "iframe"` GHL requires `allowCamera` and `allowMicrophone` as booleans (its API docs list them as optional); without them it answered 422 "allowCamera must be a boolean; allowMicrophone must be a boolean" (Boca Dental, 20 Nov, found with v1.32.1's reason). `menuBody()` now sends both `false` (the dashboard needs neither) and `guardMenu` refuses a POST unless both are exactly `false`. Tests: `tests/new-firm/run.mjs` 26/26 (body has both false; the guard refuses true / missing).
+
 ## v1.32.1 — 20 Nov 2026
 - **[internal]** Add to GHL menu says why it failed. When GHL refuses the "KPI Dashboard" link, `scripts/ghl-menu.mjs` keeps GHL's own message (`ghlMessage`: links and the dashboard passphrase, raw or URL-encoded, cut out; one line, at most 300 characters) and `menuReason()` turns it into plain words ("GHL refused the link: … (422).", "GHL refused the menu token: … (401). GHL_MENU_TOKEN may have expired…", server error, can't reach GHL, couldn't read the existing links). Found on Boca Dental: 4 runs failed with a bare `failed:422` because GHL's answer was dropped.
 - **[internal]** `menu-link.yml`: the "GHL menu link" log line ends with that reason; the run writes `status/menu-link-<slug>.json` (slug, request id, time, result, reason; no link, no passphrase). Go live commits it with the firm; a new step "Save why the link wasn't added" (only on failure) commits just that file. KPI admin's Didn't work popup (and the Builder's KPI tab) read it for the same request and show GHL's reason instead of "GitHub stopped it before it finished" (View run kept).

@@ -5,7 +5,8 @@
 //   POST /custom-menus/               ONLY with title "KPI Dashboard", showOnCompany false,
 //                                     showOnLocation true, showToAllLocations false, exactly one
 //                                     location, openMode "iframe" (v1.30.0: GHL's value for "Open link within the current
-//                                     window as an embedded page", PJ's SOP; was "new_tab"), and a URL on this repo's Pages site.
+//                                     window as an embedded page", PJ's SOP; was "new_tab"), allowCamera and allowMicrophone
+//                                     false (v1.32.2: GHL requires them with iframe), and a URL on this repo's Pages site.
 //   DELETE /custom-menus/<id>        ONLY its exact reversal (v1.28.0, remove-firm.yml): a link removeMenuLink() has
 //                                     just read and checked is ours (title "KPI Dashboard", this one sub-account only,
 //                                     URL = this firm's dashboard). Anything else is refused before a request is sent.
@@ -27,6 +28,9 @@ export function menuBody({ locationId, url }) {
     title: MENU_TITLE, url, icon: { name: 'chart-line', fontFamily: 'fas' },
     showOnCompany: false, showOnLocation: true, showToAllLocations: false, locations: [locationId],
     openMode: 'iframe', userRole: 'all',
+    // v1.32.2: with openMode "iframe" GHL requires these two booleans (its docs say optional; Boca Dental's run got 422
+    // "allowCamera must be a boolean; allowMicrophone must be a boolean"). The dashboard needs neither: both false.
+    allowCamera: false, allowMicrophone: false,
   };
 }
 
@@ -46,6 +50,7 @@ export function guardMenu(method, path, body, checked = null) {
   if (m === 'POST' && /^\/custom-menus\/?$/.test(p)) {
     const ok = body && body.title === MENU_TITLE && body.showOnCompany === false && body.showOnLocation === true && body.showToAllLocations === false
       && Array.isArray(body.locations) && body.locations.length === 1 && LOC_RE.test(body.locations[0]) && body.openMode === 'iframe'
+      && body.allowCamera === false && body.allowMicrophone === false
       && typeof body.url === 'string' && body.url.startsWith(`${PAGES}firms/`);
     if (ok) return;
     throw new Error('Blocked: a menu link must be "KPI Dashboard", for exactly one sub-account, opening inside GHL (iframe), pointing at a LeadPro dashboard.');
