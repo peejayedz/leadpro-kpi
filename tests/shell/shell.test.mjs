@@ -908,11 +908,26 @@ test('jobs: CSS = the previews (bar 4px gold on the track, rider above it, popup
   assert.match(CSS, /\.lv-res-shade\{position:fixed;inset:0;z-index:200;background:rgba\(10,10,12,\.55\);display:flex;align-items:center;justify-content:center/);
   assert.match(CSS, /\.lv-res-ic\{[^}]*background:var\(--green\)/); assert.match(CSS, /\.lv-res\.bad \.lv-res-ic\{background:var\(--red\)/);
   assert.match(CSS, /@media \(max-width:879\.98px\)\{\.lv-job-t\{flex-direction:column;gap:0\}\}/, 'phone: "usually under a minute" under the title');
-  assert.match(CSS, /@media \(prefers-reduced-motion:reduce\)\{\s*\.lv-res-shade,\.lv-res\{animation:none\}[^\n]*\n\s*\.lv-job-sub\{transition:none\}/);
+  assert.match(CSS, /@media \(prefers-reduced-motion:reduce\)\{\s*\.lv-res-shade,\.lv-res,\.lv-cf\{animation:none\}[^\n]*\n\s*\.lv-job-sub\{transition:none\}/);
 });
 test('jobs: the three tools load this file; client-facing pages never do (dashboards, Link A / Link B, the old review page)', () => {
   let code = HERE; while (code !== path.dirname(code) && !fs.existsSync(path.join(code, 'ghl-subaccount-builder'))) code = path.dirname(code);
   const pages = ['leadpro-kpi/app/dashboard.html', 'automation-review/plan.html', 'automation-review/messages.html', 'automation-review/index.html'].map(p => path.join(code, p)).filter(p => fs.existsSync(p));
   if (!pages.length) return;   // only the one repo checked out
   for (const p of pages) { const t = fs.readFileSync(p, 'utf8'); assert.ok(!/lfmp-session|lv-job|startJob|lv-res/.test(t), `${path.basename(p)} must not load the admin job component`); }
+});
+
+// ---------------------------------------------------------------- v2.6.0 confirm first (Part 4)
+test('confirm: "<Action> for <Client>?", what happens and where, what does not; Cancel first; removals red with the name typed; escaped', () => {
+  const h = S.confirmHtml({ title: 'Publish <Acme>\'s review package?', will: [['Client pages', 'Link A / B show this version']], wont: ['Nothing in GHL changes'], ok: 'Publish' });
+  assert.match(h, /role="dialog" aria-modal="true" aria-labelledby="lvCfT"/); assert.match(h, /Publish &lt;Acme&gt;&#39;s review package\?/);
+  assert.match(h, /What happens<\/p><ul class="lv-cf-list"><li><b>Client pages<\/b><span>Link A \/ B show this version<\/span><\/li><\/ul>/);
+  assert.match(h, /What does not happen<\/p><ul class="lv-cf-list lv-cf-wont"><li><span>Nothing in GHL changes<\/span><\/li>/);
+  assert.ok(h.indexOf('data-lv-cf="cancel"') < h.indexOf('data-lv-cf="ok"'), 'Cancel first'); assert.match(h, /class="lv-res-pri" data-lv-cf="ok">Publish</); assert.ok(!/lvCfIn/.test(h), 'no name box');
+  const r = S.confirmHtml({ title: 'Remove Acme\'s scorecard?', danger: true, typeName: 'Acme Law', will: [['GitHub', 'the dashboard']], wont: ['The GHL sub-account'], ok: 'Remove scorecard' });
+  assert.match(r, /class="lv-cf danger"/); assert.match(r, /What goes/); assert.match(r, /What is kept/);
+  assert.match(r, /<label class="lv-cf-type" for="lvCfIn"><span>Type <b>Acme Law<\/b> to confirm<\/span><input id="lvCfIn"/);
+  assert.match(r, /class="lv-cf-red" data-lv-cf="ok" disabled>Remove scorecard</);
+  assert.equal(S.typedMatch('  acme   LAW ', 'Acme Law'), true); assert.equal(S.typedMatch('Acme', 'Acme Law'), false); assert.equal(S.typedMatch('', 'Acme Law'), false);
+  assert.match(CSS, /\.lv-cf \.lv-cf-red\{background:var\(--red\)/); assert.match(CSS, /\.lv-cf button\[disabled\]\{opacity:\.45/);
 });

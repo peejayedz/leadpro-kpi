@@ -2,6 +2,10 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.32.0 Part 4: confirm first + Remove firm (shared shell 2.6.0): READY LOCALLY 20 Nov 2026, NOT PUSHED (push C). PJ says GO before the push.
+- **What it is:** CHANGELOG v1.32.0. New firm / Save mapping / Re-read GHL / Show CSS rule / Discard a half-made firm ask first. Remove firm (was Delete firm) = `remove-firm.yml` like the Builder's Remove scorecard (also the firm's own GHL menu link when live; logged in `status/removed.json` + Slack); the Builder record is noted.
+- **Tests (20 Nov, local):** admin-ui 331/331, shell 44/44, every node suite.
+
 ## v1.31.0 Part 2: working bar + Done popup (shared shell 2.5.0): LIVE 20 Nov 2026 (KPI `3e98f83` → Review `64bba24` → Builder `4def994`; admin-site run 44625556680 green, "Changed: deploying admin-site 89d244fbcc5a34e2" = the local build, 103 files). Live check (PJ's Chrome, signed in as the LFMP account): KPI admin Edit mapping on ZZ TEST 2 → Re-read GHL (read only) showed the cyclist + "Reading ZZ TEST 2's pipelines from GHL…" / "Asking GHL nicely for your pipelines…", then after 13 s the popup "Done: pipelines updated · Pipelines 1 · Stages 12 · no new stages · Close / Review mapping"; the bell badge 1 → its Recent jobs line; the Builder and Review admin load with their new bell (the same job listed); no console errors on any of the three
 - **What it is:** CHANGELOG v1.31.0. `startJob()` in the shared shell: the cyclist bar (variation B) and the centred Done / Didn't work popup (PJ approved the side-by-side screenshots, 20 Nov), results kept on this browser (`lfmp-jobs`) and in the bell (KPI: a Recent jobs section in the sync-issues panel; its badge adds new results). KPI admin: Re-read GHL, Save mapping, Re-sync, Add to GHL menu, Show CSS rule, New firm. `follow()` never shows GitHub's raw words.
 - **Push order:** KPI → Review admin → Builder (the Builder's push deploys the admin site).

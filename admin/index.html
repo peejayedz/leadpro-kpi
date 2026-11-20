@@ -13,8 +13,8 @@
 <script>/* apply the saved theme before first paint so the page and logo don't flash */ try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="lfmp-ui.css?v=2.5.0">
-<link rel="stylesheet" href="admin.css?v=1.31.0">
+<link rel="stylesheet" href="lfmp-ui.css?v=2.6.0">
+<link rel="stylesheet" href="admin.css?v=1.32.0">
 <link rel="stylesheet" href="care.css?v=1.28.0">
 </head>
 <body>
@@ -68,7 +68,7 @@ import { SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS
 import { decryptJSON } from '../scripts/kpi-core.mjs';
 import * as GC from './greet-count.mjs';   // v1.29.1: the "Needs attention" count (list + greeting)
 import { PRACTICE_TYPES, practiceTypeOf, practiceLabel, isCare, countsOnly as countsOnlyOf, BUCKETS, BUCKET_HINTS, careInitialState, unchosen, buildPipelineMap, applyCare, mapOf } from '../scripts/care-core.mjs';
-import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName, busyButton, noteCount, startJob, jobsListHtml, markJobsBellSeen, newJobResults } from './lfmp-session.js';
+import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName, busyButton, noteCount, startJob, jobsListHtml, markJobsBellSeen, newJobResults, confirmAction } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -83,6 +83,7 @@ const store = {
 
 // ---------- repo ----------
 const BRANCH = 'main';
+const BUILDER_REPO = 'peejayedz/ghl-subaccount-builder';   // v1.32.0: Remove firm notes it on the Builder's record (as the Builder's own Remove does)
 const { OWNER, REPO } = (() => {
   if (location.hostname.endsWith('.github.io')) return { OWNER: location.hostname.split('.')[0], REPO: location.pathname.split('/')[1] || 'leadpro-kpi' };
   const q = new URLSearchParams(location.search).get('repo');      // local testing only
@@ -725,19 +726,43 @@ async function toggleCounts(f) {
 }
 
 // ---------- delete ----------
-function deleteDialog(f) {
-  openDialog({
-    title: `Delete ${esc(fname(f))}?`, ok: 'Delete firm', danger: true,
-    body: `<p class="sub">This removes <span class="mono">firms/${esc(f.slug)}/</span> (dashboard, config and data), its entry in the firm list, and the secrets <span class="mono">GHL_TOKEN_${esc(f.secretKey)}</span> and <span class="mono">PASSPHRASE_${esc(f.secretKey)}</span>. The dashboard link stops working. This can't be undone from here.</p>
-      <label class="f" for="dlgConfirm">Type <span class="mono">${esc(f.slug)}</span> to confirm<input type="text" id="dlgConfirm" autocomplete="off" spellcheck="false"></label>
-      <div class="ferr" id="dlgErr"></div>`,
-    onOk: async () => {
-      if ($('dlgConfirm').value.trim() !== f.slug) { $('dlgErr').textContent = `Type ${f.slug} exactly.`; return; }
-      busyButton($('dlgOk'), 'Deleting…', { ms: 15000 });   // v1.27.0: the gold fill (shared)
-      try { await deleteFirm(f.slug, f.secretKey, f.name); closeDialog(); closeDetails({ keepHash: true }); go('#/', `Deleted ${esc(f.name)}: folder, list entry and both secrets.`); }
-      catch (e) { $('dlgErr').innerHTML = esc(e.message); $('dlgOk').disabled = false; $('dlgOk').textContent = 'Delete firm'; }
-    },
-  });
+// v1.32.0 (Part 4): "Remove firm" = the same as the Builder's Remove scorecard: remove-firm.yml (the dashboard and its
+// settings + data, its firm-list row, both secrets, and a LIVE firm's own "KPI Dashboard" GHL menu link: its exact
+// reversal), logged in status/removed.json (shows in the bell) + a Slack DM. The client's name typed to confirm.
+async function deleteDialog(f) {
+  const live = !noLink(f), name = fname(f);
+  const ok = await confirmAction({ title: `Remove ${name}'s scorecard?`, danger: true, typeName: name, ok: 'Remove scorecard',
+    will: [['GitHub', `the dashboard page, its settings and data (firms/${f.slug}/) and its row in the firm list`], ['GitHub secrets', `GHL_TOKEN_${f.secretKey} and PASSPHRASE_${f.secretKey}`], ...(live ? [['GHL', `only this firm's own "KPI Dashboard" menu link`]] : []), ['Team', 'the remembered passphrase']],
+    wont: ['The GHL sub-account and everything else in GHL (contacts, workflows, pipelines)', 'The Builder\'s client record (it says the scorecard was removed)'] });
+  if (!ok) return;
+  const key = `${f.slug}:remove`; if (busy.has(key)) return;
+  busy.add(key); repaintFirm(f.slug);
+  const request = `rm-${Date.now().toString(36)}`;
+  const job = kpiJob({ kind: 'remove', client: name, what: 'Remove scorecard', title: `Removing ${name}'s scorecard…`, host: `firm:${f.slug}`, typicalMs: 90000,
+    check: { workflow: 'remove-firm.yml', title: `Remove firm ${f.slug} [${request}]` }, doneText: { title: 'Done: scorecard removed' } });
+  try {
+    const t0 = await dispatch('remove-firm.yml', { slug: f.slug, confirm: f.slug, request });
+    await follow({ workflow: 'remove-firm.yml', title: `Remove firm ${f.slug} [${request}]`, t0, label: 'Removing', limitMs: 5 * 60e3, say: () => {},
+      check: async () => { const list = await getJSON('firms/index.json'); return list && !list.some(x => x.slug === f.slug) ? true : null; } });
+    try { await api('kpi-pass', { op: 'forget', slug: f.slug }); } catch {}
+    try { await markBuilderRecordRemoved(f, live); } catch {}
+    firms = firms.filter(x => x.slug !== f.slug);
+    closeDetails({ keepHash: true }); go('#/');
+    job.done({ title: 'Done: scorecard removed', lead: `${name}'s dashboard, settings and secrets are gone${live ? ', and its "KPI Dashboard" link is out of the GHL menu' : ''}. The GHL sub-account is untouched.`, line: 'Scorecard removed',
+      items: [['Dashboard', 'removed'], ['Secrets', 'removed'], ...(live ? [['GHL menu link', 'removed']] : []), ['GHL sub-account', 'kept']] });
+  } catch (e) { job.fail({ reason: errText(e), line: 'Scorecard not removed', onRetry: () => deleteDialog(f) }); }
+  finally { busy.delete(key); repaintFirm(f.slug); refreshIssues(); }
+}
+// The Builder's record for this firm (if any) says the scorecard was removed, as the Builder's own Remove does.
+async function markBuilderRecordRemoved(f, live) {
+  const recs = await loadBuilderRecords({ fresh: true }).catch(() => []);
+  const rec = (recs || []).find(r => r.kpi?.slug === f.slug); if (!rec) return;
+  const path = `records/${rec.id}.json`, BR = `/repos/${BUILDER_REPO}/contents/${path}`;
+  const cur = await gh('GET', `${BR}?ref=main`);
+  const x = JSON.parse(new TextDecoder().decode(fromB64(cur.content))), at = new Date().toISOString(), who = me?.first || 'KPI admin';
+  x.kpi = { status: 'removed', slug: f.slug, removedAt: at, removedBy: who }; x.links = { ...(x.links || {}), kpi: '' };
+  x.removals = [...(x.removals || []), { what: 'KPI scorecard', at, by: who, detail: `${f.slug} (from KPI admin)${live ? ' · its GHL menu link too' : ''}` }];
+  await gh('PUT', BR, { message: `${x.businessName || f.name}: KPI scorecard removed in KPI admin (${who})`, content: toB64(enc.encode(JSON.stringify(x, null, 2) + '\n')), sha: cur.sha, branch: 'main' });
 }
 async function deleteFirm(slug, secretKey, name) {
   if (!slug || RESERVED.includes(slug) || slugify(slug) !== slug) throw new Error('Refusing to delete an invalid folder name.');
@@ -1277,9 +1302,9 @@ function setupHtml(f) {
     <section class="dset"><h3 class="lbl">Testing banner</h3>
       <p>The dashboard's testing-period banner is <b>${banner ? 'on' : 'off'}</b>.</p>
       <div class="btnrow"><button class="btn" type="button" data-f="banner" aria-pressed="${banner}"${bannerBusy ? ' disabled' : ''}>${ICON.flag}Banner ${banner ? 'on · turn off' : 'off · turn on'}</button></div></section>
-    <section class="dset danger"><h3 class="lbl">Delete firm</h3>
-      <p>Removes the dashboard, its data, its place in the firm list and both secrets. You type the slug to confirm.</p>
-      <div class="btnrow"><button class="btn danger" type="button" data-f="delete">${ICON.trash}Delete firm…</button></div></section>`;
+    <section class="dset danger"><h3 class="lbl">Remove firm</h3>
+      <p>The same as Remove scorecard in the Builder: the dashboard, its data, its place in the firm list, both secrets${noLink(f) ? '' : ' and its "KPI Dashboard" link in the GHL menu'}. The GHL sub-account is never touched. You type the firm's name to confirm.</p>
+      <div class="btnrow"><button class="btn danger" type="button" data-f="delete">${ICON.trash}Remove firm…</button></div></section>`;
 }
 
 // v1.30.0: the agency Custom CSS rule that puts this firm's "KPI Dashboard" link at order -92 (PJ's SOP). Shown when the
@@ -1304,6 +1329,9 @@ async function copyCssRule(f, btn) {
 // is committed to config.json. Plain words only while it runs.
 async function showCssRule(f) {
   const key = `${f.slug}:css`; if (busy.has(key)) return;
+  if (!await confirmAction({ title: `Read ${fname(f)}'s GHL menu link?`, ok: 'Show CSS rule',
+    will: [['GHL', 'one read of the agency\'s custom menu links (read only)'], ['GitHub', `the link's id is kept in firms/${f.slug}/config.json`]],
+    wont: ['Nothing in GHL changes', 'The agency Custom CSS isn\'t changed: you paste the rule'] })) return;
   busy.add(key); repaintFirm(f.slug);
   const say = h => firmSay(f.slug, h);
   say('Reading the "KPI Dashboard" link from GHL (read only)…');
@@ -1424,7 +1452,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('ovl').
 // Display only: the full name stays in data-stage and the tooltip, and is what gets saved.
 const stageChip = n => String(n).replace(/^stage\s*(\d+)\s*[:.\-–]\s*/i, '$1 ').replace(/\bconsultation\s+(?=showed|no show)/i, '').replace(/\s+[-–]\s+/g, ' · ').replace(/\bReferred Lead Accepted\?/i, 'Referred Accepted?');
 // saveBtn: an existing button (e.g. Save mapping at the top of Edit mapping) to use instead of the one at the bottom.
-function mappingPanel(host, { discovery, config, isNew, saveLabel, saveBtn = null, warnHost = null }) {
+function mappingPanel(host, { discovery, config, isNew, saveLabel, saveBtn = null, warnHost = null, confirm = null }) {
   const pipelines = discovery.pipelines || [];
   const state = initialState({ discovery, config, isNew });     // admin/mapping.mjs (also used by tests/mapping)
   const { chosenPipes, sel } = state;
@@ -1475,8 +1503,9 @@ function mappingPanel(host, { discovery, config, isNew, saveLabel, saveBtn = nul
           $('mapWarn').innerHTML = `<div class="warnbox">No stage picked for: <b>${warn.map(esc).join(', ')}</b>. Those steps will rely on tags only and may show zero. Click again to save anyway.</div>`;
           save.textContent = `${saveLabel} anyway`; $('mapWarn').scrollIntoView?.({ block: 'nearest' }); return;
         }
-        save.onclick = null;
-        resolve(buildMapping({ ...state, keywords: parseKw() }, discovery));
+        const m = buildMapping({ ...state, keywords: parseKw() }, discovery);
+        const go = () => { save.onclick = null; resolve(m); };
+        if (confirm) confirm(m).then(ok => { if (ok) go(); }); else go();   // v1.32.0: asks first; Cancel = nothing saved, the choices stay
       };
     };
     const parseKw = () => ($('calKw')?.value ?? keywords.join(',')).split(',').map(s => s.trim()).filter(Boolean);
@@ -1499,7 +1528,7 @@ async function carePresetFor(loc) {
   return (carePresets || []).find(p => p?.locationId === loc) || null;
 }
 const SOURCE_TAG = { saved: ['Saved', ''], preset: ['Pre-filled', 'pre'], guess: ['Guessed from the name', 'pre'] };
-function carePanel(host, { discovery, config, type, preset, saveBtn, warnHost }) {
+function carePanel(host, { discovery, config, type, preset, saveBtn, warnHost, confirm = null }) {
   const st = careInitialState({ discovery, config, preset });
   const hints = BUCKET_HINTS[type] || BUCKET_HINTS.other;
   let counts = countsOnlyOf({ ...config, practiceType: type });
@@ -1544,8 +1573,9 @@ function carePanel(host, { discovery, config, type, preset, saveBtn, warnHost })
           warnHost.innerHTML = `<div class="errbox" style="margin-bottom:16px">Choose a bucket for every stage first (or <b>Ignore</b>): ${l.slice(0, 6).map(s => `<b>${esc(s.pipeline)} · ${esc(s.name)}</b>`).join(', ')}${l.length > 6 ? ` and ${l.length - 6} more` : ''}.</div>`;
           host.querySelector('.cm-row.need')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return;
         }
-        saveBtn.onclick = null;
-        resolve({ pipelineMap: buildPipelineMap(st), countsOnly: counts });
+        const out = { pipelineMap: buildPipelineMap(st), countsOnly: counts };
+        const go = () => { saveBtn.onclick = null; resolve(out); };
+        if (confirm) confirm(out).then(ok => { if (ok) go(); }); else go();   // v1.32.0: asks first
       };
     };
     draw();
@@ -1703,9 +1733,17 @@ function renderNewFirm() {
     if (problem) { $('nfErr').textContent = problem; return; }
     $('nfErr').textContent = '';
     $('nfCreate').disabled = true;
+    // v1.32.0 (Part 4): asks first; Cancel = nothing saved or started
+    const sk = secretKeyFor(slug);
+    confirmAction({ title: `Set up a scorecard for ${name}?`, ok: 'Set up scorecard',
+      will: m === 'pi' ? [['GitHub', `secrets GHL_TOKEN_${sk} and PASSPHRASE_${sk}; then firms/${slug}/ and the firm list`], ['GHL', 'reads the pipelines (read only), then one sync']]
+        : [['GitHub', `secret PASSPHRASE_${sk}; the setup run makes firms/${slug}/ and the firm list`], ['GHL', 'gets the app\'s token, reads the pipelines (read only), one sync']],
+      wont: ['It isn\'t added to the client\'s GHL menu (it starts as a Draft for review)', 'Nothing is sent to the client'] }).then(ok => {
+    if (!ok) { $('nfCreate').disabled = false; return; }
     if (m === 'pi') startRun({ name, slug, secretKey: secretKeyFor(slug), practiceArea: area, locationId: loc, timezone: $('nfTz').value, token: tok, passphrase: pass });
     else startAppRun({ name, practiceArea: area, locationId: loc, timezone: $('nfTz').value, snapshotId: ptype() === 'law' ? $('nfPreset').value : '', passphrase: pass,
       ...(ptype() !== 'law' ? { practiceType: ptype(), countsOnly: $('nfCounts').checked } : {}) });
+    });
   });
 }
 
@@ -1888,9 +1926,14 @@ async function runFrom(i) {
         stepEl(i).querySelector('.e').innerHTML = ''; runFrom(i);
       };
       $('discardBtn').onclick = async () => {
+        const c = myRun.ctx;   // v1.32.0 (Part 4): asks first, then the Done / Didn't work popup
+        if (!await confirmAction({ title: `${indexWritten ? 'Delete' : 'Discard'} the half-made scorecard for ${c.name}?`, danger: true, typeName: c.name, ok: indexWritten ? 'Delete this firm' : 'Discard and clean up',
+          will: [['GitHub secrets', `GHL_TOKEN_${c.secretKey} and PASSPHRASE_${c.secretKey}`], ['GitHub', `anything already made in firms/${c.slug}/ and its firm-list row`]],
+          wont: ['Nothing in GHL changes (no menu link was added)', 'Nothing is sent to the client'] })) return;
         $('retryBtn').disabled = true; busyButton($('discardBtn'), 'Cleaning up…', { ms: 15000 });
-        try { await deleteFirm(myRun.ctx.slug, myRun.ctx.secretKey, myRun.ctx.name); go('#/', `Discarded ${esc(myRun.ctx.name)}: secrets and any files removed.`); }
-        catch (err) { stepEl(i).querySelector('.e').insertAdjacentHTML('beforeend', `<div class="errbox" style="margin-top:8px">${esc(err.message)}</div>`); $('discardBtn').disabled = false; $('discardBtn').textContent = 'Try clean-up again'; }
+        const job = kpiJob({ kind: 'remove', client: c.name, what: 'Discard new firm', title: `Cleaning up ${c.name}'s half-made scorecard…`, typicalMs: 15000 });
+        try { await deleteFirm(c.slug, c.secretKey, c.name); go('#/'); job.done({ title: 'Done: half-made scorecard removed', lead: 'Its secrets and any files are gone. Nothing in GHL changed.', line: 'New firm discarded' }); }
+        catch (err) { stepEl(i).querySelector('.e').insertAdjacentHTML('beforeend', `<div class="errbox" style="margin-top:8px">${esc(err.message)}</div>`); $('discardBtn').disabled = false; $('discardBtn').textContent = 'Try clean-up again'; job.fail({ reason: err.message, line: 'Clean-up didn\'t finish', onRetry: () => $('discardBtn')?.click() }); }
       };
       return;
     }
@@ -2023,10 +2066,16 @@ async function renderEditMapping(f) {
     const panel = async () => {
       if (type !== 'law') {
         // Still "Needs mapping": what new-firm saved is only a pre-fill, so it's shown as Pre-filled / Guessed to confirm, not Saved.
-        const r = await carePanel($('emHost'), { discovery: disc, config: needsMap(f) ? { ...cfg, pipelineMap: undefined } : cfg, type, preset: carePreset, saveBtn: $('emSave'), warnHost: $('emWarn') });
+        const r = await carePanel($('emHost'), { discovery: disc, config: needsMap(f) ? { ...cfg, pipelineMap: undefined } : cfg, type, preset: carePreset, saveBtn: $('emSave'), warnHost: $('emWarn'),
+          confirm: out => confirmAction({ title: `Save ${fname(f)}'s pipeline mapping?`, ok: 'Save mapping',
+            will: [['GitHub', `firms/${f.slug}/config.json (${out.pipelineMap.pipelines.filter(x => x.use).length} pipeline(s), ${Object.keys(out.pipelineMap.stages).length} stages)${needsMap(f) ? ' and the firm list (it becomes a Draft)' : ''}`], ['Dashboard', 'one sync now, so the numbers use the new mapping']],
+            wont: ['Nothing in GHL changes', needsMap(f) || isDraft(f) ? 'It isn\'t added to the client\'s GHL menu' : 'The GHL menu link stays as it is'] }) });
         return saveCare(r);
       }
-      const m = await mappingPanel($('emHost'), { discovery: disc, config: cfg, isNew: false, saveLabel: 'Save mapping', saveBtn: $('emSave'), warnHost: $('emWarn') });
+      const m = await mappingPanel($('emHost'), { discovery: disc, config: cfg, isNew: false, saveLabel: 'Save mapping', saveBtn: $('emSave'), warnHost: $('emWarn'),
+        confirm: mm => confirmAction({ title: `Save ${fname(f)}'s mapping?`, ok: 'Save mapping',
+          will: [['GitHub', `firms/${f.slug}/config.json (counted pipelines: ${mm.pipelines.length ? mm.pipelines.join(', ') : 'every pipeline'})`], ['Dashboard', 'one sync now, so the numbers use the new mapping']],
+          wont: ['Nothing in GHL changes', 'The GHL menu link stays as it is'] }) });
       return saveLaw(m);
     };
     const resync = async (what, job) => {
@@ -2117,6 +2166,10 @@ async function renderEditMapping(f) {
     await doSave();
   };
   $('rereadBtn').onclick = async () => {
+    // v1.32.0 (Part 4): asks first
+    if (!await confirmAction({ title: `Re-read ${fname(f)}'s pipelines from GHL?`, ok: 'Re-read GHL',
+      will: [['GHL', 'reads the pipelines and stages (read only)'], ['GitHub', `firms/${f.slug}/discovery.json is refreshed`]],
+      wont: ['Nothing in GHL changes', 'The mapping isn\'t saved or changed: you check it, then press Save mapping'] })) return;
     $('rereadBtn').disabled = true;
     // v1.31.0 (Part 2): the cyclist while GHL is read, then the Done / Didn't work popup with what changed
     const name = fname(f);

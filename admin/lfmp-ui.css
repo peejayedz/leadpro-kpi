@@ -379,7 +379,7 @@ div.lv-mi{cursor:default} div.lv-mi:hover{background:none}
 .lfmp-v2 .lv-pm-sh.lv-pm-on{background-color:rgba(0,0,0,.55);transition-duration:.42s}
 .lfmp-v2 .lv-pm-now,.lfmp-v2 .lv-pm-now > *{transition:none !important;animation:none !important}
 @media (prefers-reduced-motion:reduce){
-  .lv-res-shade,.lv-res{animation:none}   /* v2.5.0: the Done popup appears without the pop; the working line doesn't fade */
+  .lv-res-shade,.lv-res,.lv-cf{animation:none}   /* v2.5.0: the Done popup appears without the pop; the working line doesn't fade */
   .lv-job-sub{transition:none}
   .lv-load-mk i{animation:none;opacity:1}
   .lv-load-mk i:nth-child(n){animation-name:none}   /* each block names its own keyframes (same specificity, later wins) */
@@ -678,3 +678,22 @@ div.lv-mi{cursor:default} div.lv-mi:hover{background:none}
 .lv-jobs-d.run{background:var(--gold)}
 .lv-jobs-none{margin:8px 10px 10px;color:var(--mut)}
 @media (max-width:879.98px){.lv-jobpop{position:fixed;left:10px;right:10px;top:58px;width:auto}}
+
+/* ===== v2.6.0 confirm first (Part 4): the same card as the Done popup, left-aligned, Cancel first ===== */
+.lv-cf{width:min(460px,100%);min-width:0;max-height:calc(100vh - 32px);overflow:auto;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:24px 24px 18px;animation:lv-res-pp .3s cubic-bezier(.2,.9,.3,1.2);outline:none}
+.lv-cf h3{margin:0 0 6px;font:700 24px/1.08 var(--d);text-transform:uppercase;letter-spacing:0}
+.lv-cf-lead{margin:0 0 4px;color:var(--mut);font-size:14px;line-height:1.5}
+.lv-cf-h{margin:14px 0 6px;font:700 11px/1.6 var(--b);letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.lv-cf-list{list-style:none;padding:0;margin:0;border:1px solid var(--line);border-radius:10px;font-size:13.5px}
+.lv-cf-list li{display:flex;gap:12px;padding:8px 12px;border-top:1px solid var(--line);line-height:1.45}
+.lv-cf-list li:first-child{border-top:0}
+.lv-cf-list b{flex:0 0 104px;font-weight:600}
+.lv-cf-list span{min-width:0;overflow-wrap:anywhere}
+.lv-cf-wont span{color:var(--mut)}
+.lv-cf-note{margin:12px 0 0;font-size:13px;color:var(--mut)}
+.lv-cf-type{display:flex;flex-direction:column;gap:6px;margin-top:14px;font-size:13.5px}
+.lv-cf-type input{font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.lv-cf .lv-res-bt{justify-content:flex-end}
+.lv-cf .lv-cf-red{background:var(--red);border-color:var(--red);color:#fff}
+.lv-cf button[disabled]{opacity:.45;cursor:not-allowed}
+@media (max-width:879.98px){.lv-cf{padding:20px 16px 16px}.lv-cf h3{font-size:21px}.lv-cf-list li{flex-direction:column;gap:2px}.lv-cf-list b{flex:none}.lv-cf .lv-res-bt{justify-content:stretch}.lv-cf .lv-res-bt button{flex:1;min-height:44px}}

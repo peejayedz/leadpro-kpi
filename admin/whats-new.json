@@ -1,5 +1,13 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.32.0": {
+    "title": "Ask first, and Remove firm",
+    "summary": "Changes ask first; Remove firm works like Remove scorecard in the Builder.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "New firm, Save mapping, Re-read GHL and Show CSS rule now ask first, saying what will happen and what won't. Cancel does nothing." },
+      { "type": "improved", "tag": "internal", "text": "Remove firm (was Delete firm) is the same as Remove scorecard in the Builder: it also takes its KPI link out of the GHL menu, and it's logged in the bell." }
+    ]
+  },
   "1.31.0": {
     "title": "A clear Done for every long job",
     "summary": "A small cyclist while it works, then a popup with what changed (or what went wrong).",

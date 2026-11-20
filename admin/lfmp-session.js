@@ -943,6 +943,60 @@ export function newJobResults(store = jobsStore()) {
 export function markJobsBellSeen(store = jobsStore(), now = Date.now()) { try { store?.setItem(JOBS_BELL_KEY, String(now)); } catch {} if (hasDoc()) document.dispatchEvent(new CustomEvent('lfmp-jobs')); }
 
 // =====================================================================================================================
+// CONFIRM FIRST (v2.6.0, Part 4): one small popup before anything that creates, publishes, sends or changes something
+// outside the page, the same in the three tools. Quick read-only actions (Refresh, Copy, Open, filters) never ask.
+//   const ok = await confirmAction({ title: 'Publish for Acme Law?', will: [['Client page', 'Link A / B show this version']],
+//                                    wont: ['Nothing is sent to the client'], ok: 'Publish', danger, typeName, note })
+//     will      [[where, what]]  exactly what happens and where (GitHub, GHL, Sheet, client page, this record…)
+//     wont      [text]           what does NOT happen (e.g. "Nothing in GHL is deleted")
+//     typeName  a name to type before the action button works (client-facing or data removals)
+//     danger    red action button (removals)
+// Cancel is the default (focused first; Esc and a click outside = Cancel): nothing runs. Resolves true / false.
+// =====================================================================================================================
+export const typedMatch = (typed, name) => String(typed || '').trim().replace(/\s+/g, ' ').toLowerCase() === String(name || '').trim().replace(/\s+/g, ' ').toLowerCase();
+export function confirmHtml({ title, lead = '', will = [], wont = [], ok = 'OK', danger = false, typeName = '', note = '' }) {
+  const row = ([where, what]) => `<li><b>${escH(where)}</b><span>${escH(what)}</span></li>`;
+  return `<div class="lv-res-shade lv-cf-shade" data-lv-cf-shade><div class="lv-cf${danger ? ' danger' : ''}" role="dialog" aria-modal="true" aria-labelledby="lvCfT" tabindex="-1">
+    <h3 id="lvCfT">${escH(title)}</h3>${lead ? `<p class="lv-cf-lead">${escH(lead)}</p>` : ''}
+    ${will.length ? `<p class="lv-cf-h">${danger ? 'What goes' : 'What happens'}</p><ul class="lv-cf-list">${will.map(row).join('')}</ul>` : ''}
+    ${wont.length ? `<p class="lv-cf-h">${danger ? 'What is kept' : 'What does not happen'}</p><ul class="lv-cf-list lv-cf-wont">${wont.map(t => `<li><span>${escH(t)}</span></li>`).join('')}</ul>` : ''}
+    ${note ? `<p class="lv-cf-note">${escH(note)}</p>` : ''}
+    ${typeName ? `<label class="lv-cf-type" for="lvCfIn"><span>Type <b>${escH(typeName)}</b> to confirm</span><input id="lvCfIn" type="text" autocomplete="off" spellcheck="false" placeholder="${escH(typeName)}"></label>` : ''}
+    <div class="lv-res-bt"><button type="button" data-lv-cf="cancel">Cancel</button><button type="button" class="${danger ? 'lv-cf-red' : 'lv-res-pri'}" data-lv-cf="ok"${typeName ? ' disabled' : ''}>${escH(ok)}</button></div></div></div>`;
+}
+let cfOpen = null;
+export const confirmOpen = () => !!cfOpen;
+export function confirmAction(o = {}) {
+  if (!hasDoc()) return Promise.resolve(false);
+  if (cfOpen) return Promise.resolve(false);   // one question at a time
+  return new Promise(resolve => {
+    const prevFocus = document.activeElement;
+    document.body.insertAdjacentHTML('beforeend', confirmHtml(o));
+    const shade = document.body.lastElementChild, box = shade.querySelector('.lv-cf'), okBtn = box.querySelector('[data-lv-cf="ok"]'), inp = box.querySelector('#lvCfIn');
+    cfOpen = shade; document.body.classList.add('lv-res-on');
+    const end = yes => {
+      if (!cfOpen) return;
+      cfOpen = null; shade.parentNode?.removeChild(shade); document.removeEventListener('keydown', onKey, true); document.body.classList.remove('lv-res-on');
+      try { prevFocus?.focus?.({ preventScroll: true }); } catch {}
+      resolve(!!yes);
+    };
+    const onKey = e => {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); end(false); return; }
+      if (e.key === 'Enter' && e.target === inp && !okBtn.disabled) { e.preventDefault(); end(true); return; }
+      if (e.key === 'Tab') { const f = [...box.querySelectorAll('input,button:not([disabled])')]; const i = f.indexOf(document.activeElement); if (e.shiftKey && i <= 0) { e.preventDefault(); f.at(-1).focus(); } else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); } }
+    };
+    document.addEventListener('keydown', onKey, true);
+    if (inp) inp.addEventListener('input', () => { okBtn.disabled = !typedMatch(inp.value, o.typeName); });
+    shade.addEventListener('click', e => {
+      if (e.target === shade) { end(false); return; }   // a click outside = Cancel
+      const b = e.target.closest('[data-lv-cf]'); if (!b || b.disabled) return;
+      end(b.dataset.lvCf === 'ok' && (!o.typeName || typedMatch(inp?.value, o.typeName)));
+    });
+    (inp || box.querySelector('[data-lv-cf="cancel"]')).focus({ preventScroll: true });   // Cancel first (or the name to type)
+  });
+}
+
+// =====================================================================================================================
 // GREETING (v2.4.0, PJ's LFMP_Greeting_Final_1plus9.html). Once per person per day (their device's date), on the first
 // page load of the day in any of the three tools: the page blurs behind a dark wash, the LFMP blocks drop in, the date,
 // "GOOD AFTERNOON, PJ" letter by letter, a gold line, today's numbers count up, then it lifts away (~3.5 s). A click, tap

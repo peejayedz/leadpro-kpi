@@ -25,6 +25,9 @@ import { join, extname, normalize } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createMockGitHub } from './mock-github.mjs';
 import { encryptJSON } from '../../scripts/kpi-core.mjs';
+// v1.32.0 (Part 4): the Builder harness's recorder answers the confirm-first popups for the checks that test other things
+// (recorded in window.__lvResults); Done popups are still closed by these checks themselves.
+const { autoResults } = await import(pathToFileURL(join(fileURLToPath(new URL('../../', import.meta.url)), '../ghl-subaccount-builder/tests/e2e/harness.mjs')).href);
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const SHOTS = process.argv[2] || '';
@@ -121,6 +124,7 @@ const unlock = unlocked;   // Google sign-in happens before the page loads (Acce
 async function openPage(G, { width = 1440, height = 900, scheme = 'dark', hash = '' } = {}) {
   // Motion (Nov 2026): reduced motion here, so panels open/close at once and these checks see the end state; the slide itself is tested in ghl-subaccount-builder tests/e2e/motion.mjs.
   const ctx = await browser.newContext({ reducedMotion: 'reduce', viewport: { width, height }, colorScheme: scheme, permissions: ['clipboard-read', 'clipboard-write'] });
+  await autoResults(ctx, { keep: true, keepConfirms: false });
   const page = await ctx.newPage();
   await wire(page, G);
   await page.goto(BASE + hash);
@@ -367,7 +371,7 @@ try {
   await page.waitForSelector('#dPanel .dset');
   check(await hashIs(page) === '#/firm/emery-law-office/setup', 'Setup tab has its own hash');
   const st = (await page.innerText('#dPanel')).replace(/\s+/g, ' ');
-  check(/Stage mapping/i.test(st) && /Location ID l68l8TvqZyERd5q1zdlj/i.test(st) && /GHL_TOKEN_EMERY_LAW_OFFICE/.test(st) && /Update token/i.test(st) && /Testing banner/i.test(st) && /Delete firm/i.test(st), 'Setup: mapping, connection (location, secrets, Update token), banner, delete');
+  check(/Stage mapping/i.test(st) && /Location ID l68l8TvqZyERd5q1zdlj/i.test(st) && /GHL_TOKEN_EMERY_LAW_OFFICE/.test(st) && /Update token/i.test(st) && /Testing banner/i.test(st) && /Remove firm/i.test(st), 'Setup: mapping, connection (location, secrets, Update token), banner, Remove firm');
   const secs = await page.$$eval('#dPanel .dset .lbl', h => h.map(x => x.textContent.trim()));
   const mi = secs.findIndex(s => /GHL menu link/i.test(s));
   check(mi > 0 && /Connection/i.test(secs[mi - 1]) && /Testing banner/i.test(secs[mi + 1]), `Setup: "GHL menu link" between Connection and Testing banner (${secs.join(' · ')})`);
@@ -394,12 +398,18 @@ try {
   check(JSON.stringify(cfgA) === JSON.stringify(cfgB), 'Banner changed only notice.show');
   check(/Banner (on|off) · turn/.test(await page.textContent('#dPanel [data-f="banner"]')), 'Banner button repainted');
   G.M.overlay.delete('firms/emery-law-office/config.json');
+  // v1.32.0 (Part 4): Remove firm = the Builder's Remove scorecard; the red confirm, the firm's NAME typed
+  await page.evaluate(() => { window.__lvManual = true; });
   await page.click('#dPanel [data-f="delete"]');
-  await page.click('#dlgOk');
-  check(/Type emery-law-office exactly/.test(await page.textContent('#dlgErr')), 'Delete needs the slug typed');
+  await page.waitForSelector('[data-lv-cf-shade] .lv-cf.danger');
+  { const t = await page.textContent('.lv-cf');
+    check(/Remove Emery Law Office's scorecard\?/.test(t) && /What goes/i.test(t) && /GHL_TOKEN_EMERY_LAW_OFFICE/.test(t) && /What is kept/i.test(t) && /GHL sub-account/.test(t), `Remove firm: red popup with what goes / is kept (${t.slice(0, 120)})`); }
+  check(await page.isDisabled('[data-lv-cf="ok"]'), 'Remove firm needs the name typed');
+  await page.fill('#lvCfIn', 'emery-law-office'); check(await page.isDisabled('[data-lv-cf="ok"]'), 'the slug is not the name: still disabled');
   await page.keyboard.press('Escape');
-  check(await page.isHidden('#ovl') && await panelOpen(page), 'Esc closes the dialog first, Details stays');
-  check(G.M.secretDeletes.length === 0, 'nothing deleted');
+  check(!(await page.$('[data-lv-cf-shade]')) && await panelOpen(page), 'Esc closes the popup first, Details stays');
+  check(G.M.secretDeletes.length === 0 && !G.M.dispatches.some(d => d.workflow === 'remove-firm.yml'), 'nothing removed');
+  await page.evaluate(() => { window.__lvManual = false; });
   check(await page.isVisible('#dPanel [data-f="token"]'), 'Private Integration firm: Update token in Setup');
 
   // ---------------- Details: Performance (hash link, same numbers as kpis.json) ----------------
@@ -589,6 +599,8 @@ try {
   await page.waitForSelector('.success', { timeout: 90000 });
   await page.waitForSelector('.lv-res:not(.bad)', { timeout: 10000 });
   { const t = await page.textContent('.lv-res'); check(/Done: Smith & Jones Law's scorecard set up/i.test(t) && /Draft/.test(t), `New firm done → the Done popup (${t.slice(0, 80)})`); }
+  { const c = (await page.evaluate(() => window.__lvResults || [])).find(x => x.confirm && /^Set up a scorecard for Smith & Jones Law\?$/.test(x.title));
+    check(c && /PASSPHRASE_SMITH_AND_JONES_LAW/.test(c.text) && /isn't added to the client's GHL menu/.test(c.text), `New firm asked first (${c?.text?.slice(0, 120)})`); }
   await page.click('[data-lv-res="close"]');
   check(G.M.dispatches.filter(d => d.workflow === 'new-firm.yml').length === 2 && G.M.secretPuts.length === 1, 'Retry → started once more, passphrase kept');
   const di = G.M.dispatches.filter(d => d.workflow === 'new-firm.yml').map(d => d.inputs);
@@ -614,11 +626,25 @@ try {
   check(/Saving The Mahdavi Law Firm's mapping…|Mapping saved\. Re-syncing/.test(await page.textContent('[data-lv-job]')), 'Save mapping: plain words + the working bar');
   await page.waitForSelector('.lv-res', { timeout: 60000 });
   { const t = await page.textContent('.lv-res'); check(/Done: mapping saved/i.test(t) && /Leads \(last 90 days\)/.test(t), `Save mapping → Done popup (${t.slice(0, 80)})`); }
+  { const c = (await page.evaluate(() => window.__lvResults || [])).find(x => x.confirm && /^Save The Mahdavi Law Firm's mapping\?$/.test(x.title));
+    check(c && /config\.json/.test(c.text) && /Nothing in GHL changes/.test(c.text), `Save mapping asked first (${c?.text?.slice(0, 120)})`); }
   await page.click('[data-lv-res="close"]');
   const mc = G.M.commits.find(c => /stage mapping for The Mahdavi/.test(c.message));
   check(mc && mc.files.length === 1 && mc.files[0].content === cfgBefore, 'unchanged save writes config.json byte-identical');
   check(await hashIs(page) === '#/' && !(await lockShown(page)), 'after saving: firm list (#/), no password');
   G.M.overlay.delete('firms/mahdavi/config.json');
+
+  // ---------------- v1.32.0 (Part 4): Remove firm, all the way (mock repo only) ----------------
+  await page.evaluate(() => { window.__lvManual = true; });
+  await page.goto(BASE + '#/firm/hedayati-law-group-p-c/setup'); await page.waitForSelector('#dPanel [data-f="delete"]');
+  await page.click('#dPanel [data-f="delete"]'); await page.waitForSelector('[data-lv-cf-shade]');
+  await page.fill('#lvCfIn', 'Hedayati Law Group, P.C.'); await page.click('[data-lv-cf="ok"]');
+  await page.waitForSelector('.lv-res', { timeout: 60000 });
+  { const t = await page.textContent('.lv-res'); check(/Done: scorecard removed/i.test(t) && /GHL sub-account\s*kept/i.test(t), `Remove firm → Done popup (${t.slice(0, 100)})`); }
+  await page.click('[data-lv-res="close"]');
+  { const d = G.M.dispatches.filter(x => x.workflow === 'remove-firm.yml'); check(d.length === 1 && d[0].inputs.slug === 'hedayati-law-group-p-c' && d[0].inputs.confirm === 'hedayati-law-group-p-c', `one remove-firm.yml (${JSON.stringify(d)})`); }
+  check(!JSON.parse(await G.fileText('firms/index.json')).some(f => f.slug === 'hedayati-law-group-p-c'), 'removed from the firm list (by remove-firm.yml)');
+  await page.evaluate(() => { window.__lvManual = false; });
 
   // nothing written anywhere holds a contact name or ID
   const written = JSON.stringify([...G.M.overlay.entries()].filter(([p]) => p !== 'firms/lfmp/data/kpis.json')) + JSON.stringify(G.M.commits) + JSON.stringify(G.M.dispatches);
