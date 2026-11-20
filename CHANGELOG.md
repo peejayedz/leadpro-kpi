@@ -5,6 +5,9 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.34.0 — 21 Nov 2026
+- **[client]** WPP dashboards show the real Web Promotion Partners logo in full colour next to LeadPro (`brand/wpp-logo.png`; dark mode `brand/wpp-logo-dark.png`, only "WEB" white), 36 px (30 px on a phone), no chip. LFMP dashboards don't change.
+
 ## v1.33.0 — 21 Nov 2026
 - **[internal]** WPP firms show their agency on the dashboard. `config.json` `"agency": "WPP"` (set from the Builder's Client details → Agency, or by hand) is copied by the sync into the public `kpis.json` (`"agency": "WPP"`; LFMP firms get no key, so their files are exactly as before). The dashboard then shows the Web Promotion Partners logo next to LeadPro (brand blue in light, white in dark; the review pages' mask, `brand/wpp-logo-mask.png`), "LeadPro · Web Promotion Partners" in the footer, and the Draft banner says "reviewed by Web Promotion Partners" (was always "LFMP"). An LFMP firm's dashboard is pixel-identical (Mahdavi, Dumas, Emery, Hedayati, LFMP at 1440 + 390, light + dark). Tagged internal: no agency names in the clients' What's new.
 - **[internal]** Boca Dental: `"agency": "WPP"` (its dashboard shows the WPP logo after the next sync).

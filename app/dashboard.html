@@ -72,10 +72,12 @@ a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
 .brandmark.ag .brandline{grid-column:1 / -1;grid-row:2}
 .agencymark{display:none}
 .brandmark.ag .agencymark{display:block;grid-column:2;grid-row:1;align-self:center;height:36px;padding-left:12px;border-left:1px solid var(--rule)}
-.agencymark i{display:block;width:92px;height:36px;background:#2977b0;-webkit-mask:var(--ag-mask) left center/contain no-repeat;mask:var(--ag-mask) left center/contain no-repeat}
-:root[data-theme="dark"] .agencymark i{background:#fff}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .agencymark i{background:#fff}}
-@media (max-width:520px){.brandmark.ag .agencymark{height:30px}.agencymark i{width:77px;height:30px}}
+.agencymark img{display:block;height:36px;width:auto}
+/* v1.34.0 (queue 1b, option B): the REAL WPP logo, full colour; dark mode = the same logo with "WEB" white; no chip */
+.agencymark .dk{display:none}
+:root[data-theme="dark"] .agencymark .lt{display:none}:root[data-theme="dark"] .agencymark .dk{display:block}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .agencymark .lt{display:none}:root:not([data-theme="light"]) .agencymark .dk{display:block}}
+@media (max-width:520px){.brandmark.ag .agencymark{height:30px}.agencymark img{height:30px}}
 h1{font-family:var(--serif);font-weight:600;font-size:clamp(24px,3.4vw,30px);line-height:1.15;margin:0 0 4px;letter-spacing:-.01em}
 .sub{font-size:13px;color:var(--ink-2);margin:0}
 .practice{font-size:13.5px;font-weight:600;color:var(--ink-2);margin:0 0 4px}
@@ -277,7 +279,7 @@ button.mini{cursor:pointer} button.mini:hover span:first-child{color:var(--link)
       <img class="logo logo-dark" data-brand="leadpro-logo-for-dark-backgrounds.svg" alt="LeadPro" width="158" height="36">
       <b class="brandname" id="brand">LeadPro</b>
       <p class="brandline">client dashboard</p>
-      <span class="agencymark" id="agencyMark" role="img" aria-label="Web Promotion Partners"><i aria-hidden="true"></i></span></div>
+      <span class="agencymark" id="agencyMark"><img class="lt" alt="Web Promotion Partners"><img class="dk" alt="Web Promotion Partners"></span></div>
     <script>document.querySelectorAll('#brandMark img[data-brand]').forEach(function (i) { i.src = LP_BRAND(i.dataset.brand); });</script>
     <span style="display:flex;gap:8px;align-items:center">
     <button class="btn themebtn" id="themeBtn" title="Switch between automatic, light and dark"></button>
@@ -747,7 +749,7 @@ const agencyCode = () => (pub?.agency === 'WPP' ? 'WPP' : null);
 function renderAgency() {
   const ag = agencyCode(), m = $('brandMark');
   m.classList.toggle('ag', !!ag && !m.classList.contains('text'));
-  if (ag) { $('agencyMark').style.setProperty('--ag-mask', `url("${LP_BRAND('wpp-logo-mask.png')}")`); $('brandFoot').textContent = `${cfg.brandFooter || 'LeadPro'} · ${AGENCY_NAMES[ag]}`; }
+  if (ag) { $('agencyMark').querySelector('.lt').src = LP_BRAND('wpp-logo.png'); $('agencyMark').querySelector('.dk').src = LP_BRAND('wpp-logo-dark.png'); $('brandFoot').textContent = `${cfg.brandFooter || 'LeadPro'} · ${AGENCY_NAMES[ag]}`; }
 }
 
 // ---------- v1.28.0: Draft banner (any firm whose kpis.json says status "draft") ----------

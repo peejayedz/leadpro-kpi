@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.34.0": {
+    "title": "The real WPP logo",
+    "summary": "WPP dashboards show the real Web Promotion Partners logo, in colour.",
+    "items": [
+      { "type": "fixed", "tag": "client", "text": "WPP dashboards show the real Web Promotion Partners logo in full colour (in dark mode only \"WEB\" turns white). LFMP dashboards don't change." }
+    ]
+  },
   "1.33.0": {
     "title": "LFMP or WPP, everywhere",
     "summary": "Filter Scorecards by LFMP or WPP; WPP dashboards show the WPP logo.",
