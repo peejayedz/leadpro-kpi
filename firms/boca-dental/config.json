@@ -104,7 +104,7 @@
         "pipelineId": "4aImx8qsSgUbS2muss9y"
       },
       "3e079232-8f63-4671-a703-b0cdd8abe6bd": {
-        "bucket": "contacted",
+        "bucket": "newEnquiry",
         "name": "New Patient Inbound Call",
         "pipelineId": "4aImx8qsSgUbS2muss9y"
       },
@@ -129,7 +129,7 @@
         "pipelineId": "QUJVfAXgDK7NANGwgQLg"
       },
       "ae78acaa-7c4b-4192-b94c-96bf8a95e42f": {
-        "bucket": "contacted",
+        "bucket": "newEnquiry",
         "name": "Verified Phone Lead - Not Scheduled",
         "pipelineId": "QUJVfAXgDK7NANGwgQLg"
       },
