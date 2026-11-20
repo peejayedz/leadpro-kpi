@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-20T09:32:23.314Z",
+  "generatedAt": "2026-11-20T11:18:15.626Z",
   "slug": "boca-dental",
   "locationId": "cUGbQORfR3Qp9nnzcgft",
   "locationName": "Boca Dental",
   "scopes": {
-    "checkedAt": "2026-11-20T09:32:22.506Z",
+    "checkedAt": "2026-11-20T11:18:14.923Z",
     "ok": [
       "opportunities.readonly",
       "contacts.readonly",
