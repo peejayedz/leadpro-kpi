@@ -89,7 +89,7 @@
         "pipelineId": "4aImx8qsSgUbS2muss9y"
       },
       "5ec581c3-4221-4bd7-9174-23c7c30a10c0": {
-        "bucket": "newEnquiry",
+        "bucket": "contacted",
         "name": "Online Form Lead Responded",
         "pipelineId": "4aImx8qsSgUbS2muss9y"
       },
@@ -104,7 +104,7 @@
         "pipelineId": "4aImx8qsSgUbS2muss9y"
       },
       "3e079232-8f63-4671-a703-b0cdd8abe6bd": {
-        "bucket": "newEnquiry",
+        "bucket": "contacted",
         "name": "New Patient Inbound Call",
         "pipelineId": "4aImx8qsSgUbS2muss9y"
       },
@@ -113,24 +113,54 @@
         "name": "Appointment Call Scheduled",
         "pipelineId": "4aImx8qsSgUbS2muss9y"
       },
+      "a14b4b67-7b18-42aa-82f0-ea82f91ed1d6": {
+        "bucket": "ignore",
+        "name": "Reactivated Patient Response",
+        "pipelineId": "4aImx8qsSgUbS2muss9y"
+      },
+      "1a2639d9-5bf1-45fe-8f02-0a2cfaa9b588": {
+        "bucket": "ignore",
+        "name": "Existing Patient",
+        "pipelineId": "4aImx8qsSgUbS2muss9y"
+      },
       "4499d792-34d7-4e35-bbae-a2feac882866": {
         "bucket": "newEnquiry",
         "name": "Form Fill Out Lead - Sent To Client",
         "pipelineId": "QUJVfAXgDK7NANGwgQLg"
       },
       "ae78acaa-7c4b-4192-b94c-96bf8a95e42f": {
-        "bucket": "newEnquiry",
+        "bucket": "contacted",
         "name": "Verified Phone Lead - Not Scheduled",
         "pipelineId": "QUJVfAXgDK7NANGwgQLg"
       },
       "a981f7b1-8f5f-4581-9c00-cf5d5766d478": {
-        "bucket": "newEnquiry",
+        "bucket": "consultBooked",
         "name": "Verified Phone Lead - Scheduled",
         "pipelineId": "QUJVfAXgDK7NANGwgQLg"
       },
       "c0968c36-3c4e-4072-ad4e-16149b52e2e9": {
-        "bucket": "newEnquiry",
+        "bucket": "ignore",
         "name": "New Request",
+        "pipelineId": "c0DAKvc2RTgRbalwfnK4"
+      },
+      "49d3db2b-b687-43ed-bf93-be70708e31d5": {
+        "bucket": "ignore",
+        "name": "Negative Review",
+        "pipelineId": "c0DAKvc2RTgRbalwfnK4"
+      },
+      "65df435f-4f8e-4a06-9a06-de8cc12a6ec4": {
+        "bucket": "ignore",
+        "name": "Unsubscribed",
+        "pipelineId": "c0DAKvc2RTgRbalwfnK4"
+      },
+      "9830adcc-6643-4cc2-a759-d2f12627b3e6": {
+        "bucket": "ignore",
+        "name": "Completed Drip (No Click)",
+        "pipelineId": "c0DAKvc2RTgRbalwfnK4"
+      },
+      "8a0a1939-26df-4ebd-8758-d86903a4b1b7": {
+        "bucket": "ignore",
+        "name": "Completed Drip (Clicked)",
         "pipelineId": "c0DAKvc2RTgRbalwfnK4"
       }
     }
