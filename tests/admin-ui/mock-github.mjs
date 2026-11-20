@@ -143,6 +143,13 @@ export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kp
     const body = bodyText ? JSON.parse(bodyText) : null;
     M.calls.push(`${method} ${path}`);
     const ok = json => ({ status: 200, json });
+    // v1.33.0: the Builder's records (M.builderRecords = [{ id, businessName, brand, kpi: { slug } }]) for the brand filter;
+    // a raw read returns the record itself (the server passes the text through)
+    if (M.builderRecords && path.startsWith('/repos/peejayedz/ghl-subaccount-builder/contents/records')) {
+      const f = path.slice('/repos/peejayedz/ghl-subaccount-builder/contents/records'.length);
+      if (f === '' || f === '/') return ok(M.builderRecords.map(r => ({ type: 'file', name: `${r.id}.json`, path: `records/${r.id}.json` })));
+      const r = M.builderRecords.find(x => `/${x.id}.json` === f); return r ? ok(r) : { status: 404, json: { message: 'Not Found' } };
+    }
     if (!path.startsWith(P)) return { status: 404, json: { message: 'Not Found' } };
     const p = path.slice(P.length);
     if (p === '' && method === 'GET') return ok({ full_name: `${owner}/${repo}` });

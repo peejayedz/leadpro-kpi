@@ -158,6 +158,9 @@ for (const p of pipelines) console.log(`  • ${p.name}: ${(p.stages || []).map(
 // an unmapped stage counts nowhere until it's mapped. Law firms: a warning only, their counting is unchanged.
 // kpis.json gets the counts only (sync.drift); the bell and Slack read them from there.
 const firmEntry = (await readIndex()).find(f => f.slug === SLUG) || {};
+// v1.33.0: the agency the client sees on the dashboard (config.json "agency", set from the Builder's Client details → Agency).
+// Only WPP is written into kpis.json; an LFMP firm's kpis.json is exactly as before (the dashboard shows no agency logo).
+const agencyOut = c => (String(c?.agency || '').toUpperCase() === 'WPP' ? { agency: 'WPP' } : {});
 if (firmEntry.status === 'needsMapping') { console.log(`${SLUG} needs its pipelines mapped first (KPI admin → Map pipelines). Not synced.`); process.exit(0); }
 // v1.30.0: law firms count pipelines by ID (scripts/pipelines.mjs). The first sync after v1.30.0 matches each counted
 // name once and saves the ids in config.json; a pipeline renamed in GHL keeps counting (its new name is saved for display).
@@ -253,7 +256,7 @@ if (isCare(cfg)) {
   const out = {
     generatedAt: careRecords.generatedAt, location: cfg.locationName, targets: cfg.targets,
     practiceType: cfg.practiceType, countsOnly: countsOnly(cfg), noShowTracked: tracked,
-    ...(firmEntry.status === 'draft' ? { status: 'draft' } : {}),
+    ...(firmEntry.status === 'draft' ? { status: 'draft' } : {}), ...agencyOut(cfg),
     // "Pipelines counted": only pipelines with at least one stage that counts (an all-Ignore pipeline, e.g. after-care, isn't listed)
     pipelines: (cfg.pipelineMap?.pipelines || []).filter(p => p.use !== false && Object.values(cfg.pipelineMap?.stages || {}).some(s => s.pipelineId === p.id && s.bucket !== 'ignore')).map(p => ({ id: p.id, name: pipelineName[p.id] || p.name })),
     dataNotes: { appointments: careAppts.length ? 'Calendar appointments (no-show status only)' : 'No calendar appointments' },
@@ -506,6 +509,7 @@ await stopOnAuthFailures();
 if (drops.length && holdsSoFar < HOLD.maxHolds && prevPub?.periods) {
   prevPub.sync = { ...prevSync, checkedAt, holds: holdsSoFar + 1, heldSince: prevSync.heldSince || checkedAt, reason: drops.join(', ') };
   if (drift) prevPub.sync.drift = drift; else delete prevPub.sync.drift;
+  if (agencyOut(cfg).agency) prevPub.agency = 'WPP'; else delete prevPub.agency;   // v1.33.0: a held sync still follows the agency
   await writeFile(new URL('kpis.json', dataDir), JSON.stringify(prevPub, null, 2) + '\n');
   warn(`${SLUG}: held (${holdsSoFar + 1} of ${HOLD.maxHolds}). GHL returned fewer calls or messages than last sync (${drops.join(', ')}); the dashboard keeps the numbers from ${prevPub.generatedAt}.`);
   console.log('Message export diagnostics:', JSON.stringify(diag));
@@ -635,7 +639,7 @@ const out = {
     calls: calls ? 'Inbound calls from conversation messages' : 'Conversation message scope missing',
   },
   detailsAvailable: !!PASS,
-  periods,
+  periods, ...agencyOut(cfg),
 };
 // Current GHL names of any stage the config lists by id, so the dashboard shows names, never ids.
 {

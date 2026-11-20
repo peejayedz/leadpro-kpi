@@ -209,6 +209,18 @@ const cfgMed = { practiceType: 'medical', countsOnly: true, pipelineMap };
   } finally { await mock.close(); await rm(tmp, { recursive: true, force: true }); }
 }
 
+// ---------- 3b. v1.33.0 agency: config.json "agency": "WPP" → kpis.json "agency": "WPP"; LFMP / none → no key at all ----------
+{
+  const mock = await startMock({ pipelines: discovery.pipelines, opps: OPPS, contacts, events: [] });
+  try {
+    for (const [ag, want] of [['WPP', 'WPP'], ['LFMP', undefined], [undefined, undefined]]) {
+      const tmp = await firmRepo({ cfg: { ...cfgMed, ...(ag ? { agency: ag } : {}) } });
+      const r = await sync(tmp, mock);
+      check(r.kpis && r.kpis.agency === want && (want ? true : !('agency' in r.kpis)), `agency ${ag ?? '(none)'} → kpis.json ${want ? '"agency": "WPP"' : 'has no "agency" key (exactly as before)'}`);
+    }
+  } finally { await mock.close(); }
+}
+
 // ---------- 4. new-firm.mjs ----------
 {
   const template = JSON.parse(await readFile(join(ROOT, 'firms/_template/config.json'), 'utf8'));

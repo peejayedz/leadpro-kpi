@@ -1,5 +1,13 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.33.0": {
+    "title": "LFMP or WPP, everywhere",
+    "summary": "Filter Scorecards by LFMP or WPP; WPP dashboards show the WPP logo.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "\"All clients ▾\" next to the search shows only LFMP or only WPP firms. The same choice applies on Clients, Scorecards and Reviews on this device. On a phone, the status and brand filters are one Filter button." },
+      { "type": "new", "tag": "internal", "text": "A WPP firm's dashboard shows the Web Promotion Partners logo and name (header, footer and the Draft banner) after its next sync. LFMP dashboards look exactly as before." }
+    ]
+  },
   "1.32.1": {
     "title": "Add to GHL menu says why",
     "summary": "If GHL won't add the KPI link, the message gives GHL's own reason.",

@@ -678,7 +678,7 @@ try {
       check(await page.isHidden('[data-lv-top]') && (await page.textContent('[data-lv-ptop] h2')).trim() === 'Scorecards' && await page.isVisible('[data-lv-ptop] [data-lv="bell"]') && await page.isVisible('[data-lv-ptop] [data-lv="plus"]'), '390: phone top bar (title, bell, +, avatar)');
       const tabs = await page.$$eval('[data-lv-tabs] .lv-tab', t => t.map(x => `${x.textContent.trim()}${x.getAttribute('aria-current') ? '*' : ''}`).join('|'));
       check(tabs === 'Clients|Scorecards*|Reviews|Me', `390: bottom tabs (${tabs})`);
-      const small = await page.$$eval('[data-lv-ptop] button:not([data-lv-pop] *), [data-lv-tabs] .lv-tab, #screen [data-lv-seg], #screen .lv-search, #firmRows .lv-row', els => els.filter(e => { const r = e.getBoundingClientRect(), a = getComputedStyle(e, '::after'); const h = Math.max(r.height, a.content !== 'none' ? parseFloat(a.height) || 0 : 0), wd = Math.max(r.width, a.content !== 'none' ? parseFloat(a.width) || 0 : 0); return h < 44 || wd < 44; }).map(e => e.className || e.tagName));
+      const small = await page.$$eval('[data-lv-ptop] button:not([data-lv-pop] *), [data-lv-tabs] .lv-tab, #screen [data-lv-seg], #screen .lv-search, #screen [data-lv-fbtn], #screen .lv-chips button, #firmRows .lv-row', els => els.filter(e => e.offsetParent !== null).filter(e => { const r = e.getBoundingClientRect(), a = getComputedStyle(e, '::after'); const h = Math.max(r.height, a.content !== 'none' ? parseFloat(a.height) || 0 : 0), wd = Math.max(r.width, a.content !== 'none' ? parseFloat(a.width) || 0 : 0); return h < 44 || wd < 44; }).map(e => e.className || e.tagName));
       check(!small.length, `390: tap targets at least 44px${small.length ? `: ${small.join(', ')}` : ''}`);
       const box = await page.$eval(rowOf('lfmp'), e => { const r = e.getBoundingClientRect(); return { w: r.width, n: e.querySelector('.lv-pr .lv-big')?.textContent }; });
       check(box.w <= 390 - 30 && /leads · 90 d/.test(box.n || ''), `390: one list row with the leads number (${box.n})`);
@@ -757,6 +757,44 @@ try {
     cf = await contrastFailures(page); check(!cf.length, `${tag}: Edit mapping passes AA contrast${cf.length ? `: ${cf.join(' | ')}` : ''}`);
     await shot(page, `editmapping_${tag}`);
     await ctx.close();
+  }
+  // v1.33.0: LFMP / WPP brand filter (shared shell 2.7.0). Brand = the Builder record (KPI slug); no record = LFMP.
+  {
+    const GB = useGitHub(createMockGitHub({ root: ROOT }));
+    GB.M.builderRecords = [{ id: 'boca-dental-cugbqo', businessName: 'Boca Dental', brand: 'WPP', kpi: { slug: 'boca-dental' } }, { id: 'dumas-x', businessName: 'Dumas & Sanclemente', brand: 'LFMP', kpi: { slug: 'dumas-and-sanclemente' } }];
+    const idx = JSON.parse(await GB.fileText('firms/index.json')), nAll = idx.filter(f => f.slug !== 'zz-test-2').length;
+    for (const scheme of ['light', 'dark']) {
+      const { ctx, page } = await openPage(GB, { scheme });
+      await page.evaluate(() => localStorage.removeItem('lfmp-brand-filter')); await page.reload(); await page.waitForSelector(ROW); await page.waitForTimeout(300);
+      const subs = await page.$$eval(`${ROW} .lv-mt.lv-d`, e => e.map(x => x.textContent));
+      check(subs.length === nAll && subs.every(s => /^(WPP|LFMP) · /.test(s)) && subs.filter(s => s.startsWith('WPP · ')).length === 1, `brand ${scheme}: All clients → every row starts with its brand, Boca = WPP (${subs.join(' | ')})`);
+      await page.click('[data-lv-bf]');
+      const items = (await page.$$eval('[data-lv-bfpick]', e => e.map(x => x.textContent.replace(/\s+/g, ' ').trim()))).join('|');
+      check(items === `✓All clients${nAll}|LFMP${nAll - 1}|WPP1` || items === `✓ All clients ${nAll}|LFMP ${nAll - 1}|WPP 1`.replace(/ /g, ' '), `brand ${scheme}: menu counts (${items})`);
+      await shot(page, `brand_menu_${scheme}`);
+      await page.click('[data-lv-bfpick="WPP"]');
+      const names = await page.$$eval(`${ROW} .lv-nm`, e => e.map(x => x.textContent));
+      const sum = await page.textContent('[data-lv-sum]'), ph = await page.getAttribute('#firmSearch', 'placeholder');
+      check(names.join() === 'Boca Dental' && /^1 WPP firm · /.test(sum) && ph === 'Search 1 WPP firm' && /All 1/.test(await page.textContent('.lv-seg.lv-segb')), `brand ${scheme}: WPP → Boca only, summary / placeholder / counts follow (${names} · ${sum} · ${ph})`);
+      check(!(await page.textContent(`${ROW} .lv-mt.lv-d`)).startsWith('WPP'), `brand ${scheme}: no brand prefix once a brand is picked`);
+      check(await page.evaluate(() => localStorage.getItem('lfmp-brand-filter')) === 'WPP', `brand ${scheme}: stored for the three tools on this device`);
+      await shot(page, `brand_wpp_${scheme}`);
+      await page.click('[data-lv-bf]'); await page.click('[data-lv-bfpick="all"]');
+      await ctx.close();
+    }
+    { // phone: one Filter button, sheet, badge, chip
+      const { ctx, page } = await openPage(GB, { width: 390, height: 844, scheme: 'light' });
+      check(await page.isVisible('[data-lv-fbtn]') && !(await page.isVisible('.lv-seg.lv-segb')) && await noSideScroll(page), 'brand 390: one Filter button, status row in the sheet, no sideways scroll');
+      await page.click('[data-lv-fbtn]'); await page.waitForSelector('.lv-fsheet');
+      const tx = (await page.textContent('.lv-fsheet')).replace(/\s+/g, ' ');
+      check(tx.includes(`All · ${nAll}`) && tx.includes('WPP · 1') && tx.includes('Needs attention') && /Show \d+ firms/.test(tx), `brand 390: sheet groups + Show N firms (${tx})`);
+      await page.click('[data-lv-fb="WPP"]'); await page.click('[data-lv-fapply]');
+      check((await page.$$eval(`${ROW} .lv-nm`, e => e.map(x => x.textContent))).join() === 'Boca Dental' && (await page.textContent('.lv-fbd')) === '1' && await page.isVisible('.lv-chips [data-lv-clr="brand"]'), 'brand 390: WPP → Boca, badge 1, WPP chip');
+      await shot(page, `brand_phone_wpp`, false);
+      await page.click('.lv-chips [data-lv-clr="brand"]');
+      check((await page.$$eval(`${ROW} .lv-nm`, e => e.length)) === nAll, 'brand 390: ✕ clears');
+      await ctx.close();
+    }
   }
 } catch (e) { failed++; console.log(`✗ ${e.stack || e.message}`); }
 finally { await browser.close(); server.close(); }

@@ -245,7 +245,7 @@ test('loadBuilderRecords v2.4.2: another GitHub reader (the team site\'s server)
   const seen = [];
   const gh = async (m, p, b, o) => { seen.push([m, p]); if (p.endsWith('/contents/records?ref=main')) return Response.json([{ type: 'file', name: 'a1.json' }]); return new Response(JSON.stringify({ id: 'a1', businessName: 'Acme Law P.C', review: { code: 'acme' }, kpi: { slug: 'acme' } }), { status: 200 }); };
   const recs = await S.loadBuilderRecords({ gh });
-  assert.deepEqual(recs, [{ id: 'a1', name: 'Acme Law P.C.', locationId: '', reviewCode: 'acme', kpiSlug: 'acme', linkSent: null }]);
+  assert.deepEqual(recs, [{ id: 'a1', name: 'Acme Law P.C.', locationId: '', reviewCode: 'acme', kpiSlug: 'acme', linkSent: null, brand: 'LFMP' }]);   // v2.7.0: + brand (no brand on the record = LFMP)
   assert.ok(seen.every(([m]) => m === 'GET') && seen.length === 2);
   assert.equal(await S.loadBuilderRecords({ gh: async () => { throw new Error('down'); } }).then(r => r.length), 0, 'never throws');
 });
@@ -330,7 +330,9 @@ test('gold only on: + button, current tab/nav, top line, initials, on-switches',
     // own pieces (glow, hairlines, base block, gold name, line, number separators, amber number)
     /^\.lfmp-v2 \.lv-avbtn:hover \.lv-av,\.lfmp-v2 \.lv-avbtn\[aria-expanded="true"\] \.lv-av$/, /^\.lfmp-v2 \.lv-mhint$/, /^\.lv-gr[\w\-:>.() ,\[\]="]*$/, /^(:root\.lfmp-v2(\.lfmp-v2)? (\.btn|button)?\.lv-bz,?\s*)+$/, /^:root\.lfmp-v2 \.btn\.lv-bz,:root\.lfmp-v2 button\.lv-bz$/, /^\.lv-area-bar i$/, /^\.lv-pc-bar i$/, /^\.lv-pc-s\.run \.lv-pc-d$/, /^50%$/,
     // v2.5.0 long jobs (PJ's Working Animation variation B + Done card): the working bar's fill, the bike frame, a running job's dot in the bell
-    /^\.lv-job-bar i$/, /^\.lv-jk-gold$/, /^\.lv-jobs-d\.run$/];
+    /^\.lv-job-bar i$/, /^\.lv-jk-gold$/, /^\.lv-jobs-d\.run$/,
+    // v2.7.0 brand filter (PJ's brand-filter preview): "a filter is on" = the small dot on "WPP ▾" and the phone Filter badge
+    /^\.lv-bfdot$/, /^\.lv-fbd$/];
   assert.ok(rules.length >= 7);
   for (const r of rules) assert.ok(allowed.some(a => a.test(r)), `gold used on ${r}`);
 });
@@ -930,4 +932,54 @@ test('confirm: "<Action> for <Client>?", what happens and where, what does not; 
   assert.match(r, /class="lv-cf-red" data-lv-cf="ok" disabled>Remove scorecard</);
   assert.equal(S.typedMatch('  acme   LAW ', 'Acme Law'), true); assert.equal(S.typedMatch('Acme', 'Acme Law'), false); assert.equal(S.typedMatch('', 'Acme Law'), false);
   assert.match(CSS, /\.lv-cf \.lv-cf-red\{background:var\(--red\)/); assert.match(CSS, /\.lv-cf button\[disabled\]\{opacity:\.45/);
+});
+
+// v2.7.0: LFMP / WPP brand: one helper for the three tools; the list filter (menu, phone Filter button, chips, sheet)
+test('brand: record brand → LFMP / WPP; no record → LFMP; one lookup by Builder id, review code, KPI slug or location', () => {
+  assert.equal(S.brandOf({ brand: 'WPP' }), 'WPP'); assert.equal(S.brandOf({ brand: 'wpp ' }), 'WPP');
+  assert.equal(S.brandOf({ brand: 'LFMP' }), 'LFMP'); assert.equal(S.brandOf({}), 'LFMP'); assert.equal(S.brandOf(null), 'LFMP'); assert.equal(S.brandOf({ brand: 'Other' }), 'LFMP');
+  const rows = [{ id: 'boca-1', reviewCode: 'boca-e770de', kpiSlug: 'boca-dental', locationId: 'cUGbQORfR3Qp9nnzcgft', brand: 'WPP' }, { id: 'dumas-1', reviewCode: 'dumas-x', kpiSlug: 'dumas', locationId: 'uCEP', brand: 'LFMP' }];
+  assert.equal(S.brandFor(rows, { kpiSlug: 'boca-dental' }), 'WPP'); assert.equal(S.brandFor(rows, { reviewCode: 'boca-e770de' }), 'WPP');
+  assert.equal(S.brandFor(rows, { locationId: 'cUGbQORfR3Qp9nnzcgft' }), 'WPP'); assert.equal(S.brandFor(rows, { id: 'boca-1' }), 'WPP');
+  assert.equal(S.brandFor(rows, { kpiSlug: 'dumas' }), 'LFMP'); assert.equal(S.brandFor(rows, { kpiSlug: 'mahdavi' }), 'LFMP', 'no Builder record = LFMP');
+  assert.equal(S.brandFor([], { kpiSlug: 'x' }), 'LFMP'); assert.equal(S.brandFor(null, null), 'LFMP');
+  assert.equal(S.brandWord('WPP'), 'WPP '); assert.equal(S.brandWord('all'), '');
+  assert.equal(S.brandSub('WPP', 'all', 'Existing sub-account · Boca Raton, Florida'), 'WPP · Existing sub-account · Boca Raton, Florida');
+  assert.equal(S.brandSub('WPP', 'WPP', 'Existing sub-account'), 'Existing sub-account', 'no prefix once a brand is picked');
+  assert.deepEqual(S.brandCounts([{ brand: 'WPP' }, { brand: 'LFMP' }, { brand: 'LFMP' }]), { all: 3, LFMP: 2, WPP: 1 });
+});
+test('brand filter setting: one key for the three tools; bad values → All; storage blocked → All, never throws', () => {
+  const mem = new Map(), ls = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, String(v)), removeItem: k => mem.delete(k) };
+  const had = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  try {
+    Object.defineProperty(globalThis, 'localStorage', { value: ls, configurable: true });
+    assert.equal(S.getBrandFilter(), 'all'); assert.equal(S.setBrandFilter('WPP'), 'WPP'); assert.equal(mem.get(S.BRAND_KEY), 'WPP'); assert.equal(S.getBrandFilter(), 'WPP');
+    assert.equal(S.setBrandFilter('nope'), 'all'); assert.equal(mem.has(S.BRAND_KEY), false); mem.set(S.BRAND_KEY, 'x'); assert.equal(S.getBrandFilter(), 'all');
+    Object.defineProperty(globalThis, 'localStorage', { get() { throw new Error('blocked'); }, configurable: true });
+    assert.equal(S.getBrandFilter(), 'all'); assert.equal(S.setBrandFilter('WPP'), 'WPP'); assert.equal(S.safeStorage(), null);
+  } finally { if (had) Object.defineProperty(globalThis, 'localStorage', had); else delete globalThis.localStorage; }
+});
+test('brand filter HTML: "All clients ▾" menu (counts, ✓, hint), phone Filter badge, chips, red Needs you, sheet', () => {
+  const m = S.brandMenuHtml({ value: 'all', counts: { all: 3, LFMP: 2, WPP: 1 }, open: true });
+  assert.match(m, /data-lv-bf aria-haspopup="menu" aria-expanded="true"/); assert.match(m, />All clients<span class="lv-car"/);
+  assert.match(m, /role="menuitemradio" aria-checked="true" data-lv-bfpick="all"><span class="lv-ck" aria-hidden="true">✓<\/span>All clients<span class="lv-n">3</);
+  assert.match(m, /data-lv-bfpick="WPP"><span class="lv-ck" aria-hidden="true"><\/span>WPP<span class="lv-n">1</); assert.match(m, /Same choice on Clients, Scorecards and Reviews \(this device\)\./);
+  assert.match(S.brandMenuHtml({ value: 'WPP', counts: {} }), /class="lv-bf lv-hit on"[^>]*><span class="lv-bfdot"[^>]*><\/span>WPP/);
+  const segs = [{ key: 'all', label: 'All 3', phone: 'All', n: 3 }, { key: 'attention', label: 'Needs you · 1', n: 1, needs: true }, { key: 'progress', label: 'In progress · 0', phone: 'Active', n: 0 }];
+  assert.doesNotMatch(S.filterBtnHtml({ brand: 'all', active: 'all', segs }), /lv-fbd/);
+  assert.match(S.filterBtnHtml({ brand: 'WPP', active: 'progress', segs }), /<span class="lv-fbd" aria-hidden="true">2<\/span>/);
+  const c = S.filterChipsHtml({ brand: 'WPP', active: 'progress', segs });
+  assert.match(c, /data-lv-clr="brand"[^>]*>WPP <span aria-hidden="true">✕/); assert.match(c, /data-lv-clr="status"[^>]*>Active <span/); assert.match(c, /class="lv-needs lv-hit" data-lv-needs="attention">Needs you · 1 /);
+  assert.doesNotMatch(S.filterChipsHtml({ brand: 'all', active: 'attention', segs }), /lv-needs/, 'no red chip when Needs you is already on');
+  assert.doesNotMatch(S.filterChipsHtml({ brand: 'all', active: 'all', segs: segs.map(s => ({ ...s, n: 0 })) }), /lv-needs/, 'no red chip at 0');
+  const sh = S.filterSheetHtml({ brand: 'WPP', active: 'all', brands: { all: 3, LFMP: 2, WPP: 1 }, segs, showN: 1 });
+  assert.match(sh, /role="dialog" aria-modal="true" aria-labelledby="lvFsT"/); assert.match(sh, /data-lv-fb="WPP" aria-pressed="true">WPP · 1</);
+  assert.match(sh, /data-lv-fs="attention" aria-pressed="false">Needs you · 1</); assert.match(sh, /data-lv-fs="progress" aria-pressed="false">Active · 0</);
+  assert.match(sh, /data-lv-freset>Reset</); assert.match(sh, /data-lv-fapply>Show 1 client</);
+  assert.match(S.filterSheetHtml({ segs, showN: 3, noun: 'firm' }), /Show 3 firms</);
+  const head = S.pageHeadHtml({ title: 'Clients', segs, active: 'all', brand: { value: 'all', counts: { all: 3 } } });
+  assert.match(head, /<div class="lv-srow"><label class="lv-search/); assert.match(head, /class="lv-seg lv-segb"/);
+  assert.doesNotMatch(S.pageHeadHtml({ title: 'X', segs, active: 'all' }), /lv-srow|lv-segb|data-lv-bf/, 'without brand: exactly as before');
+  assert.match(CSS, /\.lv-bf\{display:inline-flex;[^}]*background:var\(--seg\)[^}]*border-radius:10px/); assert.match(CSS, /\.lv-seg\.lv-segb\{display:none\}/);
+  assert.ok(CSS.slice(CSS.lastIndexOf('@media (prefers-reduced-motion:reduce){')).includes('.lv-fsheet{animation:none}'), 'reduced motion: the sheet does not slide');
 });

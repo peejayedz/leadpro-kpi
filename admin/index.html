@@ -13,8 +13,8 @@
 <script>/* apply the saved theme before first paint so the page and logo don't flash */ try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="lfmp-ui.css?v=2.6.0">
-<link rel="stylesheet" href="admin.css?v=1.32.0">
+<link rel="stylesheet" href="lfmp-ui.css?v=2.7.0">
+<link rel="stylesheet" href="admin.css?v=1.33.0">
 <link rel="stylesheet" href="care.css?v=1.28.0">
 </head>
 <body>
@@ -68,7 +68,7 @@ import { SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS
 import { decryptJSON } from '../scripts/kpi-core.mjs';
 import * as GC from './greet-count.mjs';   // v1.29.1: the "Needs attention" count (list + greeting)
 import { PRACTICE_TYPES, practiceTypeOf, practiceLabel, isCare, countsOnly as countsOnlyOf, BUCKETS, BUCKET_HINTS, careInitialState, unchosen, buildPipelineMap, applyCare, mapOf } from '../scripts/care-core.mjs';
-import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName, busyButton, noteCount, startJob, jobsListHtml, markJobsBellSeen, newJobResults, confirmAction } from './lfmp-session.js';
+import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, brandFor, brandSub, brandWord, brandCounts, getBrandFilter, setBrandFilter, wireListFilter, updateListHead, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName, busyButton, noteCount, startJob, jobsListHtml, markJobsBellSeen, newJobResults, confirmAction } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -426,7 +426,12 @@ const fmtTime = iso => iso ? new Date(iso).toLocaleString('en-US', { dateStyle: 
 // when there is one, otherwise firms/index.json's name. Display only: index.json, slugs and commit messages keep their name.
 const builderNames = {};
 const fname = f => displayName(builderNames[f.slug] || f.name);
+// v1.33.0: LFMP / WPP from the Builder record (shared shell brandFor: KPI slug or GHL location; no record = LFMP)
+let builderRows = [], brandFilter = getBrandFilter();
+const firmBrand = f => brandFor(builderRows, { kpiSlug: f.slug, locationId: configs[f.slug]?.locationId || f.locationId || '' });
+const inBrand = (list, b = brandFilter) => (b === 'LFMP' || b === 'WPP' ? list.filter(f => firmBrand(f) === b) : list);
 function applyNames(recs) {
+  builderRows = recs || [];
   for (const k of Object.keys(builderNames)) delete builderNames[k];
   for (const f of firms) {
     const loc = configs[f.slug]?.locationId || f.locationId || '';
@@ -501,55 +506,66 @@ function firmRow(f) {
   const leads = phone => (n === 0 ? '<span class="lv-big lv-none" data-leads="none">No leads yet</span>'
     : n == null ? bigHtml('—', `${noun} · ${phone ? '90 d' : '90 days'}`, redNum)
     : `<span class="lv-big${redNum ? ' red' : ''}" data-leads="${n}"${tr ? ` title="${esc(`${n} ${noun} in the last 90 days, ${tr.label}`)}"` : ''}>${n}<small>${noun} · ${phone ? '90 d' : '90 days'}${tr ? ` <span class="lv-tr ${tr.dir}" data-trend="${tr.dir}">${esc(tr.text)}</span>` : ''}</small></span>`);
-  return lvRow({ name: fname(f), sub, subPhone, label: `Open ${fname(f)}`,
+  // v1.33.0: with every brand shown the grey line starts with the brand ("WPP · Dental · …")
+  return lvRow({ name: fname(f), sub: brandSub(firmBrand(f), brandFilter, sub), subPhone: brandSub(firmBrand(f), brandFilter, subPhone), label: `Open ${fname(f)}`,
     attrs: `data-slug="${esc(f.slug)}" data-row${dpSlug === f.slug ? ' data-sel' : ''} title="${esc(k?.generatedAt ? `Last sync ${fmtTime(k.generatedAt)}` : 'No data yet')}"`,
     cells: [status.replace('<span class="lv-st', '<span data-state="status" class="lv-st'), leads(false)], phoneRight: leads(true) });
 }
 // Summary line (desktop): "4 firms · all synced 4:37 PM" (or "2 need attention", as the filter).
 function paintStrip() {
   const el = document.querySelector('#screen [data-lv-sum]'); if (!el) return;
-  const vis = visibleFirms(), last = lastSyncIso();
+  const all = visibleFirms(), vis = inBrand(all), last = lastSyncIso(), word = brandWord(brandFilter);   // v1.33.0: follows the brand
   // v1.27.0 (PJ, 19 Nov, review FIX 1): the same words and count as the "Needs attention" filter ("4 firms · 2 need
   // attention"; was "· 1 sync problem" beside "Needs attention · 2"); nothing to look at = "all synced 4:37 PM"
-  const att = vis.filter(needsAttention).length;
-  el.textContent = `${plural(vis.length, 'firm')} · ${att ? `${att} ${att === 1 ? 'needs' : 'need'} attention` : `all synced ${clock(last)}`}`;
+  const att = vis.filter(needsAttention).length, attAll = all.filter(needsAttention).length;
+  el.textContent = `${vis.length} ${word}firm${vis.length === 1 ? '' : 's'} · ${att ? `${att} ${att === 1 ? 'needs' : 'need'} attention` : `all synced ${clock(last)}`}`;
   // v1.29.0: the greeting's "scorecards need attention" (the same count as the filter); kept for the other tools' greetings.
   // v1.29.1: only once the bell's issues are read too (they change the count), so it equals the settled filter.
-  if (firms.length && issuesRead) { noteCount('scorecards', att); greetReady({ scorecards: att }); }
+  if (firms.length && issuesRead) { noteCount('scorecards', attAll); greetReady({ scorecards: attAll }); }   // the greeting counts every brand
   el.title = fmtTime(last);
-  const q = $('firmSearch'); if (q) { q.placeholder = `Search ${plural(vis.length, 'firm')}`; q.setAttribute('aria-label', `${q.placeholder} by name, slug or GHL name`); }
+  const q = $('firmSearch'); if (q) { q.placeholder = `Search ${vis.length} ${word}firm${vis.length === 1 ? '' : 's'}`; q.setAttribute('aria-label', `${q.placeholder} by name, slug or GHL name`); }
 }
 // The bell panel's top block: sync schedule and token keeper (were the top bar's "Sync every 30 min · Last · Next").
 function paintSyncInfo() { const el = $('nSync'); if (el) el.outerHTML = syncInfoHtml(); }
-const kpiSegs = () => {
-  const vis = visibleFirms(), atts = vis.filter(needsAttention), att = atts.length;
+const kpiSegs = (b = brandFilter) => {
+  const vis = inBrand(visibleFirms(), b), atts = vis.filter(needsAttention), att = atts.length;
   const alert = atts.some(f => reasonsOf(f).some(r => isAlert(r.kind)));   // red if any alert, amber if only notices (as the bell)
-  return [{ key: 'all', label: `All ${vis.length}`, phone: 'All' }, { key: 'attention', label: `Needs attention · ${att}`, red: att > 0 && alert, amber: att > 0 && !alert }, { key: 'test', label: 'Test firms', phone: 'Test' }];
+  return [{ key: 'all', label: `All ${vis.length}`, phone: 'All', n: vis.length }, { key: 'attention', label: `Needs attention · ${att}`, red: att > 0 && alert, amber: att > 0 && !alert, n: att, needs: true },
+    { key: 'test', label: 'Test firms', phone: 'Test', n: inBrand(firms, b).filter(isTest).length }];
 };
-function paintFilters() {
-  const seg = document.querySelector('#screen .lv-seg'); if (!seg) return;
-  const t = document.createElement('template'); t.innerHTML = pageHeadHtml({ title: '', segs: kpiSegs(), active: listFilter });
-  seg.replaceWith(t.content.querySelector('.lv-seg'));
+// v1.33.0: the head follows the brand (shared shell): summary, placeholder, counts, the brand menu / phone Filter + chips
+function headOpts() {
+  const vis = inBrand(visibleFirms()), word = brandWord(brandFilter);
+  return { title: 'Scorecards', summary: undefined, search: { placeholder: `Search ${vis.length} ${word}firm${vis.length === 1 ? '' : 's'}`, keepLabel: true }, segs: kpiSegs(), active: listFilter,
+    brand: { value: brandFilter, counts: brandCounts(visibleFirms().map(f => ({ brand: firmBrand(f) }))) } };
+}
+function paintFilters() { updateListHead($('screen'), headOpts()); }
+const filterPool = (k, b) => { const fn = FILTERS.find(x => x[0] === k)?.[2] || (() => true); return inBrand(k === 'test' ? firms : visibleFirms(), b).filter(fn); };
+function wireBrand() {
+  wireListFilter($('screen'), { getBrand: () => brandFilter, getStatus: () => listFilter, noun: 'firm',
+    brands: () => brandCounts(visibleFirms().map(f => ({ brand: firmBrand(f) }))), segsFor: b => kpiSegs(b), countFor: (b, s) => filterPool(s, b).length,
+    onChange: ({ brand, status }) => { brandFilter = brand; listFilter = status; store.set(FILTER_KEY, status === 'all' ? null : status); paintList(); paintStrip(); } });
 }
 function paintList() {
   const host = $('firmList'); if (!host) return;
   const fn = FILTERS.find(x => x[0] === listFilter)[2];
-  const pool = listFilter === 'test' ? firms : visibleFirms();
+  const pool = inBrand(listFilter === 'test' ? firms : visibleFirms());   // v1.33.0: the brand filter first
   const shown = sortFirms(pool.filter(f => fn(f) && matchesQuery(f)), fname);   // v1.26.0: A–Z by the shown name (every filter + search)
-  const hiddenTests = !showTests && listFilter !== 'test' ? firms.filter(f => isTest(f) && fn(f) && matchesQuery(f)).length : 0;
+  const hiddenTests = !showTests && listFilter !== 'test' ? inBrand(firms).filter(f => isTest(f) && fn(f) && matchesQuery(f)).length : 0;
   host.innerHTML = !firms.length ? `<div class="lv-list lv-empty"><p>No firms yet.</p><button class="lv-plus" type="button" data-new-firm>+ Add the first firm</button></div>`
     : shown.length ? `<div class="lv-list" id="firmRows" style="--lv-cols:${LIST_COLS}">${shown.map(firmRow).join('')}</div>`
-    : `<div class="lv-list lv-empty"><p>${listFilter === 'attention' && !listQuery ? 'Nothing needs attention. Every firm synced cleanly.' : `No firms match${listQuery ? ` “${esc(listQuery)}”` : ''}${listFilter !== 'all' ? ` in ${esc(FILTERS.find(x => x[0] === listFilter)[1])}` : ''}.`}${hiddenTests ? ` ${plural(hiddenTests, 'test firm')} hidden.` : ''}</p><button class="btn" type="button" data-clear-filter>Show all firms</button></div>`;
+    : `<div class="lv-list lv-empty"><p>${listFilter === 'attention' && !listQuery ? 'Nothing needs attention. Every firm synced cleanly.' : `No firms match${listQuery ? ` “${esc(listQuery)}”` : ''}${listFilter !== 'all' ? ` in ${esc(FILTERS.find(x => x[0] === listFilter)[1])}` : ''}${brandFilter !== 'all' ? ` among ${esc(brandFilter)} firms` : ''}.`}${hiddenTests ? ` ${plural(hiddenTests, 'test firm')} hidden.` : ''}</p><button class="btn" type="button" data-clear-filter>Show all firms</button></div>`;
   paintFilters();
 }
 const setFilter = k => { listFilter = k; store.set(FILTER_KEY, k === 'all' ? null : k); paintList(); };
 async function renderList(flash) {
   cleanupRun(); cleanupAppRun(); closeMenus();
   for (const k of Object.keys(firmMsg)) if (!busy.has(`${k}:sync`) && !busy.has(`${k}:banner`)) delete firmMsg[k];
-  $('screen').innerHTML = `${pageHeadHtml({ title: 'Scorecards', summary: '', search: { id: 'firmSearch', placeholder: 'Search firms', value: listQuery }, segs: kpiSegs(), active: listFilter })}
+  $('screen').innerHTML = `${pageHeadHtml({ title: 'Scorecards', summary: '', search: { id: 'firmSearch', placeholder: 'Search firms', value: listQuery }, segs: kpiSegs(), active: listFilter, brand: { value: brandFilter, counts: brandCounts([]) } })}
     ${flash ? `<div class="okmsg listmsg" role="status">${flash}</div>` : ''}
     <div id="firmList">${loadingHtml('scorecards')}</div>`;
   $('firmSearch').addEventListener('input', e => { listQuery = e.target.value; paintList(); });
+  wireBrand();
   const host = $('firmList');
   try { await withLoadLimit(loadFirms()); }   // the LFMP blocks until the data arrives; never more than 20 s
   catch (e) { if (!document.body.contains(host)) return; $('firmList').innerHTML = loadErrorHtml(e.message, { attrs: 'data-list-retry' }); const s = document.querySelector('#screen [data-lv-sum]'); if (s) s.textContent = ''; return; }
@@ -562,7 +578,7 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-new-firm]')) go('#/new');
   if (e.target.closest('[data-list-retry]')) renderList();
   const sg = e.target.closest('#screen [data-lv-seg]'); if (sg) setFilter(sg.dataset.lvSeg);
-  if (e.target.closest('[data-clear-filter]')) { listFilter = 'all'; listQuery = ''; store.set(FILTER_KEY, null); if ($('firmSearch')) $('firmSearch').value = ''; paintList(); }
+  if (e.target.closest('[data-clear-filter]')) { listFilter = 'all'; listQuery = ''; brandFilter = setBrandFilter('all'); store.set(FILTER_KEY, null); if ($('firmSearch')) $('firmSearch').value = ''; paintList(); }
   if (e.target.closest('[data-filter-att]')) { setFilter('attention'); $('firmList')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   // the whole row opens Details
   const row = e.target.closest('.lv-row[data-row]');

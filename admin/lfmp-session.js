@@ -76,6 +76,8 @@ export function paintMe(me, root = document) {
 }
 
 // ⋯ → Team sign-ins: everyone who signed in in the last 90 days (name, email, last sign-in, sign-ins in 30 days).
+// v2.7.0: a browser that blocks site storage throws on the localStorage read itself; every default store goes through this
+export const safeStorage = () => { try { return globalThis.localStorage || null; } catch { return null; } };
 const escH = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 export async function openTeamSignins() {
   let d = document.getElementById('lfmpSignins');
@@ -253,12 +255,156 @@ export function meHtml(cfg, st = {}, { compact = false } = {}) {
 // Page head: title + summary (desktop), search (always), segmented filter. segs: [{ key, label, phone, red, amber }]
 // red = something is an alert, amber = only notices (the same colours as the KPI bell). The search icon is the same
 // SVG magnifier on desktop and phone (v1.16.0; was a "⌕" character on desktop).
-export function pageHeadHtml({ title, summary = '', search = {}, segs = [], active }) {
+export function pageHeadHtml({ title, summary = '', search = {}, segs = [], active, brand = null }) {
   const tone = s => (s.red ? 'lv-red' : s.amber ? 'lv-amber' : '');
   const seg = s => `<button type="button" class="lv-hit" data-lv-seg="${escH(s.key)}" aria-pressed="${s.key === active}">${tone(s) ? `<span class="${tone(s)}">` : ''}<span class="lv-d">${escH(s.label)}</span><span class="lv-p">${escH(s.phone ?? s.label)}</span>${tone(s) ? '</span>' : ''}</button>`;
+  const box = `<label class="lv-search lv-hit">${SEARCH_ICON}<input type="search" id="${escH(search.id || 'lvSearch')}" placeholder="${escH(search.placeholder || 'Search')}" value="${escH(search.value || '')}" autocomplete="off" spellcheck="false" aria-label="${escH(search.placeholder || 'Search')}"></label>`;
+  // v2.7.0: with brand ({ value, counts }) the search shares its row with the "All clients ▾" menu (desktop) and the one
+  // "Filter" button (phone), and the active filters show as chips under it (phone).
+  const srch = brand ? `<div class="lv-srow">${box}${brandMenuHtml(brand)}${filterBtnHtml({ brand: brand.value, active, segs })}</div>` : box;
   return `<div class="lv-hrow"><div class="lv-d"><h1 class="lv-h1">${escH(title)}</h1><div class="lv-sum" data-lv-sum>${escH(summary)}</div></div>
-<label class="lv-search lv-hit">${SEARCH_ICON}<input type="search" id="${escH(search.id || 'lvSearch')}" placeholder="${escH(search.placeholder || 'Search')}" value="${escH(search.value || '')}" autocomplete="off" spellcheck="false" aria-label="${escH(search.placeholder || 'Search')}"></label></div>
-${segs.length ? `<div class="lv-seg" role="group" aria-label="Filter">${segs.map(seg).join('')}</div>` : ''}`;
+${srch}</div>
+${brand ? filterChipsHtml({ brand: brand.value, active, segs }) : ''}${segs.length ? `<div class="lv-seg${brand ? ' lv-segb' : ''}" role="group" aria-label="Filter">${segs.map(seg).join('')}</div>` : ''}`;
+}
+
+// ---------------------------------------------------------------- brand: LFMP or WPP (v2.7.0, all three tools)
+// Every client is LFMP or WPP: the Builder record's brand (Forms → Brand, Add existing client, Client details → Agency).
+// A firm or review package with no Builder record is LFMP. brandFor() is the one lookup the three tools use, so they agree.
+// The list filter (All clients / LFMP / WPP) is ONE setting for Clients, Scorecards and Reviews on this device
+// (localStorage; storage blocked → All). The greeting and the bells always count every client.
+export const BRANDS = ['LFMP', 'WPP'];
+export const BRAND_NAMES = { LFMP: 'Law Firm Marketing Pros', WPP: 'Web Promotion Partners' };
+export const brandOf = rec => (String(rec?.brand ?? '').trim().toUpperCase() === 'WPP' ? 'WPP' : 'LFMP');
+// rows = loadBuilderRecords() rows; keys: any of { id, reviewCode, kpiSlug, locationId } of the tool's item
+export function brandFor(rows, keys = {}) {
+  const k = keys || {};
+  const row = (rows || []).find(r => (k.id && r.id === k.id) || (k.reviewCode && r.reviewCode === k.reviewCode)
+    || (k.kpiSlug && r.kpiSlug === k.kpiSlug) || (k.locationId && r.locationId === k.locationId));
+  return row ? brandOf(row) : 'LFMP';
+}
+export const BRAND_KEY = 'lfmp-brand-filter';
+const okBrand = v => (v === 'LFMP' || v === 'WPP' ? v : 'all');
+export function getBrandFilter() { try { return okBrand(globalThis.localStorage?.getItem(BRAND_KEY)); } catch { return 'all'; } }
+export function setBrandFilter(v) {
+  const b = okBrand(v);
+  try { if (b === 'all') globalThis.localStorage?.removeItem(BRAND_KEY); else globalThis.localStorage?.setItem(BRAND_KEY, b); } catch { /* blocked: this page only */ }
+  return b;
+}
+// "WPP " / "LFMP " / "" for the summary, search placeholder and Show N: "1 WPP sub-account", "Search 1 WPP client"
+export const brandWord = b => (b === 'LFMP' || b === 'WPP' ? `${b} ` : '');
+// the row's grey line starts with the brand only when every brand is shown
+export const brandSub = (brand, filter, sub) => (okBrand(filter) === 'all' ? [brand, sub].filter(Boolean).join(' · ') : sub);
+// brand counts for the menu and the sheet: items = [{ brand }]
+export const brandCounts = items => ({ all: (items || []).length, LFMP: (items || []).filter(x => x.brand !== 'WPP').length, WPP: (items || []).filter(x => x.brand === 'WPP').length });
+
+const BRAND_OPTS = [['all', 'All clients'], ['LFMP', 'LFMP'], ['WPP', 'WPP']];
+export const BRAND_HINT = 'Same choice on Clients, Scorecards and Reviews (this device).';
+// Desktop: "All clients ▾" next to the search; open = its menu is showing
+export function brandMenuHtml({ value = 'all', counts = {}, open = false }) {
+  const v = okBrand(value);
+  const btn = `<button type="button" class="lv-bf lv-hit${v !== 'all' ? ' on' : ''}" data-lv-bf aria-haspopup="menu" aria-expanded="${open}" aria-label="Clients: ${escH(v === 'all' ? 'All clients' : v)}"><span class="lv-bfdot" aria-hidden="true"></span>${escH(v === 'all' ? 'All clients' : v)}<span class="lv-car" aria-hidden="true">▾</span></button>`;
+  const pop = open ? `<div class="lv-bfpop" role="menu" aria-label="Clients">${BRAND_OPTS.map(([k, l]) => `<button type="button" role="menuitemradio" aria-checked="${k === v}" data-lv-bfpick="${k}"><span class="lv-ck" aria-hidden="true">${k === v ? '✓' : ''}</span>${escH(l)}<span class="lv-n">${escH(counts[k] ?? 0)}</span></button>`).join('')}<div class="lv-bfhint">${escH(BRAND_HINT)}</div></div>` : '';
+  return `<div class="lv-bfw" data-lv-bfw>${btn}${pop}</div>`;
+}
+const FILTER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>';
+const segWord = s => String(s?.phone ?? s?.label ?? '').replace(/\s*·\s*\d+$/, '').replace(/\s+\d+$/, '').trim();
+const segN = s => (Number.isFinite(s?.n) ? s.n : Number((/(\d+)\s*$/.exec(String(s?.label ?? '')) || [])[1] || 0));
+const needsSeg = segs => (segs || []).find(s => s.needs || s.key === 'attention' || s.key === 'need');
+// Phone: one Filter button (status + brand); the gold badge = how many filters are on
+export function filterBtnHtml({ brand = 'all', active = 'all', segs = [] }) {
+  const on = (okBrand(brand) !== 'all') + (!!segs.length && active !== (segs[0]?.key ?? 'all'));
+  return `<button type="button" class="lv-fbtn lv-hit" data-lv-fbtn aria-haspopup="dialog" aria-label="Filter${on ? ` (${on} on)` : ''}">${FILTER_ICON}Filter${on ? `<span class="lv-fbd" aria-hidden="true">${on}</span>` : ''}</button>`;
+}
+// Phone: each active filter as a chip under the search (✕ clears it), plus the red "Needs you · N ›" shortcut
+export function filterChipsHtml({ brand = 'all', active = 'all', segs = [] }) {
+  const b = okBrand(brand), all = segs[0]?.key ?? 'all', cur = segs.find(s => s.key === active), ns = needsSeg(segs);
+  const chips = [b !== 'all' ? `<button type="button" class="lv-hit" data-lv-clr="brand" aria-label="Clear ${escH(b)}">${escH(b)} <span aria-hidden="true">✕</span></button>` : '',
+    cur && active !== all ? `<button type="button" class="lv-hit" data-lv-clr="status" aria-label="Clear ${escH(segWord(cur))}">${escH(segWord(cur))} <span aria-hidden="true">✕</span></button>` : '',
+    ns && segN(ns) > 0 && active !== ns.key ? `<button type="button" class="lv-needs lv-hit" data-lv-needs="${escH(ns.key)}">${escH(segWord(ns))} · ${escH(segN(ns))} <span aria-hidden="true">›</span></button>` : ''].join('');
+  return `<div class="lv-chips" data-lv-chips>${chips}</div>`;
+}
+// Phone: the Filter sheet. brands = brandCounts(all items); segs = the status filter for the brand picked in the sheet
+export function filterSheetHtml({ brand = 'all', active = 'all', brands = {}, segs = [], showN = 0, noun = 'client' }) {
+  const b = okBrand(brand), one = (attr, v, cur, label) => `<button type="button" data-${attr}="${escH(v)}" aria-pressed="${v === cur}">${escH(label)}</button>`;
+  return `<div class="lv-fsh" data-lv-fclose></div><div class="lv-fsheet" role="dialog" aria-modal="true" aria-labelledby="lvFsT"><div class="lv-grab" aria-hidden="true"></div><h3 id="lvFsT">Filter</h3>
+<div class="lv-fgl" id="lvFsB">Clients</div><div class="lv-seg" role="group" aria-labelledby="lvFsB">${BRAND_OPTS.map(([k, l]) => one('lv-fb', k, b, `${k === 'all' ? 'All' : l} · ${brands[k] ?? 0}`)).join('')}</div>
+<div class="lv-fgl" id="lvFsS">Status</div><div class="lv-seg" role="group" aria-labelledby="lvFsS">${segs.map(s => one('lv-fs', s.key, active, `${segWord(s)} · ${segN(s)}`)).join('')}</div>
+<div class="lv-facts"><button type="button" data-lv-freset>Reset</button><button type="button" class="p" data-lv-fapply>Show ${escH(showN)} ${escH(noun)}${showN === 1 ? '' : 's'}</button></div></div>`;
+}
+// Wires the brand menu, chips, Needs you chip and the phone sheet in host (once per host). o:
+//   getBrand() / getStatus() → current; segsFor(brand) → the status segs (with counts) for that brand;
+//   countFor(brand, status) → how many rows show; brands() → brandCounts(...); noun; onChange({ brand, status })
+export function wireListFilter(host, o) {
+  if (!host || host.__lvFilter) { if (host) host.__lvFilter = o; return; }
+  host.__lvFilter = o;
+  const O = () => host.__lvFilter;
+  const set = (brand, status) => { const b = setBrandFilter(brand); O().onChange({ brand: b, status }); };
+  const closeMenu = (focus = false) => { const w = host.querySelector('[data-lv-bfw]'); if (!w?.querySelector('.lv-bfpop')) return; w.outerHTML = brandMenuHtml({ value: O().getBrand(), counts: O().brands(), open: false }); if (focus) host.querySelector('[data-lv-bf]')?.focus(); };
+  const openMenu = () => { const w = host.querySelector('[data-lv-bfw]'); if (!w) return; w.outerHTML = brandMenuHtml({ value: O().getBrand(), counts: O().brands(), open: true }); host.querySelector('[data-lv-bfpick][aria-checked="true"]')?.focus(); };
+  host.addEventListener('click', e => {
+    const t = e.target.closest('[data-lv-bf],[data-lv-bfpick],[data-lv-clr],[data-lv-needs],[data-lv-fbtn]'); if (!t) return;
+    if (t.matches('[data-lv-bf]')) { if (t.getAttribute('aria-expanded') === 'true') closeMenu(true); else openMenu(); }
+    else if (t.matches('[data-lv-bfpick]')) { const v = t.dataset.lvBfpick; closeMenu(); set(v, O().getStatus()); host.querySelector('[data-lv-bf]')?.focus(); }
+    else if (t.matches('[data-lv-clr]')) { if (t.dataset.lvClr === 'brand') set('all', O().getStatus()); else set(O().getBrand(), O().segsFor(O().getBrand())[0]?.key ?? 'all'); }
+    else if (t.matches('[data-lv-needs]')) set(O().getBrand(), t.dataset.lvNeeds);
+    else if (t.matches('[data-lv-fbtn]')) openFilterSheet(O(), set, t);
+  });
+  host.addEventListener('keydown', e => {
+    if (!host.querySelector('.lv-bfpop')) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeMenu(true); return; }
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      const items = [...host.querySelectorAll('[data-lv-bfpick]')], i = items.indexOf(document.activeElement);
+      e.preventDefault(); items[(i + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length]?.focus();
+    }
+  });
+  document.addEventListener('click', e => { if (!e.target.closest?.('[data-lv-bfw]')) closeMenu(); }, true);
+}
+function openFilterSheet(o, set, opener) {
+  document.querySelectorAll('.lv-fsheet,.lv-fsh').forEach(x => x.remove());
+  let b = o.getBrand(), s = o.getStatus();
+  const wrap = document.createElement('div'); wrap.className = 'lv-fwrap' + (reducedMotion() ? ' lv-nomo' : '');
+  const paint = () => {
+    const segs = o.segsFor(b); if (!segs.some(x => x.key === s)) s = segs[0]?.key ?? 'all';
+    wrap.innerHTML = filterSheetHtml({ brand: b, active: s, brands: o.brands(), segs, showN: o.countFor(b, s), noun: o.noun || 'client' });
+  };
+  let pushed = false;
+  const close = (back = true) => {
+    wrap.remove(); document.removeEventListener('keydown', onKey, true); removeEventListener('popstate', onPop);
+    if (back && pushed) { pushed = false; history.back(); }
+    opener?.isConnected ? opener.focus() : document.querySelector('[data-lv-fbtn]')?.focus();
+  };
+  const onPop = () => { pushed = false; close(false); };
+  const onKey = e => {
+    if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+    if (e.key !== 'Tab') return;   // focus stays in the sheet
+    const f = [...wrap.querySelectorAll('button')].filter(x => !x.disabled); if (!f.length) return;
+    const i = f.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && (i === f.length - 1 || i < 0)) { e.preventDefault(); f[0].focus(); }
+  };
+  wrap.addEventListener('click', e => {
+    const t = e.target.closest('[data-lv-fb],[data-lv-fs],[data-lv-freset],[data-lv-fapply],[data-lv-fclose]'); if (!t) return;
+    if (t.matches('[data-lv-fclose]')) return close();
+    if (t.matches('[data-lv-fb]')) b = t.dataset.lvFb; else if (t.matches('[data-lv-fs]')) s = t.dataset.lvFs;
+    else if (t.matches('[data-lv-freset]')) { b = 'all'; s = o.segsFor('all')[0]?.key ?? 'all'; }
+    else if (t.matches('[data-lv-fapply]')) { close(); set(b, s); return; }
+    const key = t.matches('[data-lv-fb]') ? `[data-lv-fb="${b}"]` : t.matches('[data-lv-fs]') ? `[data-lv-fs="${s}"]` : '[data-lv-freset]';
+    paint(); wrap.querySelector(key)?.focus();
+  });
+  paint(); document.body.appendChild(wrap);
+  try { history.pushState({ lvSheet: 1 }, ''); pushed = true; addEventListener('popstate', onPop); } catch { /* no history: Esc / outside still close */ }
+  document.addEventListener('keydown', onKey, true);
+  wrap.querySelector('[data-lv-fb][aria-pressed="true"]')?.focus();
+}
+// Repaint the list head in place (counts, brand, chips, summary, placeholder) without touching the search box's typing
+export function updateListHead(host, opts) {
+  const head = host?.querySelector('.lv-hrow'); if (!head) return;
+  const t = document.createElement('template'); t.innerHTML = pageHeadHtml(opts);
+  const swap = sel => { const n = t.content.querySelector(sel), o = host.querySelector(sel); if (n && o) o.replaceWith(n); };
+  if (opts.brand) { if (!host.querySelector('[data-lv-bfw]')?.querySelector('.lv-bfpop')) swap('[data-lv-bfw]'); swap('[data-lv-fbtn]'); swap('[data-lv-chips]'); }
+  swap('.lv-seg');
+  const sum = host.querySelector('[data-lv-sum]'); if (sum && opts.summary !== undefined) sum.textContent = opts.summary;
+  const inp = host.querySelector('.lv-search input');
+  if (inp && opts.search?.placeholder) { inp.placeholder = opts.search.placeholder; if (!opts.search.keepLabel) inp.setAttribute('aria-label', opts.search.placeholder); }
 }
 
 // ---------------------------------------------------------------- client names (v1.16.0)
@@ -274,7 +420,7 @@ export function displayName(name) {
 export const nameKey = name => displayName(name).replace(/^the\s+/i, '').toLowerCase();
 export const byName = get => (a, b) => nameKey(get(a)).localeCompare(nameKey(get(b)), 'en', { sensitivity: 'base', numeric: true }) || String(get(a)).localeCompare(String(get(b)));
 // The Builder's client records (private repo, records/<id>.json) through the team site, read only:
-// [{ id, name, locationId, reviewCode, kpiSlug, linkSent }]. Never throws: any failure = [] (tools keep their own names).
+// [{ id, name, locationId, reviewCode, kpiSlug, linkSent, brand }] (v2.7.0: brand = 'LFMP' | 'WPP'). Never throws: any failure = [] (tools keep their own names).
 let recordsPromise = null;
 // v2.4.2: gh = another GitHub reader with the same answers (the team site's server passes its own for /api/greet-counts);
 // such a read is never shared with the page's.
@@ -294,7 +440,7 @@ function readBuilderRecords(ghFetch) {
       const recs = await Promise.all(files.map(f => ghFetch('GET', `${REPO}/contents/records/${f.name}?ref=main`, null, { raw: true })
         .then(x => (x.ok ? x.text() : null)).then(t => (t ? JSON.parse(t) : null)).catch(() => null)));
       return recs.filter(x => x && x.id && x.businessName).map(x => ({ id: x.id, name: displayName(x.businessName), locationId: x.locationId || '',
-        reviewCode: x.review?.code || '', kpiSlug: x.kpi?.slug || '', linkSent: x.review?.linkSent || null }));
+        reviewCode: x.review?.code || '', kpiSlug: x.kpi?.slug || '', linkSent: x.review?.linkSent || null, brand: brandOf(x) }));
     } catch { return []; }
   })();
 }
@@ -1026,7 +1172,7 @@ export function firstName(me) {
   return e ? e[0].toUpperCase() + e.slice(1) : '';
 }
 // Should the greeting play now? Remembers today (first call of the day = true). Storage that throws = false (never plays).
-export function claimGreetingDay(store = globalThis.localStorage, now = new Date()) {
+export function claimGreetingDay(store = safeStorage(), now = new Date()) {
   try {
     if (!store) return false;
     const day = dayKey(now);
@@ -1036,15 +1182,15 @@ export function claimGreetingDay(store = globalThis.localStorage, now = new Date
   } catch { return false; }
 }
 // v2.4.1: Sign out (only) forgets today's mark, so the next load after signing back in greets again.
-export function forgetGreetingDay(store = globalThis.localStorage) {
+export function forgetGreetingDay(store = safeStorage()) {
   try { store?.removeItem(GREET_DAY_KEY); } catch {}
 }
 // A tool notes its own count whenever its list loads, so the other two tools can show it in their greeting.
-export function noteCount(kind, n, store = globalThis.localStorage, now = Date.now()) {
+export function noteCount(kind, n, store = safeStorage(), now = Date.now()) {
   if (!GREET_KINDS.some(k => k[0] === kind) || !Number.isFinite(Number(n))) return;
   try { const all = JSON.parse(store.getItem(GREET_COUNTS_KEY) || '{}') || {}; all[kind] = { n: Number(n), at: now }; store.setItem(GREET_COUNTS_KEY, JSON.stringify(all)); } catch {}
 }
-export function cachedCounts(store = globalThis.localStorage, now = Date.now()) {
+export function cachedCounts(store = safeStorage(), now = Date.now()) {
   try {
     const all = JSON.parse(store.getItem(GREET_COUNTS_KEY) || '{}') || {}, out = {};
     for (const [k] of GREET_KINDS) { const c = all[k]; if (c && Number.isFinite(c.n) && now - c.at >= 0 && now - c.at < COUNT_FRESH_MS) out[k] = c.n; }
@@ -1059,7 +1205,7 @@ export function cachedCounts(store = globalThis.localStorage, now = Date.now()) 
 // Resolves as soon as every number has an answer, or all reads are done, or at `wait`. A team-site number is noted only
 // when no per-tool read beat it (it can be up to 10 minutes old).
 const validN = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
-export async function greetCounts(reads, { wait = GREET_WAIT_MS, store = globalThis.localStorage, now = Date.now(), server = null } = {}) {
+export async function greetCounts(reads, { wait = GREET_WAIT_MS, store = safeStorage(), now = Date.now(), server = null } = {}) {
   const cached = cachedCounts(store, now), tool = {}, srv = {}, seq = { n: 0 };
   let wake = () => {};
   const allIn = () => GREET_KINDS.every(([k]) => k in tool || k in srv);
@@ -1081,7 +1227,7 @@ export async function greetCounts(reads, { wait = GREET_WAIT_MS, store = globalT
 // The team site's counts (/api/greet-counts: { counts: { clients: { hidden, shown, at }, … } }) → { clients: n, … },
 // each by this browser's own "Show test clients" in that tool. Quiet: never sends anyone to sign in, never throws.
 export const GREET_TESTS_KEYS = { clients: 'sab-show-tests', scorecards: 'leadpro-admin-tests', reviews: 'ar-admin-tests' };
-export function pickServerCounts(res, store = globalThis.localStorage) {
+export function pickServerCounts(res, store = safeStorage()) {
   const out = {};
   for (const [k] of GREET_KINDS) {
     const c = res?.counts?.[k]; if (!c) continue;
@@ -1090,7 +1236,7 @@ export function pickServerCounts(res, store = globalThis.localStorage) {
   }
   return out;
 }
-export async function readServerCounts(store = globalThis.localStorage) {
+export async function readServerCounts(store = safeStorage()) {
   const r = await lfmpFetch(`${API_BASE}greet-counts`, { method: 'POST', redirect: 'manual', credentials: 'same-origin', cache: 'no-store',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: '{}' });
   if (!r.ok) throw new Error(`greet-counts ${r.status}`);
@@ -1102,7 +1248,7 @@ export const GREET_SOURCES = { clients: '/ghl-subaccount-builder-page/greet-coun
 export const TOOL_KIND = { builder: 'clients', kpi: 'scorecards', review: 'reviews' };
 export function readOtherCount(kind) {
   return import(GREET_SOURCES[kind])
-    .then(m => m.readCount({ ghFetch, api, loadBuilderRecords, store: globalThis.localStorage }))
+    .then(m => m.readCount({ ghFetch, api, loadBuilderRecords, store: safeStorage() }))
     .then(o => ({ [kind]: o?.[kind] }));
 }
 // The greeting's reads for a tool: its own count (from its own list load) + the other two, read fresh.
@@ -1133,7 +1279,7 @@ export function greetingHtml({ hour, date = new Date(), name = '', counts = {} }
 // fresh counts (reads: the tool's own + the other two, v2.4.1) join if they arrive before the number row shows
 // (STATS_AT); later = the remembered one or left out. No spinner, no error. count = a single read (older callers).
 export const STATS_AT = 1450;
-export async function playGreeting({ me, count, reads = count, server = null, store = globalThis.localStorage, now = new Date(), onEnd } = {}) {
+export async function playGreeting({ me, count, reads = count, server = null, store = safeStorage(), now = new Date(), onEnd } = {}) {
   if (!hasDoc() || reducedMotion() || !claimGreetingDay(store, now)) return false;
   document.querySelector('[data-lv-greet]')?.remove();
   document.body.insertAdjacentHTML('beforeend', greetingHtml({ hour: now.getHours(), date: now, name: firstName(me), counts: cachedCounts(store, now.getTime()) }));
@@ -1169,7 +1315,7 @@ export async function playGreeting({ me, count, reads = count, server = null, st
   });
 }
 // "Your menu ›" under the initials for ~2 s after the greeting, only in the first 3 days after this release (per device).
-export function menuHintDue(store = globalThis.localStorage, now = new Date()) {
+export function menuHintDue(store = safeStorage(), now = new Date()) {
   try {
     let from = store.getItem(MENU_HINT_KEY);
     if (!from) { from = dayKey(now); store.setItem(MENU_HINT_KEY, from); }
