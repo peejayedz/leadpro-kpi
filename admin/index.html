@@ -672,6 +672,14 @@ async function toggleBanner(f) {
 // ---------- v1.28.0: status + counts only ----------
 // Draft → live = "Add to GHL menu" (same as the Builder's KPI tab): menu-link.yml runs ONLY the existing menu-link step
 // ("KPI Dashboard", this one sub-account) and removes the Draft status once the link is there. Asked once, with a tick.
+// v1.32.1: when menu-link.yml fails, it saves why in status/menu-link-<slug>.json (GHL's words, no link or passphrase).
+// For this request, that reason replaces the generic run message on the error (the "View run" link is kept).
+async function menuWhy(slug, request, e) {
+  const s = await getJSON(`status/menu-link-${slug}.json`).catch(() => null);
+  if (!s || s.request !== request || s.result !== 'failed' || typeof s.reason !== 'string' || !s.reason.trim()) return;
+  const link = (/ <a href="[^"]+" target="_blank" rel="noopener">View run<\/a>$/.exec(e?.html ? e.message : '') || [''])[0];
+  Object.assign(e, { message: `${esc(s.reason.trim())}${link}`, html: true });
+}
 function publishDialog(f) {
   openDialog({
     title: `Add the KPI link to ${esc(fname(f))}'s GHL menu?`, ok: 'Add to GHL menu',
@@ -700,6 +708,7 @@ function publishDialog(f) {
           ...(hasId ? { next: { label: 'Copy CSS rule', onClick: () => copyCssRule(f) } } : {}) });
         resyncFirm(f);
       } catch (e) {
+        await menuWhy(f.slug, request, e);   // v1.32.1: GHL's own reason instead of "GitHub stopped it"
         say(`<span class="chip bad">Not added</span> ${errHtml(e)} The scorecard stays a Draft.`);
         job.fail({ reason: errText(e), nothingChanged: 'the scorecard stays a Draft and nothing was added to GHL.', line: 'Not added to GHL menu', onRetry: () => publishDialog(f) });
       }

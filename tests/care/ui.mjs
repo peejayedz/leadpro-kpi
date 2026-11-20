@@ -248,6 +248,21 @@ try {
     await ctx.close();
   }
 
+  { // v1.32.1: GHL refuses the link → the Didn't work popup shows GHL's reason (from status/menu-link-<slug>.json), not "GitHub stopped it"
+    freshGitHub();
+    G.M.menuFail = 'GHL refused the link: openMode must be one of the following values: new_tab, current_tab (422).';
+    const { ctx, page } = await open(`${ADMIN}#/firm/${SLUG}/setup`);
+    await page.waitForSelector('#dPanel [data-f="publish"]');
+    await page.click('#dPanel [data-f="publish"]'); await page.check('#dlgOk2'); await page.click('#dlgOk');
+    await page.waitForSelector('.lv-res', { timeout: 40000 });
+    const t = await page.textContent('.lv-res');
+    check(/Didn't work/i.test(t) && t.includes(G.M.menuFail) && !/GitHub stopped it/.test(t), 'Add to GHL menu refused: the popup shows GHL\'s reason', t);
+    const idx = JSON.parse(G.M.overlay.get('firms/index.json')).find(f => f.slug === SLUG);
+    check(idx?.status === 'draft' && !G.M.dispatches.some(d => d.workflow === 'sync.yml') && !G.M.commits.length, 'refused: still a Draft, no re-sync, nothing committed by the page');
+    await shot(page, 'admin-menu-refused-1440-light', false);
+    await ctx.close();
+  }
+
   // ================= Map pipelines (Needs mapping, pre-filled) =================
   for (const [w, width, height] of SIZES) for (const scheme of SCHEMES) {
     freshGitHub({ status: 'needsMapping' });

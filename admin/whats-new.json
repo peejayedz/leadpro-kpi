@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.32.1": {
+    "title": "Add to GHL menu says why",
+    "summary": "If GHL won't add the KPI link, the message gives GHL's own reason.",
+    "items": [
+      { "type": "fixed", "tag": "internal", "text": "When Add to GHL menu doesn't work, the message now says what GHL answered (for example that it refused the link and why) instead of only \"GitHub stopped it before it finished\"." }
+    ]
+  },
   "1.32.0": {
     "title": "Ask first, and Remove firm",
     "summary": "Changes ask first; Remove firm works like Remove scorecard in the Builder.",

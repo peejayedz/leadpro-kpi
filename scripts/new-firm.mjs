@@ -168,13 +168,20 @@ async function cmdWrite() {
 }
 
 async function cmdMenu() {
-  const { ensureMenuLink } = await import('./ghl-menu.mjs');
+  const { ensureMenuLink, menuReason } = await import('./ghl-menu.mjs');
   const i = input(), slug = env.NF_SLUG;
   const cfgPath = `${ROOT}firms/${slug}/config.json`, cfg = await readJSON(cfgPath);
   if (cfg?.menuLink?.status === 'created' || cfg?.menuLink?.status === 'exists') { log('Menu link: already done.'); await output({ menu: cfg.menuLink.status, menuid: cfg.menuLink.id ? 'yes' : 'no' }); return 0; }
-  const { result: res, id } = await ensureMenuLink({ token: env.GHL_MENU_TOKEN, locationId: i.locationId, slug, passphrase: env.NF_PASSPHRASE });
+  const { result: res, id, ghl } = await ensureMenuLink({ token: env.GHL_MENU_TOKEN, locationId: i.locationId, slug, passphrase: env.NF_PASSPHRASE });
+  // v1.32.1: GHL's own reason (links and the passphrase cut out) goes in the log and in status/menu-link-<slug>.json, which
+  // KPI admin and the Builder read to show it in the Didn't work popup instead of "GitHub stopped it".
+  const ok = res === 'created' || res === 'exists', reason = ok ? '' : menuReason(res, ghl);
+  if (/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug || '')) {
+    await (await import('node:fs/promises')).mkdir(`${ROOT}status`, { recursive: true });
+    await writeFile(`${ROOT}status/menu-link-${slug}.json`, jsonText({ slug, request: String(env.NF_REQUEST || '').slice(0, 60), at: new Date().toISOString(), result: ok ? res : 'failed', ...(ok ? {} : { code: res, reason }) }));
+  }
   log({ created: 'Menu link: created "KPI Dashboard" on this sub-account (opens inside GHL).', exists: 'Menu link: a "KPI Dashboard" link is already on this sub-account; nothing created.',
-    'skipped-no-token': 'Menu link: skipped (no GHL_MENU_TOKEN). Add it by hand with the link from the builder.', 'skipped-list-failed': 'Menu link: skipped (couldn\'t list the existing links, so a duplicate couldn\'t be ruled out). Add it by hand.' }[res] || `Menu link: not created (${res}). Add it by hand.`);
+    'skipped-no-token': 'Menu link: skipped (no GHL_MENU_TOKEN). Add it by hand with the link from the builder.', 'skipped-list-failed': 'Menu link: skipped (couldn\'t list the existing links, so a duplicate couldn\'t be ruled out). Add it by hand.' }[res] || `Menu link: not created (${res}). ${reason}`);
   if (res === 'created' || res === 'exists') log(id ? 'Menu link id kept for the Custom CSS rule.' : 'Menu link id not found: use "Show CSS rule" in KPI admin → Setup later.');
   // v1.30.0: the link id (not secret) is kept for the agency Custom CSS rule; the URL (with the passphrase) never is.
   if (cfg && (res === 'created' || res === 'exists')) { cfg.menuLink = { status: res, at: new Date().toISOString(), ...(id ? { id } : {}) }; await writeFile(cfgPath, jsonText(cfg)); }

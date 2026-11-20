@@ -123,6 +123,7 @@ async function startMock(o = {}) {
     const send = (s, j) => { res.writeHead(s, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(j)); };
     if (u.pathname === '/oauth/installed-locations') { polls++; const has = o.appAfter !== undefined && polls > o.appAfter; return send(200, { items: [{ _id: 'other0000000000000001', isInstalled: true }, ...(has ? [{ _id: LOC, isInstalled: true }] : [])], pagination: { hasNextPage: false } }); }
     if (/^\/custom-menus\/?$/.test(u.pathname) && req.method === 'GET') return o.listFail ? send(403, { message: 'scope' }) : send(200, { customMenus: o.existing || [] });
+    if (/^\/custom-menus\/?$/.test(u.pathname) && req.method === 'POST' && o.postFail) return send(o.postFail.status, o.postFail.body);
     if (/^\/custom-menus\/?$/.test(u.pathname) && req.method === 'POST') { const b = body ? JSON.parse(body) : {}; const made = { id: o.newId ?? MENU_ID, ...b }; if (o.idAfterPost) o.existing = [...(o.existing || []), made]; return send(201, o.noIdInAnswer ? {} : { customMenu: made }); }
     send(404, {});
   });
@@ -185,7 +186,8 @@ async function menuRun(mockOpt, extra = {}) {
     await writeFile(join(tmp, 'firms/zz-test-2/config.json'), JSON.stringify({ locationId: LOC }));
     const out = join(tmp, 'out.txt');
     const r = await cmd(tmp, 'menu', nfEnv(m, { GHL_MENU_TOKEN: 'MENU-TOKEN-VALUE-123', NF_PASSPHRASE: PASS, GITHUB_OUTPUT: out, ...extra }));
-    res = { ...r, calls: m.calls, outFile: await readFile(out, 'utf8').catch(() => ''), cfg: JSON.parse(await readFile(join(tmp, 'firms/zz-test-2/config.json'), 'utf8')) };
+    res = { ...r, calls: m.calls, outFile: await readFile(out, 'utf8').catch(() => ''), cfg: JSON.parse(await readFile(join(tmp, 'firms/zz-test-2/config.json'), 'utf8')),
+      statusText: await readFile(join(tmp, 'status/menu-link-zz-test-2.json'), 'utf8').catch(() => '') };
   }, mockOpt);
   return res;
 }
@@ -204,6 +206,42 @@ test('Menu link: one "KPI Dashboard" link, this sub-account only, opens inside G
   eq(r.cfg.menuLink?.id, MENU_ID, 'v1.30.0: the link id from GHL\'s answer is kept'); ok(/menuid=yes/.test(r.outFile), 'menuid output');
   ok(!JSON.stringify(r.cfg).includes('#k='), 'config holds no link with the passphrase');
   noLeak(r);
+});
+
+test('v1.32.1 Menu link refused by GHL (422): GHL\'s reason in the log and status/menu-link-<slug>.json; no link or passphrase; still a Draft', async () => {
+  const url = `https://dashboard.lawfirmmarketingpros.com/leadpro-kpi/firms/zz-test-2/#k=${encodeURIComponent(PASS)}`;
+  const r = await menuRun({ postFail: { status: 422, body: { statusCode: 422, message: ['openMode must be one of the following values: new_tab, current_tab', `url ${url} is not allowed`], error: 'Unprocessable Entity' } } }, { NF_REQUEST: 'adm-test123' });
+  eq(r.code, 0, 'the menu step itself never fails the run (go-live does)');
+  eq(r.calls.filter(c => c.method === 'POST').length, 1, 'one POST, no retry');
+  ok(/Menu link: not created \(failed:422\)\. GHL refused the link: openMode must be one of the following values: new_tab, current_tab; url \[link\] is not allowed; Unprocessable Entity \(422\)\./.test(r.out), `log has GHL's reason (${r.out})`);
+  const s = JSON.parse(r.statusText || 'null');
+  eq([s?.slug, s?.request, s?.result, s?.code], ['zz-test-2', 'adm-test123', 'failed', 'failed:422'], 'status file');
+  ok(/^GHL refused the link: openMode must be one of/.test(s?.reason || ''), 'status reason');
+  ok(!r.statusText.includes(PASS) && !r.statusText.includes(encodeURIComponent(PASS)) && !r.statusText.includes('#k=') && !r.statusText.includes('https://'), 'status file holds no link or passphrase');
+  eq(r.cfg.menuLink, undefined, 'config: no menuLink, so go-live keeps the Draft');
+  noLeak(r);
+});
+
+test('v1.32.1 Menu link: plain-words reasons (token refused / no reason / server error / unreachable / list failed); redaction', async () => {
+  const { menuReason, ghlMessage } = await import(join(ROOT, 'scripts/ghl-menu.mjs'));
+  eq(menuReason('failed:401', 'Invalid JWT'), 'GHL refused the menu token: Invalid JWT (401). GHL_MENU_TOKEN may have expired or lost the custom-menu-link.write scope.', '401');
+  eq(menuReason('failed:422', ''), 'GHL refused the link (422) and gave no reason.', '422 no reason');
+  ok(/^GHL had a server error \(503\)/.test(menuReason('failed:503', '')), '503');
+  ok(/^Couldn't reach GHL/.test(menuReason('failed:0', '')), 'network');
+  ok(/didn't let us read the existing menu links/.test(menuReason('skipped-list-failed')), 'list failed');
+  eq(ghlMessage({ message: `bad ${'p#ss w0rd!'} and ${encodeURIComponent('p#ss w0rd!')} at http://a.b/c#k=x` }, ['p#ss w0rd!']), 'bad [hidden] and [hidden] at [link]', 'redacts passphrase (raw + encoded) and links');
+  eq(ghlMessage({ message: 'x'.repeat(400) }).length, 298, 'at most 300 characters');
+  eq(ghlMessage(null), '', 'no body');
+});
+
+test('v1.32.1 Menu link created → the status file says created (a stale failure is replaced); menu-link.yml saves it', async () => {
+  const r = await menuRun({}, { NF_REQUEST: 'adm-ok1' });
+  const s = JSON.parse(r.statusText || 'null');
+  eq([s?.request, s?.result, s?.reason], ['adm-ok1', 'created', undefined], 'status file');
+  const wf = await readFile(join(ROOT, '.github/workflows/menu-link.yml'), 'utf8');
+  ok(/NF_REQUEST: \$\{\{ inputs\.request \}\}/.test(wf), 'request id passed');
+  ok(wf.includes('git add "firms/$NF_SLUG/config.json" firms/index.json "status/menu-link-$NF_SLUG.json"'), 'go-live commits it');
+  ok(/name: Save why the link wasn't added\n\s+if: failure\(\)/.test(wf) && wf.includes('git add "$f"\n'), 'failure step commits only the status file');
 });
 
 test('Menu link: already on this sub-account → nothing created', async () => {

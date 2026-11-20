@@ -53,15 +53,38 @@ export function guardMenu(method, path, body, checked = null) {
   throw new Error(`Blocked: the menu-link step may not call ${m} ${p.replace(/[A-Za-z0-9]{15,}/g, ':id')} on GHL.`);
 }
 
-async function call(method, path, { token, body, checked } = {}) {
+async function call(method, path, { token, body, checked, secrets = [] } = {}) {
   guardMenu(method, path, body, checked);
   let res;
   try {
     res = await fetch(GHL_API() + path, { method, headers: { Accept: 'application/json', Version: 'v3', Authorization: `Bearer ${token}`, ...(body ? { 'Content-Type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined });
   } catch (e) { const err = new Error(`couldn't reach GHL (${e.cause?.code || 'network'})`); err.status = 0; throw err; }
   let data = {}; try { data = await res.json(); } catch {}
-  if (!res.ok) { const err = new Error(`GHL ${method} /custom-menus failed (${res.status})`); err.status = res.status; throw err; }
+  if (!res.ok) { const err = new Error(`GHL ${method} /custom-menus failed (${res.status})`); err.status = res.status; err.ghl = ghlMessage(data, secrets); throw err; }
   return data;
+}
+
+// v1.32.1: GHL's own words for a refusal (e.g. 422 {"message":["openMode must be …"]}), safe to log and to show in the
+// popup: links and the dashboard passphrase (raw or URL-encoded) are cut out, one line, at most 300 characters.
+export function ghlMessage(data, secrets = []) {
+  const parts = [data?.message, data?.error, data?.msg].flat().filter(x => typeof x === 'string' && x.trim());
+  let s = [...new Set(parts)].join('; ');
+  for (const v of secrets.filter(x => typeof x === 'string' && x.length >= 4)) for (const f of [v, encodeURIComponent(v)]) s = s.split(f).join('[hidden]');
+  s = s.replace(/https?:\/\/\S+/gi, '[link]').replace(/#k=\S*/g, '[hidden]').replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return s.length > 300 ? `${s.slice(0, 297)}…` : s;
+}
+
+// v1.32.1: the plain-words reason for a result that isn't created / exists (menu-link.yml log, the status file, the popups).
+export function menuReason(result, ghl = '') {
+  const code = Number((/^failed:(\d+)$/.exec(result || '') || [])[1]);
+  if (result === 'skipped-no-token') return 'GHL_MENU_TOKEN isn\'t set, so nothing was sent to GHL.';
+  if (result === 'skipped-list-failed') return 'GHL didn\'t let us read the existing menu links, so nothing was sent (a duplicate couldn\'t be ruled out).';
+  if (result === 'failed:input') return 'The firm\'s location ID, slug or passphrase is missing or not valid, so nothing was sent to GHL.';
+  if (code === 401 || code === 403) return `GHL refused the menu token${ghl ? `: ${ghl}` : ''} (${code}). GHL_MENU_TOKEN may have expired or lost the custom-menu-link.write scope.`;
+  if (code === 0 || result === 'failed:0') return 'Couldn\'t reach GHL. Nothing was added; try again in a few minutes.';
+  if (code >= 500) return `GHL had a server error${ghl ? `: ${ghl}` : ''} (${code}). Nothing was added; try again in a few minutes.`;
+  if (code) return ghl ? `GHL refused the link: ${ghl} (${code}).` : `GHL refused the link (${code}) and gave no reason.`;
+  return `The link wasn't added (${result || 'unknown'}).`;
 }
 
 const listOf = list => list?.customMenus || list?.items || list?.menus || (Array.isArray(list) ? list : []);
@@ -74,7 +97,7 @@ const kpiLinkHere = (m, locationId) => String(m.title || '').trim().toLowerCase(
 const keepId = (m, locationId) => (m && kpiLinkHere(m, locationId) && m.showToAllLocations !== true && Array.isArray(m.locations)
   && m.locations.length === 1 && validMenuId(idOf(m))) ? idOf(m) : null;
 
-// Returns { result, id }. result: 'created' | 'exists' | 'skipped-no-token' | 'skipped-list-failed' | 'failed:<status>'.
+// Returns { result, id, ghl? }. ghl (v1.32.1): GHL's own words when the POST is refused (ghlMessage). result: 'created' | 'exists' | 'skipped-no-token' | 'skipped-list-failed' | 'failed:<status>'.
 // id: the link's GHL id when known (from the POST answer, or read back with one GET; null if it can't be found).
 // Lists first: a "KPI Dashboard" link already shown on this sub-account means nothing is created.
 export async function ensureMenuLink({ token, locationId, slug, passphrase }) {
@@ -87,8 +110,8 @@ export async function ensureMenuLink({ token, locationId, slug, passphrase }) {
   if (here) return { result: 'exists', id: keepId(here, locationId) };
   const url = `${PAGES}firms/${slug}/#k=${encodeURIComponent(passphrase)}`;
   let made;
-  try { made = await call('POST', '/custom-menus/', { token, body: menuBody({ locationId, url }) }); }
-  catch (e) { return { result: `failed:${e.status ?? 0}`, id: null }; }
+  try { made = await call('POST', '/custom-menus/', { token, body: menuBody({ locationId, url }), secrets: [passphrase, url] }); }
+  catch (e) { return { result: `failed:${e.status ?? 0}`, id: null, ghl: e.ghl || '' }; }
   const m = made?.customMenu || made;
   if (validMenuId(idOf(m))) return { result: 'created', id: idOf(m) };
   // No id in GHL's answer: read it back (GET only). A failed read leaves the id unknown; the link itself is made.

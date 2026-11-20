@@ -60,6 +60,10 @@ export function createMockGitHub({ root, owner = 'peejayedz', repo = 'leadpro-kp
       if (n < 3) return;
       const slug = r.inputs.slug, idx = JSON.parse(await fileText('firms/index.json')), row = idx.find(f => f.slug === slug);
       if (!row || row.status !== 'draft') return finish('failure');
+      if (M.menuFail) {   // v1.32.1: GHL refuses the link → the run saves why (status/menu-link-<slug>.json) and fails at Go live
+        M.overlay.set(`status/menu-link-${slug}.json`, JSON.stringify({ slug, request: r.inputs.request, at: new Date().toISOString(), result: 'failed', code: 'failed:422', reason: M.menuFail }, null, 2) + '\n');
+        return finish('failure');
+      }
       delete row.status; M.overlay.set('firms/index.json', JSON.stringify(idx, null, 2) + '\n');
       const c = JSON.parse(await fileText(`firms/${slug}/config.json`)); c.menuLink = { status: 'created', at: new Date().toISOString(), id: M.menuId ?? '86cac337-1c2d-4e5f-8a9b-0c1d2e3f4a5b' };   // v1.30.0: id kept
       M.overlay.set(`firms/${slug}/config.json`, JSON.stringify(c, null, 2) + '\n');
