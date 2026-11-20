@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-20T15:37:27.358Z",
+  "generatedAt": "2026-11-20T16:07:29.658Z",
   "location": "Emery Law Office",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,9 +22,9 @@
     "today": {
       "label": "Today",
       "from": 1795150800000,
-      "to": 1795189047358,
+      "to": 1795190849658,
       "current": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -54,6 +54,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Website Number Pool",
+            1,
+            0
+          ],
+          [
             "Google Ads Extension Number",
             1,
             0
@@ -62,17 +67,17 @@
         "byChannel": [
           [
             "Third Party",
-            1,
+            2,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -360,9 +365,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1795189047358,
+      "to": 1795190849658,
       "current": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -392,6 +397,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Website Number Pool",
+            1,
+            0
+          ],
+          [
             "Google Ads Extension Number",
             1,
             0
@@ -400,17 +410,17 @@
         "byChannel": [
           [
             "Third Party",
-            1,
+            2,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -697,10 +707,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794584247358,
-      "to": 1795189047358,
+      "from": 1794586049658,
+      "to": 1795190849658,
       "current": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -730,6 +740,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Website Number Pool",
+            1,
+            0
+          ],
+          [
             "Google Ads Extension Number",
             1,
             0
@@ -738,17 +753,17 @@
         "byChannel": [
           [
             "Third Party",
-            1,
+            2,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -872,10 +887,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792597047358,
-      "to": 1795189047358,
+      "from": 1792598849658,
+      "to": 1795190849658,
       "current": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -905,6 +920,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Website Number Pool",
+            1,
+            0
+          ],
+          [
             "Google Ads Extension Number",
             1,
             0
@@ -913,17 +933,17 @@
         "byChannel": [
           [
             "Third Party",
-            1,
+            2,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -1047,10 +1067,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787413047358,
-      "to": 1795189047358,
+      "from": 1787414849658,
+      "to": 1795190849658,
       "current": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1080,6 +1100,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Website Number Pool",
+            1,
+            0
+          ],
+          [
             "Google Ads Extension Number",
             1,
             0
@@ -1088,17 +1113,17 @@
         "byChannel": [
           [
             "Third Party",
-            1,
+            2,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -1223,9 +1248,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795189047358,
+      "to": 1795190849658,
       "current": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1255,6 +1280,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Website Number Pool",
+            1,
+            0
+          ],
+          [
             "Google Ads Extension Number",
             1,
             0
@@ -1263,17 +1293,17 @@
         "byChannel": [
           [
             "Third Party",
-            1,
+            2,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -1561,9 +1591,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795189047358,
+      "to": 1795190849658,
       "current": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1593,6 +1623,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Website Number Pool",
+            1,
+            0
+          ],
+          [
             "Google Ads Extension Number",
             1,
             0
@@ -1601,17 +1636,17 @@
         "byChannel": [
           [
             "Third Party",
-            1,
+            2,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -1901,7 +1936,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-20T15:37:27.358Z",
+    "checkedAt": "2026-11-20T16:07:29.658Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
