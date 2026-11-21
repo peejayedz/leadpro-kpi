@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-21T22:37:22.258Z",
+  "generatedAt": "2026-11-21T23:07:24.132Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,9 +22,9 @@
     "today": {
       "label": "Today",
       "from": 1795237200000,
-      "to": 1795300642258,
+      "to": 1795302444132,
       "current": {
-        "totalLeads": 2,
+        "totalLeads": 3,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -33,7 +33,7 @@
         "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
-        "notInPipeline": 1,
+        "notInPipeline": 0,
         "qualified": 0,
         "qualifiedPct": null,
         "turnedAway": 0,
@@ -57,6 +57,11 @@
             "Unknown",
             2,
             0
+          ],
+          [
+            "[DLF] 2027 AI Ready Growth Kit",
+            1,
+            0
           ]
         ],
         "byChannel": [
@@ -64,15 +69,20 @@
             "Third Party",
             2,
             0
+          ],
+          [
+            "Meta Ads",
+            1,
+            0
           ]
         ],
-        "attributedLeads": 2,
+        "attributedLeads": 3,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            2,
+            3,
             "newLeads",
             null
           ],
@@ -436,18 +446,18 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1795300642258,
+      "to": 1795302444132,
       "current": {
-        "totalLeads": 70,
+        "totalLeads": 71,
         "contacted": 52,
-        "contactRatePct": 74.3,
+        "contactRatePct": 73.2,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
         "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
-        "notInPipeline": 3,
+        "notInPipeline": 2,
         "qualified": 11,
         "qualifiedPct": 21.2,
         "turnedAway": 1,
@@ -488,13 +498,13 @@
             0
           ],
           [
-            "Calendly",
+            "[DLF] 2027 AI Ready Growth Kit",
             7,
             0
           ],
           [
-            "[DLF] 2027 AI Ready Growth Kit",
-            6,
+            "Calendly",
+            7,
             0
           ],
           [
@@ -586,7 +596,7 @@
           ],
           [
             "Meta Ads",
-            6,
+            7,
             0
           ],
           [
@@ -600,13 +610,13 @@
             0
           ]
         ],
-        "attributedLeads": 60,
+        "attributedLeads": 61,
         "stageMoved": 53,
-        "attributionPct": 85.7,
+        "attributionPct": 85.9,
         "funnel": [
           [
             "New leads",
-            70,
+            71,
             "newLeads",
             null
           ],
@@ -1019,19 +1029,19 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794695842258,
-      "to": 1795300642258,
+      "from": 1794697644132,
+      "to": 1795302444132,
       "current": {
-        "totalLeads": 75,
+        "totalLeads": 76,
         "contacted": 52,
-        "contactRatePct": 69.3,
+        "contactRatePct": 68.4,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
         "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
-        "notInPipeline": 3,
+        "notInPipeline": 2,
         "qualified": 11,
         "qualifiedPct": 21.2,
         "turnedAway": 1,
@@ -1073,7 +1083,7 @@
           ],
           [
             "[DLF] 2027 AI Ready Growth Kit",
-            7,
+            8,
             0
           ],
           [
@@ -1170,7 +1180,7 @@
           ],
           [
             "Meta Ads",
-            7,
+            8,
             0
           ],
           [
@@ -1184,13 +1194,13 @@
             0
           ]
         ],
-        "attributedLeads": 65,
+        "attributedLeads": 66,
         "stageMoved": 53,
-        "attributionPct": 86.7,
+        "attributionPct": 86.8,
         "funnel": [
           [
             "New leads",
-            75,
+            76,
             "newLeads",
             null
           ],
@@ -1371,19 +1381,19 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792708642258,
-      "to": 1795300642258,
+      "from": 1792710444132,
+      "to": 1795302444132,
       "current": {
-        "totalLeads": 103,
+        "totalLeads": 104,
         "contacted": 60,
-        "contactRatePct": 58.3,
+        "contactRatePct": 57.7,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
         "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
-        "notInPipeline": 3,
+        "notInPipeline": 2,
         "qualified": 18,
         "qualifiedPct": 30,
         "turnedAway": 1,
@@ -1419,13 +1429,13 @@
             0
           ],
           [
-            "Calendly",
+            "[DLF] 2027 AI Ready Growth Kit",
             10,
             0
           ],
           [
-            "[DLF] 2027 AI Ready Growth Kit",
-            9,
+            "Calendly",
+            10,
             0
           ],
           [
@@ -1537,7 +1547,7 @@
           ],
           [
             "Meta Ads",
-            8,
+            9,
             0
           ],
           [
@@ -1556,13 +1566,13 @@
             0
           ]
         ],
-        "attributedLeads": 90,
+        "attributedLeads": 91,
         "stageMoved": 61,
-        "attributionPct": 87.4,
+        "attributionPct": 87.5,
         "funnel": [
           [
             "New leads",
-            103,
+            104,
             "newLeads",
             null
           ],
@@ -1698,19 +1708,19 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787524642258,
-      "to": 1795300642258,
+      "from": 1787526444132,
+      "to": 1795302444132,
       "current": {
-        "totalLeads": 109,
+        "totalLeads": 110,
         "contacted": 60,
-        "contactRatePct": 55,
+        "contactRatePct": 54.5,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
         "within5Pct": 0,
         "missedCalls": 9,
         "missedNotReturned": 9,
-        "notInPipeline": 19,
+        "notInPipeline": 18,
         "qualified": 18,
         "qualifiedPct": 30,
         "turnedAway": 1,
@@ -1752,7 +1762,7 @@
           ],
           [
             "[DLF] 2027 AI Ready Growth Kit",
-            9,
+            10,
             0
           ],
           [
@@ -1864,7 +1874,7 @@
           ],
           [
             "Meta Ads",
-            8,
+            9,
             0
           ],
           [
@@ -1883,13 +1893,13 @@
             0
           ]
         ],
-        "attributedLeads": 90,
+        "attributedLeads": 91,
         "stageMoved": 61,
-        "attributionPct": 82.6,
+        "attributionPct": 82.7,
         "funnel": [
           [
             "New leads",
-            109,
+            110,
             "newLeads",
             null
           ],
@@ -2026,18 +2036,18 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795300642258,
+      "to": 1795302444132,
       "current": {
-        "totalLeads": 102,
+        "totalLeads": 103,
         "contacted": 60,
-        "contactRatePct": 58.8,
+        "contactRatePct": 58.3,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
         "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
-        "notInPipeline": 3,
+        "notInPipeline": 2,
         "qualified": 18,
         "qualifiedPct": 30,
         "turnedAway": 1,
@@ -2074,7 +2084,7 @@
           ],
           [
             "[DLF] 2027 AI Ready Growth Kit",
-            9,
+            10,
             0
           ],
           [
@@ -2191,7 +2201,7 @@
           ],
           [
             "Meta Ads",
-            8,
+            9,
             0
           ],
           [
@@ -2210,13 +2220,13 @@
             0
           ]
         ],
-        "attributedLeads": 90,
+        "attributedLeads": 91,
         "stageMoved": 61,
-        "attributionPct": 88.2,
+        "attributionPct": 88.3,
         "funnel": [
           [
             "New leads",
-            102,
+            103,
             "newLeads",
             null
           ],
@@ -2545,18 +2555,18 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795300642258,
+      "to": 1795302444132,
       "current": {
-        "totalLeads": 106,
+        "totalLeads": 107,
         "contacted": 60,
-        "contactRatePct": 56.6,
+        "contactRatePct": 56.1,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
         "within5Pct": 0,
         "missedCalls": 1,
         "missedNotReturned": 1,
-        "notInPipeline": 5,
+        "notInPipeline": 4,
         "qualified": 18,
         "qualifiedPct": 30,
         "turnedAway": 1,
@@ -2598,7 +2608,7 @@
           ],
           [
             "[DLF] 2027 AI Ready Growth Kit",
-            9,
+            10,
             0
           ],
           [
@@ -2710,7 +2720,7 @@
           ],
           [
             "Meta Ads",
-            8,
+            9,
             0
           ],
           [
@@ -2729,13 +2739,13 @@
             0
           ]
         ],
-        "attributedLeads": 90,
+        "attributedLeads": 91,
         "stageMoved": 61,
-        "attributionPct": 84.9,
+        "attributionPct": 85,
         "funnel": [
           [
             "New leads",
-            106,
+            107,
             "newLeads",
             null
           ],
@@ -3054,7 +3064,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-21T22:37:22.258Z",
+    "checkedAt": "2026-11-21T23:07:24.132Z",
     "counts": {
       "Call": 63,
       "SMS": 1,
