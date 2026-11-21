@@ -5,6 +5,11 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.36.1 — 21 Nov 2026
+- **[internal]** Edit mapping (law) → "Showing: your saved mapping · last saved Nov 21, 2026" (Q2.1). Each save that changes the mapping writes `config.mappingSavedAt` (ISO time): law Save, Map pipelines Save and New firm. An unchanged save still leaves `config.json` byte-identical. Display only: nothing reads it for counting or syncing. Older saves show no date.
+- **[internal]** Shared shell CSS 2.8.1 (`admin/lfmp-ui.css`, byte-identical in the three tools).
+- Tests (queue item 4): `tests/alerts/run.mjs`, `tests/pipeline/run.mjs` now check `admin/greet-count.mjs` (where the bell and the "not in pipeline" counts moved on 19 Nov) by behaviour; `tests/admin-details/run.mjs` checks care firms with their care tiles; `tests/care/ui.mjs` answers the confirm-first popups and reads the Done popup; `tests/map-how/run.mjs` 55/55 (+ Q2.1). `tests/mapping` and `tests/care/law-identical.mjs` unchanged.
+
 ## v1.36.0 — 21 Nov 2026
 - **[internal]** Setup → GHL menu link: "Menu position in GHL" (queue item 3): the number (`config.menuLink.order`, default -92, -999…999), the menu-order preview "as of 21 Nov", Save position (asks first, one commit), "Paste this in GHL" (the lines, Copy CSS, Open GHL Custom CSS ↗, 3 steps), I've pasted it (`config.menuLink.cssPasted` = { order, by, at }). GHL has no official API for the agency Custom CSS and serves it only after a login, so nothing writes or checks GHL. "Show CSS rule" → "Read link id" (GET only). The bell shows an amber "Menu position: paste the CSS in GHL · <firm>" notice (not counted in the badge) until pasted.
 - **[internal]** `scripts/menu-css.mjs`: `menuCssRule({ id, name, order, label })` (default output unchanged), `parseOrder`, `menuState`, `withMenuOrder`, `withPasted`, `menuPreview`, `pastedLine`, `GHL_CUSTOM_CSS_URL`, the 21 Nov scheme (Dashboard -100 · Contacts -99 · Opportunities -98 · LeadPro Training -96…-93), `HAND_PASTED` (Dumas -92, Boca -91: in GHL already). `scripts/new-firm.mjs` keeps `menuLink.order` when it makes the link again.

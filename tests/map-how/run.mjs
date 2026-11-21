@@ -63,5 +63,12 @@ for (const [f, want] of [['acme-template.json', 'preset'], ['different-wording.j
 }
 check(/Showing: <b>your saved mapping<\/b>/.test(showingHtml('saved')) && /Pre-filled from the LFMP template preset/.test(showingHtml('preset')) && /Guessed from the stage names: check every step/.test(showingHtml('guessed')), 'Showing: wording for the three cases');
 
+// Q2.1: "last saved <date>" on the law Showing line once a save has written config.mappingSavedAt (display only)
+{ const { showingHtml: sh } = await import('../../admin/map-how.mjs');
+  check(/Showing: <b>your saved mapping<\/b> · last saved Nov 21, 2026/.test(sh('saved', '2026-11-21T15:00:00Z')), 'Showing: saved + "last saved Nov 21, 2026"');
+  check(!/last saved/.test(sh('saved', null)) && !/last saved/.test(sh('saved', 'nonsense')) && !/last saved/.test(sh('preset', '2026-11-21T15:00:00Z')), 'no date known (older saves) or not a saved mapping: no "last saved"');
+  const html = await readFile(join(ROOT, 'admin/index.html'), 'utf8');
+  check((html.match(/mappingSavedAt = new Date\(\)\.toISOString\(\)/g) || []).length === 3 && (html.match(/if \(jsonText\(next\) !== before\) next\.mappingSavedAt/g) || []).length === 2, 'every mapping save that changes it (law, Map pipelines, New firm) writes mappingSavedAt; an unchanged save stays byte-identical');
+}
 console.log(`\n${pass} of ${pass + fail} map-how tests pass.`);
 process.exitCode = fail ? 1 : 0;

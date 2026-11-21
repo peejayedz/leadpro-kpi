@@ -451,7 +451,7 @@ div.lv-mi{cursor:default} div.lv-mi:hover{background:none}
 :root.lfmp-v2 .chip,:root.lfmp-v2 .tag,:root.lfmp-v2 .pill,:root.lfmp-v2 .stag,:root.lfmp-v2 .ftag,:root.lfmp-v2 .edtag,:root.lfmp-v2 .newtag,:root.lfmp-v2 .rvmh .kind{border-radius:99px;font:500 12px/1.35 var(--b);letter-spacing:0;text-transform:none;padding:2px 9px}
 :root.lfmp-v2 .chip .dot{border-radius:50%}
 :root.lfmp-v2 .pill{background:var(--soft);color:var(--ink)}
-:root.lfmp-v2 .ghlmark,:root.lfmp-v2 label.f.fromghl>span:first-child::after{border-radius:99px;letter-spacing:0;text-transform:none;font-weight:600}
+:root.lfmp-v2 .ghlmark,:root.lfmp-v2 label.f.fromghl>span:first-child::after,:root.lfmp-v2 div.f.fromghl>span:first-child::after{border-radius:99px;letter-spacing:0;text-transform:none;font-weight:600}
 /* segmented filters (old .seg) = the list's filter */
 :root.lfmp-v2 .seg{border:0;background:var(--seg);border-radius:10px;padding:3px;gap:2px}
 :root.lfmp-v2 .seg button{border:0;border-radius:8px;padding:7px 14px;font:600 13px/normal var(--b);letter-spacing:0;text-transform:none;color:var(--mut);background:transparent}

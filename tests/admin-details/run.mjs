@@ -123,6 +123,17 @@ const defaults = await json('firms/_defaults.json');
 for (const slug of (await json('firms/index.json')).map(f => f.slug)) {
   let k; try { k = await json(`firms/${slug}/data/kpis.json`); } catch { continue; }
   const cfg = { ...defaults, ...(await json(`firms/${slug}/config.json`)) };
+  // Medical & dental / Other firms (Boca Dental since 20 Nov) have the care shape (enquiries / booked / yes …): the admin
+  // shows them with carePerfView; checked against their own numbers, not the law funnel.
+  const care = ['medical', 'other'].includes(k.practiceType || cfg.practiceType);
+  if (care) {
+    for (const key of ['last7', 'last30', 'last90']) {
+      const v = perfView(k, cfg, key), c = k.periods[key].current;
+      const n = c.enquiries ?? c.totalLeads ?? 0;
+      check(v && v.tiles[0].value === String(n) && v.tiles[1].value === String(c.booked ?? 0) && v.tiles[3].value === String(c.yes ?? 0) && v.funnel.length >= 3, `${slug} ${key}: care tiles = kpis.json (${n} enquiries, ${c.booked ?? 0} booked, ${c.yes ?? 0} yes)`);
+    }
+    continue;
+  }
   for (const key of ['last7', 'last30', 'last90']) {
     const v = perfView(k, cfg, key), c = k.periods[key].current, p = k.periods[key].previous;
     const ok = v && v.tiles[0].value === String(c.totalLeads) && v.tiles[3].value === String(c.signed)

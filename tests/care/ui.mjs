@@ -127,6 +127,8 @@ async function open(url, { width = 1440, height = 900, scheme = 'light', admin =
   if (admin) await page.waitForFunction(() => !document.getElementById('appView').hidden && document.querySelector('[data-lv-top]'));
   return { ctx, page };
 }
+// Since 20 Nov (Part 4) every save asks first (the confirm popup): answer it, like a person pressing the action
+const answerConfirm = async page => { try { await page.waitForSelector('[data-lv-cf-shade] [data-lv-cf="ok"]', { timeout: 4000 }); await page.click('[data-lv-cf="ok"]'); } catch {} };
 const shot = async (page, name, full = true) => { if (SHOTS) { await mkdir(SHOTS, { recursive: true }); await page.screenshot({ path: join(SHOTS, `${name}.png`), fullPage: full }); } };
 const noSideScroll = page => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 const contrast = page => page.evaluate(() => {
@@ -293,10 +295,14 @@ try {
       check(/Edit/.test(await page.textContent('#emTitle')) && /Changing from/.test(await page.textContent('#emType')), 'practice type → Law firm: the law stage-mapping panel, with a "changing from" note');
       await page.click('label:has(input[name="emType"][value="medical"])'); await page.waitForSelector('.caremap .cm-row');
       // Save → config.json (pipelineMap by id) + index.json (needsMapping → draft) in ONE commit, then a sync
-      await page.click('#emSave');
+      await page.click('#emSave'); await answerConfirm(page);
       await committed(1);
       await page.waitForFunction(() => location.hash === '#/', null, { timeout: 20000 }).catch(() => {});
-      check(/Saved the pipeline mapping/.test(await page.textContent('#screen').catch(() => '')), 'Save: back on the firm list with "Saved the pipeline mapping … (Draft)"');
+      // since 20 Nov (Part 2) the result is the Done popup, not a line on the list
+      await page.waitForSelector('.lv-res', { timeout: 20000 }).catch(() => {});
+      const res = await page.textContent('.lv-res').catch(() => '');
+      check(/Done: mapping saved/.test(res) && /\(Draft\)/.test(res) && /Stages mapped\s*26/.test(res), `Save: back on the firm list with the Done popup "Done: mapping saved … (Draft)" (${res.replace(/\s+/g, ' ').slice(0, 90)})`);
+      await page.click('[data-lv-res="close"]').catch(() => {});
       const cfg = JSON.parse(G.M.overlay.get(`firms/${SLUG}/config.json`)), row = JSON.parse(G.M.overlay.get('firms/index.json')).find(f => f.slug === SLUG);
       check(cfg.practiceType === 'medical' && Object.keys(cfg.pipelineMap.stages).length === 26 && cfg.pipelineMap.stages['pbP1S4-0000-4000-8000-000000000000']?.bucket === 'lost' && cfg.pipelineMap.stages['pbP1S4-0000-4000-8000-000000000000']?.name === 'Closed – Lost', 'Save: config.json pipelineMap by stage id (name kept), 26 stages');
       check(row.status === 'draft' && row.practiceType === 'medical', 'Save: firm list status Needs mapping → Draft', `row=${JSON.stringify(row)} status="${await page.textContent('#emStatus').catch(() => '')}" warn="${await page.textContent('#emWarn').catch(() => '')}" url=${page.url()}`);
@@ -315,7 +321,7 @@ try {
     const { ctx, page } = await open(`${ADMIN}#/map/${SLUG}`);
     await page.waitForSelector('.cm-row.need');
     check(/1 to choose/.test(await page.textContent('.cm-sum')) && /Choose/.test(await page.textContent('.cm-row.need')), 'Map pipelines: a stage the name can\'t place is marked "Choose"');
-    await page.click('#emSave');
+    await page.click('#emSave'); await answerConfirm(page);
     check(/Choose a bucket for every stage/.test(await page.textContent('#emWarn')) && !G.M.commits.length, 'Map pipelines: Save is blocked while a stage has no bucket (nothing written)');
     await shot(page, 'map-pipelines-blocked-1440-light', false);
     await ctx.close();
@@ -382,7 +388,7 @@ try {
     const { ctx, page } = await open(`${ADMIN}#/map/mahdavi`);
     await page.waitForSelector('.map .mrow');
     check(await page.isChecked('input[name="emType"][value="law"]') && /Edit/.test(await page.textContent('#emTitle')), 'Edit mapping (Mahdavi): Law firm selected, the usual panel');
-    await page.click('#emSave');
+    await page.click('#emSave'); await answerConfirm(page);
     await until(() => G.M.commits.length >= 1);
     await page.waitForFunction(() => location.hash === '#/', null, { timeout: 20000 }).catch(() => {});
     const before = await readFile(join(ROOT, 'firms/mahdavi/config.json'), 'utf8');
@@ -403,12 +409,13 @@ try {
     check((await page.$$eval('#nfArea option', o => o.map(x => x.textContent))).includes('Plastic & Cosmetic Surgery'), 'New firm (Medical): medical practice areas');
     await shot(page, 'new-firm-medical-1440-light');
     await page.fill('#nfName', 'Test Dental Clinic'); await page.fill('#nfLoc', 'TestDentalLoc000000A');
-    await page.click('#nfCreate');
+    await page.click('#nfCreate'); await answerConfirm(page);
     await page.waitForSelector('#appResult .success', { timeout: 30000 });
     const disp = G.M.dispatches.find(d => d.workflow === 'new-firm.yml');
     check(disp?.inputs?.practice_type === 'medical' && disp?.inputs?.counts_only === 'yes' && !disp?.inputs?.snapshot_id, 'New firm (Medical): new-firm.yml started with practice_type medical, counts_only yes, no preset');
     check(/needs its pipelines mapped/.test(await page.textContent('#appResult')) && !(await page.$('#ghlLinkOut')) && await page.isVisible('#appMap'), 'New firm (Medical): ends at "needs its pipelines mapped", no GHL link to copy, Map pipelines › button');
     await shot(page, 'new-firm-medical-done-1440-light');
+    await page.click('[data-lv-res="close"]').catch(() => {});   // the Done popup sits over the page (this suite answers popups itself)
     await page.click('#appMap'); await page.waitForSelector('.caremap');
     check(/#\/map\//.test(page.url()), 'New firm → Map pipelines › opens the Map pipelines step');
     await ctx.close();

@@ -60,7 +60,9 @@ export const SHOWING = {
   preset: 'Pre-filled from the LFMP template preset',
   guessed: 'Guessed from the stage names: check every step',
 };
-export const showingHtml = source => `<p class="hint mh-showing" data-showing="${esc(source)}">Showing: <b>${esc(SHOWING[source] || SHOWING.saved)}</b></p>`;
+// v1.36.1 (Q2.1): "your saved mapping · last saved Nov 21, 2026" when config.mappingSavedAt is known (saves from 21 Nov on)
+export const savedWhen = iso => { const d = new Date(iso || ''); return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' }); };
+export const showingHtml = (source, savedAt = null) => `<p class="hint mh-showing" data-showing="${esc(source)}">Showing: <b>${esc(SHOWING[source] || SHOWING.saved)}</b>${source === 'saved' && savedWhen(savedAt) ? ` · last saved ${esc(savedWhen(savedAt))}` : ''}</p>`;
 // The care tag for a pre-filled stage: "Guessed: “deposit”" (the text the rule matched) or "Pre-filled" (preset).
 export const careTag = s => (s.source === 'guess' ? `Guessed: “${s.word || ''}”` : s.source === 'preset' ? 'Pre-filled' : s.source === 'saved' ? 'Saved' : '');
 // Remembers open / closed when the reader toggles it.

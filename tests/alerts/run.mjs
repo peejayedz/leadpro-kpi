@@ -88,10 +88,21 @@ const good = slug => ({ slug, ok: true });
 const issuesAt = (now, status, extra = {}) => bellIssues({ status, keeper: keeperOk(now), firms: FIRMS, configs: {}, kpis: {}, chain: chainOn, now, ...extra });
 
 test('the alert list is the admin bell\'s list (same functions, same filter)', async () => {
+  // v1.29.1 moved the bell's list into admin/greet-count.mjs buildIssues() (index.html calls it); the alerts must be that
+  // list with the badge filter (+ "stages not mapped", which is DMed too). Checked by behaviour, not by source text.
   const html = await readFile(join(ROOT, 'admin/index.html'), 'utf8');
-  ok(/issues = \[\.\.\.keeperIssues\(keeperStatus, \{ now: Date\.now\(\), firms \}\), \.\.\.reviewIssues\(firms, configs\), \.\.\.openIssues\(syncStatus, \{ now: Date\.now\(\), firms, kpis, chain: chainInfo \}\)\]/.test(html), 'admin bell no longer builds issues the same way: update scripts/kpi-alerts.mjs bellIssues()');
+  ok(/issues = GC\.buildIssues\(\{ keeperStatus, syncStatus, chain: chainInfo, firms, configs, kpis, now: Date\.now\(\) \}\)/.test(html), 'admin bell no longer uses greet-count.mjs buildIssues(): update scripts/kpi-alerts.mjs bellIssues()');
   ok(html.includes('const listed = () => issues.filter(inBadge);'), 'admin bell badge filter changed: update bellIssues()');
-  ok(/const kpiSummary = k => \(\{ generatedAt: k\.generatedAt, [^)]*sync: k\.sync \|\| null/.test(html), 'admin kpiSummary changed: update kpi-alerts kpiSummary()');
+  ok(html.includes('const kpiSummary = GC.kpiSummary;'), 'admin kpiSummary no longer greet-count.mjs: update kpi-alerts kpiSummary()');
+  const GC = await import('../../admin/greet-count.mjs');
+  const { inBadge } = await import('../../scripts/sync-status.mjs');
+  const now = T0 + 5 * 30 * MIN;
+  const st = statusAt(1, { [FIRMS[0].slug]: bad(FIRMS[0].slug), [FIRMS[1].slug]: good(FIRMS[1].slug) });
+  for (const args of [{ status: st, keeper: keeperOk(now), firms: FIRMS, configs: {}, kpis: {}, chain: chainOn, now }, { status: st, keeper: keeperOk(now), firms: FIRMS, configs: {}, kpis: {}, chain: { value: 'off' }, now }]) {
+    const mine = bellIssues(args).map(i => `${i.kind}:${i.slug || ''}`);
+    const bell = GC.buildIssues({ keeperStatus: args.keeper, syncStatus: args.status, chain: args.chain, firms: args.firms, configs: args.configs, kpis: args.kpis, now: args.now }).filter(i => inBadge(i) || i.kind === 'unmapped').map(i => `${i.kind}:${i.slug || ''}`);
+    ok(JSON.stringify(mine) === JSON.stringify(bell), `alerts = the bell's listed issues (${mine.join(', ')} vs ${bell.join(', ')})`);
+  }
 });
 
 test('held numbers are a bell notice only: no DM; "may be incomplete" is a DM', () => {

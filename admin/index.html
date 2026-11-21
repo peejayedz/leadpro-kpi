@@ -13,7 +13,7 @@
 <script>/* apply the saved theme before first paint so the page and logo don't flash */ try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="lfmp-ui.css?v=2.7.0">
+<link rel="stylesheet" href="lfmp-ui.css?v=2.8.1">
 <link rel="stylesheet" href="admin.css?v=1.36.0">
 <link rel="stylesheet" href="care.css?v=1.35.0">
 </head>
@@ -1549,7 +1549,7 @@ function mappingPanel(host, { discovery, config, isNew, saveLabel, saveBtn = nul
         <section><h4>Pipelines to include</h4><p class="hint">Only leads in these pipelines are counted.</p>
           <div class="pipes">${pipelines.map(p => `<label class="pipe"><input type="checkbox" data-pipe="${esc(p.id)}" ${chosenPipes.has(p.id) ? 'checked' : ''}> ${esc(p.name)} · ${p.stages.length} stage${p.stages.length === 1 ? '' : 's'}</label>`).join('') || '<p class="errbox">No pipelines found in this sub-account.</p>'}</div></section>
         <section><h4>Funnel steps</h4><p class="hint">Pick the stage(s) that first prove each step. A later step counts as every earlier one, so list only the stages that first prove it.</p>
-          ${showingHtml(mappingSource({ discovery, isNew, chosenPipes }))}${lawHowHtml()}
+          ${showingHtml(mappingSource({ discovery, isNew, chosenPipes }), isNew ? null : config?.mappingSavedAt)}${lawHowHtml()}
           ${STEPS_MAP.map(([k, label, hint]) => {
             const extra = [...sel[k].entries()].filter(([n]) => !names.some(x => norm(x) === n));
             return `<div class="mrow" role="group" aria-label="${esc(label)}"><div class="lbl">${esc(label)}<span class="hint">${esc(hint)}</span></div><div class="opts">
@@ -2069,7 +2069,7 @@ const STEP_FNS = [
       const tpl = await getJSON('firms/_template/config.json', head);
       const stub = await getText('firms/_template/index.html', head);
       if (!tpl || !stub) throw new Error('The firms/_template files are missing.');
-      const cfg = applyMapping(structuredClone(tpl), ctx.mapping);
+      const cfg = applyMapping(structuredClone(tpl), ctx.mapping); cfg.mappingSavedAt = new Date().toISOString();   // v1.36.1 (Q2.1)
       // Firm-specific values only; targets, notice, channels etc. come from firms/_defaults.json.
       Object.assign(cfg, { locationName: ctx.name, practiceArea: ctx.practiceArea, locationId: ctx.locationId, title: '', timezone: ctx.timezone });
       index.push({ slug: ctx.slug, secretKey: ctx.secretKey, name: ctx.name, practiceArea: ctx.practiceArea, locationId: ctx.locationId, createdAt: new Date().toISOString() });
@@ -2181,7 +2181,9 @@ async function renderEditMapping(f) {
           let row = null;
           await commitFiles(`Map pipelines for ${f.name} (${practiceLabel(type)})`, async head => {
             const c = await getJSON(`firms/${f.slug}/config.json`, head);
+            const before = jsonText(c);
             const next = applyCare(c, { practiceType: type, pipelineMap: r.pipelineMap, countsOnly: r.countsOnly });
+            if (jsonText(next) !== before) next.mappingSavedAt = new Date().toISOString();   // v1.36.1 (Q2.1): when the mapping last changed (display only)
             const list = await getJSON('firms/index.json', head);
             row = (list || []).find(x => x.slug === f.slug); if (!row) throw new Error('This firm is no longer in the firm list.');
             row.practiceType = type;
@@ -2219,8 +2221,10 @@ async function renderEditMapping(f) {
     try {
       const wasCare = careOf(f);
       await commitFiles(`Update stage mapping for ${f.name}`, async head => {
-        const c = await getJSON(`firms/${f.slug}/config.json`, head);
+        const c = await getJSON(`firms/${f.slug}/config.json`, head), before = jsonText(c);
         const next = applyMapping(c, m); delete next.mappingReview;   // a saved mapping clears the builder's "Review mapping" flag
+        // v1.36.1 (Q2.1): when the mapping last changed (the Showing: line; display only). An unchanged save stays byte-identical.
+        if (jsonText(next) !== before) next.mappingSavedAt = new Date().toISOString();
         if (!wasCare) return [{ path: `firms/${f.slug}/config.json`, content: jsonText(next) }];
         // v1.28.0: switched back to Law firm. The people-counting settings stay in config.json (unused) in case of a switch back.
         delete next.practiceType;

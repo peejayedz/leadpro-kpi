@@ -88,7 +88,11 @@ test('Admin bell notices: firms with 1+ in the last 30 days, biggest first; 0 an
 
 test('Admin page: count on the firm list, amber notice with what to do, not in the badge', async () => {
   const html = await readFile(join(ROOT, 'admin/index.html'), 'utf8');
-  ok(html.includes("notInPipeline30: k.periods?.last30?.current?.notInPipeline ?? null"), 'reads the 30-day count from kpis.json');
+  // v1.29.1 moved kpiSummary into admin/greet-count.mjs (index.html uses GC.kpiSummary): checked there, and by behaviour
+  const gc = await readFile(join(ROOT, 'admin/greet-count.mjs'), 'utf8');
+  ok(html.includes('const kpiSummary = GC.kpiSummary;') && gc.includes("notInPipeline30: k.periods?.last30?.current?.notInPipeline ?? null"), 'reads the 30-day count from kpis.json');
+  const { kpiSummary } = await import('../../admin/greet-count.mjs');
+  ok(kpiSummary({ periods: { last30: { current: { notInPipeline: 3 } } } }).notInPipeline30 === 3 && kpiSummary({}).notInPipeline30 === null, 'the count, or null before the first sync with the contact check');
   // v1.13: the row shows it as the "Needs attention" reason ("N lead(s) not in a pipeline →", admin/firm-details.mjs);
   // the Details panel's Info shows the count, 0 included.
   const fd = await readFile(join(ROOT, 'admin/firm-details.mjs'), 'utf8');
