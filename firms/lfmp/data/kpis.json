@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-20T23:57:15.026Z",
+  "generatedAt": "2026-11-21T00:07:22.047Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795150800000,
-      "to": 1795219035026,
+      "to": 1795219642047,
       "current": {
         "totalLeads": 3,
         "contacted": 0,
@@ -125,7 +125,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 5,
+        "totalLeads": 6,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -163,6 +163,11 @@
             "Unknown",
             2,
             0
+          ],
+          [
+            "Calendly",
+            1,
+            0
           ]
         ],
         "byChannel": [
@@ -175,15 +180,20 @@
             "Third Party",
             2,
             0
+          ],
+          [
+            "Unknown source",
+            1,
+            0
           ]
         ],
         "attributedLeads": 5,
         "stageMoved": 0,
-        "attributionPct": 100,
+        "attributionPct": 83.3,
         "funnel": [
           [
             "New leads",
-            5,
+            6,
             "newLeads",
             null
           ],
@@ -451,7 +461,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1795219035026,
+      "to": 1795219642047,
       "current": {
         "totalLeads": 68,
         "contacted": 52,
@@ -1029,8 +1039,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794614235026,
-      "to": 1795219035026,
+      "from": 1794614842047,
+      "to": 1795219642047,
       "current": {
         "totalLeads": 76,
         "contacted": 52,
@@ -1376,8 +1386,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792627035026,
-      "to": 1795219035026,
+      "from": 1792627642047,
+      "to": 1795219642047,
       "current": {
         "totalLeads": 101,
         "contacted": 60,
@@ -1703,8 +1713,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787443035026,
-      "to": 1795219035026,
+      "from": 1787443642047,
+      "to": 1795219642047,
       "current": {
         "totalLeads": 107,
         "contacted": 60,
@@ -2031,7 +2041,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795219035026,
+      "to": 1795219642047,
       "current": {
         "totalLeads": 100,
         "contacted": 60,
@@ -2550,7 +2560,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795219035026,
+      "to": 1795219642047,
       "current": {
         "totalLeads": 104,
         "contacted": 60,
@@ -3059,7 +3069,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-20T23:57:15.026Z",
+    "checkedAt": "2026-11-21T00:07:22.047Z",
     "counts": {
       "Call": 63,
       "SMS": 1,
