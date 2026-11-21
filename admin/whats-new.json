@@ -1,5 +1,13 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.35.0": {
+    "title": "How the mapping is filled in",
+    "summary": "Both mapping screens explain how each stage was filled in, and a guessed stage says which word it matched.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "Map pipelines and Edit mapping have \"How we fill this in for you\": what was kept, what was guessed and from which words, and what's left for you. It opens the first time, then stays the way you leave it on this device." },
+      { "type": "improved", "tag": "internal", "text": "A guessed stage says which word it matched, for example Guessed: “Deposit”. Edit mapping for law firms says whether you're looking at the saved mapping, the LFMP template or a guess." }
+    ]
+  },
   "1.34.0": {
     "title": "The real WPP logo",
     "summary": "WPP dashboards show the real Web Promotion Partners logo, in colour.",

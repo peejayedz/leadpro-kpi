@@ -127,3 +127,13 @@ export function applyMapping(cfg, m) {
   cfg.booking = { ...(cfg.booking || {}), calendarKeywords: m.calendarKeywords };
   return cfg;
 }
+
+// v1.35.0: where the Funnel steps shown in Edit mapping come from (the "Showing:" line). Display only.
+//   saved   = a firm already set up: its saved mapping
+//   preset  = a new firm whose stage names are the LFMP template's ("Lead Stages", ACME): pre-filled from it
+//   guessed = a new firm with other names: guessed from the stage names (GUESS above)
+export function mappingSource({ discovery, isNew, chosenPipes }) {
+  if (!isNew) return 'saved';
+  const names = stageList(discovery, chosenPipes).map(norm);
+  return Object.values(ACME).flat().some(a => names.includes(norm(a))) ? 'preset' : 'guessed';
+}

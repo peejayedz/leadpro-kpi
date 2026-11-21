@@ -103,6 +103,12 @@ export function guessBucket(name) {
   for (const [k, re] of GUESS) if (re.test(String(name || ''))) return k;
   return null;
 }
+// v1.35.0: the same rule, plus the text it matched ("Deposit Paid" → { bucket: 'yes', word: 'Deposit' }), for the
+// "Guessed: “deposit”" tag on Map pipelines. Same order, same expressions: guessBucket(n) === guessMatch(n)?.bucket.
+export function guessMatch(name) {
+  for (const [k, re] of GUESS) { const m = String(name || '').match(re); if (m) return { bucket: k, word: m[0].trim() }; }
+  return null;
+}
 
 // Location presets (firms/_presets/care-*.json): { locationId, pipelines: { <pipeline name>: { <stage name>: bucket } } }.
 // Matched by name (case-insensitive) at mapping time only; what's saved is always by id.
@@ -131,8 +137,8 @@ export function careInitialState({ discovery, config, preset = null }) {
       if (sv && BUCKET_KEYS.includes(sv.bucket)) return { id: s.id, name: s.name, bucket: sv.bucket, source: 'saved', renamedFrom: sv.name && sv.name !== s.name ? sv.name : null };
       const pb = presetBucket(preset, p.name, s.name);
       if (pb) return { id: s.id, name: s.name, bucket: pb, source: 'preset' };
-      const g = guessBucket(s.name);
-      return { id: s.id, name: s.name, bucket: g, source: g ? 'guess' : null };
+      const g = guessMatch(s.name);
+      return { id: s.id, name: s.name, bucket: g?.bucket || null, source: g ? 'guess' : null, ...(g ? { word: g.word } : {}) };
     }),
   }));
   // Pipelines in the saved map that GHL no longer has.

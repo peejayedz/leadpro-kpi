@@ -320,6 +320,47 @@ try {
     await shot(page, 'map-pipelines-blocked-1440-light', false);
     await ctx.close();
   }
+  // v1.35.0 (queue item 2): "How we fill this in for you": open the first time on a device, then remembered; the tag of a
+  // guessed stage names the word that matched; Showing: on the law panel; 1440 + 390, light + dark.
+  for (const [w, width, height] of SIZES) for (const scheme of SCHEMES) {
+    freshGitHub({ status: 'needsMapping' });
+    const d3 = JSON.parse(jsonText(discovery)); d3.pipelines[1].stages.push({ id: 'pbNEW-deposit', name: 'Deposit Received', position: 9 });
+    G.M.overlay.set(`firms/${SLUG}/discovery.json`, jsonText(d3));
+    const { ctx, page } = await open(`${ADMIN}#/map/${SLUG}`, { width, height, scheme });
+    await page.waitForSelector('.caremap .cm-row');
+    const tag = await page.textContent('.cm-row[aria-label$="Deposit Received"] .cm-src').catch(() => '');
+    check(tag === 'Guessed: “Deposit”', `Map pipelines ${w} ${scheme}: a guessed stage's tag names the word ("${tag}")`);
+    check(await page.$eval('details[data-mh]', d => d.open), `Map pipelines ${w} ${scheme}: the explainer is open the first time on a device`);
+    const t = await page.textContent('details[data-mh]');
+    check(/Kept from before/.test(t) && /Guessed from the name/.test(t) && /Left for you/.test(t) && /Words we look for/.test(t) && /first that fits wins/.test(t) && /1 patient = 1 count/.test(t), `Map pipelines ${w} ${scheme}: the three cards, the table, the order line and the facts`);
+    check(await noSideScroll(page), `Map pipelines ${w} ${scheme}: no sideways scroll with the explainer open`);
+    await page.locator('details[data-mh]').scrollIntoViewIfNeeded(); await shot(page, `map-how-care-${w}-${scheme}`, false);
+    await page.locator('details[data-mh] > summary').click();
+    await page.click('.cm-row[aria-label$="Deposit Received"] [data-bucket="yes"]');   // a redraw keeps it closed
+    check(!(await page.$eval('details[data-mh]', d => d.open)) && !(await page.$('.cm-row[aria-label$="Deposit Received"] .cm-src')), `Map pipelines ${w} ${scheme}: closed stays closed after a redraw; the tag goes once a bucket is clicked`);
+    await page.reload(); await page.waitForSelector('.caremap .cm-row');
+    check(!(await page.$eval('details[data-mh]', d => d.open)), `Map pipelines ${w} ${scheme}: closed is remembered on this device`);
+    await ctx.close();
+  }
+  for (const [w, width, height] of SIZES) for (const scheme of SCHEMES) {   // law panel: "Showing: your saved mapping" + the law explainer
+    freshGitHub({ status: 'needsMapping' });
+    const { ctx: c2, page } = await open(`${ADMIN}#/map/mahdavi`, { width, height, scheme });
+    await page.waitForSelector('.map .mrow');
+    check(/Showing: your saved mapping/.test(await page.textContent('.mh-showing')), `Edit mapping (law, Mahdavi) ${w} ${scheme}: "Showing: your saved mapping"`);
+    const t = await page.textContent('details[data-mh]');
+    check(/Saved mapping/.test(t) && /LFMP template/.test(t) && /Guessed from names/.test(t) && /one stage can count for more than one step/i.test(t) && /Consult calendars/.test(t), `Edit mapping (law) ${w} ${scheme}: the three cards, the table, the line and the facts`);
+    check(await noSideScroll(page), `Edit mapping (law) ${w} ${scheme}: no sideways scroll`);
+    await page.locator('.mh-showing').scrollIntoViewIfNeeded(); await shot(page, `map-how-law-${w}-${scheme}`, false);
+    await c2.close();
+  }
+  { // storage blocked → closed
+    const { ctx: c3, page: p3 } = await open(`${ADMIN}#/map/${SLUG}`);
+    await p3.evaluate(() => { localStorage.removeItem('lfmp-map-how'); const g = Storage.prototype.getItem; Storage.prototype.getItem = function (k) { if (k === 'lfmp-map-how') throw new Error('blocked'); return g.call(this, k); }; });
+    await p3.evaluate(() => document.querySelector('[data-use]')?.dispatchEvent(new Event('change')));   // a redraw with storage blocked
+    await p3.waitForSelector('details[data-mh]');
+    check(!(await p3.$eval('details[data-mh]', d => d.open)), 'storage blocked → the explainer is closed (no error)');
+    await c3.close();
+  }
 
   // ================= Edit mapping (mapped Draft firm; law firm) =================
   for (const [w, width, height] of SIZES) for (const scheme of SCHEMES) {

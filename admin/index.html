@@ -14,8 +14,8 @@
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=2.7.0">
-<link rel="stylesheet" href="admin.css?v=1.34.0">
-<link rel="stylesheet" href="care.css?v=1.28.0">
+<link rel="stylesheet" href="admin.css?v=1.35.0">
+<link rel="stylesheet" href="care.css?v=1.35.0">
 </head>
 <body>
 
@@ -56,7 +56,8 @@
 // =====================================================================
 import { mergeConfig, practiceSlug } from '../scripts/config-merge.mjs';
 import { parseChangelog, latestVersion, inlineMd } from '../scripts/changelog.mjs';
-import { STEPS_MAP, initialState, stageList as stagesOf, buildMapping, applyMapping } from './mapping.mjs';
+import { STEPS_MAP, initialState, stageList as stagesOf, buildMapping, applyMapping, mappingSource } from './mapping.mjs';
+import { careHowHtml, lawHowHtml, showingHtml, careTag, wireHow } from './map-how.mjs';   // v1.35.0: "How we fill this in for you"
 import { firmState, describeIssue, seenKey, inBadge, STALE_MIN, driftText } from '../scripts/sync-status.mjs';
 import { tokenLabel } from '../scripts/keeper-status.mjs';
 import { checkScopes } from '../scripts/scope-check.mjs';
@@ -1492,6 +1493,7 @@ function mappingPanel(host, { discovery, config, isNew, saveLabel, saveBtn = nul
         <section><h4>Pipelines to include</h4><p class="hint">Only leads in these pipelines are counted.</p>
           <div class="pipes">${pipelines.map(p => `<label class="pipe"><input type="checkbox" data-pipe="${esc(p.id)}" ${chosenPipes.has(p.id) ? 'checked' : ''}> ${esc(p.name)} · ${p.stages.length} stage${p.stages.length === 1 ? '' : 's'}</label>`).join('') || '<p class="errbox">No pipelines found in this sub-account.</p>'}</div></section>
         <section><h4>Funnel steps</h4><p class="hint">Pick the stage(s) that first prove each step. A later step counts as every earlier one, so list only the stages that first prove it.</p>
+          ${showingHtml(mappingSource({ discovery, isNew, chosenPipes }))}${lawHowHtml()}
           ${STEPS_MAP.map(([k, label, hint]) => {
             const extra = [...sel[k].entries()].filter(([n]) => !names.some(x => norm(x) === n));
             return `<div class="mrow" role="group" aria-label="${esc(label)}"><div class="lbl">${esc(label)}<span class="hint">${esc(hint)}</span></div><div class="opts">
@@ -1506,6 +1508,7 @@ function mappingPanel(host, { discovery, config, isNew, saveLabel, saveBtn = nul
         ${saveBtn ? '' : `<div class="btnrow"><button type="button" class="btn primary big" id="mapSave">${esc(saveLabel)}</button></div>`}
       </div>`;
       if (warnHost) warnHost.innerHTML = '<div id="mapWarn" class="mapwarn"></div>';
+      wireHow(host);   // v1.35.0
       host.querySelectorAll('[data-pipe]').forEach(c => c.addEventListener('change', () => { c.checked ? chosenPipes.add(c.dataset.pipe) : chosenPipes.delete(c.dataset.pipe); keywords = parseKw(); draw(); }));
       host.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
         const m = sel[b.dataset.step], n = b.dataset.stage, on = b.getAttribute('aria-pressed') !== 'true';
@@ -1567,13 +1570,13 @@ function carePanel(host, { discovery, config, type, preset, saveBtn, warnHost, c
       host.innerHTML = `<div class="map caremap">
         <section class="cm-sum"><p><b>${total}</b> stage${total === 1 ? '' : 's'} in <b>${inUseN}</b> pipeline${inUseN === 1 ? '' : 's'} · <b>${countedN}</b> counted${left.length ? ` · <span class="chip warn">${left.length} to choose</span>` : ''}${toConfirm ? ` · <span class="chip">${toConfirm} pre-filled</span>` : ''}</p>
           <p class="hint">Pick one bucket per stage. People are counted once, at the furthest bucket any of their opportunities reached. <b>Ignore</b> = not part of the ${type === 'medical' ? 'patient' : 'sales'} journey (counts nowhere). A stage left without a bucket blocks saving.${preset ? ` Pre-filled from <b>${esc(preset.name)}</b>'s preset where the names match.` : ''}</p>
-          <div class="cm-legend">${BUCKETS.map(([k, l]) => `<span class="opt sm" title="${esc(hints[k] || '')}" data-b="${k}">${esc(l)}</span>`).join('')}</div></section>
+          <div class="cm-legend">${BUCKETS.map(([k, l]) => `<span class="opt sm" title="${esc(hints[k] || '')}" data-b="${k}">${esc(l)}</span>`).join('')}</div>${careHowHtml({ patient: type === 'medical' })}</section>
         ${st.gone.length ? `<div class="warnbox">Not in GHL any more: <b>${st.gone.map(p => esc(p.name)).join(', ')}</b>. It's dropped from the mapping when you save.</div>` : ''}
         ${st.pipelines.map(p => `<section class="cm-pipe${p.use ? '' : ' off'}" data-pipe="${esc(p.id)}">
           <header><label class="check"><input type="checkbox" data-use="${esc(p.id)}"${p.use ? ' checked' : ''}> <span class="cm-pn">${esc(p.name)}</span></label>
             <span class="muted small">${p.stages.length} stage${p.stages.length === 1 ? '' : 's'}${p.isNew ? ' · <span class="chip warn">New in GHL</span>' : ''}${p.use ? '' : ' · not counted'}</span></header>
           ${p.use ? `<div class="cm-rows">${p.stages.map(s => {
-            const tag = !s.bucket ? '<span class="chip warn">Choose</span>' : unsure.has(s.id) ? `<span class="cm-src ${SOURCE_TAG[s.source]?.[1] || ''}">${esc(SOURCE_TAG[s.source]?.[0] || '')}</span>` : '';
+            const tag = !s.bucket ? '<span class="chip warn">Choose</span>' : unsure.has(s.id) ? `<span class="cm-src ${SOURCE_TAG[s.source]?.[1] || ''}">${esc(careTag(s))}</span>` : '';
             return `<div class="cm-row${s.bucket ? '' : ' need'}" role="radiogroup" aria-label="${esc(`${p.name}: ${s.name}`)}">
               <div class="cm-st"><span class="cm-sn">${esc(s.name)}</span>${s.renamedFrom ? `<span class="cm-was">was “${esc(s.renamedFrom)}”</span>` : ''}${tag}</div>
               <div class="opts">${BUCKETS.map(([k, l]) => `<button type="button" class="opt sm${k === 'ignore' ? ' ign' : ''}" role="radio" aria-checked="${s.bucket === k}" aria-pressed="${s.bucket === k}" data-stage="${esc(s.id)}" data-pipe-id="${esc(p.id)}" data-bucket="${k}" title="${esc(hints[k] || '')}">${esc(l)}</button>`).join('')}</div></div>`;
@@ -1581,6 +1584,7 @@ function carePanel(host, { discovery, config, type, preset, saveBtn, warnHost, c
         </section>`).join('')}
         <section class="cm-opts"><label class="check"><input type="checkbox" id="cmCounts"${counts ? ' checked' : ''}> <span>Counts only: don't store or show ${type === 'medical' ? 'patient' : ''} names, emails or phones (lists show counts and an Open in GHL link)</span></label></section>
       </div>`;
+      wireHow(host);
       if (warnHost) warnHost.innerHTML = left.length ? '' : warnHost.innerHTML;
       host.querySelectorAll('[data-use]').forEach(c => c.addEventListener('change', () => { st.pipelines.find(p => p.id === c.dataset.use).use = c.checked; draw(); }));
       host.querySelectorAll('[data-bucket]').forEach(b => b.addEventListener('click', () => {
@@ -1924,7 +1928,7 @@ async function runFrom(i) {
     setStep(i, i === 2 ? 'wait' : 'run');
     // the working bar while GitHub works; none while you map the stages (step 3 waits for you)
     if (i === 2) { myRun.job?.drop(); myRun.job = null; }
-    else { if (!myRun.job) myRun.job = newFirmJob(myRun.ctx.name); myRun.job.line(`${RUN_STEPS[i]}: ${myRun.ctx.name}…`); }
+    else { if (!myRun.job) myRun.job = newFirmJob(myRun.ctx.name); myRun.job.line(`${RUN_STEPS[i]}: ${myRun.ctx.name}…`); myRun.job.steps?.(i, RUN_STEPS.length); }   // v1.35.0: "… · 3 of 7 steps" next to the time
     const say = h => { if (run === myRun) stepEl(i).querySelector('.d').innerHTML = h; };
     try { await STEP_FNS[i](myRun.ctx, say, stepEl(i).querySelector('.slot')); if (run !== myRun) return; setStep(i, 'ok'); }
     catch (e) {

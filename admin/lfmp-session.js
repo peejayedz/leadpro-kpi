@@ -788,7 +788,7 @@ export const JOB_LINES = {
   savemap: ['Tightening the bolts on your mapping…', 'Double-checking every stage…'],
   sync: ['Fetching the latest leads…', 'Rounding up the numbers…', 'Doing the math so you don\'t have to…'],
   create: ['Building {client}\'s new home in GHL…', 'Moving the furniture in (snapshot)…', 'Hanging the pictures…'],
-  kpi: ['Setting up {client}\'s scorecard…', 'Lining up the numbers…'],
+  kpi: ['Lining up the numbers…', 'Wiring up {client}\'s dashboard…'],   // v2.8.0 (FIX 2.1): never the bar's own title
   menu: ['Hanging the KPI sign in GHL…'],
   review: ['Photocopying the workflows…', 'Reading the fine print in every email…'],
   publish: ['Delivering the new version to the client\'s page…', 'Wrapping it with a bow…'],
@@ -879,7 +879,7 @@ function makeBike(host) {
 // The hint on the right: "usually under a minute", or the job's own typical time when it's longer ("usually about 2 minutes").
 export const jobHint = typicalMs => { const m = Math.round((Number(typicalMs) || JOB_TYPICAL_MS) / 60000); return m <= 1 ? 'usually under a minute' : `usually about ${m} minutes`; };
 export function workBarHtml({ title, hint = 'usually under a minute', line = '' }) {
-  return `<div class="lv-job" data-lv-job role="status" aria-live="polite"><div class="lv-job-t"><b data-lv-job-title>${escH(title)}</b><span>${escH(hint)}</span></div>
+  return `<div class="lv-job" data-lv-job role="status" aria-live="polite"><div class="lv-job-t"><b data-lv-job-title>${escH(title)}</b><span data-lv-job-hint data-base="${escH(hint)}">${escH(hint)}</span></div>
     <div class="lv-job-sub" data-lv-job-line>${escH(line)}</div>
     <div class="lv-job-track" aria-hidden="true"><div class="lv-job-bar"><i data-lv-job-fill></i></div></div></div>`;
 }
@@ -888,7 +888,8 @@ export const jobHostOf = key => (hasDoc() ? document.querySelector(`[data-lv-job
 export function mountWorkBar(host, { title, hint, kind = 'other', client = '', typicalMs = JOB_TYPICAL_MS, t0 = Date.now() } = {}) {
   const key = typeof host === 'string' ? host : null;
   if (!hasDoc() || !host) return { progress() {}, finish: () => Promise.resolve(), remove() {}, el: null };
-  const lines = jobLines(kind, client), reduce = reducedMotion();
+  // v2.8.0 (FIX 2.1): the line under the time is the job's rotating line, never a copy of the title
+  const same = x => String(x || '').trim().toLowerCase(), all = jobLines(kind, client), lines = all.filter(l => same(l) !== same(title)).length ? all.filter(l => same(l) !== same(title)) : [JOB_LINES.other[0]], reduce = reducedMotion();
   const tpl = document.createElement('div'); tpl.innerHTML = workBarHtml({ title, hint: hint || jobHint(typicalMs), line: lines[0] });
   const el = tpl.firstElementChild;
   if (key) el.dataset.lvJobkey = key;
@@ -1021,6 +1022,8 @@ export function startJob(o = {}) {
     id, bar,
     progress(p) { bar?.progress(p); },
     line(title) { if (bar?.el) bar.el.querySelector('[data-lv-job-title]').textContent = title; },
+    // v2.8.0 (one progress bar): the step count goes next to the time, "usually about 5 minutes · 6 of 9 steps"
+    steps(done, total) { const h = bar?.el?.querySelector('[data-lv-job-hint]'); if (h) h.textContent = `${h.dataset.base}${total ? ` · ${done} of ${total} steps` : ''}`; },
     // line / detail: the bell's one-line result ("Pipelines updated from GHL" · "12 stages · 1 new stage to map")
     done(r = {}) { return finishWith('done', { title: r.title || `Done: ${entry.what || 'finished'}`, lead: r.lead, items: r.items || [], next: r.next, line: r.line, detail: r.detail }, r.next?.onClick ? { onNext: r.next.onClick } : null); },
     fail(r = {}) { return finishWith('failed', { reason: r.reason || 'Something went wrong.', nothingChanged: r.nothingChanged || false, line: r.line, detail: r.detail }, r.onRetry ? { onRetry: r.onRetry } : null); },

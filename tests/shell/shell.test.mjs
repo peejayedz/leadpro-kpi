@@ -852,7 +852,7 @@ test('jobs: one list of witty lines per job (edited in one place), "<Client>" fi
   assert.deepEqual(S.JOB_LINES.savemap, ['Tightening the bolts on your mapping…', 'Double-checking every stage…']);
   assert.deepEqual(S.JOB_LINES.sync, ['Fetching the latest leads…', 'Rounding up the numbers…', 'Doing the math so you don\'t have to…']);
   assert.deepEqual(S.jobLines('create', 'Acme Law'), ['Building Acme Law\'s new home in GHL…', 'Moving the furniture in (snapshot)…', 'Hanging the pictures…']);
-  assert.deepEqual(S.jobLines('kpi', 'Acme Law'), ['Setting up Acme Law\'s scorecard…', 'Lining up the numbers…']);
+  assert.deepEqual(S.jobLines('kpi', 'Acme Law'), ['Lining up the numbers…', 'Wiring up Acme Law\'s dashboard…']);   // v2.8.0 (FIX 2.1): no line repeats the bar's title
   assert.deepEqual(S.JOB_LINES.menu, ['Hanging the KPI sign in GHL…']);
   assert.deepEqual(S.JOB_LINES.review, ['Photocopying the workflows…', 'Reading the fine print in every email…']);
   assert.deepEqual(S.JOB_LINES.publish, ['Delivering the new version to the client\'s page…', 'Wrapping it with a bow…']);
@@ -874,6 +874,9 @@ test('jobs: working bar + popups are plain words only, escaped; Done = ✓ + "Do
   const w = S.workBarHtml({ title: 'Reading <Dumas>\'s pipelines from GHL…', line: 'Pedaling over to GHL…' });
   assert.match(w, /data-lv-job .*role="status"/); assert.match(w, /Reading &lt;Dumas&gt;&#39;s pipelines/); assert.match(w, /usually under a minute/);
   assert.ok(!/in_progress|queued|completed/.test(w));
+  // v2.8.0: the hint carries its base text for steps(): "usually under a minute · 6 of 9 steps"
+  assert.match(w, /<span data-lv-job-hint data-base="usually under a minute">usually under a minute<\/span>/);
+  for (const [k, l] of Object.entries(S.JOB_LINES)) for (const x of l) assert.ok(!/^Setting up /.test(x), `${k}: "${x}" reads like a job title`);
   const ok = S.resultPopupHtml({ title: 'Done: pipelines updated', lead: 'Read again.', items: [['Stages', '12 · all still mapped']], next: { label: 'Review mapping' } });
   assert.match(ok, /role="alertdialog" aria-modal="true"/); assert.match(ok, /lv-res-ic[^>]*>✓/); assert.match(ok, /Done: pipelines updated/); assert.match(ok, /<li>Stages<span>12 · all still mapped<\/span><\/li>/);
   assert.match(ok, /data-lv-res="close">Close</); assert.match(ok, /data-lv-res="next">Review mapping</);

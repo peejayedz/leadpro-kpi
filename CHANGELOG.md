@@ -5,6 +5,12 @@ Versions follow semantic versioning: MAJOR for changes that break existing firms
 Every line is tagged **[client]** (shows on the dashboards, and in their "What's new") or **[internal]** (admin page, scripts, workflows).
 Syncs and firm add/edit actions are not listed.
 
+## v1.35.0 — 21 Nov 2026
+- **[internal]** Map pipelines (Medical & dental / Other) and Edit mapping (law): "How we fill this in for you" under the hint (PJ's mapping explainer preview), open the first time on a device, then remembered open / closed (`lfmp-map-how`; storage blocked = closed). Medical / Other: three cards (Kept from before · Guessed from the name · Left for you), Bucket | Stage names like… | Words we look for, the order the names are checked in, three facts. Law: a "Showing:" line (your saved mapping · Pre-filled from the LFMP template preset · Guessed from the stage names: check every step), three cards, Step | Stage names like… | Words we look for, the one-stage-many-steps line, three facts. The text follows `scripts/care-core.mjs` GUESS and `admin/mapping.mjs` ACME / GUESS (`admin/map-how.mjs`; tests check every example against them).
+- **[internal]** A guessed stage's tag says which words matched ("Guessed: “Deposit”", `guessMatch` in care-core.mjs = `guessBucket` + the matched text); preset stages say "Pre-filled". Nothing about counting or saving changed (the matched text is never saved).
+- **[internal]** Shared shell 2.8.0 (`lfmp-session.js`): `startJob(...).steps(done, total)`; New firm's working bar shows "… · 3 of 7 steps" next to its time; the line under it is the job's rotating line, never the bar's title again (FIX 2.1: the KPI line list started with the title).
+- Tests: `tests/map-how/run.mjs` 52/52; `tests/care/ui.mjs` + explainer checks at 1440 / 390, light / dark (its 3 "Save" checks and the later crash fail the same way before this change: item 4).
+
 ## v1.34.0 — 21 Nov 2026
 - **[client]** WPP dashboards show the real Web Promotion Partners logo in full colour next to LeadPro (`brand/wpp-logo.png`; dark mode `brand/wpp-logo-dark.png`, only "WEB" white), 36 px (30 px on a phone), no chip. LFMP dashboards don't change.
 
