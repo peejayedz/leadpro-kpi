@@ -2,6 +2,11 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.35.0 "How we fill this in for you" + matched-word tags + shared shell 2.8.0 (queue item 2; with Builder v1.29.0 + Review admin v1.15.2): pushed 21 Nov 2026
+- **What it is:** CHANGELOG v1.35.0. `admin/map-how.mjs` (the explainer: care + law versions, the "Showing:" line, remembered open / closed in `lfmp-map-how`), `scripts/care-core.mjs` `guessMatch()` (guessBucket + the matched text: "Guessed: “Deposit”"; never saved), `admin/mapping.mjs` `mappingSource()` (saved / preset / guessed). The words follow the code's rules; `tests/map-how/run.mjs` checks every example against them. New firm's working bar shows "… · N of 7 steps".
+- **No change to counting or saving:** law-identical "All 6 law firms: identical numbers"; mapping 7/7; buildPipelineMap output unchanged.
+- **Open (item 4):** `tests/care/ui.mjs` 3 "Save" checks + a later crash (same on HEAD before this); "last saved <date>" on the Showing line needs `mappingSavedAt` (PJ chose to add it in item 4).
+
 ## v1.34.0 The real WPP logo (queue item 1b, PJ's option B; with Review admin v1.15.1 + Builder v1.28.1): pushed 21 Nov 2026
 - **What it is:** CHANGELOG v1.34.0. A WPP dashboard's agency mark is the real full-colour logo as `<img>`: `brand/wpp-logo.png` (light), `brand/wpp-logo-dark.png` (dark: only "WEB" white), 36 px / 30 px on a phone, no chip, alt "Web Promotion Partners", following Auto / Light / Dark. `brand/wpp-logo-mask.png` is no longer used by the dashboard (kept). LFMP dashboards: pixel-identical (Mahdavi, LFMP, Dumas checked at 1440 / 390, light / dark).
 - **Push order:** KPI → automation-review → Builder (the Builder push deploys the team site). Live check: Boca's dashboard light + dark.
