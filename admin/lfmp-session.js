@@ -12,6 +12,7 @@
 //   paintMe(me)                                 // fills [data-me] (name), [data-me-email], [data-me-last] ("Last signed in …")
 //   openTeamSignins()                           // the ⋯ → Team sign-ins dialog (any [data-act="signins"] opens it)
 
+import * as DN from './lfmp-done.js';   // v2.10.0 Done moments (popup + sound + voice; Classic = off)
 export const TOOLS = [
   { id: 'builder', name: 'Builder', path: '/ghl-subaccount-builder-page/' },
   { id: 'kpi', name: 'Scorecards', path: '/leadpro-kpi/admin/' },
@@ -236,15 +237,19 @@ export function meHtml(cfg, st = {}, { compact = false } = {}) {
   const ver = `${st.newsDot ? '<span class="lv-ndot" aria-label="new"></span>' : ''}${cfg.version ? `v${escH(String(cfg.version).replace(/^v/, ''))} ` : ''}›`;
   const themeRow = `<div class="lv-mi" role="presentation"><span id="lvThemeL${compact ? 'c' : ''}">Theme</span><div class="lv-sw" role="group" aria-labelledby="lvThemeL${compact ? 'c' : ''}">${THEMES.map(([k, l]) => `<button type="button" class="lv-hit" data-lv="theme" data-v="${k}" aria-pressed="${k === theme}">${l}</button>`).join('')}</div></div>`;
   const testsRow = cfg.showTests ? `<div class="lv-mi" role="presentation"><span id="lvTestsL${compact ? 'c' : ''}">${escH(cfg.showTests.label || 'Show test clients')}</span><button type="button" class="lv-tg lv-hit" role="switch" data-lv="tests" aria-labelledby="lvTestsL${compact ? 'c' : ''}" aria-checked="${!!st.showTests}"></button></div>` : '';
+  // v2.10.0: Done moments (after Theme): "New popup · Sound + voice ›" / "Classic ›"
+  const dn = st.done || DN.readDone(undefined, me);
+  const doneRow = row('done', 'Done moments', `${escH(compact ? DN.doneRowShort(dn) : DN.doneRowValue(dn))} ›`);   // FIX 6.1: one line in the name menu
   if (compact) {
     return `<div class="lv-mh">${avHtml(me)}<div><b class="lv-n">${escH(me.name || me.email || '')}</b><small class="lv-l">${escH(lastSignInText(me))}</small></div></div>
-<div class="lv-mc">${themeRow}${testsRow}${cfg.onRefresh ? row('refresh', 'Refresh now', st.updated ? `updated ${escH(st.updated)}` : '') : ''}
+<div class="lv-mc">${themeRow}${doneRow}${testsRow}${cfg.onRefresh ? row('refresh', 'Refresh now', st.updated ? `updated ${escH(st.updated)}` : '') : ''}
   ${row('news', "What's new", ver)}${row('signins', 'Team sign-ins', '›')}${row('install', 'Install the app', '›')}
   <div class="lv-dv" role="separator"></div><button type="button" class="lv-mi out" data-lv="signout" role="menuitem">Sign out</button></div>`;
   }
   return `<div class="lv-me-who">${avHtml(me, false)}<div><div class="lv-n">${escH(me.name || me.email || '')}</div><div class="lv-l">${escH(lastSignInText(me))}</div></div></div>
 <p class="lv-gl">Settings</p><div class="lv-mlist">
   <div class="lv-mi" role="presentation"><span id="lvThemeL">Theme</span><div class="lv-sw" role="group" aria-labelledby="lvThemeL">${THEMES.map(([k, l]) => `<button type="button" class="lv-hit" data-lv="theme" data-v="${k}" aria-pressed="${k === theme}">${l}</button>`).join('')}</div></div>
+  ${doneRow}
   ${cfg.showTests ? `<div class="lv-mi" role="presentation"><span id="lvTestsL">${escH(cfg.showTests.label || 'Show test clients')}</span><button type="button" class="lv-tg lv-hit" role="switch" data-lv="tests" aria-labelledby="lvTestsL" aria-checked="${!!st.showTests}"></button></div>` : ''}
   ${cfg.onRefresh ? row('refresh', 'Refresh now', st.updated ? `updated ${escH(st.updated)}` : '') : ''}
 </div>
@@ -1008,13 +1013,25 @@ export function startJob(o = {}) {
   const entry = { id, tool, kind: o.kind || 'other', what: o.what || '', client: o.client || '', title: o.title || '', status: 'running', startedAt: t0,
     page: TOOL_PAGE[tool] || '', ...(o.check ? { check: { ...o.check, since: o.check.since || t0 } } : {}), ...(o.doneText ? { doneText: o.doneText } : {}) };
   writeJobs([...readJobs(), entry]);
-  const bar = o.host ? mountWorkBar(o.host, { title: o.title || `${o.what || 'Working'}…`, hint: o.hint, kind: entry.kind, client: entry.client, typicalMs: o.typicalMs, t0 }) : null;
+  // v2.10.0 Done moments: a job started with moment: { tool, steps?, open?, workSub?, sub? } (Builder new client / Add existing
+  // client, KPI admin New firm, Review admin package build) runs in the Done moments popup instead of the working bar, unless
+  // the person's Animation is Classic (then exactly as before). Only on this browser: teammates never see or hear it.
+  const M = o.moment && hasDoc() ? DN.openMoment({ tool: o.moment.tool || tool, client: o.client, steps: o.moment.steps, workSub: o.moment.workSub || (o.title ? `${o.title.replace(/…$/, '')}. You can hide this and keep working.` : undefined), sub: o.moment.sub, onOpen: o.moment.open }, { me: o.moment.me || null }) : null;
+  const bar = o.host && !M ? mountWorkBar(o.host, { title: o.title || `${o.what || 'Working'}…`, hint: o.hint, kind: entry.kind, client: entry.client, typicalMs: o.typicalMs, t0 }) : null;
+  let mp = 0, mLine = String(o.title || '').replace(/…$/, ''), mSteps = '';
+  const mTick = () => M?.progress(mp, `${mLine}${mSteps}`);
   let over = false;
   const finishWith = async (status, r, cb) => {
     if (over) return; over = true;
     await bar?.finish(status === 'done');
     bar?.remove();
     const result = { ...r, status, what: entry.what, id, finishedAt: Date.now() };
+    // v2.10.0: with the Done moments popup, success = the popup's finish (sound + voice; it waits if the tab is hidden), no
+    // second result popup (the bell keeps the line, seen); a failure closes it and shows the usual Didn't work popup
+    if (M) {
+      if (status === 'done') { M.finish(); patchJob(id, { status, finishedAt: result.finishedAt, seen: true, result: { title: r.title, lead: r.lead, items: r.items, line: r.line, detail: r.detail } }); return; }
+      M.fail();
+    }
     const away = hasDoc() && document.visibilityState === 'hidden' ? hereTool() : '';
     patchJob(id, { status, finishedAt: result.finishedAt, ...(away ? { awayOn: away } : {}), result: { title: r.title, lead: r.lead, items: r.items, reason: r.reason, nothingChanged: r.nothingChanged, line: r.line, detail: r.detail } });
     if (cb?.onRetry) liveRetry.set(id, cb.onRetry);
@@ -1024,15 +1041,16 @@ export function startJob(o = {}) {
   };
   return {
     id, bar,
-    progress(p) { bar?.progress(p); },
-    line(title) { if (bar?.el) bar.el.querySelector('[data-lv-job-title]').textContent = title; },
+    moment: !!M,
+    progress(p) { bar?.progress(p); mp = Math.max(mp, Number(p) || 0); mTick(); },
+    line(title) { if (bar?.el) bar.el.querySelector('[data-lv-job-title]').textContent = title; mLine = String(title || '').replace(/…$/, ''); mTick(); },
     // v2.8.0 (one progress bar): the step count goes next to the time, "usually about 5 minutes · 6 of 9 steps"
-    steps(done, total) { const h = bar?.el?.querySelector('[data-lv-job-hint]'); if (h) h.textContent = `${h.dataset.base}${total ? ` · ${done} of ${total} steps` : ''}`; },
+    steps(done, total) { const h = bar?.el?.querySelector('[data-lv-job-hint]'); if (h) h.textContent = `${h.dataset.base}${total ? ` · ${done} of ${total} steps` : ''}`; mSteps = total ? ` · ${done} of ${total} steps` : ''; if (total) mp = Math.max(mp, done / total); mTick(); },
     // line / detail: the bell's one-line result ("Pipelines updated from GHL" · "12 stages · 1 new stage to map")
     done(r = {}) { return finishWith('done', { title: r.title || `Done: ${entry.what || 'finished'}`, lead: r.lead, items: r.items || [], next: r.next, line: r.line, detail: r.detail }, r.next?.onClick ? { onNext: r.next.onClick } : null); },
     fail(r = {}) { return finishWith('failed', { reason: r.reason || 'Something went wrong.', nothingChanged: r.nothingChanged || false, line: r.line, detail: r.detail }, r.onRetry ? { onRetry: r.onRetry } : null); },
     // the job ended without a result to show (cancelled by the user): no popup, nothing in the bell
-    drop() { if (over) return; over = true; bar?.remove(); writeJobs(readJobs().filter(j => j.id !== id)); },
+    drop() { if (over) return; over = true; bar?.remove(); M?.fail(); writeJobs(readJobs().filter(j => j.id !== id)); },
   };
 }
 const pendingCbs = new Map(), liveRetry = new Map();   // liveRetry: "Try again" in the bell while the page that ran the job is open
@@ -1291,11 +1309,17 @@ export async function playGreeting({ me, count, reads = count, server = null, st
   document.querySelector('[data-lv-greet]')?.remove();
   document.body.insertAdjacentHTML('beforeend', greetingHtml({ hour: now.getHours(), date: now, name: firstName(me), counts: cachedCounts(store, now.getTime()) }));
   const el = document.querySelector('[data-lv-greet]'), t0 = Date.now();
+  // v2.10.0 Voice greeting (Done moments → Voice greeting On): the Done moments voice reads it out, once. Chrome speaks only
+  // after a click / tap / key: right away if this page has had one, else on the first one while the greeting shows (the
+  // tap-to-skip counts); never after it has ended. Independent of Animation (Classic doesn't turn it off).
+  const ds = DN.readDone(store, me);
+  let curCounts = cachedCounts(store, now.getTime()), spoken = false;
+  const sayIt = () => { if (spoken || ds.greet !== 'on' || !el.isConnected || el.classList.contains('gone')) return; spoken = true; DN.speakText(ds, DN.greetVoiceText({ hour: now.getHours(), settings: ds, first: firstName(me), counts: curCounts })); };
   return new Promise(resolve => {
     let done = false;
     const timers = [];
     const finish = () => { if (done) return; done = true; timers.forEach(clearTimeout); document.removeEventListener('keydown', onKey, true); el.remove(); onEnd?.(); resolve(true); };
-    const skip = e => { e?.preventDefault?.(); e?.stopPropagation?.(); if (done || el.classList.contains('out')) return; el.classList.add('out'); timers.push(setTimeout(finish, 420)); };
+    const skip = e => { e?.preventDefault?.(); e?.stopPropagation?.(); if (done || el.classList.contains('out')) return; sayIt(); el.classList.add('out'); timers.push(setTimeout(finish, 420)); };
     const onKey = e => skip(e);
     el.addEventListener('pointerdown', skip); el.addEventListener('click', skip);
     document.addEventListener('keydown', onKey, true);
@@ -1309,6 +1333,7 @@ export async function playGreeting({ me, count, reads = count, server = null, st
     // the fresh counts that come in time (merged over the remembered ones)
     greetCounts(reads, { wait: Math.max(0, STATS_AT - 100), store, now: now.getTime(), server }).then(counts => {
       const late = Date.now() - t0;
+      if (!done) curCounts = { ...curCounts, ...counts };   // v2.10.0: the voice says the freshest counts it has
       if (done || late > STATS_AT - 60) return;
       const t = document.createElement('template'); t.innerHTML = greetingHtml({ hour: now.getHours(), date: now, counts });
       const row = t.content.querySelector('.lv-gr-st'); if (!row) return;
@@ -1318,6 +1343,7 @@ export async function playGreeting({ me, count, reads = count, server = null, st
       countUp();
     });
     requestAnimationFrame(() => el.classList.add('play'));
+    if (ds.greet === 'on' && globalThis.navigator?.userActivation?.hasBeenActive) timers.push(setTimeout(sayIt, STATS_AT));   // v2.10.0
     timers.push(setTimeout(finish, GREET_MS));
   });
 }
@@ -1337,7 +1363,7 @@ export function mountShell(cfg) {
   html.classList.add('lfmp-v2');
   // v2.5.0: every tool has a bell. A tool without its own (Builder, Review admin) gets the shell's: recent jobs.
   if (!cfg.bell) cfg = { ...cfg, bell: { jobs: true, label: 'Notifications' } };
-  const st = { theme: getTheme(), showTests: !!cfg.showTests?.on, updated: cfg.updated || '', newsDot: !!cfg.newsDot, bell: Number(cfg.bellCount) || 0, meOpen: false };
+  const st = { theme: getTheme(), showTests: !!cfg.showTests?.on, updated: cfg.updated || '', newsDot: !!cfg.newsDot, bell: Number(cfg.bellCount) || 0, meOpen: false, done: DN.readDone(undefined, cfg.me) };
   const bellTotal = () => st.bell + newJobResults();
   const full = () => ({ ...cfg, newsDot: st.newsDot, bellCount: bellTotal() });
   doc.querySelectorAll('[data-lv-top],[data-lv-ptop],[data-lv-tabs],[data-lv-me]').forEach(n => n.remove());
@@ -1404,6 +1430,11 @@ export function mountShell(cfg) {
     else if (a === 'signins') { closeMe(); openTeamSignins(); }
     else if (a === 'news') { closeMe(); cfg.onNews?.(); }
     else if (a === 'install') { closeMe(); install(); }
+    else if (a === 'done') {   // v2.10.0: the Done moments settings (side panel; a full screen on a phone)
+      closeMe();
+      DN.openDonePanel({ me: cfg.me, onChange: s => { st.done = s; paintMe(); },
+        greetSample: s => DN.greetVoiceText({ settings: s, first: firstName(cfg.me), counts: cachedCounts(safeStorage(), Date.now()) }) });
+    }
   };
   // v2.5.0: the shell's own bell panel (Builder, Review admin): recent jobs on this browser
   const jobsPop = () => doc.querySelector('[data-lv-jobpop]');

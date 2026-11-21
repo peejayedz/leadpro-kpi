@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.38.0": {
+    "title": "Done moments",
+    "summary": "Setting up a new firm now runs in a popup that ends with a finish animation, a sound and a voice line.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "New firm runs in a popup that follows the real steps; hide it and keep working. When it's done you hear your sound and voice line. Your name menu → Done moments has the settings; Classic keeps things as they were." }
+    ]
+  },
   "1.37.0": {
     "title": "LeadPro Reports (pilot)",
     "summary": "A Reports page per client with their Google rankings from BrightLocal, built every night.",

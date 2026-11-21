@@ -14,6 +14,7 @@
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=2.9.0">
+<link rel="stylesheet" href="lfmp-done.css?v=2.10.0">
 <link rel="stylesheet" href="admin.css?v=1.36.0">
 <link rel="stylesheet" href="care.css?v=1.35.0">
 </head>
@@ -1847,7 +1848,7 @@ function startAppRun(ctx) {
     <div data-lv-jobhost="newfirm"></div>
     <p class="sub" style="margin-top:12px">You can leave this page: GitHub keeps going, and the firm shows up in the list when it's ready.</p>
     <div id="appResult"></div>`;
-  me.job = newFirmJob(ctx.name);
+  me.job = newFirmJob(ctx.name, ctx.slug);
   const tick = () => { if (me.gone) return; const s = Math.floor((Date.now() - me.t0) / 1000); const el = $('runElapsed'); if (el) el.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
   me.timer = setInterval(tick, 1000); tick();
   const STOP = new Error('Stopped because you left this page.');
@@ -1892,7 +1893,9 @@ function startAppRun(ctx) {
   go(me.r.start(ctx));
 }
 // v1.31.0 (Part 2): New firm as one long job (both paths): the cyclist while GitHub works, the popup at the end.
-const newFirmJob = name => kpiJob({ kind: 'kpi', client: name, what: 'New firm', title: `Setting up ${name}'s scorecard…`, host: 'newfirm', typicalMs: 240000 });
+// v1.38.0 Done moments: the New firm setup runs in the popup (KPI words, the real steps); Open <firm> = its page. Classic = as before.
+const newFirmJob = (name, slug) => kpiJob({ kind: 'kpi', client: name, what: 'New firm', title: `Setting up ${name}'s scorecard…`, host: 'newfirm', typicalMs: 240000,
+  moment: { tool: 'kpi', steps: RUN_STEPS.slice(0, 5), sub: 'Saved as a Draft · Andy reviews before it goes in GHL', open: slug ? () => { location.hash = `#/firm/${slug}`; } : undefined } });
 function appJobDone(me, done) {
   const name = me.ctx.name, st = done.care ? 'Needs mapping' : done.draft ? 'Draft' : 'Live';
   me.job?.done({ title: `Done: ${name}'s scorecard set up`, lead: done.care ? 'Its pipelines were read from GHL. Map them next; it then becomes a Draft for review.' : done.draft ? 'Synced and ready for Andy\'s review. Save the passphrase shown on the page now.' : 'Synced and live. Save the passphrase shown on the page now.',
@@ -1917,7 +1920,7 @@ function appFail(me, err) {
     el.querySelector('.e').innerHTML = '';
     me.t0 = me.t0 || Date.now();
     if (!me.timer) me.timer = setInterval(() => { if (me.gone) return; const s = Math.floor((Date.now() - me.t0) / 1000); const x = $('runElapsed'); if (x) x.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }, 1000);
-    me.job = newFirmJob(me.ctx.name);
+    me.job = newFirmJob(me.ctx.name, me.ctx.slug);
     me.go(me.r.retry(me.ctx));
   };
 }
@@ -1985,7 +1988,7 @@ async function runFrom(i) {
     setStep(i, i === 2 ? 'wait' : 'run');
     // the working bar while GitHub works; none while you map the stages (step 3 waits for you)
     if (i === 2) { myRun.job?.drop(); myRun.job = null; }
-    else { if (!myRun.job) myRun.job = newFirmJob(myRun.ctx.name); myRun.job.line(`${RUN_STEPS[i]}: ${myRun.ctx.name}…`); myRun.job.steps?.(i, RUN_STEPS.length); }   // v1.35.0: "… · 3 of 7 steps" next to the time
+    else { if (!myRun.job) myRun.job = newFirmJob(myRun.ctx.name, myRun.ctx.slug); myRun.job.line(`${RUN_STEPS[i]}: ${myRun.ctx.name}…`); myRun.job.steps?.(i, RUN_STEPS.length); }   // v1.35.0: "… · 3 of 7 steps" next to the time
     const say = h => { if (run === myRun) stepEl(i).querySelector('.d').innerHTML = h; };
     try { await STEP_FNS[i](myRun.ctx, say, stepEl(i).querySelector('.slot')); if (run !== myRun) return; setStep(i, 'ok'); }
     catch (e) {

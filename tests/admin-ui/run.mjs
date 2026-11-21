@@ -103,6 +103,9 @@ async function withNip(G) {
 }
 async function wire(page, G) {
   page.on('pageerror', e => { failed++; console.log(`✗ page error: ${e.message}`); });
+  // v2.10.0 Done moments: these suites test today's flow, which is Animation = Classic exactly (the popup itself is tested in
+  // tests/shell/shell.test.mjs and the Builder's tests/e2e/done-moments.mjs); a test that sets lfmp-done itself keeps its own.
+  await page.addInitScript(() => { try { if (!localStorage.getItem('lfmp-done')) localStorage.setItem('lfmp-done', JSON.stringify({ animation: 'classic' })); } catch {} });
   // The libsodium stub can't match the real file's SRI hash: drop the integrity attribute for cdnjs in this test only.
   await page.addInitScript(() => { const d = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'integrity'); Object.defineProperty(HTMLScriptElement.prototype, 'integrity', { set(v) { if (!String(this.src).includes('cdnjs.cloudflare.com')) d.set.call(this, v); }, get() { return d.get.call(this); } }); });
   await page.route('**/firms/lfmp/data/details.enc.json*', r => r.fulfill({ contentType: 'application/json', body: NIP_ENV }));
@@ -199,7 +202,7 @@ try {
     check(/PJ Drozo/.test(meText) && /Last signed in/.test(meText) && await p0.isVisible(`${me0} [data-lv="signout"]`) && !/Lock|Forget token/.test(meText), 'Me: name, last sign-in and Sign out (no Lock, no Forget token)');
     // the name menu (v1.29.0): Theme · Show test clients · Refresh now · What's new + version · Team sign-ins · Install the app · Sign out
     const items = await p0.$$eval(`${me0} .lv-mi`, els => els.map(e => (e.firstElementChild || e).textContent.trim()));
-    check(items.join('|') === "Theme|Show test clients|Refresh now|What's new|Team sign-ins|Install the app|Sign out" && /Theme Light Dark Auto/.test(meText) && new RegExp(`What's new v${LATEST.replace(/\./g, '\\.')}`).test(meText) && !(await p0.$(`${me0} .lv-gl`)), `name menu: the same items as every tool, no tool extras (${items.join(' · ')})`);
+    check(items.join('|') === "Theme|Done moments|Show test clients|Refresh now|What's new|Team sign-ins|Install the app|Sign out" && /Theme Light Dark Auto/.test(meText) && new RegExp(`What's new v${LATEST.replace(/\./g, '\\.')}`).test(meText) && !(await p0.$(`${me0} .lv-gl`)), `name menu: the same items as every tool, no tool extras (${items.join(' · ')})`);
     await p0.keyboard.press('Escape');
     check(await p0.isHidden('[data-lv-top] [data-lv-pop]'), 'Esc closes Me');
     check(await storageClean(p0), 'nothing secret in localStorage / sessionStorage');

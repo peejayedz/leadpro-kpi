@@ -23,7 +23,67 @@ const me = { name: 'Pee Jay Edrozo', email: 'pj@example.com', lastSignIn: '2026-
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
 
 // ---------------------------------------------------------------- part 1: pure
-test('the three copies of lfmp-session.js, lfmp-ui.css and this test are byte-identical', () => {
+// v2.10.0 Done moments (lfmp-done.js): settings, the lines, the greeting text, the Me row
+const DN = await import(pathToFileURL(path.join(DIR, 'lfmp-done.js')).href);
+const dnStore = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), m }; };
+test('Done moments: defaults (New popup, Sound + voice, Systems check, Guy, best voice, Commander style, "Commander", Commander line); voice greeting On only for PJ', () => {
+  assert.deepEqual(DN.doneDefaults(), { animation: 'new', sound: 'all', style: 'syscheck', gender: 'guy', who: '', voice: 'commander', callme: 'Commander', custom: '', line: 'commander', greet: 'off' });
+  assert.equal(DN.doneDefaults({ first: 'PJ', name: 'PJ' }).greet, 'on'); assert.equal(DN.doneDefaults({ first: 'Andy', name: 'Andy Cass' }).greet, 'off');
+  assert.equal(DN.DONE_KEY, 'lfmp-done');
+});
+test('Done moments: saved in localStorage "lfmp-done"; a value that isn\'t a choice falls back; nothing stored = defaults; storage blocked = defaults, no error', () => {
+  const st = dnStore();
+  assert.deepEqual(DN.readDone(st), DN.doneDefaults());
+  const saved = DN.saveDone({ ...DN.doneDefaults(), animation: 'classic', style: 'rain', callme: 'Custom', custom: 'PJ', greet: 'on' }, st);
+  assert.equal(JSON.parse(st.m.get('lfmp-done')).style, 'rain'); assert.deepEqual(DN.readDone(st), saved);
+  st.setItem('lfmp-done', JSON.stringify({ animation: 'loud', style: 'boom', sound: 'all', voice: 'x', line: 'short', custom: 'A'.repeat(99) }));
+  const c = DN.readDone(st); assert.equal(c.animation, 'new'); assert.equal(c.style, 'syscheck'); assert.equal(c.voice, 'commander'); assert.equal(c.line, 'short'); assert.equal(c.custom.length, 40);
+  const blocked = { getItem() { throw new Error('blocked'); }, setItem() { throw new Error('blocked'); } };
+  assert.deepEqual(DN.readDone(blocked), DN.doneDefaults()); DN.saveDone(DN.doneDefaults(), blocked);
+});
+test('Done moments: the finish styles = the 7 picks + Surprise me; each comes with its own sound (no sound picker)', () => {
+  assert.deepEqual(DN.STYLES.map(s => s[0]), ['lockon', 'core', 'syscheck', 'opsgrid', 'globe', 'rain', 'hud', 'random']);
+  assert.deepEqual(DN.STYLES.slice(0, 7).map(s => s[1]), ['Suit HUD · Lock-on', 'Suit HUD · Power core', 'Suit HUD · Systems check', 'Command wall · Ops grid', 'Command wall · Global map', 'Gold rain', 'HUD scan']);
+  for (const id of DN.STYLE_IDS) assert.ok(DN.SOUND_OF[id], `sound for ${id}`);
+  assert.deepEqual(DN.CALL_ME, ['Nothing', 'Master', 'Commander', 'Boss', 'Chief', 'Captain', 'Sir', 'Team', 'Custom']);
+  assert.deepEqual(DN.LINE_STYLES.map(l => l[0]), ['commander', 'report', 'mission', 'hype', 'short']); assert.deepEqual(DN.VOICE_STYLES.map(l => l[0]), ['commander', 'robot', 'control', 'announcer']);
+});
+test('Done moments: the voice line with every Call me (Nothing, the 7 names, Custom, empty Custom) and every Line, with the real client name', () => {
+  const L = DN.linesFor('builder', 'Acme Law');
+  const s = c => ({ ...DN.doneDefaults(), callme: c, custom: c === 'Custom' ? 'PJ' : '' });
+  assert.equal(DN.lineText(L, 'commander', DN.callName(s('Commander'))), 'Build complete, Commander. Acme Law is ready.');
+  assert.equal(DN.lineText(L, 'commander', DN.callName(s('Nothing'))), 'Build complete. Acme Law is ready.');
+  assert.equal(DN.lineText(L, 'report', DN.callName(s('Custom'))), "PJ, the build is complete. Acme Law's sub-account is ready.");
+  assert.equal(DN.lineText(L, 'report', DN.callName({ ...s('Custom'), custom: '  ' })), "The build is complete. Acme Law's sub-account is ready.");
+  for (const c of ['Master', 'Boss', 'Chief', 'Captain', 'Sir', 'Team']) for (const [k] of DN.LINE_STYLES) { const t = DN.lineText(L, k, DN.callName(s(c))); assert.ok(t.includes(c) && !/[@^]/.test(t), `${c} / ${k}: ${t}`); }
+  for (const tool of ['builder', 'kpi', 'review']) { const T = JSON.stringify(DN.linesFor(tool, 'Acme Law')); assert.ok(T.includes('Acme Law') && !/Boca|Mahdavi|Dumas|\{c\}|\{s\}/.test(T), tool); }
+  assert.equal(DN.linesFor('kpi', 'The Mahdavi Law Firm').say.mission, 'Mission complete@. The Mahdavi Law Firm scorecard is deployed.', '"The …" is not doubled');
+  assert.deepEqual(DN.linesFor('kpi', 'X', ['a', 'b']).steps, ['a', 'b'], 'the tool\'s real steps');
+  assert.deepEqual(DN.linesFor('builder', 'X').mods, ['Fields', 'Pipelines', 'Calendars', 'Review']); assert.deepEqual(DN.linesFor('kpi', 'X').mods, ['Stages', 'Counts', 'Dashboard', 'Publish']); assert.deepEqual(DN.linesFor('review', 'X').mods, ['Workflows', 'Plan', 'Flows', 'Package']);
+});
+test('Voice greeting text: daypart, Call me or the first name, zeros and missing counts left out, "Everything is clear."', () => {
+  const s = (c = 'Commander') => ({ ...DN.doneDefaults(), callme: c });
+  assert.equal(DN.greetVoiceText({ hour: 15, settings: s(), counts: { reviews: 2, scorecards: 1, clients: 3 } }), 'Good afternoon, Commander. 2 reviews need you, 1 scorecard needs attention, and 3 clients are in progress.');
+  assert.equal(DN.greetVoiceText({ hour: 9, settings: s('Nothing'), first: 'PJ', counts: { reviews: 0, scorecards: 0, clients: 1 } }), 'Good morning, PJ. 1 client is in progress.');
+  assert.equal(DN.greetVoiceText({ hour: 20, settings: s(), counts: { reviews: 1, clients: 2 } }), 'Good evening, Commander. 1 review needs you, and 2 clients are in progress.');
+  assert.equal(DN.greetVoiceText({ hour: 11, settings: s(), counts: { reviews: 0, scorecards: 0, clients: 0 } }), 'Good morning, Commander. Everything is clear.');
+  assert.equal(DN.greetVoiceText({ hour: 12, settings: s(), counts: {} }), 'Good afternoon, Commander.', 'no count ready → no count sentence');
+  assert.equal(DN.greetVoiceText({ hour: 18, settings: s('Nothing'), counts: { scorecards: 4 } }), 'Good evening. 4 scorecards need attention.');
+  assert.equal(DN.greetVoiceText({ hour: 8, settings: { ...s('Custom'), custom: 'Boss Lady' }, counts: { reviews: 3, scorecards: 2 } }), 'Good morning, Boss Lady. 3 reviews need you, and 2 scorecards need attention.');
+});
+test('Done moments row in the name menu (after Theme: "New popup ›" / "Classic ›", one line) and on the phone Me screen (Settings group, after Theme: "New popup · Sound + voice ›")', () => {
+  for (const compact of [true, false]) {
+    const h = S.meHtml({ me }, { theme: 'auto', done: DN.doneDefaults() }, { compact });
+    const t = text(h); assert.match(t, compact ? /Theme Light Dark Auto Done moments New popup › / : /Theme Light Dark Auto Done moments New popup · Sound \+ voice ›/, `compact ${compact}`);   // FIX 6.1: one line in the name menu
+    assert.match(h, /data-lv="done" role="menuitem"/);
+    assert.match(text(S.meHtml({ me }, { theme: 'auto', done: { ...DN.doneDefaults(), animation: 'classic' } }, { compact })), /Done moments Classic ›/);
+    assert.match(text(S.meHtml({ me }, { theme: 'auto', done: { ...DN.doneDefaults(), sound: 'off' } }, { compact })), compact ? /Done moments New popup › / : /Done moments New popup · Off ›/);
+  }
+});
+test('Done moments: no browser (the team site\'s server imports the shell) → the engine never runs; a job\'s moment is null', () => {
+  assert.equal(DN.HAS_DOM, false); assert.equal(DN.openMoment({ tool: 'builder', client: 'X' }), null);
+});
+test('the three copies of lfmp-session.js, lfmp-ui.css, lfmp-done.js, lfmp-done.css and this test are byte-identical', () => {
   let code = HERE; while (code !== path.dirname(code) && !fs.existsSync(path.join(code, 'ghl-subaccount-builder'))) code = path.dirname(code);
   const sets = [
     ['ghl-subaccount-builder/page', 'leadpro-kpi/admin', 'automation-review/admin'].map(d => path.join(code, d)),
@@ -31,7 +91,7 @@ test('the three copies of lfmp-session.js, lfmp-ui.css and this test are byte-id
   const tests = ['ghl-subaccount-builder/tests/unit/shell.test.mjs', 'leadpro-kpi/tests/shell/shell.test.mjs', 'automation-review/admin/tests/shell.test.mjs'].map(f => path.join(code, f));
   if (!sets[0].every(d => fs.existsSync(d))) return test.skip?.('the other two repos are not next to this one');
   const md5 = f => crypto.createHash('md5').update(fs.readFileSync(f)).digest('hex');
-  for (const f of ['lfmp-session.js', 'lfmp-ui.css']) assert.equal(new Set(sets[0].map(d => md5(path.join(d, f)))).size, 1, `${f} differs between the three repos`);
+  for (const f of ['lfmp-session.js', 'lfmp-ui.css', 'lfmp-done.js', 'lfmp-done.css']) assert.equal(new Set(sets[0].map(d => md5(path.join(d, f)))).size, 1, `${f} differs between the three repos`);
   const there = tests.filter(f => fs.existsSync(f));
   assert.equal(new Set(there.map(md5)).size, 1, 'shell.test.mjs differs between the repos');
 });
@@ -96,7 +156,7 @@ test('Me (identical in all three tools): avatar, name, Last signed in · SETTING
   const h = S.meHtml({ tool: 'kpi', me, version: '1.23.0', showTests: { label: 'Show test clients' }, onRefresh() {},
     extras: { title: 'Scorecards', items: [{ label: 'Sync', value: 'every 30 min' }] } },   // extras are ignored: no tool-only section
     { theme: 'dark', showTests: true, updated: '4:57 PM', newsDot: true });
-  assert.equal(text(h), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Settings Theme Light Dark Auto Show test clients Refresh now updated 4:57 PM Team Team sign-ins › What's new v1.23.0 › Install the app › Sign out`);
+  assert.equal(text(h), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Settings Theme Light Dark Auto Done moments New popup · Sound + voice › Show test clients Refresh now updated 4:57 PM Team Team sign-ins › What's new v1.23.0 › Install the app › Sign out`);
   assert.match(h, /data-v="dark" aria-pressed="true"/); assert.match(h, /data-v="auto" aria-pressed="false"/);
   assert.match(h, /role="switch" data-lv="tests" aria-labelledby="lvTestsL" aria-checked="true"/);
   assert.match(h, /data-lv="news" role="menuitem"><span>What&#39;s new<\/span><span class="lv-v"><span class="lv-ndot"/, 'unseen What\'s new: the dot is on its row');
@@ -105,16 +165,16 @@ test('Me (identical in all three tools): avatar, name, Last signed in · SETTING
   const same = S.SHELL_TOOLS.map(t => S.meHtml({ tool: t.id, me, version: '1', showTests: {}, onRefresh() {} }, {}));
   assert.equal(new Set(same).size, 1, 'Me is the same in every tool');
   const plain = S.meHtml({ tool: 'review', me }, {});
-  assert.equal(text(plain), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Settings Theme Light Dark Auto Team Team sign-ins › What's new › Install the app › Sign out`);
+  assert.equal(text(plain), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Settings Theme Light Dark Auto Done moments New popup · Sound + voice › Team Team sign-ins › What's new › Install the app › Sign out`);
 });
 test('the name menu (v2.4.0, compact): name + Last signed in · Theme Light/Dark/Auto · [tests · Refresh] · What\'s new (version) · Team sign-ins · Install · Sign out', () => {
   const h = S.meHtml({ tool: 'kpi', me, version: '1.28.0', showTests: { label: 'Show test clients' }, onRefresh() {} }, { theme: 'auto', showTests: false, updated: '4:57 PM' }, { compact: true });
-  assert.equal(text(h), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Theme Light Dark Auto Show test clients Refresh now updated 4:57 PM What's new v1.28.0 › Team sign-ins › Install the app › Sign out`);
+  assert.equal(text(h), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Theme Light Dark Auto Done moments New popup › Show test clients Refresh now updated 4:57 PM What's new v1.28.0 › Team sign-ins › Install the app › Sign out`);
   assert.match(h, /^<div class="lv-mh"><span class="lv-av">PJ<\/span><div><b class="lv-n">Pee Jay Edrozo<\/b><small class="lv-l">Last signed in /);
   assert.match(h, /<div class="lv-dv" role="separator"><\/div><button type="button" class="lv-mi out" data-lv="signout" role="menuitem">Sign out<\/button><\/div>$/);
   assert.doesNotMatch(h, /lv-gl/, 'no group labels in the compact menu');
   assert.match(h, /data-v="auto" aria-pressed="true"/);
-  assert.equal(text(S.meHtml({ tool: 'review', me }, {}, { compact: true })), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Theme Light Dark Auto What's new › Team sign-ins › Install the app › Sign out`);
+  assert.equal(text(S.meHtml({ tool: 'review', me }, {}, { compact: true })), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Theme Light Dark Auto Done moments New popup › What's new › Team sign-ins › Install the app › Sign out`);
   assert.ok(!S.meHtml({ tool: 'review', me: { name: '<b>x</b>' } }, {}, { compact: true }).includes('<b>x</b>'), 'escaped');
 });
 
@@ -447,7 +507,7 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
   const server = http.createServer((req, res) => {
     const u = new URL(req.url, 'http://x');
     if (u.pathname === '/' || u.pathname.endsWith('/admin/') || u.pathname.endsWith('-page/')) { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(PAGE); }
-    if (u.pathname === '/lfmp-session.js' || u.pathname === '/lfmp-ui.css') { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
+    if (/^\/lfmp-(session|ui|done)\.(js|css)$/.test(u.pathname) && fs.existsSync(path.join(DIR, u.pathname.slice(1)))) { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
     if (u.pathname === '/cdn-cgi/access/logout') { server.logouts = (server.logouts || 0) + 1; res.writeHead(200); return res.end(''); }
     if (u.pathname.startsWith('/signin/')) { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<title>signed out</title>'); }
     if (u.pathname === '/api/signins') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ people: [{ name: 'PJ', email: 'pj@example.com', last: '2026-11-16T11:31:00Z', count30: 3 }] })); }
@@ -486,7 +546,7 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
         assert.equal(await page.getAttribute(`${bar} [data-lv="me"]`, 'aria-expanded'), 'true');
         { const mh = await page.locator(`${me} .lv-mh`).innerText(); assert.ok(mh.includes('Pee Jay Edrozo') && mh.includes(S.lastSignInText({ lastSignIn: '2026-11-16T11:31:00Z' })), mh); }
         const items = await page.locator(`${me} .lv-mi`).evaluateAll(els => els.map(e => (e.firstElementChild || e).textContent.trim()));
-        assert.deepEqual(items, ['Theme', 'Show test clients', 'Refresh now', "What's new", 'Team sign-ins', 'Install the app', 'Sign out'], `${tool} ${w}: name menu items`);
+        assert.deepEqual(items, ['Theme', 'Done moments', 'Show test clients', 'Refresh now', "What's new", 'Team sign-ins', 'Install the app', 'Sign out'], `${tool} ${w}: name menu items`);
         assert.equal(await page.locator(`${bar} .lv-av [data-lv-dot], ${bar} .lv-av .lv-dot`).count(), 0, 'no dot on the avatar');
         assert.equal(await page.locator(`${me} [data-lv="news"] .lv-ndot`).count(), 1, 'the new dot is on the What\'s new row');
         assert.equal(await page.evaluate(s => { const r = document.querySelector(s).getBoundingClientRect(); return r.right <= innerWidth && r.left >= 0 && r.bottom <= innerHeight; }, me), true, `${tool} ${w}: the menu is fully on screen`);
@@ -508,7 +568,7 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
           await page.click('.lv-tabs [data-lv="metab"]'); await page.waitForSelector('[data-lv-me]:not([hidden]) .lv-mlist');
           assert.equal(await page.locator(`${me}:not([hidden])`).count(), 0, 'name menu closed');
           const sitems = await page.locator('[data-lv-me] .lv-mi').evaluateAll(els => els.map(e => (e.firstElementChild || e).textContent.trim()));
-          assert.deepEqual(sitems, ['Theme', 'Show test clients', 'Refresh now', 'Team sign-ins', "What's new", 'Install the app', 'Sign out'], `${tool}: Me screen items`);
+          assert.deepEqual(sitems, ['Theme', 'Done moments', 'Show test clients', 'Refresh now', 'Team sign-ins', "What's new", 'Install the app', 'Sign out'], `${tool}: Me screen items`);
           assert.equal(await page.getAttribute('.lv-tabs [data-lv="metab"]', 'aria-current'), 'page', 'Me tab gold while open');
           // a tool's toast (z-index 70, like the Builder's What's new) never covers Me; the bottom tabs stay on top of Me
           const covered = await page.evaluate(() => {
@@ -573,7 +633,7 @@ window.played = shell.greeting; window.S = S;</script></body></html>`;
     if (u.pathname === '/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(PAGE); }
     if (u.pathname === '/cdn-cgi/access/logout') { server.logouts = (server.logouts || 0) + 1; res.writeHead(200); return res.end(''); }
     if (u.pathname.startsWith('/signin/')) { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<title>signed out</title>'); }
-    if (u.pathname === '/lfmp-session.js' || u.pathname === '/lfmp-ui.css') { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
+    if (/^\/lfmp-(session|ui|done)\.(js|css)$/.test(u.pathname) && fs.existsSync(path.join(DIR, u.pathname.slice(1)))) { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
     res.writeHead(404); res.end();
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
@@ -686,7 +746,7 @@ window.close1 = () => S.panelClose(pn, sh, () => { pn.hidden = true; sh.hidden =
   const server = http.createServer((req, res) => {
     const u = new URL(req.url, 'http://x');
     if (u.pathname === '/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(PAGE); }
-    if (u.pathname === '/lfmp-session.js' || u.pathname === '/lfmp-ui.css') { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
+    if (/^\/lfmp-(session|ui|done)\.(js|css)$/.test(u.pathname) && fs.existsSync(path.join(DIR, u.pathname.slice(1)))) { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
     res.writeHead(404); res.end();
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
@@ -784,7 +844,7 @@ document.getElementById('bad').addEventListener('click', () => { S.lfmpFetch('/f
   const server = http.createServer((req, res) => {
     const u = new URL(req.url, 'http://x');
     if (u.pathname === '/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(PAGE); }
-    if (u.pathname === '/lfmp-session.js' || u.pathname === '/lfmp-ui.css') { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
+    if (/^\/lfmp-(session|ui|done)\.(js|css)$/.test(u.pathname) && fs.existsSync(path.join(DIR, u.pathname.slice(1)))) { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
     if (u.pathname === '/slow') return setTimeout(() => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{}'); }, 1500);
     if (u.pathname === '/fail') return setTimeout(() => { res.writeHead(500); res.end(''); }, 600);
     res.writeHead(404); res.end();
@@ -987,4 +1047,116 @@ test('brand filter HTML: "All clients ▾" menu (counts, ✓, hint), phone Filte
   assert.doesNotMatch(S.pageHeadHtml({ title: 'X', segs, active: 'all' }), /lv-srow|lv-segb|data-lv-bf/, 'without brand: exactly as before');
   assert.match(CSS, /\.lv-bf\{display:inline-flex;[^}]*background:var\(--seg\)[^}]*border-radius:10px/); assert.match(CSS, /\.lv-seg\.lv-segb\{display:none\}/);
   assert.ok(CSS.slice(CSS.lastIndexOf('@media (prefers-reduced-motion:reduce){')).includes('.lv-fsheet{animation:none}'), 'reduced motion: the sheet does not slide');
+});
+
+// v2.10.0 Done moments in Chromium, per tool (Builder / KPI admin / Review admin words), with a fixture job through the
+// shell's startJob: the popup in its working state with the job's real step text, Hide → mini → back, finish = the style's
+// sound + the voice line once each (stubbed), no second result popup, Open <client>; a failure closes it with no sound and
+// shows the usual Didn't work popup; Classic = the working bar exactly as before, no popup, nothing played. Then the
+// settings panel, the voice shortlist order, and the voice greeting (once with the right text; Off = never; never after it ends).
+tb('in Chromium: Done moments per tool (popup, Hide → mini, finish = sound + voice once, failure = no sound, Classic = as before), settings panel, voices, voice greeting', { timeout: 180000 }, async () => {
+  const { chromium } = createRequire(path.join(pwDir, 'package.json'))('./index.js');
+  const PAGE = `<!doctype html><html lang="en" class="lfmp-v2"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/lfmp-ui.css"><link rel="stylesheet" href="/lfmp-done.css"></head><body>
+<div id="app"><main class="lv-in"><div data-lv-jobhost="h"></div></main></div>
+<script type="module">import * as S from '/lfmp-session.js'; import * as DN from '/lfmp-done.js'; window.S = S; window.DN = DN; window.calls = [];
+window.__lfmpDoneHooks = { sound: id => calls.push(['sound', id]), speak: t => calls.push(['speak', t]) };
+const tool = new URLSearchParams(location.search).get('tool') || 'builder';
+window.shell = S.mountShell({ tool, me: { name: 'PJ', first: 'PJ', email: 'pj@example.com' }, root: document.getElementById('app'), version: '1.0.0' }); window.ready = true;</script></body></html>`;
+  const server = http.createServer((req, res) => {
+    const u = new URL(req.url, 'http://x');
+    if (u.pathname === '/') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(PAGE); }
+    if (/^\/lfmp-(session|ui|done)\.(js|css)$/.test(u.pathname)) { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
+    res.writeHead(404); res.end();
+  });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  // a computer with these voices (the engine's shortlist() orders them: the best 4 of each kind)
+  const VOICES = ['Samantha', 'Fred', 'Karen', 'Daniel', 'Moira', 'Google UK English Male', 'Alex', 'Zarvox'].map(name => ({ name, lang: 'en-US', default: false, localService: true, voiceURI: name }));
+  const ctxFor = async (opts = {}) => {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: opts.reduced ? 'reduce' : 'no-preference' });
+    await ctx.addInitScript(([v, done, greet]) => {
+      try { localStorage.setItem('lfmp-greet-day', greet ? '' : `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`); if (!greet) localStorage.setItem('lfmp-greet-day', localStorage.getItem('lfmp-greet-day')); else localStorage.removeItem('lfmp-greet-day'); if (done) localStorage.setItem('lfmp-done', JSON.stringify(done)); } catch {}
+      try { const list = v; Object.defineProperty(window, 'speechSynthesis', { value: { getVoices: () => list, speak() {}, cancel() {}, addEventListener() {}, removeEventListener() {} }, configurable: true }); } catch {}
+    }, [VOICES, opts.done || null, !!opts.greet]);
+    const page = await ctx.newPage(); const errs = []; page.on('pageerror', e => errs.push(e.message));
+    return { ctx, page, errs };
+  };
+  try {
+    for (const tool of ['builder', 'kpi', 'review']) {
+      const { ctx, page, errs } = await ctxFor();
+      await page.goto(`${base}/?tool=${tool}`); await page.waitForFunction(() => window.ready && window.DM);
+      // ---- a job that finishes
+      await page.evaluate(t => { window.j = S.startJob({ tool: t === 'review' ? 'builder' : t, kind: 'create', client: 'Acme Law', what: 'Fixture job', title: 'Building Acme Law…', host: 'h', moment: { tool: t, steps: ['Step one', 'Step two', 'Step three', 'Step four'], open: () => { window.opened = (window.opened || 0) + 1; } } }); window.j.line('Step two'); window.j.steps(1, 4); }, tool);
+      await page.waitForSelector('.dm-pop.working.in');
+      assert.equal(await page.locator('[data-lv-jobhost="h"] *').count(), 0, `${tool}: no working bar while the popup runs`);
+      const sub = await page.locator('.dm-pop .job .s').textContent(), work = await page.locator('.dm-pop .job .t').textContent();
+      assert.equal(sub, 'Step two · 1 of 4 steps', `${tool}: real step text`); assert.match(work, /Acme Law/, `${tool}: the real client name`);
+      await page.click('.dm-pop .dm-hide'); assert.ok(await page.locator('.dm-pop.mini').count(), `${tool}: Hide → mini`);
+      await page.click('.dm-pop .dm-card'); assert.equal(await page.locator('.dm-pop.mini').count(), 0, `${tool}: click the mini → back`);
+      await page.click('.dm-pop .dm-hide');
+      await page.evaluate(() => window.j.done({ title: 'Done: fixture' })); await wait(2600);
+      assert.ok(await page.locator('.dm-pop:not(.mini):not(.working) .stage.done').count(), `${tool}: finish → back up full size, done state`);
+      const calls = await page.evaluate(() => window.calls);
+      assert.equal(calls.filter(c => c[0] === 'sound').length, 1, `${tool}: the style's sound once`); assert.equal(calls.filter(c => c[0] === 'speak').length, 1, `${tool}: the voice line once`);
+      assert.equal(calls.find(c => c[0] === 'sound')[1], 'opsdone', `${tool}: Systems check = the Ops complete sound`);
+      assert.match(calls.find(c => c[0] === 'speak')[1], tool === 'review' ? /^Review package ready, Commander\./ : /Commander.*Acme Law|Acme Law.*Commander/, `${tool}: the line with Call me (+ the client, where the engine's line names it)`);
+      assert.equal(await page.locator('[data-lv-res-shade]').count(), 0, `${tool}: no second result popup`);
+      await page.click('.dm-pop .dm-open'); assert.equal(await page.evaluate(() => window.opened), 1, `${tool}: Open <client>`);
+      // ---- a job that fails: popup closes, no sound, the usual Didn't work popup
+      await page.evaluate(t => { window.calls.length = 0; window.j2 = S.startJob({ tool: t === 'review' ? 'builder' : t, kind: 'create', client: 'Beta Firm', what: 'Fixture job', title: 'Building Beta Firm…', host: 'h', moment: { tool: t } }); }, tool);
+      await page.waitForSelector('.dm-pop.working');
+      await page.evaluate(() => window.j2.fail({ reason: 'GHL said no.' })); await wait(700);
+      assert.equal(await page.locator('.dm-pop').count(), 0, `${tool}: a failure closes the popup`);
+      assert.deepEqual(await page.evaluate(() => window.calls), [], `${tool}: no sound, no voice on a failure`);
+      assert.match(await page.locator('[data-lv-res-shade]').innerText(), /GHL said no\./, `${tool}: the usual error popup`);
+      assert.deepEqual(errs, [], `${tool}: no page errors`);
+      await ctx.close();
+      // ---- Classic: exactly as before
+      const C = await ctxFor({ done: { ...DN.doneDefaults(), animation: 'classic' } });
+      await C.page.goto(`${base}/?tool=${tool}`); await C.page.waitForFunction(() => window.ready);
+      await C.page.evaluate(t => { window.j = S.startJob({ tool: t === 'review' ? 'builder' : t, kind: 'create', client: 'Acme Law', what: 'Fixture job', title: 'Building Acme Law…', host: 'h', moment: { tool: t } }); }, tool);
+      await wait(300);
+      assert.equal(await C.page.locator('.dm-pop').count(), 0, `${tool} Classic: no popup`);
+      assert.ok(await C.page.locator('[data-lv-jobhost="h"] *').count() > 0, `${tool} Classic: the working bar as before`);
+      assert.equal(await C.page.evaluate(() => window.j.moment), false);
+      await C.page.evaluate(() => window.j.done({ title: 'Done: fixture' })); await wait(1500);
+      assert.ok(await C.page.locator('[data-lv-res-shade]').count(), `${tool} Classic: the usual Done popup`);
+      assert.deepEqual(await C.page.evaluate(() => window.calls), [], `${tool} Classic: no sound, no voice`);
+      await C.ctx.close();
+    }
+    // ---- the settings panel
+    const P = await ctxFor();
+    await P.page.goto(`${base}/?tool=builder`); await P.page.waitForFunction(() => window.ready && window.DM);
+    await P.page.click('[data-lv-top] [data-lv="me"]'); await P.page.click('[data-lv-top] [data-lv="done"]'); await P.page.waitForSelector('.lv-dmp');
+    assert.ok(await P.page.locator('.lv-dmp [data-dm-thumb] .stage').count(), 'the thumbnail = the real engine\'s finished frame');
+    assert.deepEqual(await P.page.locator('.lv-dmp select[data-dm="who"] option').allTextContents(), ['Daniel', 'Alex', 'Google UK English Male', 'Fred'], 'Guy: the best 4 guy voices, best first (the engine\'s order)');
+    await P.page.click('.lv-dmp [data-dm="gender"][data-v="girl"]');
+    assert.deepEqual(await P.page.locator('.lv-dmp select[data-dm="who"] option').allTextContents(), ['Samantha', 'Karen', 'Moira'], 'Girl: the girl voices, best first');
+    await P.page.selectOption('.lv-dmp select[data-dm="callme"]', 'Custom'); await P.page.fill('.lv-dmp input[data-dm="custom"]', 'PJ');
+    await P.page.click('.lv-dmp [data-dm-act="voice"]'); await wait(100);
+    assert.match((await P.page.evaluate(() => window.calls)).at(-1)[1], /^Build complete, PJ\./, 'Test voice: the line with the typed name');
+    await P.page.click('.lv-dmp [data-dm="animation"][data-v="classic"]');
+    assert.equal(await P.page.locator('.lv-dmp-f.off').count(), 7, 'Classic: every other Done moments setting greys out (Voice greeting stays)');
+    assert.ok(await P.page.locator('.lv-dmp [data-dm-act="play"]').isDisabled());
+    assert.equal(JSON.parse(await P.page.evaluate(() => localStorage.getItem('lfmp-done'))).animation, 'classic');
+    await P.page.keyboard.press('Escape'); await P.page.click('[data-lv-top] [data-lv="me"]');
+    assert.match(await P.page.locator('[data-lv-top] [data-lv="done"]').innerText(), /Classic ›/, 'the Me row says Classic');
+    await P.ctx.close();
+    // ---- the voice greeting: On = once, with the right text, after a click; Off = never; never after it ends
+    for (const greet of ['on', 'off']) {
+      const G = await ctxFor({ greet: true, done: { ...DN.doneDefaults(), greet } });
+      await G.page.goto(`${base}/?tool=builder`); await G.page.waitForFunction(() => window.ready);
+      await G.page.mouse.click(5, 5);   // a click before: Chrome lets the page speak
+      await G.page.evaluate(() => { try { localStorage.removeItem('lfmp-greet-day'); localStorage.setItem('lfmp-counts', JSON.stringify({ reviews: { n: 2, at: Date.now() }, scorecards: { n: 1, at: Date.now() }, clients: { n: 3, at: Date.now() } })); } catch {} window.calls.length = 0; window.gp = S.playGreeting({ me: { name: 'PJ', first: 'PJ' }, reads: [] }); });
+      await G.page.waitForFunction(() => window.gp.then ? true : false); await G.page.evaluate(() => window.gp); await wait(1200);
+      const said = (await G.page.evaluate(() => window.calls)).filter(c => c[0] === 'speak');
+      if (greet === 'on') { assert.equal(said.length, 1, 'On: spoken once'); assert.match(said[0][1], /^Good (morning|afternoon|evening), Commander\./, said[0][1]); }
+      else assert.equal(said.length, 0, 'Off: never spoken');
+      await G.page.mouse.click(5, 5); await wait(300);
+      assert.equal((await G.page.evaluate(() => window.calls)).filter(c => c[0] === 'speak').length, greet === 'on' ? 1 : 0, 'nothing after the greeting has ended');
+      await G.ctx.close();
+    }
+  } finally { await browser.close(); server.close(); }
 });

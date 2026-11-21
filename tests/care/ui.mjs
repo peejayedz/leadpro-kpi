@@ -122,7 +122,7 @@ async function open(url, { width = 1440, height = 900, scheme = 'light', admin =
   if (process.env.UI_DEBUG) { page.on('request', r => { if (r.url().includes('/api/')) console.log(`  req ${r.postData()?.slice(0, 140)}`); }); page.on('console', m => console.log(`  console: ${m.text().slice(0, 200)}`)); page.on('response', r => { if (r.url().includes('/api/')) r.text().then(t => console.log(`  api ${r.status()} ${r.request().postData()?.slice(0, 160)} → ${t.slice(0, 160)}`)).catch(() => {}); }); }
   await page.addInitScript(() => { const d = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'integrity'); Object.defineProperty(HTMLScriptElement.prototype, 'integrity', { set(v) { if (!String(this.src).includes('cdnjs.cloudflare.com')) d.set.call(this, v); }, get() { return d.get.call(this); } }); });
   await page.route('https://cdnjs.cloudflare.com/**', r => r.fulfill({ contentType: 'text/javascript', body: SODIUM_STUB }));
-  await page.addInitScript(() => { try { localStorage.setItem('leadpro-admin-news-seen', '99.0.0'); } catch {} });   // What's new card already seen (keeps it off the screenshots)
+  await page.addInitScript(() => { try { localStorage.setItem('leadpro-admin-news-seen', '99.0.0'); if (!localStorage.getItem('lfmp-done')) localStorage.setItem('lfmp-done', JSON.stringify({ animation: 'classic' })); } catch {} });   // + v2.10.0: today's flow = Done moments Classic   // What's new card already seen (keeps it off the screenshots)
   await page.goto(url);
   if (admin) await page.waitForFunction(() => !document.getElementById('appView').hidden && document.querySelector('[data-lv-top]'));
   return { ctx, page };
