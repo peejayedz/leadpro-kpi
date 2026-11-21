@@ -2,6 +2,11 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.36.0 Menu position in GHL (queue item 3, PJ's 3b plan; with Builder v1.30.0): pushed 21 Nov 2026
+- **Why 3b:** GHL's official API can't set a custom menu link's position (Custom Menus create / update have no order field) and has nothing for the agency Custom CSS; GHL serves that CSS only after a login (401). So the tools generate the lines, PJ pastes them, "I've pasted it" records who / when. Nothing writes or reads GHL's CSS.
+- **What it is:** CHANGELOG v1.36.0. `config.menuLink.order` (default -92) + `config.menuLink.cssPasted` { order, by, at }; `scripts/menu-css.mjs` builds the lines and the state; HAND_PASTED = Dumas -92, Boca -91 (seen in GHL's Custom CSS on 21 Nov; count as pasted). Custom CSS box: https://app.lawfirmmarketingpros.com/settings/company?tab=whitelabel. Bell: amber "Menu position: paste the CSS in GHL" notice.
+- **Agency Custom CSS on 21 Nov (read only):** Dashboard -100 · Contacts -99 · Opportunities -98 · an older "KPI Dashboard" link -97 (not ours; leave it) · four LeadPro training links -96…-93 · Dumas KPI -92 · Boca KPI -91 · the rest 50.
+
 ## v1.35.0 "How we fill this in for you" + matched-word tags + shared shell 2.8.0 (queue item 2; with Builder v1.29.0 + Review admin v1.15.2): pushed 21 Nov 2026
 - **What it is:** CHANGELOG v1.35.0. `admin/map-how.mjs` (the explainer: care + law versions, the "Showing:" line, remembered open / closed in `lfmp-map-how`), `scripts/care-core.mjs` `guessMatch()` (guessBucket + the matched text: "Guessed: “Deposit”"; never saved), `admin/mapping.mjs` `mappingSource()` (saved / preset / guessed). The words follow the code's rules; `tests/map-how/run.mjs` checks every example against them. New firm's working bar shows "… · N of 7 steps".
 - **No change to counting or saving:** law-identical "All 6 law firms: identical numbers"; mapping 7/7; buildPipelineMap output unchanged.
