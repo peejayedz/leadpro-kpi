@@ -2,6 +2,10 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.36.1 last saved on Edit mapping + four tests brought up to date (queue item 4; with Builder v1.30.1 + Review admin v1.15.3): pushed 21 Nov 2026
+- **What it is:** CHANGELOG v1.36.1. `config.mappingSavedAt` (ISO) is written by law Save mapping, Map pipelines Save and New firm, only when the mapping changes (an unchanged save stays byte-identical). Edit mapping shows "Showing: your saved mapping · last saved <date>" (`admin/map-how.mjs` `savedWhen` / `showingHtml`). Display only; nothing counts or syncs from it. Firms saved before 21 Nov show no date until their next real change.
+- **Tests fixed (the tests were out of date, not the code):** alerts + pipeline now check `admin/greet-count.mjs` by behaviour; admin-details checks care firms on care tiles; care/ui answers the confirm-first popups and reads the Done popup. `tests/mapping` and `tests/care/law-identical.mjs` unchanged.
+
 ## v1.36.0 Menu position in GHL (queue item 3, PJ's 3b plan; with Builder v1.30.0): pushed 21 Nov 2026
 - **Why 3b:** GHL's official API can't set a custom menu link's position (Custom Menus create / update have no order field) and has nothing for the agency Custom CSS; GHL serves that CSS only after a login (401). So the tools generate the lines, PJ pastes them, "I've pasted it" records who / when. Nothing writes or reads GHL's CSS.
 - **What it is:** CHANGELOG v1.36.0. `config.menuLink.order` (default -92) + `config.menuLink.cssPasted` { order, by, at }; `scripts/menu-css.mjs` builds the lines and the state; HAND_PASTED = Dumas -92, Boca -91 (seen in GHL's Custom CSS on 21 Nov; count as pasted). Custom CSS box: https://app.lawfirmmarketingpros.com/settings/company?tab=whitelabel. Bell: amber "Menu position: paste the CSS in GHL" notice.
