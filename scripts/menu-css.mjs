@@ -32,7 +32,7 @@ export function menuCssRule({ id, name, order = MENU_ORDER, label = 'KPI Dashboa
 // GHL has no official API for the agency Custom CSS or a menu link's position (REPORT 3.0), so the Builder / KPI admin
 // generate the lines, PJ pastes them, and "I've pasted it" records who / when (GHL serves the CSS only after a login, so
 // nothing can check it by itself). Stored with the firm: config.menuLink = { id, order?, cssPasted?: { order, by, at } }.
-export const REPORTS_ORDER = -91;   // LeadPro Reports, later
+export const REPORTS_ORDER = -91;   // LeadPro Reports (v1.37.0): the "Reports" link, right under KPI Dashboard
 export const ORDER_MIN = -999, ORDER_MAX = 999;
 export const validOrder = n => Number.isInteger(n) && n >= ORDER_MIN && n <= ORDER_MAX;
 // "-92" / " -92 " / "+5" → number; anything else (decimals, words, out of range) → null
@@ -60,11 +60,12 @@ export const PASTE_STEPS = [
 ];
 // The firm's menu position: { id, order, pasted, hand, needsPaste, replaces }. needsPaste = there is a link id and GHL
 // doesn't have a line for the current number yet (never pasted, or pasted with another number: then `replaces` = the old one).
-export function menuState(cfg) {
+// v1.37.0 (LeadPro Reports): { defaultOrder } for a link that isn't KPI Dashboard (Reports: REPORTS_ORDER -91).
+export function menuState(cfg, { defaultOrder = MENU_ORDER } = {}) {
   const ml = cfg?.menuLink || {}, id = validMenuId(ml.id) ? ml.id : null, hand = id ? HAND_PASTED[id] || null : null;
   const pasted = ml.cssPasted && validOrder(ml.cssPasted.order) ? { order: ml.cssPasted.order, by: String(ml.cssPasted.by || ''), at: String(ml.cssPasted.at || '') }
     : hand ? { order: hand.order, by: 'PJ, by hand', at: '2026-11-21', hand: true } : null;
-  const order = validOrder(ml.order) ? ml.order : pasted ? pasted.order : MENU_ORDER;
+  const order = validOrder(ml.order) ? ml.order : pasted ? pasted.order : defaultOrder;
   return { id, order, pasted, hand: !!hand, needsPaste: !!id && (!pasted || pasted.order !== order), replaces: pasted && pasted.order !== order ? pasted.order : null };
 }
 // Config edits (a copy; nothing else in the config changes)
@@ -72,8 +73,8 @@ export function withMenuOrder(cfg, order) {
   if (!validOrder(order)) throw new Error('The menu position must be a whole number from -999 to 999.');
   return { ...cfg, menuLink: { ...(cfg?.menuLink || {}), order } };
 }
-export function withPasted(cfg, { by, at = new Date().toISOString() }) {
-  const s = menuState(cfg);
+export function withPasted(cfg, { by, at = new Date().toISOString(), defaultOrder = MENU_ORDER }) {
+  const s = menuState(cfg, { defaultOrder });
   if (!s.id) throw new Error('There is no menu link id yet.');
   return { ...cfg, menuLink: { ...(cfg.menuLink || {}), order: s.order, cssPasted: { order: s.order, by: String(by || '').slice(0, 60), at } } };
 }

@@ -1,0 +1,139 @@
+name: LeadPro Reports (BrightLocal)
+# v1.37.0 Phase 1: the nightly Rank Tracker pull for every firm with Reports set up (firms/<slug>/reports-config.json),
+# next to the KPI sync. "Build now" in the Builder commits a build request to that file; the push below builds just
+# that firm. Numbers only, encrypted with the firm's KPI passphrase (scripts/reports-pull.mjs). Read only toward
+# BrightLocal; nothing here touches GHL. No BRIGHTLOCAL_API_KEY yet → the plan says so and nothing runs (no alerts).
+run-name: "Reports ${{ inputs.slug || (github.event_name == 'push' && 'Build now') || 'all firms' }}"
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # 2:00 AM ET (07:00 UTC; 3:00 AM in summer time)
+  push:
+    branches: [main]
+    paths: ["firms/*/reports-config.json"] # Save / Build now from the Builder (the team site's token, so it triggers)
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Firm slug (e.g. mahdavi). Leave empty for every firm with Reports."
+        required: false
+        default: ""
+
+permissions:
+  contents: write # the built-in GITHUB_TOKEN commits reports.json + status (its commits don't start workflows)
+
+concurrency:
+  group: reports
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      count: ${{ steps.plan.outputs.count }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          SLUG: ${{ inputs.slug }}
+          HAS_KEY: ${{ secrets.BRIGHTLOCAL_API_KEY != '' }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$EVENT" = "push" ] && [ -n "$BEFORE" ] && git cat-file -e "$BEFORE" 2>/dev/null; then
+            export CHANGED="$(git diff --name-only "$BEFORE" HEAD -- 'firms/*/reports-config.json' | tr '\n' ' ')"
+          fi
+          node scripts/reports-pull.mjs plan
+
+  # One job per firm: each sees only BrightLocal's key and its own firm's passphrase.
+  pull:
+    needs: plan
+    if: needs.plan.outputs.count != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        firm: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    name: "Reports · ${{ matrix.firm.name || matrix.firm.slug }}"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Pull BrightLocal Rank Tracker
+        env:
+          SLUG: ${{ matrix.firm.slug }}
+          BRIGHTLOCAL_API_KEY: ${{ secrets.BRIGHTLOCAL_API_KEY }}
+          BRIGHTLOCAL_API_SECRET: ${{ secrets.BRIGHTLOCAL_API_SECRET }}
+          PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', matrix.firm.secretKey)] }}
+          OUT_DIR: ${{ runner.temp }}/out
+          RESULT_FILE: ${{ runner.temp }}/result/${{ matrix.firm.slug }}.json
+        run: node scripts/reports-pull.mjs pull
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: reports-${{ matrix.firm.slug }}
+          path: ${{ runner.temp }}/out/
+          retention-days: 1
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: result-${{ matrix.firm.slug }}
+          path: ${{ runner.temp }}/result/
+          retention-days: 1
+          if-no-files-found: warn
+
+  # One commit: every firm's reports.json + status/reports-status.json (the bell and the Builder read it).
+  commit:
+    needs: [plan, pull]
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.count != '0' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: reports-*
+          path: ${{ runner.temp }}/data
+          merge-multiple: true
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: result-*
+          path: ${{ runner.temp }}/results
+          merge-multiple: true
+      - name: Update reports and status
+        env:
+          MATRIX: ${{ needs.plan.outputs.matrix }}
+          RESULTS_DIR: ${{ runner.temp }}/results
+          DATA_DIR: ${{ runner.temp }}/data
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/reports-pull.mjs finish
+      - name: Commit if changed
+        run: |
+          git config user.name "kpi-sync-bot"
+          git config user.email "kpi-sync-bot@users.noreply.github.com"
+          git add firms/*/reports.json status/reports-status.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git commit -m "Reports $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            sleep $((i * 5))
+          done
+          echo "Push failed after 3 tries" >&2
+          exit 1

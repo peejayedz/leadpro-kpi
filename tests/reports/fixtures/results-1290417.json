@@ -1,0 +1,2224 @@
+{
+  "success": true,
+  "response": {
+    "result": {
+      "campaign_id": 1290417,
+      "last_processed": "2026-10-31 07:12:00",
+      "previous_processed": "2026-10-09 07:05:00",
+      "search_location": "Houston, TX",
+      "summary": {
+        "average_position": 20.7,
+        "previous_average_position": 20.5,
+        "keyword_change": 1,
+        "positional_change": 3,
+        "map_pack_coverage": 0,
+        "rank_distribution": {
+          "1": 0,
+          "2-5": 3,
+          "6-10": 1,
+          "11-20": 4,
+          "21+": 80
+        }
+      },
+      "rankings": {
+        "keywords": [
+          "rideshare accident attorney 77027",
+          "Houston rideshare accident attorney",
+          "motorcycle accident attorney 77027",
+          "truck accident attorney 77027",
+          "auto accident attorney",
+          "auto accident attorney 77027",
+          "auto accident attorney Houston",
+          "auto accident attorney Houston TX",
+          "auto accident lawyer",
+          "auto accident lawyers",
+          "Bicycle Accidents Lawyer",
+          "Bike Accident Lawyer",
+          "car accident attorney",
+          "car accident attorney 77027",
+          "car accident attorney Houston",
+          "car accident attorney Houston TX",
+          "car accident attorney near me",
+          "car accident attorneys",
+          "car accident law firm",
+          "car accident law firms",
+          "car accident lawyer",
+          "car accident lawyer near me",
+          "car accident lawyers",
+          "Houston auto accident attorney",
+          "Houston car accident attorney",
+          "Houston motorcycle accident attorney",
+          "Houston personal injury attorney",
+          "Houston premises liability attorney",
+          "Houston product liability attorney",
+          "Houston slip and fall attorney",
+          "Houston truck accident attorney",
+          "Houston wrongful death attorney",
+          "Lawyers For Personal Injury",
+          "motorcycle accident attorney",
+          "motorcycle accident attorney Houston",
+          "motorcycle accident attorney Houston TX",
+          "motorcycle accident attorneys",
+          "motorcycle accident lawyer",
+          "motorcycle accident lawyers",
+          "Motorcycle Personal Injury Lawyer",
+          "personal injury",
+          "personal injury attorney",
+          "personal injury attorney 77027",
+          "personal injury attorney Houston",
+          "personal injury attorney Houston TX",
+          "personal injury attorney near me",
+          "personal injury attorneys",
+          "personal injury law firm",
+          "personal injury law firms",
+          "personal injury law firms near me",
+          "personal injury lawyer",
+          "personal injury lawyer near me",
+          "personal injury lawyers",
+          "premises liability",
+          "premises liability attorney",
+          "premises liability attorney 77027",
+          "premises liability attorney Houston",
+          "premises liability attorney Houston TX",
+          "product liability",
+          "product liability attorney",
+          "product liability attorney 77027",
+          "product liability attorney Houston",
+          "product liability attorney Houston TX",
+          "rideshare accident attorney",
+          "rideshare accident attorney Houston",
+          "rideshare accident attorney Houston TX",
+          "slip and fall",
+          "slip and fall attorney",
+          "slip and fall attorney 77027",
+          "slip and fall attorney Houston",
+          "slip and fall attorney Houston TX",
+          "slip and fall attorneys",
+          "slip and fall lawyer",
+          "slip and fall lawyers",
+          "truck accident",
+          "truck accident attorney",
+          "truck accident attorney Houston",
+          "truck accident attorney Houston TX",
+          "truck accident attorney near me",
+          "truck accident lawyer",
+          "truck accident lawyers",
+          "wrongful death",
+          "wrongful death attorney",
+          "wrongful death attorney 77027",
+          "wrongful death attorney Houston",
+          "wrongful death attorney Houston TX",
+          "wrongful death lawyer",
+          "wrongful death lawyers"
+        ],
+        "keywords_info": {
+          "rideshare accident attorney 77027": {
+            "search_volume": "<10"
+          },
+          "Houston rideshare accident attorney": {
+            "search_volume": "50"
+          },
+          "motorcycle accident attorney 77027": {
+            "search_volume": "<10"
+          },
+          "truck accident attorney 77027": {
+            "search_volume": "<10"
+          },
+          "auto accident attorney": {
+            "search_volume": "1000"
+          },
+          "auto accident attorney 77027": {
+            "search_volume": "<10"
+          },
+          "auto accident attorney Houston": {
+            "search_volume": "8100"
+          },
+          "auto accident attorney Houston TX": {
+            "search_volume": "9900"
+          },
+          "auto accident lawyer": {
+            "search_volume": "320"
+          },
+          "auto accident lawyers": {
+            "search_volume": "880"
+          },
+          "Bicycle Accidents Lawyer": {
+            "search_volume": "10"
+          },
+          "Bike Accident Lawyer": {
+            "search_volume": "10"
+          },
+          "car accident attorney": {
+            "search_volume": "880"
+          },
+          "car accident attorney 77027": {
+            "search_volume": "<10"
+          },
+          "car accident attorney Houston": {
+            "search_volume": "6600"
+          },
+          "car accident attorney Houston TX": {
+            "search_volume": "9900"
+          },
+          "car accident attorney near me": {
+            "search_volume": "880"
+          },
+          "car accident attorneys": {
+            "search_volume": "1300"
+          },
+          "car accident law firm": {
+            "search_volume": "30"
+          },
+          "car accident law firms": {
+            "search_volume": "30"
+          },
+          "car accident lawyer": {
+            "search_volume": "<10"
+          },
+          "car accident lawyer near me": {
+            "search_volume": "4400"
+          },
+          "car accident lawyers": {
+            "search_volume": "6600"
+          },
+          "Houston auto accident attorney": {
+            "search_volume": "12100"
+          },
+          "Houston car accident attorney": {
+            "search_volume": "<10"
+          },
+          "Houston motorcycle accident attorney": {
+            "search_volume": "1300"
+          },
+          "Houston personal injury attorney": {
+            "search_volume": "8100"
+          },
+          "Houston premises liability attorney": {
+            "search_volume": "320"
+          },
+          "Houston product liability attorney": {
+            "search_volume": "170"
+          },
+          "Houston slip and fall attorney": {
+            "search_volume": "320"
+          },
+          "Houston truck accident attorney": {
+            "search_volume": "2400"
+          },
+          "Houston wrongful death attorney": {
+            "search_volume": "880"
+          },
+          "Lawyers For Personal Injury": {
+            "search_volume": "3600"
+          },
+          "motorcycle accident attorney": {
+            "search_volume": "320"
+          },
+          "motorcycle accident attorney Houston": {
+            "search_volume": "1300"
+          },
+          "motorcycle accident attorney Houston TX": {
+            "search_volume": "1600"
+          },
+          "motorcycle accident attorneys": {
+            "search_volume": "1300"
+          },
+          "motorcycle accident lawyer": {
+            "search_volume": "480"
+          },
+          "motorcycle accident lawyers": {
+            "search_volume": "1300"
+          },
+          "Motorcycle Personal Injury Lawyer": {
+            "search_volume": "1300"
+          },
+          "personal injury": {
+            "search_volume": "390"
+          },
+          "personal injury attorney": {
+            "search_volume": "<10"
+          },
+          "personal injury attorney 77027": {
+            "search_volume": "<10"
+          },
+          "personal injury attorney Houston": {
+            "search_volume": "8100"
+          },
+          "personal injury attorney Houston TX": {
+            "search_volume": "8100"
+          },
+          "personal injury attorney near me": {
+            "search_volume": "6600"
+          },
+          "personal injury attorneys": {
+            "search_volume": "2400"
+          },
+          "personal injury law firm": {
+            "search_volume": "210"
+          },
+          "personal injury law firms": {
+            "search_volume": "260"
+          },
+          "personal injury law firms near me": {
+            "search_volume": "8100"
+          },
+          "personal injury lawyer": {
+            "search_volume": "4400"
+          },
+          "personal injury lawyer near me": {
+            "search_volume": "6600"
+          },
+          "personal injury lawyers": {
+            "search_volume": "3600"
+          },
+          "premises liability": {
+            "search_volume": "50"
+          },
+          "premises liability attorney": {
+            "search_volume": "320"
+          },
+          "premises liability attorney 77027": {
+            "search_volume": "<10"
+          },
+          "premises liability attorney Houston": {
+            "search_volume": "140"
+          },
+          "premises liability attorney Houston TX": {
+            "search_volume": "<10"
+          },
+          "product liability": {
+            "search_volume": "70"
+          },
+          "product liability attorney": {
+            "search_volume": "140"
+          },
+          "product liability attorney 77027": {
+            "search_volume": "<10"
+          },
+          "product liability attorney Houston": {
+            "search_volume": "170"
+          },
+          "product liability attorney Houston TX": {
+            "search_volume": "10"
+          },
+          "rideshare accident attorney": {
+            "search_volume": "260"
+          },
+          "rideshare accident attorney Houston": {
+            "search_volume": "30"
+          },
+          "rideshare accident attorney Houston TX": {
+            "search_volume": "<10"
+          },
+          "slip and fall": {
+            "search_volume": "70"
+          },
+          "slip and fall attorney": {
+            "search_volume": "320"
+          },
+          "slip and fall attorney 77027": {
+            "search_volume": "<10"
+          },
+          "slip and fall attorney Houston": {
+            "search_volume": "320"
+          },
+          "slip and fall attorney Houston TX": {
+            "search_volume": "320"
+          },
+          "slip and fall attorneys": {
+            "search_volume": "480"
+          },
+          "slip and fall lawyer": {
+            "search_volume": "210"
+          },
+          "slip and fall lawyers": {
+            "search_volume": "320"
+          },
+          "truck accident": {
+            "search_volume": "110"
+          },
+          "truck accident attorney": {
+            "search_volume": "1300"
+          },
+          "truck accident attorney Houston": {
+            "search_volume": "<10"
+          },
+          "truck accident attorney Houston TX": {
+            "search_volume": "4400"
+          },
+          "truck accident attorney near me": {
+            "search_volume": "1300"
+          },
+          "truck accident lawyer": {
+            "search_volume": "<10"
+          },
+          "truck accident lawyers": {
+            "search_volume": "2900"
+          },
+          "wrongful death": {
+            "search_volume": "90"
+          },
+          "wrongful death attorney": {
+            "search_volume": "320"
+          },
+          "wrongful death attorney 77027": {
+            "search_volume": "<10"
+          },
+          "wrongful death attorney Houston": {
+            "search_volume": "880"
+          },
+          "wrongful death attorney Houston TX": {
+            "search_volume": "880"
+          },
+          "wrongful death lawyer": {
+            "search_volume": "260"
+          },
+          "wrongful death lawyers": {
+            "search_volume": "260"
+          }
+        },
+        "rankings": {
+          "rideshare accident attorney 77027": {
+            "google": [
+              {
+                "rank": 4,
+                "last": 4
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 13,
+                "last": 13
+              }
+            ]
+          },
+          "Houston rideshare accident attorney": {
+            "google": [
+              {
+                "rank": 11,
+                "last": 11
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "motorcycle accident attorney 77027": {
+            "google": [
+              {
+                "rank": 12,
+                "last": 12
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "truck accident attorney 77027": {
+            "google": [
+              {
+                "rank": 14,
+                "last": 14
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 12,
+                "last": 12
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "auto accident attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "auto accident attorney 77027": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "auto accident attorney Houston": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "auto accident attorney Houston TX": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "auto accident lawyer": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "auto accident lawyers": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Bicycle Accidents Lawyer": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Bike Accident Lawyer": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "car accident attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "car accident attorney 77027": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "car accident attorney Houston": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "car accident attorney Houston TX": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "car accident attorney near me": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "car accident attorneys": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "car accident law firm": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "car accident law firms": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "car accident lawyer": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "car accident lawyer near me": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "car accident lawyers": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Houston auto accident attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Houston car accident attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Houston motorcycle accident attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Houston personal injury attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Houston premises liability attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Houston product liability attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Houston slip and fall attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Houston truck accident attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Houston wrongful death attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Lawyers For Personal Injury": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "motorcycle accident attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "motorcycle accident attorney Houston": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "motorcycle accident attorney Houston TX": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "motorcycle accident attorneys": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "motorcycle accident lawyer": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "motorcycle accident lawyers": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "Motorcycle Personal Injury Lawyer": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "personal injury": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "personal injury attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "personal injury attorney 77027": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 15,
+                "last": 15
+              }
+            ]
+          },
+          "personal injury attorney Houston": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "personal injury attorney Houston TX": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "personal injury attorney near me": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "personal injury attorneys": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "personal injury law firm": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "personal injury law firms": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "personal injury law firms near me": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "personal injury lawyer": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "personal injury lawyer near me": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "personal injury lawyers": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "premises liability": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "premises liability attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "premises liability attorney 77027": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 11,
+                "last": 14
+              }
+            ]
+          },
+          "premises liability attorney Houston": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "premises liability attorney Houston TX": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "product liability": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "product liability attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "product liability attorney 77027": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "product liability attorney Houston": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "product liability attorney Houston TX": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "rideshare accident attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "rideshare accident attorney Houston": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "rideshare accident attorney Houston TX": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "slip and fall": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "slip and fall attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "slip and fall attorney 77027": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "slip and fall attorney Houston": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "slip and fall attorney Houston TX": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "slip and fall attorneys": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "slip and fall lawyer": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "slip and fall lawyers": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "truck accident": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "truck accident attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "truck accident attorney Houston": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "truck accident attorney Houston TX": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "truck accident attorney near me": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "truck accident lawyer": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "truck accident lawyers": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "wrongful death": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "wrongful death attorney": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "wrongful death attorney 77027": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "wrongful death attorney Houston": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "wrongful death attorney Houston TX": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "wrongful death lawyer": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          },
+          "wrongful death lawyers": {
+            "google": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-mobile": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ],
+            "google-local": [
+              {
+                "rank": 0,
+                "last": 0
+              }
+            ]
+          }
+        }
+      },
+      "competitors": {
+        "names": [
+          "Amaro Law Firm",
+          "Brian White & Assoc.",
+          "Zehl & Associates"
+        ],
+        "ranks": {
+          "rideshare accident attorney 77027": [
+            0,
+            0,
+            1
+          ],
+          "Houston rideshare accident attorney": [
+            0,
+            0,
+            9
+          ],
+          "Houston personal injury attorney": [
+            0,
+            0,
+            2
+          ],
+          "personal injury attorney": [
+            0,
+            15,
+            1
+          ],
+          "personal injury attorney Houston": [
+            0,
+            0,
+            1
+          ],
+          "personal injury attorney Houston TX": [
+            0,
+            0,
+            3
+          ],
+          "personal injury lawyer near me": [
+            0,
+            0,
+            2
+          ],
+          "Houston wrongful death attorney": [
+            0,
+            0,
+            2
+          ],
+          "auto accident attorney": [
+            0,
+            0,
+            1
+          ],
+          "Houston auto accident attorney": [
+            0,
+            0,
+            8
+          ],
+          "car accident attorney Houston": [
+            0,
+            0,
+            5
+          ],
+          "slip and fall attorney Houston": [
+            0,
+            0,
+            4
+          ],
+          "truck accident attorney 77027": [
+            0,
+            0,
+            0
+          ],
+          "motorcycle accident attorney 77027": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    }
+  }
+}

@@ -162,6 +162,10 @@ export const SHELL_TOOLS = [
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 20V11M12 20V5M18 20v-6"/></svg>' },
   { id: 'review', label: 'Reviews', title: 'Reviews', path: '/automation-review/admin/', plus: null,
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>' },
+  // v2.9.0 (LeadPro Reports, PJ 21 Nov): the 4th tool. It lives in the Builder page (#reports): the clients' report
+  // connections; each client's editor is the Builder's Client details → Reports tab.
+  { id: 'reports', label: 'Reports', title: 'Reports', path: '/ghl-subaccount-builder-page/#reports', plus: 'Add client',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h16"/><path d="M6 16l4-5 3 3 5-7"/><path d="M15 7h3v3"/></svg>' },
 ];
 export const ME_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>';
 export const SEARCH_ICON = '<svg class="lv-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>';
@@ -197,7 +201,7 @@ const bellHtml = (n, label = 'Notifications') => `<span class="lv-bellwrap" data
 // The initials circle + its menu (v2.4.0: the bar has no name and no Sign out; they are in this menu).
 const avWrapHtml = (me, where) => `<span class="lv-avwrap" data-lv-avwrap="${where}"><button type="button" class="lv-avbtn${where === 'phone' ? ' lv-hit' : ''}" data-lv="me" aria-haspopup="menu" aria-expanded="false" aria-label="Your menu: name, theme, what's new, sign out">${avHtml(me)}</button><div class="lv-pop" data-lv-pop role="menu" aria-label="Your menu" tabindex="-1" hidden></div><span class="lv-mhint" data-lv-mhint aria-hidden="true" hidden>Your menu ›</span></span>`;
 
-// Desktop top bar: icon + LFMP · Clients / Scorecards / Reviews · [bell] · gold + · initials (they open the name menu)
+// Desktop top bar: icon + LFMP · Clients / Scorecards / Reviews / Reports · [bell] · gold + · initials (they open the name menu)
 export function topBarHtml(cfg) {
   const t = toolOf(cfg.tool), me = cfg.me || {};
   return `<header class="lv-top" data-lv-top>
@@ -217,7 +221,7 @@ export function phoneBarHtml(cfg, title) {
   return `<div class="lv-ptop"${cfg.meScreen ? '' : ' data-lv-ptop'}><div class="lv-band"></div><div class="lv-bb"><a class="lv-mk lv-hit" href="${t.path}" data-lv-home aria-label="LFMP · ${escH(t.label)}"><i></i><i></i><i></i></a><h2${cfg.meScreen ? '' : ' data-lv-title'}>${escH(title ?? t.title)}</h2><div class="lv-ic">${cfg.bell && !cfg.meScreen ? bellHtml(cfg.bellCount, cfg.bell.label) : ''}${plus}${av}</div></div></div>`;
 }
 
-// Bottom tabs: Clients · Scorecards · Reviews · Me (gold = where you are)
+// Bottom tabs: Clients · Scorecards · Reviews · Reports · Me (gold = where you are; v2.9.0: the five share the width)
 export function tabsHtml(cfg, meOpen = false) {
   return `<nav class="lv-tabs" data-lv-tabs aria-label="LFMP tools">${SHELL_TOOLS.map(x => `<a class="lv-tab" href="${x.path}"${x.id === cfg.tool ? `${meOpen ? '' : ' aria-current="page"'} data-lv-home` : ''}>${x.icon}${x.label}</a>`).join('')}<button type="button" class="lv-tab" data-lv="metab"${meOpen ? ' aria-current="page"' : ''}>${ME_ICON}Me</button></nav>`;
 }
@@ -837,7 +841,7 @@ export function patchJob(id, patch, store = jobsStore()) {
 }
 export const unseenJobs = (store = jobsStore()) => readJobs(store).filter(j => (j.status === 'done' || j.status === 'failed') && !j.seen);
 export const runningJobs = (store = jobsStore()) => readJobs(store).filter(j => j.status === 'running');
-const TOOL_PAGE = { builder: 'Clients', kpi: 'Scorecards', review: 'Reviews' };
+const TOOL_PAGE = { builder: 'Clients', kpi: 'Scorecards', review: 'Reviews', reports: 'Reports' };   // v2.9.0: + Reports
 // Which tool is in front (each shell notes it when it opens or comes back into view), for "while you were on Reviews".
 export const JOBS_HERE_KEY = 'lfmp-here';
 export function noteHere(tool, store = jobsStore()) { try { if (tool) store?.setItem(JOBS_HERE_KEY, tool); } catch {} }

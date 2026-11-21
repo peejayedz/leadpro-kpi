@@ -179,7 +179,7 @@ try {
     check(!(await p0.$('[data-lv-top] .lv-who, [data-lv-top] .lv-so')) && !/PJ Drozo|Sign out/.test(await p0.innerText('[data-lv-top]')) && await menuWho(p0) === 'PJ Drozo', 'top bar: no name, no Sign out (v1.29.0); the Google name is in the name menu');
     // v2 shell: one top bar (icon + LFMP · Clients / Scorecards / Reviews with Scorecards active · bell · + New firm · name · avatar · Sign out)
     const nav = await p0.$$eval('[data-lv-top] .lv-nav a', a => a.map(x => `${x.textContent}${x.getAttribute('aria-current') ? '*' : ''}`).join('|'));
-    check(nav === 'Clients|Scorecards*|Reviews' && await p0.isVisible('[data-lv-top] .lv-brand') && await p0.isVisible('[data-lv-top] [data-lv="bell"]') && (await p0.textContent('[data-lv-top] [data-lv="plus"]')).trim() === '+ New firm' && (await p0.textContent('[data-lv-top] .lv-av')).trim().startsWith('PD'), `v2 shell top bar: ${nav}`);
+    check(nav === 'Clients|Scorecards*|Reviews|Reports' &&   /* v1.37.0 shell 2.9.0: + Reports */ await p0.isVisible('[data-lv-top] .lv-brand') && await p0.isVisible('[data-lv-top] [data-lv="bell"]') && (await p0.textContent('[data-lv-top] [data-lv="plus"]')).trim() === '+ New firm' && (await p0.textContent('[data-lv-top] .lv-av')).trim().startsWith('PD'), `v2 shell top bar: ${nav}`);
     check(!(await p0.$('.toolchip, header.top, .foot, #statStrip, .strip')), 'old header, KPI chip, stats strip and footer are gone');
     // "Last signed in …" = the sign-in before this one (a second Google sign-in, then reload)
     check(await menuWho(p0, '.lv-l') === 'First sign-in on record', 'first sign-in: no earlier one');
@@ -677,7 +677,7 @@ try {
       // phone: top bar = icon · SCORECARDS · bell · gold + · avatar; bottom tabs; no desktop top bar
       check(await page.isHidden('[data-lv-top]') && (await page.textContent('[data-lv-ptop] h2')).trim() === 'Scorecards' && await page.isVisible('[data-lv-ptop] [data-lv="bell"]') && await page.isVisible('[data-lv-ptop] [data-lv="plus"]'), '390: phone top bar (title, bell, +, avatar)');
       const tabs = await page.$$eval('[data-lv-tabs] .lv-tab', t => t.map(x => `${x.textContent.trim()}${x.getAttribute('aria-current') ? '*' : ''}`).join('|'));
-      check(tabs === 'Clients|Scorecards*|Reviews|Me', `390: bottom tabs (${tabs})`);
+      check(tabs === 'Clients|Scorecards*|Reviews|Reports|Me', `390: bottom tabs (${tabs})`);   // shell 2.9.0: + Reports
       const small = await page.$$eval('[data-lv-ptop] button:not([data-lv-pop] *), [data-lv-tabs] .lv-tab, #screen [data-lv-seg], #screen .lv-search, #screen [data-lv-fbtn], #screen .lv-chips button, #firmRows .lv-row', els => els.filter(e => e.offsetParent !== null).filter(e => { const r = e.getBoundingClientRect(), a = getComputedStyle(e, '::after'); const h = Math.max(r.height, a.content !== 'none' ? parseFloat(a.height) || 0 : 0), wd = Math.max(r.width, a.content !== 'none' ? parseFloat(a.width) || 0 : 0); return h < 44 || wd < 44; }).map(e => e.className || e.tagName));
       check(!small.length, `390: tap targets at least 44px${small.length ? `: ${small.join(', ')}` : ''}`);
       const box = await page.$eval(rowOf('lfmp'), e => { const r = e.getBoundingClientRect(); return { w: r.width, n: e.querySelector('.lv-pr .lv-big')?.textContent }; });

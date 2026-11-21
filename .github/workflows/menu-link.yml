@@ -16,6 +16,12 @@ on:
       request:
         description: "Builder request id (to find this run)"
         required: true
+      # v1.37.0 LeadPro Reports: "reports" = add the client's "Reports" link (a Draft report goes Live); "reports-remove" =
+      # remove that link and the report's files (scripts/reports-menu.mjs). Empty / "kpi" = the KPI steps, unchanged.
+      kind:
+        description: "kpi (default) · reports · reports-remove"
+        required: false
+        default: "kpi"
 
 permissions:
   contents: write
@@ -27,6 +33,7 @@ concurrency:
 env:
   NF_SLUG: ${{ inputs.slug }}
   NF_REQUEST: ${{ inputs.request }}
+  NF_KIND: ${{ inputs.kind || 'kpi' }}
 
 jobs:
   prepare:
@@ -42,7 +49,10 @@ jobs:
           node-version: "20"
       - name: Check the firm is a Draft
         id: plan
-        run: node scripts/new-firm.mjs menu-plan
+        run: |
+          if [ "$NF_KIND" = "kpi" ]; then node scripts/new-firm.mjs menu-plan
+          elif [ "$NF_KIND" = "reports" ] || [ "$NF_KIND" = "reports-remove" ]; then node scripts/reports-menu.mjs plan
+          else echo "Refused: unknown kind \"$NF_KIND\""; exit 1; fi
 
   menu-link:
     needs: prepare
@@ -54,12 +64,14 @@ jobs:
         with:
           node-version: "20"
       - name: GHL menu link
+        if: env.NF_KIND == 'kpi'
         env:
           GHL_MENU_TOKEN: ${{ secrets.GHL_MENU_TOKEN }}
           NF_PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', needs.prepare.outputs.key)] }}
           NF_LOCATION: ${{ needs.prepare.outputs.location }}
         run: node scripts/new-firm.mjs menu
       - name: Go live
+        if: env.NF_KIND == 'kpi'
         run: |
           node scripts/new-firm.mjs go-live
           git config user.name "kpi-sync-bot"
@@ -72,12 +84,33 @@ jobs:
             sleep $((i * 5))
           done
           exit 1
+      # v1.37.0 LeadPro Reports: the "Reports" link (scripts/reports-menu.mjs; the same guarded GHL calls as KPI Dashboard)
+      - name: Reports link
+        if: env.NF_KIND == 'reports' || env.NF_KIND == 'reports-remove'
+        env:
+          GHL_MENU_TOKEN: ${{ secrets.GHL_MENU_TOKEN }}
+          NF_PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', needs.prepare.outputs.key)] }}
+          NF_LOCATION: ${{ needs.prepare.outputs.location }}
+        run: |
+          if [ "$NF_KIND" = "reports" ]; then node scripts/reports-menu.mjs menu && node scripts/reports-menu.mjs go-live
+          else node scripts/reports-menu.mjs remove; fi
+          git config user.name "kpi-sync-bot"
+          git config user.email "kpi-sync-bot@users.noreply.github.com"
+          git add -A "firms/$NF_SLUG/reports-config.json" "firms/$NF_SLUG/reports.json" "firms/$NF_SLUG/reports.html" "status/menu-link-$NF_SLUG-reports.json" 2>/dev/null || true
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Reports link for $NF_SLUG: $([ "$NF_KIND" = reports ] && echo live || echo removed)"
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1
       # v1.32.1: when the link isn't added, keep GHL's reason (status/menu-link-<slug>.json: slug, request id, time, result
       # code and the plain-words reason; no link, no passphrase) so KPI admin / the Builder can show it in the popup.
       - name: Save why the link wasn't added
         if: failure()
         run: |
           f="status/menu-link-$NF_SLUG.json"
+          [ "$NF_KIND" = "kpi" ] || f="status/menu-link-$NF_SLUG-reports.json"
           [ -f "$f" ] || exit 0
           git config user.name "kpi-sync-bot"
           git config user.email "kpi-sync-bot@users.noreply.github.com"

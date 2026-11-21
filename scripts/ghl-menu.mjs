@@ -53,6 +53,12 @@ export function guardMenu(method, path, body, checked = null) {
       && body.allowCamera === false && body.allowMicrophone === false
       && typeof body.url === 'string' && body.url.startsWith(`${PAGES}firms/`);
     if (ok) return;
+    // v1.37.0 LeadPro Reports: the "Reports" link, the same guarded shape, pointing at a firm's reports.html only
+    const rp = body && body.title === REPORTS_TITLE && body.showOnCompany === false && body.showOnLocation === true && body.showToAllLocations === false
+      && Array.isArray(body.locations) && body.locations.length === 1 && LOC_RE.test(body.locations[0]) && body.openMode === 'iframe'
+      && body.allowCamera === false && body.allowMicrophone === false
+      && typeof body.url === 'string' && REPORTS_URL_RE.test(body.url);
+    if (rp) return;
     throw new Error('Blocked: a menu link must be "KPI Dashboard", for exactly one sub-account, opening inside GHL (iframe), pointing at a LeadPro dashboard.');
   }
   throw new Error(`Blocked: the menu-link step may not call ${m} ${p.replace(/[A-Za-z0-9]{15,}/g, ':id')} on GHL.`);
@@ -149,6 +155,50 @@ export async function removeMenuLink({ token, locationId, slug }) {
   try { list = await call('GET', '/custom-menus/', { token }); }
   catch { return 'skipped-list-failed'; }
   const ours = listOf(list).find(m => isOurLink(m, { locationId, slug }));
+  if (!ours) return 'none';
+  try { await call('DELETE', `/custom-menus/${ours.id || ours._id}`, { token, checked: ours }); return 'removed'; }
+  catch (e) { return `failed:${e.status ?? 0}`; }
+}
+
+// ---------------------------------------------------------------- v1.37.0 LeadPro Reports: the "Reports" link
+// Same rules as "KPI Dashboard": one sub-account, opens inside GHL (iframe), both allow flags false, created only from the
+// Builder's Reports tab → Add to GHL menu (after Andy), removed only as its exact reversal. URL = the firm's reports.html
+// with the KPI passphrase (#k=…, never printed). menu-link.yml with kind "reports" / "reports-remove" (scripts/reports-menu.mjs).
+export const REPORTS_TITLE = 'Reports';
+const REPORTS_URL_RE = new RegExp(`^${PAGES.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}firms/[a-z0-9]+(-[a-z0-9]+)*/reports\\.html(#k=[^\\s]*)?$`);
+export const reportsUrl = (slug, passphrase) => `${PAGES}firms/${slug}/reports.html#k=${encodeURIComponent(passphrase)}`;
+export const reportsMenuBody = ({ locationId, url }) => ({ ...menuBody({ locationId, url }), title: REPORTS_TITLE, icon: { name: 'chart-bar', fontFamily: 'fas' } });
+const reportsHere = (m, locationId) => String(m.title || '').trim().toLowerCase() === REPORTS_TITLE.toLowerCase()
+  && (m.showToAllLocations || (Array.isArray(m.locations) && m.locations.includes(locationId)));
+export const isOurReportsLink = (m, { locationId, slug }) => !!m && String(m.title || '').trim() === REPORTS_TITLE && m.showToAllLocations !== true && m.showOnCompany !== true
+  && Array.isArray(m.locations) && m.locations.length === 1 && m.locations[0] === locationId
+  && typeof m.url === 'string' && m.url.startsWith(`${PAGES}firms/${slug}/reports.html`) && /^[A-Za-z0-9-]{10,40}$/.test(String(m.id || m._id || ''));
+// Returns { result: 'created' | 'exists' | 'skipped-no-token' | 'skipped-list-failed' | 'failed:<status>', id, ghl? } like ensureMenuLink.
+export async function ensureReportsLink({ token, locationId, slug, passphrase }) {
+  if (!token) return { result: 'skipped-no-token', id: null };
+  if (!LOC_RE.test(locationId || '') || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug || '') || !passphrase) return { result: 'failed:input', id: null };
+  let list;
+  try { list = await call('GET', '/custom-menus/', { token }); }
+  catch { return { result: 'skipped-list-failed', id: null }; }
+  const keep = m => (m && m.showToAllLocations !== true && Array.isArray(m.locations) && m.locations.length === 1 && validMenuId(idOf(m)) ? idOf(m) : null);
+  const here = listOf(list).find(m => reportsHere(m, locationId));
+  if (here) return { result: 'exists', id: keep(here) };
+  const url = reportsUrl(slug, passphrase);
+  let made;
+  try { made = await call('POST', '/custom-menus/', { token, body: reportsMenuBody({ locationId, url }), secrets: [passphrase, url] }); }
+  catch (e) { return { result: `failed:${e.status ?? 0}`, id: null, ghl: e.ghl || '' }; }
+  const m = made?.customMenu || made;
+  if (validMenuId(idOf(m))) return { result: 'created', id: idOf(m) };
+  try { return { result: 'created', id: keep(listOf(await call('GET', '/custom-menus/', { token })).find(x => reportsHere(x, locationId))) }; }
+  catch { return { result: 'created', id: null }; }
+}
+export async function removeReportsLink({ token, locationId, slug }) {
+  if (!token) return 'skipped-no-token';
+  if (!LOC_RE.test(locationId || '') || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug || '')) return 'failed:input';
+  let list;
+  try { list = await call('GET', '/custom-menus/', { token }); }
+  catch { return 'skipped-list-failed'; }
+  const ours = listOf(list).find(m => isOurReportsLink(m, { locationId, slug }));
   if (!ours) return 'none';
   try { await call('DELETE', `/custom-menus/${ours.id || ours._id}`, { token, checked: ours }); return 'removed'; }
   catch (e) { return `failed:${e.status ?? 0}`; }

@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "response": {
+    "results": [
+      {
+        "campaign_id": 1290417,
+        "name": "The Mahdavi Law Firm · Houston",
+        "location_id": 3839215,
+        "last_processed": "2026-10-31 07:12:00",
+        "keyword_count": 88,
+        "search_engines": "google,google-mobile,google-local",
+        "search_location": "Houston, TX"
+      }
+    ]
+  }
+}

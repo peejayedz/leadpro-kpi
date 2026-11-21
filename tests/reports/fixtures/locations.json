@@ -1,0 +1,39 @@
+{
+  "success": true,
+  "response": {
+    "results": [
+      {
+        "location-id": 3839215,
+        "location-name": "The Mahdavi Law Firm",
+        "location-reference": "THEMAHDAVILA-77027",
+        "url": "https://www.mahdavilawfirm.com/",
+        "city": "Houston",
+        "region": "TX"
+      },
+      {
+        "location-id": 4100231,
+        "location-name": "Dumas & Sanclemente",
+        "location-reference": "DUMASSANCL-33558",
+        "url": "https://dumaslaw.example/",
+        "city": "Lutz",
+        "region": "FL"
+      },
+      {
+        "location-id": 4100377,
+        "location-name": "Boca Dental",
+        "location-reference": "BOCADENTAL-33431",
+        "url": "https://bocadental.example/",
+        "city": "Boca Raton",
+        "region": "FL"
+      },
+      {
+        "location-id": 4100502,
+        "location-name": "Sample Injury Law",
+        "location-reference": "SAMPLEINJU-10001",
+        "url": "https://sample-injury.example/",
+        "city": "New York",
+        "region": "NY"
+      }
+    ]
+  }
+}

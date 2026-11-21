@@ -91,16 +91,19 @@ test('the alert list is the admin bell\'s list (same functions, same filter)', a
   // v1.29.1 moved the bell's list into admin/greet-count.mjs buildIssues() (index.html calls it); the alerts must be that
   // list with the badge filter (+ "stages not mapped", which is DMed too). Checked by behaviour, not by source text.
   const html = await readFile(join(ROOT, 'admin/index.html'), 'utf8');
-  ok(/issues = GC\.buildIssues\(\{ keeperStatus, syncStatus, chain: chainInfo, firms, configs, kpis, now: Date\.now\(\) \}\)/.test(html), 'admin bell no longer uses greet-count.mjs buildIssues(): update scripts/kpi-alerts.mjs bellIssues()');
+  ok(/issues = GC\.buildIssues\(\{ keeperStatus, syncStatus, chain: chainInfo, firms, configs, kpis, now: Date\.now\(\), reportsStatus \}\)/.test(html), 'admin bell no longer uses greet-count.mjs buildIssues(): update scripts/kpi-alerts.mjs bellIssues()');
+  ok(html.includes("const reportsStatus = await getJSON('status/reports-status.json')"), 'admin bell no longer reads status/reports-status.json (v1.37.0): update bellIssues()');
   ok(html.includes('const listed = () => issues.filter(inBadge);'), 'admin bell badge filter changed: update bellIssues()');
   ok(html.includes('const kpiSummary = GC.kpiSummary;'), 'admin kpiSummary no longer greet-count.mjs: update kpi-alerts kpiSummary()');
   const GC = await import('../../admin/greet-count.mjs');
   const { inBadge } = await import('../../scripts/sync-status.mjs');
   const now = T0 + 5 * 30 * MIN;
   const st = statusAt(1, { [FIRMS[0].slug]: bad(FIRMS[0].slug), [FIRMS[1].slug]: good(FIRMS[1].slug) });
-  for (const args of [{ status: st, keeper: keeperOk(now), firms: FIRMS, configs: {}, kpis: {}, chain: chainOn, now }, { status: st, keeper: keeperOk(now), firms: FIRMS, configs: {}, kpis: {}, chain: { value: 'off' }, now }]) {
+  // v1.37.0: + a failed LeadPro Reports build (status/reports-status.json) is in both lists
+  const reports = { version: 1, firms: { [FIRMS[1].slug]: { ok: false, at: new Date(now).toISOString(), kind: 'auth', message: 'BrightLocal refused the key' }, [FIRMS[0].slug]: { ok: true, at: new Date(now).toISOString() } } };
+  for (const args of [{ status: st, keeper: keeperOk(now), firms: FIRMS, configs: {}, kpis: {}, chain: chainOn, now }, { status: st, keeper: keeperOk(now), firms: FIRMS, configs: {}, kpis: {}, chain: { value: 'off' }, now }, { status: st, keeper: keeperOk(now), firms: FIRMS, configs: {}, kpis: {}, chain: chainOn, now, reports }]) {
     const mine = bellIssues(args).map(i => `${i.kind}:${i.slug || ''}`);
-    const bell = GC.buildIssues({ keeperStatus: args.keeper, syncStatus: args.status, chain: args.chain, firms: args.firms, configs: args.configs, kpis: args.kpis, now: args.now }).filter(i => inBadge(i) || i.kind === 'unmapped').map(i => `${i.kind}:${i.slug || ''}`);
+    const bell = GC.buildIssues({ keeperStatus: args.keeper, syncStatus: args.status, chain: args.chain, firms: args.firms, configs: args.configs, kpis: args.kpis, now: args.now, reportsStatus: args.reports }).filter(i => inBadge(i) || i.kind === 'unmapped').map(i => `${i.kind}:${i.slug || ''}`);
     ok(JSON.stringify(mine) === JSON.stringify(bell), `alerts = the bell's listed issues (${mine.join(', ')} vs ${bell.join(', ')})`);
   }
 });

@@ -6,6 +6,7 @@
 // team site's /api/gh, then the same count. No writes, no GHL, no DOM (the caller passes its ghFetch), never on screen.
 import { openIssues, chainAlive } from '../scripts/sync-status.mjs';
 import { keeperIssues, reviewIssues } from '../scripts/keeper-status.mjs';
+import { reportsIssues } from '../scripts/reports-core.mjs';   // v1.37.0 LeadPro Reports
 import { firmReasons } from './firm-details.mjs';
 
 export const TESTS_KEY = 'leadpro-admin-tests';   // Me → "Show test clients" (per browser), as the list
@@ -19,9 +20,10 @@ export const needsAttention = (f, kpiFull, issues) => reasonsOf(f, kpiFull, issu
 export const attentionCount = (firms, { showTests = false, kpiFull = {}, issues = [] } = {}) =>
   (firms || []).filter(f => showTests || !isTestFirm(f)).filter(f => needsAttention(f, kpiFull, issues)).length;
 // The bell's issues, most firm-wide first then newest (index.html refreshIssues).
-export function buildIssues({ keeperStatus, syncStatus, chain = {}, firms = [], configs = {}, kpis = {}, now = Date.now() }) {
+// v1.37.0: + reportsStatus (status/reports-status.json): a failed LeadPro Reports build is a bell issue too
+export function buildIssues({ keeperStatus, syncStatus, chain = {}, firms = [], configs = {}, kpis = {}, now = Date.now(), reportsStatus = null }) {
   const rank = i => (i.slug ? 1 : 0);
-  return [...keeperIssues(keeperStatus, { now, firms }), ...reviewIssues(firms, configs), ...openIssues(syncStatus, { now, firms, kpis, chain })]
+  return [...keeperIssues(keeperStatus, { now, firms }), ...reviewIssues(firms, configs), ...openIssues(syncStatus, { now, firms, kpis, chain }), ...reportsIssues(reportsStatus, { firms })]
     .sort((a, b) => rank(a) - rank(b) || Date.parse(b.firstSeen) - Date.parse(a.firstSeen));
 }
 export const kpiSummary = k => ({ generatedAt: k.generatedAt, leads90: k.periods?.last90?.current?.totalLeads ?? null, sync: k.sync || null,

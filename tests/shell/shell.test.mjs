@@ -45,9 +45,10 @@ test('initials: first letters of the first two words (the reference shows PJ for
   assert.equal(S.initials({}), '·');
 });
 
-test('three tools in the same order everywhere: Clients · Scorecards · Reviews', () => {
+test('four tools in the same order everywhere: Clients · Scorecards · Reviews · Reports (v2.9.0)', () => {
   assert.deepEqual(S.SHELL_TOOLS.map(t => [t.id, t.label, t.path, t.plus]), [
-    ['builder', 'Clients', '/ghl-subaccount-builder-page/', 'New sub-account'], ['kpi', 'Scorecards', '/leadpro-kpi/admin/', 'New firm'], ['review', 'Reviews', '/automation-review/admin/', null]]);
+    ['builder', 'Clients', '/ghl-subaccount-builder-page/', 'New sub-account'], ['kpi', 'Scorecards', '/leadpro-kpi/admin/', 'New firm'], ['review', 'Reviews', '/automation-review/admin/', null],
+    ['reports', 'Reports', '/ghl-subaccount-builder-page/#reports', 'Add client']]);
 });
 
 // v2.4.0 (PJ's Greeting 1+9 preview): no name and no Sign out in the bar; the initials open the name menu. The hidden
@@ -56,7 +57,7 @@ const noHint = h => text(h.replace(/<span class="lv-mhint"[^>]*>[^<]*<\/span>/g,
 test('desktop top bar: icon + LFMP · nav (current = this tool) · [bell] · gold + · initials (no name, no Sign out)', () => {
   for (const t of S.SHELL_TOOLS) {
     const h = S.topBarHtml({ tool: t.id, me, bell: t.id === 'kpi', bellCount: 3, plus: t.plus ? { label: t.plus } : null });
-    assert.equal(noHint(h), `LFMP Clients Scorecards Reviews ${t.id === 'kpi' ? '🔔 3 ' : ''}${t.plus ? `+ ${t.plus} ` : ''}PJ`);
+    assert.equal(noHint(h), `LFMP Clients Scorecards Reviews Reports ${t.id === 'kpi' ? '🔔 3 ' : ''}${t.plus ? `+ ${t.plus} ` : ''}PJ`);
     assert.equal((h.match(/aria-current="page"/g) || []).length, 1);
     assert.match(h, new RegExp(`<a href="${t.path}" aria-current="page" data-lv-home>${t.label}</a>`));
     assert.match(h, /class="lv-mk"[^>]*><i><\/i><i><\/i><i><\/i><\/a>/, 'the 3-block LFMP icon');
@@ -81,9 +82,9 @@ test('phone top bar: icon · TITLE · [bell] · gold round + · initials (the sa
   assert.doesNotMatch(ms, /data-lv-pop|data-lv-mhint/, 'the Me screen has no second menu');
 });
 
-test('bottom tabs: Clients · Scorecards · Reviews · Me; the current one is gold (aria-current); Me while Me is open', () => {
+test('bottom tabs: Clients · Scorecards · Reviews · Reports · Me; the current one is gold (aria-current); Me while Me is open', () => {
   const t = S.tabsHtml({ tool: 'kpi' });
-  assert.equal(text(t), 'Clients Scorecards Reviews Me');
+  assert.equal(text(t), 'Clients Scorecards Reviews Reports Me');
   assert.deepEqual([...t.matchAll(/href="([^"]+)"/g)].map(m => m[1]), S.SHELL_TOOLS.map(x => x.path));
   assert.match(t, /href="\/leadpro-kpi\/admin\/" aria-current="page" data-lv-home/);
   const m = S.tabsHtml({ tool: 'kpi' }, true);
@@ -498,7 +499,8 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
         // nothing clips it (a short page's body overflow cut the phone menu's bottom edge): its last 3px still hit-test as the menu
         assert.equal(await page.evaluate(s => { const p = document.querySelector(s), r = p.getBoundingClientRect(); return document.elementFromPoint(r.left + 30, r.bottom - 3)?.closest('[data-lv-pop]') === p; }, me), true, `${tool} ${w}: the menu's bottom edge isn't clipped`);
         // a click outside closes it; clicking the initials again closes it
-        await page.mouse.click(5, h - 5); assert.equal(await page.locator(`${me}:not([hidden])`).count(), 0, 'outside click closes the menu');
+        // v2.9.0: the five bottom tabs fill the width, so "outside" is empty page above them (not the bottom-left corner)
+        await page.mouse.click(5, h - 120); assert.equal(await page.locator(`${me}:not([hidden])`).count(), 0, 'outside click closes the menu');
         await page.click(`${bar} [data-lv="me"]`); await page.click(`${bar} [data-lv="me"]`); assert.equal(await page.locator(`${me}:not([hidden])`).count(), 0, 'the initials toggle it');
         await page.click(`${bar} [data-lv="me"]`); await page.waitForSelector(`${me}:not([hidden]) .lv-mc`);
         if (phone) {

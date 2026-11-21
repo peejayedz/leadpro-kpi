@@ -18,6 +18,7 @@ import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { openIssues, inBadge, describeIssue, chainAlive, driftText } from './sync-status.mjs';
 import { keeperIssues, reviewIssues } from './keeper-status.mjs';
+import { reportsIssues } from './reports-core.mjs';   // v1.37.0 LeadPro Reports
 import { postSlack, slackEscape, slackLink, duration, manilaTime } from './slack.mjs';
 
 export const ADMIN_URL = 'https://lfmp-admin.pages.dev/leadpro-kpi/admin/';
@@ -28,9 +29,9 @@ export const emptyState = () => ({ version: 1, updatedAt: null, open: {} });
 export const kpiSummary = k => (k ? { generatedAt: k.generatedAt, sync: k.sync || null } : null);
 
 // The bell's list (admin/index.html refreshIssues → listed()).
-export function bellIssues({ status, keeper, firms, configs, kpis, chain, now }) {
+export function bellIssues({ status, keeper, firms, configs, kpis, chain, now, reports = null }) {
   const rank = i => (i.slug ? 1 : 0);
-  return [...keeperIssues(keeper, { now, firms }), ...reviewIssues(firms, configs), ...openIssues(status, { now, firms, kpis, chain })]
+  return [...keeperIssues(keeper, { now, firms }), ...reviewIssues(firms, configs), ...openIssues(status, { now, firms, kpis, chain }), ...reportsIssues(reports, { firms })]
     .sort((a, b) => rank(a) - rank(b) || Date.parse(b.firstSeen) - Date.parse(a.firstSeen))
     .filter(i => inBadge(i) || i.kind === 'unmapped');   // v1.28.0: "stages not mapped" is a bell notice, but it's DMed too
 }
@@ -54,6 +55,11 @@ export function startText(i, { firms, now, configs = {} }) {
     `:warning: *Pipeline not found · ${slackEscape(name)}*`,
     `${i.missing > 1 ? `${i.missing} counted pipelines aren't` : 'A counted pipeline isn\'t'} in GHL any more, so this firm wasn't synced. The dashboard keeps its last numbers.`,
     slackLink(`${ADMIN_URL}#/map/${encodeURIComponent(i.slug)}`, 'Edit mapping →'),
+  ].join('\n');
+  if (i.kind === 'reports') return [   // v1.37.0 LeadPro Reports
+    `:warning: *Reports build failed · ${slackEscape(name)}*`,
+    `${slackEscape(title)}${i.detail ? `: ${slackEscape(i.detail)}` : ''}. The KPI dashboard isn't affected.`,
+    slackLink(i.runUrl || ADMIN_URL, i.runUrl ? 'View run →' : 'Open KPI admin →'),
   ].join('\n');
   return [
     `:rotating_light: *KPI sync problem: ${slackEscape(name)}*`,
@@ -143,8 +149,9 @@ async function main() {
   }
   const status = await readJSON(join(ROOT, 'status/sync-status.json'));
   const keeper = await readJSON(join(ROOT, 'status/token-keeper.json'));
+  const reports = await readJSON(join(ROOT, 'status/reports-status.json'));   // v1.37.0
   const chain = await chainState({ repo: process.env.GITHUB_REPOSITORY || 'peejayedz/leadpro-kpi', token: process.env.GH_TOKEN || '', syncChain: process.env.SYNC_CHAIN });
-  const issues = bellIssues({ status, keeper, firms, configs, kpis, chain, now: Date.now() });
+  const issues = bellIssues({ status, keeper, firms, configs, kpis, chain, now: Date.now(), reports });
   const prev = await readJSON(join(ROOT, STATE_FILE));
   const { state, changed } = await run({ prev, issues, firms, configs, chainKnown: chain.value === 'off' || chain.waiting !== null });
   if (changed) await writeFile(join(ROOT, STATE_FILE), `${JSON.stringify(state, null, 2)}\n`);

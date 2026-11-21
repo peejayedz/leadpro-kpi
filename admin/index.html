@@ -13,7 +13,7 @@
 <script>/* apply the saved theme before first paint so the page and logo don't flash */ try { var t = localStorage.getItem('lfmp-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="lfmp-ui.css?v=2.8.1">
+<link rel="stylesheet" href="lfmp-ui.css?v=2.9.0">
 <link rel="stylesheet" href="admin.css?v=1.36.0">
 <link rel="stylesheet" href="care.css?v=1.35.0">
 </head>
@@ -837,7 +837,8 @@ async function refreshIssues({ reloadKpis = false } = {}) {
       chainInfo = await chainState();
       keeperStatus = await getJSON('status/token-keeper.json').catch(() => null);
       removedLog = await getJSON('status/removed.json').catch(() => null);   // v1.28.0: "Scorecard removed" notices (7 days)
-      issues = GC.buildIssues({ keeperStatus, syncStatus, chain: chainInfo, firms, configs, kpis, now: Date.now() });   // v1.29.1: greet-count.mjs
+      const reportsStatus = await getJSON('status/reports-status.json').catch(() => null);   // v1.37.0 LeadPro Reports (absent until the first build)
+      issues = GC.buildIssues({ keeperStatus, syncStatus, chain: chainInfo, firms, configs, kpis, now: Date.now(), reportsStatus });   // v1.29.1: greet-count.mjs
       trackLive(); lastCheck = Date.now(); checkErr = null;
     } catch (e) { checkErr = e.message; }
     finally { checking = null; issuesRead = true; }

@@ -1,5 +1,13 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.37.0": {
+    "title": "LeadPro Reports (pilot)",
+    "summary": "A Reports page per client with their Google rankings from BrightLocal, built every night.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "LeadPro Reports, Phase 1: a client set up in the Builder's Reports tab gets a Reports page (Rankings from BrightLocal), rebuilt every night at 2:00 AM ET and unlocked with the same passphrase as its KPI dashboard. It stays a Draft until Add to GHL menu, after Andy's review." },
+      { "type": "new", "tag": "internal", "text": "A failed Reports build shows in the bell and in the Slack DM, like a failed sync." }
+    ]
+  },
   "1.36.0": {
     "title": "Menu position in GHL",
     "summary": "Pick where \"KPI Dashboard\" sits in a client's GHL menu and copy the exact CSS to paste.",

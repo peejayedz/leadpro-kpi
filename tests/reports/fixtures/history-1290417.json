@@ -1,0 +1,98 @@
+{
+  "success": true,
+  "response": {
+    "results": [
+      {
+        "date": "2026-05-14",
+        "average_position": 20.9,
+        "google": {
+          "average_position": 19.8
+        },
+        "google-mobile": {
+          "average_position": 19.6
+        },
+        "google-local": {
+          "average_position": 21.6
+        }
+      },
+      {
+        "date": "2026-06-12",
+        "average_position": 21.8,
+        "google": {
+          "average_position": 21.6
+        },
+        "google-mobile": {
+          "average_position": 21.6
+        },
+        "google-local": {
+          "average_position": 21.6
+        }
+      },
+      {
+        "date": "2026-07-15",
+        "average_position": 21.7,
+        "google": {
+          "average_position": 21.6
+        },
+        "google-mobile": {
+          "average_position": 21.6
+        },
+        "google-local": {
+          "average_position": 21.6
+        }
+      },
+      {
+        "date": "2026-08-13",
+        "average_position": 20.6,
+        "google": {
+          "average_position": 19.8
+        },
+        "google-mobile": {
+          "average_position": 19.7
+        },
+        "google-local": {
+          "average_position": 21.6
+        }
+      },
+      {
+        "date": "2026-09-11",
+        "average_position": 20.4,
+        "google": {
+          "average_position": 19.3
+        },
+        "google-mobile": {
+          "average_position": 19.3
+        },
+        "google-local": {
+          "average_position": 21.6
+        }
+      },
+      {
+        "date": "2026-10-09",
+        "average_position": 20.5,
+        "google": {
+          "average_position": 19.6
+        },
+        "google-mobile": {
+          "average_position": 20
+        },
+        "google-local": {
+          "average_position": 19.8
+        }
+      },
+      {
+        "date": "2026-10-31",
+        "average_position": 20.7,
+        "google": {
+          "average_position": 19.6
+        },
+        "google-mobile": {
+          "average_position": 20
+        },
+        "google-local": {
+          "average_position": 19.8
+        }
+      }
+    ]
+  }
+}

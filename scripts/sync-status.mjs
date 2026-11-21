@@ -408,6 +408,16 @@ export function describeIssue(i, ctx = {}) {
         what: `The token keeper couldn't ${i.detail === 'save-failed' ? `save a new token into ${key}` : 'get a new token from GHL'} for this firm. Its last token keeps working for up to 24 hours${i.lastGood ? ` (made ${esc(when(i.lastGood))})` : ''}.`,
         steps: ['Press <b>Run token keeper</b>.', 'If it fails again, press <b>View run on GitHub</b> and read the red step.'],
         actions: ['keeper', 'run', 'firm'] };
+    // v1.37.0 LeadPro Reports: the firm's last BrightLocal build failed (status/reports-status.json). The KPI numbers are
+    // not affected; the client's Reports page keeps its last numbers.
+    case 'reports': {
+      const why = { auth: 'BrightLocal refused the key', no_report: 'BrightLocal has no Rank Tracker report for the picked location', config: 'Reports isn\'t fully set up (location or passphrase missing)', network: 'BrightLocal didn\'t answer', server: 'BrightLocal had an error', crashed: 'the job stopped before it finished' }[i.category] || 'the build stopped';
+      return {
+        title: 'Reports build failed',
+        what: `The last LeadPro Reports build for this firm failed: ${esc(why)}${i.detail ? ` (${esc(i.detail)})` : ''}. The KPI dashboard isn't affected; the Reports page keeps its last numbers.`,
+        steps: ['Press <b>View run on GitHub</b> to see the red step.', i.category === 'auth' ? 'Check the BrightLocal key: the repo secrets <span class="mono">BRIGHTLOCAL_API_KEY</span> (and <span class="mono">BRIGHTLOCAL_API_SECRET</span> if BrightLocal gave one).' : 'In the Builder: the client\'s <b>Reports</b> tab → <b>Build now</b>. This clears as soon as a build succeeds.'],
+        actions: ['run', 'firm'] };
+    }
     default:
       return { title: 'Unknown issue', what: '', steps: [], actions: [] };
   }
