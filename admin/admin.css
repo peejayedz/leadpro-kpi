@@ -486,3 +486,18 @@ input[readonly]{color:var(--mut)}
 .njobs{padding:10px 14px 4px;border-bottom:1px solid var(--line)}
 .njobs .lbl2{margin:0 0 4px;font:700 11px/1.6 var(--b);letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
 .njobs .lv-jobs-it{padding:8px 6px}
+/* v1.36.0 Menu position in GHL (Setup → GHL menu link) */
+.menupos .mp-row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin:8px 0}
+.mp-num{display:flex;flex-direction:column;gap:4px;font:600 13px var(--b)}
+.mp-num input{width:96px;min-height:40px;font:600 15px var(--b);padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.mp-prev{list-style:none;margin:0;padding:8px 12px;border:1px solid var(--line);border-radius:10px;min-width:220px;flex:1 1 220px;max-width:360px;font-size:13px;display:grid;gap:4px}
+.mp-prev li{display:flex;justify-content:space-between;gap:12px;color:var(--mut)}
+.mp-prev li b{font-variant-numeric:tabular-nums;font-weight:600}
+.mp-prev li.mine{color:var(--ink);font-weight:600}
+.mp-prev li.mine span::before{content:"→ ";color:var(--acc-ink)}
+.mp-err{margin:4px 0 0;color:var(--red);font-size:13px}
+.mp-state{margin:10px 0 0;font-size:13.5px}
+.mp-paste{margin-top:10px;border:1px solid color-mix(in srgb,var(--acc) 45%,var(--line));border-radius:10px;padding:12px 14px;display:grid;gap:8px}
+.mp-paste pre,.mp-lines pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.mp-steps{margin:0;padding-left:20px;font-size:13.5px;display:grid;gap:4px}
+.mp-lines{margin-top:8px}.mp-lines summary{cursor:pointer;font:600 13px var(--b);color:var(--acc-ink)}

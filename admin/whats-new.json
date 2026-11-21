@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.36.0": {
+    "title": "Menu position in GHL",
+    "summary": "Pick where \"KPI Dashboard\" sits in a client's GHL menu and copy the exact CSS to paste.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "Setup → GHL menu link → Menu position in GHL: pick the number, copy the lines, open GHL's Custom CSS, paste and Save there, then press I've pasted it. The bell reminds you until then." }
+    ]
+  },
   "1.35.0": {
     "title": "How the mapping is filled in",
     "summary": "Both mapping screens explain how each stage was filled in, and a guessed stage says which word it matched.",

@@ -184,7 +184,8 @@ async function cmdMenu() {
     'skipped-no-token': 'Menu link: skipped (no GHL_MENU_TOKEN). Add it by hand with the link from the builder.', 'skipped-list-failed': 'Menu link: skipped (couldn\'t list the existing links, so a duplicate couldn\'t be ruled out). Add it by hand.' }[res] || `Menu link: not created (${res}). ${reason}`);
   if (res === 'created' || res === 'exists') log(id ? 'Menu link id kept for the Custom CSS rule.' : 'Menu link id not found: use "Show CSS rule" in KPI admin → Setup later.');
   // v1.30.0: the link id (not secret) is kept for the agency Custom CSS rule; the URL (with the passphrase) never is.
-  if (cfg && (res === 'created' || res === 'exists')) { cfg.menuLink = { status: res, at: new Date().toISOString(), ...(id ? { id } : {}) }; await writeFile(cfgPath, jsonText(cfg)); }
+  // v1.36.0: a chosen menu position (menuLink.order) is kept; cssPasted isn't (a new link id needs a new paste).
+  if (cfg && (res === 'created' || res === 'exists')) { cfg.menuLink = { status: res, at: new Date().toISOString(), ...(id ? { id } : {}), ...(Number.isInteger(cfg.menuLink?.order) ? { order: cfg.menuLink.order } : {}) }; await writeFile(cfgPath, jsonText(cfg)); }
   await output({ menu: res, menuid: id ? 'yes' : 'no' });
   return 0;   // never fails the setup: the builder shows the Copy link + clicks instead
 }

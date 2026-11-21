@@ -14,7 +14,7 @@
 <link rel="preload" href="fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="lfmp-ui.css?v=2.7.0">
-<link rel="stylesheet" href="admin.css?v=1.35.0">
+<link rel="stylesheet" href="admin.css?v=1.36.0">
 <link rel="stylesheet" href="care.css?v=1.35.0">
 </head>
 <body>
@@ -62,7 +62,7 @@ import { firmState, describeIssue, seenKey, inBadge, STALE_MIN, driftText } from
 import { tokenLabel } from '../scripts/keeper-status.mjs';
 import { checkScopes } from '../scripts/scope-check.mjs';
 import { pipelineNotices } from '../scripts/not-in-pipeline.mjs';
-import { menuCssRule, MENU_CSS_WHERE, validMenuId } from '../scripts/menu-css.mjs';   // v1.30.0
+import { menuCssRule, validMenuId, menuState, menuPreview, parseOrder, withMenuOrder, withPasted, pastedLine, GHL_CUSTOM_CSS_URL, MENU_SCHEME_AS_OF, SAME_NUMBER_LINE, PASTE_STEPS } from '../scripts/menu-css.mjs';   // v1.30.0; v1.36.0 Menu position in GHL
 import { createAppRun, APP_STEPS, presetChoices } from './app-path.mjs';
 import { buildCards, filterCards, newer, isMinor, cardVersion } from './news.mjs';
 import { SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS, severity, isAlert, leadTrend, sortFirms, staleLine } from './firm-details.mjs';
@@ -589,7 +589,7 @@ document.addEventListener('click', e => {
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-f]'); if (!b) return;
   const host = b.closest('[data-slug]'); const f = host && firmOf(host.dataset.slug); if (!f) return;
-  ({ link: copyLinkDialog, sync: resyncFirm, map: x => go(hashFor('map', x.slug)), banner: toggleBanner, publish: publishDialog, css: copyCssRule, cssread: showCssRule, counts: toggleCounts, delete: deleteDialog, token: x => tokenDialog(x, h => firmSay(x.slug, h)), keeper: runKeeperFor })[b.dataset.f]?.(f, b);
+  ({ link: copyLinkDialog, sync: resyncFirm, map: x => go(hashFor('map', x.slug)), banner: toggleBanner, publish: publishDialog, css: copyCssRule, cssread: showCssRule, menusave: saveMenuPos, menupasted: menuPasted, counts: toggleCounts, delete: deleteDialog, token: x => tokenDialog(x, h => firmSay(x.slug, h)), keeper: runKeeperFor })[b.dataset.f]?.(f, b);
 });
 // Per-firm messages ("Copied", "Synced", errors) show on the firm's row and in its Details panel.
 const firmMsg = {}, busy = new Set();
@@ -718,11 +718,11 @@ function publishDialog(f) {
           check: async () => { const list = await getJSON('firms/index.json'); const row = (list || []).find(x => x.slug === f.slug); return row && !row.status ? row : null; } });
         delete f.status;
         configs[f.slug] = (await getJSON(`firms/${f.slug}/config.json`).catch(() => null)) || configs[f.slug];   // v1.30.0: the link id → CSS rule
-        say(`<span class="chip good">Live</span> "KPI Dashboard" is in the GHL menu. ${validMenuId(configs[f.slug]?.menuLink?.id) ? 'Copy the Custom CSS rule in Setup → GHL menu link. ' : ''}Re-syncing so the Draft banner goes away…`);
+        say(`<span class="chip good">Live</span> "KPI Dashboard" is in the GHL menu. ${validMenuId(configs[f.slug]?.menuLink?.id) ? 'Paste its menu line in GHL: Setup → GHL menu link. ' : ''}Re-syncing so the Draft banner goes away…`);
         const hasId = validMenuId(configs[f.slug]?.menuLink?.id);
         await job.done({ title: 'Done: added to GHL menu', lead: `"KPI Dashboard" is in ${fname(f)}'s GHL menu (opens inside GHL). The Draft banner goes at the next sync.`, line: 'Added to GHL menu',
-          items: [['Opens', 'inside GHL'], ['Menu order', hasId ? 'CSS rule ready to copy' : 'Show CSS rule in Setup']],
-          ...(hasId ? { next: { label: 'Copy CSS rule', onClick: () => copyCssRule(f) } } : {}) });
+          items: [['Opens', 'inside GHL'], ['Menu order', hasId ? 'paste the CSS lines in GHL (Setup)' : 'Read link id in Setup']],
+          ...(hasId ? { next: { label: 'Copy CSS', onClick: () => copyCssRule(f) } } : {}) });
         resyncFirm(f);
       } catch (e) {
         await menuWhy(f.slug, request, e);   // v1.32.1: GHL's own reason instead of "GitHub stopped it"
@@ -923,6 +923,7 @@ function removedHtml() {
 function paintPanel() {
   const seen = seenSet(), open = listed(), notices = issues.filter(i => !inBadge(i)), n = open.filter(i => !seen.has(seenKey(i))).length;
   const nip = pipelineNotices(firms, kpis);   // amber notices, never counted in the badge or tab title
+  const mpos = firms.filter(f => !f.status && menuState(configs[f.slug]).needsPaste);   // v1.36.0: amber, not counted either
   const resolved = [...(syncStatus?.resolved || []), ...readStore(LOCAL_RESOLVED, [])]
     .filter(r => (!r.slug || firmOf(r.slug)) && inBadge(r)).sort((a, b) => Date.parse(b.resolvedAt) - Date.parse(a.resolvedAt)).slice(0, 20);
   const lasted = r => { const m = Math.round((Date.parse(r.resolvedAt) - Date.parse(r.firstSeen)) / 60e3); return m >= 0 ? (m < 120 ? `${m} min` : m < 2880 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} days`) : ''; };
@@ -934,6 +935,7 @@ function paintPanel() {
     </div>
     <section class="njobs" aria-label="Recent jobs"><h4 class="lbl2">Recent jobs</h4>${jobsListHtml()}</section>
     ${removedHtml()}
+    ${mpos.length ? `<div class="nnotices">${mpos.map(f => `<div class="warnbox nnotice" data-notice="menupos"><b>Menu position: paste the CSS in GHL</b> · ${esc(fname(f))}<br><a href="${esc(hashFor('list', f.slug))}">Open Setup → GHL menu link</a></div>`).join('')}</div>` : ''}
     ${notices.length || nip.length ? `<div class="nnotices">${nip.map(x => { const u = contactsUrl(x.slug); return `<div class="warnbox nnotice"><b>New contacts not in pipeline</b> · ${esc(x.name)} · ${x.count} in the last 30 days<br>${x.count === 1 ? 'A contact' : `${x.count} contacts`} came in by form, chat, booking, call, text or email but ${x.count === 1 ? 'has' : 'have'} no opportunity in any pipeline, so ${x.count === 1 ? 'it isn\'t' : 'they aren\'t'} counted in New leads. What to do: check the firm's lead intake in GHL (the chat widget, form and call workflows) and make sure each one creates an opportunity in the lead pipeline, then add these contacts to it. ${u ? `<a class="linkbtn" href="${esc(u)}" target="_blank" rel="noopener">Open contacts in GHL</a> · ` : ''}<button class="linkbtn" type="button" data-n="firm" data-slug="${esc(x.slug)}">Go to firm</button></div>`; }).join('')}${notices.map(i => { const f = firmOf(i.slug); if (i.kind === 'unmapped') { const d = issueText(i); return `<div class="warnbox nnotice" data-notice="unmapped"><b>${esc(d.title)}</b> · ${esc(f ? fname(f) : i.slug)} · since ${esc(ago(i.firstSeen))}<br>${d.what} <button class="linkbtn" type="button" data-n="map" data-slug="${esc(i.slug)}">${f && careOf(f) ? 'Map pipelines' : 'Edit mapping'}</button> · <button class="linkbtn" type="button" data-n="firm" data-slug="${esc(i.slug)}">Go to firm</button></div>`; } return `<div class="warnbox nnotice"><b>Holding previous numbers</b> · ${esc(f?.name || i.slug)} · hold ${i.count} of 3, since ${esc(ago(i.firstSeen))}<br>GHL returned fewer calls or messages than the last sync${i.reason ? ` (${esc(i.reason)})` : ''}, so the dashboard keeps the previous numbers. Nothing to do: it usually clears on the next sync. After 3 holds it publishes with a "may be incomplete" note, which shows here as an issue. <button class="linkbtn" type="button" data-n="firm" data-slug="${esc(i.slug)}">Go to firm</button></div>`; }).join('')}</div>` : ''}
     ${open.length ? open.map(i => issueHtml(i, seen)).join('')
       : `<div class="nempty"><span class="okic">${ICON.tick}</span><b>No open issues</b><p>Every firm synced in the last ${STALE_MIN} minutes and the sync chain is running.</p></div>`}
@@ -1333,49 +1335,103 @@ function setupHtml(f) {
       <div class="btnrow"><button class="btn danger" type="button" data-f="delete">${ICON.trash}Remove firm…</button></div></section>`;
 }
 
-// v1.30.0: the agency Custom CSS rule that puts this firm's "KPI Dashboard" link at order -92 (PJ's SOP). Shown when the
-// link's id is known (config.menuLink.id: kept by Add to GHL menu, or read with "Show CSS rule", a GET only). The agency
-// CSS itself is never changed from here: PJ pastes the rule.
+// v1.36.0 (queue item 3): "Menu position in GHL". GHL has no official API for the agency Custom CSS, so: the number
+// (saved in config.menuLink.order), the exact lines to paste, Copy CSS + Open GHL Custom CSS ↗, the 3 steps and "I've pasted
+// it" (who / when, config.menuLink.cssPasted). GHL serves the CSS only after a login, so nothing checks it by itself.
+// No link id yet: "Read link id" (menu-css.yml, ONE GET of the agency's menu links). The agency CSS is never changed here.
 function menuCssHtml(f, cfg) {
-  const id = cfg?.menuLink?.id, reading = busy.has(`${f.slug}:css`);
-  if (validMenuId(id)) return `<div class="cssrule" data-css-rule><p class="lbl2">Custom CSS rule (menu order)</p>
-      <pre class="mono" tabindex="0">${esc(menuCssRule({ id, name: fname(f) }))}</pre>
-      <p class="hint">${esc(MENU_CSS_WHERE)}</p>
-      <div class="btnrow"><button class="btn" type="button" data-f="css">${ICON.copy}Copy CSS rule</button></div></div>`;
-  return `<div class="cssrule" data-css-rule><p class="lbl2">Custom CSS rule (menu order)</p>
-      <p class="hint">The rule needs the link's id from GHL. <b>Show CSS rule</b> reads it (read only: nothing in GHL changes) and keeps it with the firm.</p>
-      <div class="btnrow"><button class="btn" type="button" data-f="cssread"${reading ? ' disabled' : ''}>${reading ? 'Reading the link from GHL…' : 'Show CSS rule'}</button></div></div>`;
+  const s = menuState(cfg), reading = busy.has(`${f.slug}:css`), saving = busy.has(`${f.slug}:menu`);
+  if (!s.id) return `<div class="cssrule menupos" data-css-rule><p class="lbl2">Menu position in GHL</p>
+      <p class="hint">The lines need the link's id from GHL. <b>Read link id</b> reads it (read only: nothing in GHL changes) and keeps it with the firm.</p>
+      <div class="btnrow"><button class="btn" type="button" data-f="cssread"${reading ? ' disabled' : ''}>${reading ? 'Reading the link from GHL…' : 'Read link id'}</button></div></div>`;
+  const lines = menuCssRule({ id: s.id, name: fname(f), order: s.order });
+  return `<div class="cssrule menupos" data-css-rule data-needs="${s.needsPaste ? 1 : 0}"><p class="lbl2">Menu position in GHL</p>
+      <div class="mp-row"><label class="mp-num"><span>Position</span><input type="text" inputmode="numeric" id="mp-${esc(f.slug)}" value="${s.order}" aria-describedby="mpw-${esc(f.slug)}"></label>
+        <ol class="mp-prev" aria-label="Menu order (as of ${esc(MENU_SCHEME_AS_OF)})">${menuPreview(s.order).map(x => `<li${x.mine ? ' class="mine"' : x.rest ? ' class="rest"' : ''}><span>${esc(x.label)}</span><b>${x.rest ? '…' : x.order}</b></li>`).join('')}</ol></div>
+      <p class="hint" id="mpw-${esc(f.slug)}">${esc(SAME_NUMBER_LINE)} <span class="muted">Menu order as of ${esc(MENU_SCHEME_AS_OF)} (not read from GHL).</span></p>
+      <p class="mp-err" data-mp-err hidden></p>
+      <div class="btnrow"><button class="btn" type="button" data-f="menusave"${saving ? ' disabled' : ''}>${saving ? 'Saving…' : 'Save position'}</button></div>
+      <p class="mp-state ${s.needsPaste ? 'warn' : 'ok'}" data-mp-state>${s.needsPaste ? '<span class="chip warn">Paste the CSS in GHL</span> ' : '<span class="chip good">In GHL</span> '}${esc(pastedLine(s))}</p>
+      ${s.needsPaste ? `<div class="mp-paste" data-mp-paste><p class="lbl2">Paste this in GHL</p>
+        <pre class="mono" tabindex="0">${esc(lines)}</pre>
+        <div class="btnrow"><button class="btn" type="button" data-f="css">${ICON.copy}Copy CSS</button><a class="btn" href="${esc(GHL_CUSTOM_CSS_URL)}" target="_blank" rel="noopener">Open GHL Custom CSS ↗</a></div>
+        <ol class="mp-steps">${PASTE_STEPS.map(t => `<li>${esc(t)}</li>`).join('')}</ol>
+        <div class="btnrow"><button class="btn p" type="button" data-f="menupasted"${saving ? ' disabled' : ''}>I've pasted it</button></div></div>`
+        : `<details class="mp-lines"><summary>Show the lines${s.pasted?.hand ? ' to compare with GHL' : ''}</summary><pre class="mono" tabindex="0">${esc(lines)}</pre><div class="btnrow"><button class="btn" type="button" data-f="css">${ICON.copy}Copy CSS</button><a class="btn" href="${esc(GHL_CUSTOM_CSS_URL)}" target="_blank" rel="noopener">Open GHL Custom CSS ↗</a></div></details>`}
+    </div>`;
 }
 async function copyCssRule(f, btn) {
-  const id = configs[f.slug]?.menuLink?.id; if (!validMenuId(id)) return;
-  try { await navigator.clipboard.writeText(menuCssRule({ id, name: fname(f) })); if (btn) flashCopied(btn); else firmSay(f.slug, '<span class="chip good">Copied</span> The CSS rule is on the clipboard.'); }
-  catch { firmSay(f.slug, '<span class="chip bad">Not copied</span> Couldn\'t reach the clipboard. Select the rule and copy it by hand.'); }
+  const s = menuState(configs[f.slug]); if (!s.id) return;
+  try { await navigator.clipboard.writeText(menuCssRule({ id: s.id, name: fname(f), order: s.order })); if (btn) flashCopied(btn); else firmSay(f.slug, '<span class="chip good">Copied</span> The CSS lines are on the clipboard.'); }
+  catch { firmSay(f.slug, '<span class="chip bad">Not copied</span> Couldn\'t reach the clipboard. Select the lines and copy them by hand.'); }
 }
-// "Show CSS rule": menu-css.yml = ONE GET of the agency's menu links (scripts/ghl-menu.mjs readMenuLinkId), then the id
+// Save position: the number only (config.menuLink.order). Asks first, like every change.
+async function saveMenuPos(f, btn) {
+  const key = `${f.slug}:menu`; if (busy.has(key)) return;
+  const box = btn?.closest('[data-css-rule]'), err = box?.querySelector('[data-mp-err]'), input = box?.querySelector('input');
+  const n = parseOrder(input?.value);
+  if (n == null) { if (err) { err.hidden = false; err.textContent = 'Use a whole number from -999 to 999 (for example -92).'; } input?.focus(); return; }
+  const s = menuState(configs[f.slug]);
+  if (n === s.order) { if (err) { err.hidden = false; err.textContent = `It's already at ${n}.`; } return; }
+  if (!await confirmAction({ title: `Move ${fname(f)}'s "KPI Dashboard" to ${n}?`, ok: 'Save position',
+    will: [['GitHub', `the position ${n} is kept in firms/${f.slug}/config.json`], ['This page', `the lines to paste in GHL${s.pasted ? ` (they replace the ${s.pasted.order} line)` : ''}`]],
+    wont: ['Nothing in GHL changes: you paste the lines', 'No numbers or messages change'] })) return;
+  busy.add(key); repaintFirm(f.slug);
+  try {
+    let next;
+    await commitFiles(`${f.slug}: GHL menu position ${n} (KPI admin, ${me?.first || 'KPI admin'})`, async head => {
+      const cfg = await getJSON(`firms/${f.slug}/config.json`, head); if (!cfg) throw new Error('config.json not found');
+      next = withMenuOrder(cfg, n); return [{ path: `firms/${f.slug}/config.json`, content: jsonText(next) }];
+    });
+    configs[f.slug] = next;
+    firmSay(f.slug, `<span class="chip good">Saved</span> Position ${n}. Now paste the lines in GHL.`);
+  } catch (e) { firmSay(f.slug, `<span class="chip bad">Not saved</span> ${esc(e.message)}`); }
+  finally { busy.delete(key); repaintFirm(f.slug); }
+}
+// I've pasted it: who / when (GHL can't be checked without a login). Asks first.
+async function menuPasted(f) {
+  const key = `${f.slug}:menu`; if (busy.has(key)) return;
+  const s = menuState(configs[f.slug]); if (!s.id) return;
+  if (!await confirmAction({ title: `Mark ${fname(f)}'s menu line as pasted in GHL?`, ok: 'I\'ve pasted it',
+    will: [['GitHub', `"Pasted by ${me?.first || 'you'}" at ${s.order} is kept in firms/${f.slug}/config.json`]],
+    wont: ['The Builder can\'t read GHL\'s Custom CSS (it needs a login), so it doesn\'t check it: open the sub-account; KPI Dashboard should be near the top, after Dashboard / Contacts / Opportunities and LeadPro Training.', 'Nothing in GHL changes'] })) return;
+  busy.add(key); repaintFirm(f.slug);
+  try {
+    let next;
+    await commitFiles(`${f.slug}: GHL menu line pasted at ${s.order} (${me?.first || 'KPI admin'})`, async head => {
+      const cfg = await getJSON(`firms/${f.slug}/config.json`, head); if (!cfg) throw new Error('config.json not found');
+      next = withPasted(cfg, { by: me?.first || 'KPI admin' }); return [{ path: `firms/${f.slug}/config.json`, content: jsonText(next) }];
+    });
+    configs[f.slug] = next;
+    firmSay(f.slug, `<span class="chip good">Done</span> Pasted at ${s.order}. Check it: open the sub-account; KPI Dashboard should be near the top, after Dashboard / Contacts / Opportunities and LeadPro Training.`);
+  } catch (e) { firmSay(f.slug, `<span class="chip bad">Not saved</span> ${esc(e.message)}`); }
+  finally { busy.delete(key); repaintFirm(f.slug); }
+}
+// "Read link id" (was "Show CSS rule"): menu-css.yml = ONE GET of the agency's menu links (scripts/ghl-menu.mjs readMenuLinkId), then the id
 // is committed to config.json. Plain words only while it runs.
 async function showCssRule(f) {
   const key = `${f.slug}:css`; if (busy.has(key)) return;
-  if (!await confirmAction({ title: `Read ${fname(f)}'s GHL menu link?`, ok: 'Show CSS rule',
+  if (!await confirmAction({ title: `Read ${fname(f)}'s GHL menu link?`, ok: 'Read link id',
     will: [['GHL', 'one read of the agency\'s custom menu links (read only)'], ['GitHub', `the link's id is kept in firms/${f.slug}/config.json`]],
-    wont: ['Nothing in GHL changes', 'The agency Custom CSS isn\'t changed: you paste the rule'] })) return;
+    wont: ['Nothing in GHL changes', 'The agency Custom CSS isn\'t changed: you paste the lines'] })) return;
   busy.add(key); repaintFirm(f.slug);
   const say = h => firmSay(f.slug, h);
   say('Reading the "KPI Dashboard" link from GHL (read only)…');
   const request = `css-${Date.now().toString(36)}`;
-  const job = kpiJob({ kind: 'other', client: fname(f), what: 'Show CSS rule', title: `Reading ${fname(f)}'s "KPI Dashboard" link from GHL (read only)…`, host: `firm:${f.slug}`, typicalMs: 45000,
-    check: { workflow: 'menu-css.yml', title: `Menu CSS ${f.slug} [${request}]` }, doneText: { title: 'Done: CSS rule ready', lead: 'Copy it from Setup → GHL menu link.' } });
+  const job = kpiJob({ kind: 'other', client: fname(f), what: 'Read link id', title: `Reading ${fname(f)}'s "KPI Dashboard" link from GHL (read only)…`, host: `firm:${f.slug}`, typicalMs: 45000,
+    check: { workflow: 'menu-css.yml', title: `Menu CSS ${f.slug} [${request}]` }, doneText: { title: 'Done: link id read', lead: 'Setup → GHL menu link shows the lines to paste.' } });
   try {
     const t0 = await dispatch('menu-css.yml', { slug: f.slug, request });
     const { value } = await follow({ workflow: 'menu-css.yml', title: `Menu CSS ${f.slug} [${request}]`, t0, label: 'Reading the link', limitMs: 4 * 60e3,
       say: () => say('Reading the "KPI Dashboard" link from GHL (read only)…'),
       check: async () => { const c = await getJSON(`firms/${f.slug}/config.json`); return validMenuId(c?.menuLink?.id) ? c : null; } });
     configs[f.slug] = value;
-    say('<span class="chip good">Found</span> Copy the rule below into the agency Custom CSS.');
-    job.done({ title: 'Done: CSS rule ready', lead: `${fname(f)}'s "KPI Dashboard" link was read from GHL (nothing in GHL changed). Paste the rule into Agency → Settings → Company → White Label → Custom CSS, then Save.`, line: 'CSS rule ready',
-      next: { label: 'Copy CSS rule', onClick: () => copyCssRule(f) } });
+    say('<span class="chip good">Found</span> Pick the position below, then paste the lines in the agency Custom CSS.');
+    job.done({ title: 'Done: link id read', lead: `${fname(f)}'s "KPI Dashboard" link was read from GHL (nothing in GHL changed). Setup → GHL menu link shows the lines to paste.`, line: 'Link id read',
+      next: { label: 'Copy CSS', onClick: () => copyCssRule(f) } });
   } catch (e) {
     say(`<span class="chip bad">Not found</span> Couldn't read this firm's "KPI Dashboard" link from GHL (there may be none on this sub-account, or it's shared with other sub-accounts). Nothing changed. ${errHtml(e)}`);
-    job.fail({ reason: `Couldn't read ${fname(f)}'s "KPI Dashboard" link from GHL: there may be none on this sub-account, or it's shared with other sub-accounts.`, nothingChanged: 'nothing in GHL changed.', line: 'CSS rule not found', onRetry: () => showCssRule(f) });
+    job.fail({ reason: `Couldn't read ${fname(f)}'s "KPI Dashboard" link from GHL: there may be none on this sub-account, or it's shared with other sub-accounts.`, nothingChanged: 'nothing in GHL changed.', line: 'Link id not found', onRetry: () => showCssRule(f) });
   } finally { busy.delete(key); repaintFirm(f.slug); }
 }
 

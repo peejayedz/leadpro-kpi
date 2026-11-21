@@ -709,7 +709,7 @@ try {
     {
       const sec = '#dPanel [data-sec="menu-link"]';
       await page.locator(`${sec} [data-css-rule]`).scrollIntoViewIfNeeded();
-      check(await page.isVisible(`${sec} [data-f="cssread"]`) && !(await page.$(`${sec} pre`)), `${tag}: no id yet → "Show CSS rule"`);
+      check(await page.isVisible(`${sec} [data-f="cssread"]`) && !(await page.$(`${sec} pre`)) && /Read link id/.test(await page.textContent(`${sec} [data-f="cssread"]`)), `${tag}: no id yet → "Read link id"`);
       if (w === 1440 && scheme === 'dark') {   // the failure first: nothing found → plain words, nothing changed
         G2.M.menuCss = 'none';
         await page.click(`${sec} [data-f="cssread"]`);
@@ -723,16 +723,42 @@ try {
       await page.click(`${sec} [data-f="cssread"]`);
       const during = await page.textContent('#dPanel [data-msg]').catch(() => '');
       check(!/in_progress|queued/.test(during), `${tag}: while reading, plain words (${during.trim().slice(0, 70)})`);
-      await page.waitForSelector(`${sec} pre`, { timeout: 30000 });
-      await page.waitForSelector('.lv-res'); check(/Done: CSS rule ready/i.test(await page.textContent('.lv-res')) && await page.isVisible('[data-lv-res="next"]'), `${tag}: Done popup with Copy CSS rule`);
+      await page.waitForSelector(`${sec} [data-mp-paste] pre`, { timeout: 30000 });
+      await page.waitForSelector('.lv-res'); check(/Done: link id read/i.test(await page.textContent('.lv-res')) && await page.isVisible('[data-lv-res="next"]'), `${tag}: Done popup with Copy CSS`);
       if (SHOTS) await page.screenshot({ path: join(SHOTS, `css_done_popup_${tag}.png`) });
       await page.click('[data-lv-res="close"]');
-      const rule = (await page.textContent(`${sec} pre`)).trim();
-      check(rule === '/* KPI Dashboard · Law Firm Marketing Pros (LFMP) */\n#b7cc0202-aaaa-bbbb-cccc-000000000001 { order: -92 !important; }', `${tag}: the rule (letter start, as is): ${JSON.stringify(rule)}`);
-      check((await page.textContent(sec)).includes('Paste into Agency → Settings → Company → White Label → Custom CSS, then Save.'), `${tag}: says where to paste it`);
+      // v1.36.0 (queue item 3): Menu position in GHL: the number, the order preview, the lines, Copy CSS + Open GHL Custom CSS ↗, the 3 steps
+      const rule = (await page.textContent(`${sec} [data-mp-paste] pre`)).trim();
+      check(rule === '/* KPI Dashboard · Law Firm Marketing Pros (LFMP) */\n#b7cc0202-aaaa-bbbb-cccc-000000000001 { order: -92 !important; }', `${tag}: the lines (letter start, as is; default -92): ${JSON.stringify(rule)}`);
+      const box = await page.textContent(sec);
+      check(/Paste the CSS in GHL/.test(box) && /Paste it on a new line at the end of the Custom CSS box/.test(box) && /Click Save in GHL and wait for "saved"/.test(box) && /Come back and press I've pasted it/.test(box), `${tag}: amber state + the 3 steps`);
+      check(await page.getAttribute(`${sec} a[href*="settings/company"]`, 'href') === 'https://app.lawfirmmarketingpros.com/settings/company?tab=whitelabel' && /Lower = higher in the menu/.test(box) && /as of 21 Nov/.test(box), `${tag}: Open GHL Custom CSS ↗ (White Label tab), the "same number" line, "as of 21 Nov"`);
+      check((await page.$$eval(`${sec} .mp-prev li`, l => l.map(x => x.textContent.replace(/\s+/g, ' ').trim()))).join(' | ') === 'Dashboard-100 | Contacts-99 | Opportunities-98 | LeadPro Training-96 | KPI Dashboard-92 | Launchpad and the rest…', `${tag}: the menu order preview`);
+      if (w === 1440 && scheme === 'light') {
+        const bell = page.locator('[data-lv-top] [data-lv-bellwrap] button').first();
+        await bell.evaluate(b => b.click());   // the Details overlay covers the top bar; the same click handler
+        await page.waitForFunction(() => /Sync issues/.test(document.getElementById('nPanel')?.textContent || ''), null, { timeout: 15000 }).catch(() => {});
+        check(/Menu position: paste the CSS in GHL/.test(await page.textContent('#nPanel').catch(() => '')), `${tag}: the bell shows "Menu position: paste the CSS in GHL" (amber notice)`);
+        if (SHOTS) await page.screenshot({ path: join(SHOTS, `bell_menupos_${tag}.png`) });
+        await page.evaluate(() => document.querySelector('#nPanel [data-n="close"]')?.click());   // closes the bell, Details stays open
+        await page.waitForTimeout(300);
+        // a wrong number: plain words, nothing saved
+        const c0 = G2.M.commits.length;
+        await page.fill(`${sec} input`, '-1000'); await page.click(`${sec} [data-f="menusave"]`);
+        check(/whole number from -999 to 999/.test(await page.textContent(`${sec} [data-mp-err]`)) && G2.M.commits.length === c0, `${tag}: -1000 → "Use a whole number from -999 to 999", nothing saved`);
+        // Save position → asks first → saved; the lines follow
+        await page.fill(`${sec} input`, '-90'); await page.click(`${sec} [data-f="menusave"]`);
+        await page.waitForFunction(s => /order: -90 !important/.test(document.querySelector(`${s} [data-mp-paste] pre`)?.textContent || ''), sec, { timeout: 15000 });
+        check(G2.M.commits.length === c0 + 1, `${tag}: Save position = one commit`);
+        // I've pasted it → recorded; the amber state and the bell notice go
+        await page.click(`${sec} [data-f="menupasted"]`);
+        await page.waitForFunction(s => /Pasted at -90 by/.test(document.querySelector(`${s} [data-mp-state]`)?.textContent || ''), sec, { timeout: 15000 });
+        check(!(await page.$(`${sec} [data-mp-paste]`)) && G2.M.commits.length === c0 + 2, `${tag}: I've pasted it → "Pasted at -90 by …", the paste box goes (one commit)`);
+        if (SHOTS) await page.locator(sec).screenshot({ path: join(SHOTS, `setup_menupos_pasted_${tag}.png`) });
+      }
       const d = G2.M.dispatches.filter(x => /menu-css/.test(x.workflow || x.path || JSON.stringify(x)));
       check(d.length >= 1 && G2.M.dispatches.every(x => !/menu-link/.test(JSON.stringify(x))), `${tag}: only menu-css.yml was started (no menu-link)`);
-      await page.click(`${sec} [data-f="css"]`).catch(() => {});
+      await page.click(`${sec} [data-f="css"]`).catch(() => {});   // Copy CSS (in the paste box, or under "Show the lines")
       cf = await contrastFailures(page, '#dPanel'); check(!cf.length && await noSideScroll(page), `${tag}: Setup with the CSS rule passes AA contrast, no sideways scroll${cf.length ? `: ${cf.join(' | ')}` : ''}`);
       if (SHOTS) await page.locator(sec).screenshot({ path: join(SHOTS, `setup_css_${tag}.png`) });
     }
