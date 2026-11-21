@@ -2,6 +2,9 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.38.0 Done moments (queue item 6; with Builder v1.32.0 + Review admin v1.17.0; shell 2.10.0): pushed 21 Nov 2026
+- New firm runs in the Done moments popup (`newFirmJob(name, slug)` → `moment: { tool: 'kpi', steps: RUN_STEPS.slice(0, 5), open }`); every other job keeps the working bar. `admin/lfmp-done.js` / `.css` are the shared shell (byte-identical). Tests: `tests/done/run.mjs`, `tests/shell/shell.test.mjs`; admin-ui / care/ui run as Classic (today's flow). Dashboards untouched.
+
 ## v1.37.0 LeadPro Reports Phase 1 (BrightLocal Rankings; queue item 5; with Builder v1.31.0 + Review admin v1.16.0): pushed 21 Nov 2026
 - **What it is:** CHANGELOG v1.37.0. `scripts/brightlocal.mjs` (the only BrightLocal code, GET only), `scripts/reports-core.mjs` (pure), `scripts/reports-pull.mjs` + `.github/workflows/reports.yml` (nightly 07:00 UTC, push of `firms/<slug>/reports-config.json` with a new build request = Build now, Run workflow), `app/reports.html` + per-firm stub `firms/<slug>/reports.html`, `firms/<slug>/reports.json` (encrypted with the firm's KPI passphrase), `status/reports-status.json` (public run status; committed empty so nothing 404s), bell + Slack "Reports build failed".
 - **Waiting on PJ:** the BrightLocal key: repo secret `BRIGHTLOCAL_API_KEY` (+ `BRIGHTLOCAL_API_SECRET` if given) here AND on Cloudflare Pages lfmp-admin. Without it reports.yml logs one line and runs nothing. Then the Phase 0.5 check (README of item 5 / REPORT 5): the lsrc fields for location 3839215 vs the 31 Oct numbers (avg 20.7, 88 keywords).
