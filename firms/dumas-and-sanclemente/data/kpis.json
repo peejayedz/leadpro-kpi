@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T15:07:43.527Z",
+  "generatedAt": "2026-11-22T15:37:44.066Z",
   "location": "Dumas & Sanclemente",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795323600000,
-      "to": 1795360063527,
+      "to": 1795361864066,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -372,7 +372,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794805200000,
-      "to": 1795360063527,
+      "to": 1795361864066,
       "current": {
         "totalLeads": 12,
         "contacted": 0,
@@ -790,8 +790,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794755263527,
-      "to": 1795360063527,
+      "from": 1794757064066,
+      "to": 1795361864066,
       "current": {
         "totalLeads": 12,
         "contacted": 0,
@@ -1002,10 +1002,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792768063527,
-      "to": 1795360063527,
+      "from": 1792769864066,
+      "to": 1795361864066,
       "current": {
-        "totalLeads": 35,
+        "totalLeads": 34,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1058,27 +1058,22 @@
             "Google Ads Extension Number",
             1,
             0
-          ],
-          [
-            "Google Ads location extensions phone for GBP - Lutz",
-            1,
-            0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            35,
+            34,
             0
           ]
         ],
-        "attributedLeads": 35,
+        "attributedLeads": 34,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            35,
+            34,
             "newLeads",
             null
           ],
@@ -1121,7 +1116,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 32,
+        "totalLeads": 33,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1166,6 +1161,11 @@
             0
           ],
           [
+            "Google Ads location extensions phone for GBP - Lutz",
+            1,
+            0
+          ],
+          [
             "Local Service Ads - Fort Lauderdale",
             1,
             0
@@ -1174,17 +1174,17 @@
         "byChannel": [
           [
             "Third Party",
-            32,
+            33,
             0
           ]
         ],
-        "attributedLeads": 32,
+        "attributedLeads": 33,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            32,
+            33,
             "newLeads",
             null
           ],
@@ -1229,8 +1229,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787584063527,
-      "to": 1795360063527,
+      "from": 1787585864066,
+      "to": 1795361864066,
       "current": {
         "totalLeads": 67,
         "contacted": 0,
@@ -1435,7 +1435,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795360063527,
+      "to": 1795361864066,
       "current": {
         "totalLeads": 25,
         "contacted": 0,
@@ -1869,7 +1869,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795360063527,
+      "to": 1795361864066,
       "current": {
         "totalLeads": 65,
         "contacted": 0,
@@ -2256,7 +2256,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-22T15:07:43.527Z",
+    "checkedAt": "2026-11-22T15:37:44.066Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
