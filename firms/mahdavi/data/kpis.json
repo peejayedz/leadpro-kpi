@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T16:07:29.002Z",
+  "generatedAt": "2026-11-22T16:37:24.380Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,15 +22,15 @@
     "today": {
       "label": "Today",
       "from": 1795327200000,
-      "to": 1795363649002,
+      "to": 1795365444380,
       "current": {
-        "totalLeads": 0,
+        "totalLeads": 1,
         "contacted": 0,
-        "contactRatePct": null,
+        "contactRatePct": 0,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
-        "within5Pct": null,
+        "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
@@ -49,18 +49,30 @@
         "sentRatePct": null,
         "signed": 0,
         "signRatePct": null,
-        "leadToSignedPct": null,
+        "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
-        "bySource": [],
-        "byChannel": [],
-        "attributedLeads": 0,
+        "bySource": [
+          [
+            "Facebook Ads PI Quiz",
+            1,
+            0
+          ]
+        ],
+        "byChannel": [
+          [
+            "Third Party",
+            1,
+            0
+          ]
+        ],
+        "attributedLeads": 1,
         "stageMoved": 0,
-        "attributionPct": null,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            0,
+            1,
             "newLeads",
             null
           ],
@@ -351,9 +363,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1794808800000,
-      "to": 1795363649002,
+      "to": 1795365444380,
       "current": {
-        "totalLeads": 65,
+        "totalLeads": 66,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -393,6 +405,11 @@
             0
           ],
           [
+            "Facebook Ads PI Quiz",
+            2,
+            0
+          ],
+          [
             "Google Ads Assets - PMAX Houston",
             2,
             0
@@ -406,17 +423,12 @@
             "Chat",
             1,
             0
-          ],
-          [
-            "Facebook Ads PI Quiz",
-            1,
-            0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            64,
+            65,
             0
           ],
           [
@@ -425,13 +437,13 @@
             0
           ]
         ],
-        "attributedLeads": 65,
+        "attributedLeads": 66,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            65,
+            66,
             "newLeads",
             null
           ],
@@ -796,10 +808,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794758849002,
-      "to": 1795363649002,
+      "from": 1794760644380,
+      "to": 1795365444380,
       "current": {
-        "totalLeads": 65,
+        "totalLeads": 66,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -839,6 +851,11 @@
             0
           ],
           [
+            "Facebook Ads PI Quiz",
+            2,
+            0
+          ],
+          [
             "Google Ads Assets - PMAX Houston",
             2,
             0
@@ -852,17 +869,12 @@
             "Chat",
             1,
             0
-          ],
-          [
-            "Facebook Ads PI Quiz",
-            1,
-            0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            64,
+            65,
             0
           ],
           [
@@ -871,13 +883,13 @@
             0
           ]
         ],
-        "attributedLeads": 65,
+        "attributedLeads": 66,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            65,
+            66,
             "newLeads",
             null
           ],
@@ -1034,10 +1046,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792771649002,
-      "to": 1795363649002,
+      "from": 1792773444380,
+      "to": 1795365444380,
       "current": {
-        "totalLeads": 134,
+        "totalLeads": 135,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1088,7 +1100,7 @@
           ],
           [
             "Facebook Ads PI Quiz",
-            2,
+            3,
             0
           ],
           [
@@ -1105,7 +1117,7 @@
         "byChannel": [
           [
             "Third Party",
-            124,
+            125,
             0
           ],
           [
@@ -1129,13 +1141,13 @@
             0
           ]
         ],
-        "attributedLeads": 134,
+        "attributedLeads": 135,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            134,
+            135,
             "newLeads",
             null
           ],
@@ -1247,10 +1259,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787587649002,
-      "to": 1795363649002,
+      "from": 1787589444380,
+      "to": 1795365444380,
       "current": {
-        "totalLeads": 139,
+        "totalLeads": 140,
         "contacted": 1,
         "contactRatePct": 0.7,
         "speedToLeadAvgMin": null,
@@ -1301,7 +1313,7 @@
           ],
           [
             "Facebook Ads PI Quiz",
-            2,
+            3,
             0
           ],
           [
@@ -1318,7 +1330,7 @@
         "byChannel": [
           [
             "Third Party",
-            124,
+            125,
             0
           ],
           [
@@ -1342,13 +1354,13 @@
             0
           ]
         ],
-        "attributedLeads": 139,
+        "attributedLeads": 140,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            139,
+            140,
             "newLeads",
             null
           ],
@@ -1471,9 +1483,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1795363649002,
+      "to": 1795365444380,
       "current": {
-        "totalLeads": 134,
+        "totalLeads": 135,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1524,7 +1536,7 @@
           ],
           [
             "Facebook Ads PI Quiz",
-            2,
+            3,
             0
           ],
           [
@@ -1541,7 +1553,7 @@
         "byChannel": [
           [
             "Third Party",
-            124,
+            125,
             0
           ],
           [
@@ -1565,13 +1577,13 @@
             0
           ]
         ],
-        "attributedLeads": 134,
+        "attributedLeads": 135,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            134,
+            135,
             "newLeads",
             null
           ],
@@ -1852,9 +1864,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1795363649002,
+      "to": 1795365444380,
       "current": {
-        "totalLeads": 135,
+        "totalLeads": 136,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1905,7 +1917,7 @@
           ],
           [
             "Facebook Ads PI Quiz",
-            2,
+            3,
             0
           ],
           [
@@ -1922,7 +1934,7 @@
         "byChannel": [
           [
             "Third Party",
-            124,
+            125,
             0
           ],
           [
@@ -1946,13 +1958,13 @@
             0
           ]
         ],
-        "attributedLeads": 135,
+        "attributedLeads": 136,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            135,
+            136,
             "newLeads",
             null
           ],
@@ -2267,7 +2279,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-22T16:07:29.002Z",
+    "checkedAt": "2026-11-22T16:37:24.380Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
