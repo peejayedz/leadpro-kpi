@@ -1,5 +1,14 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-23T14:20:48.802Z",
-  "open": {}
+  "updatedAt": "2026-11-23T18:23:15.109Z",
+  "open": {
+    "lfmp:failed": {
+      "kind": "failed",
+      "slug": "lfmp",
+      "name": "Law Firm Marketing Pros (LFMP)",
+      "title": "Sync failed (unknown error)",
+      "firstSeen": "2026-11-23T18:22:51.634Z",
+      "sentAt": "2026-11-23T18:23:15.109Z"
+    }
+  }
 }
