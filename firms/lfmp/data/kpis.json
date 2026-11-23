@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T17:07:24.776Z",
+  "generatedAt": "2026-11-23T17:37:29.483Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795410000000,
-      "to": 1795453644776,
+      "to": 1795455449483,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -394,7 +394,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795453644776,
+      "to": 1795455449483,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -782,9 +782,9 @@
         ]
       },
       "previous": {
-        "totalLeads": 30,
-        "contacted": 8,
-        "contactRatePct": 26.7,
+        "totalLeads": 29,
+        "contacted": 7,
+        "contactRatePct": 24.1,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -792,19 +792,19 @@
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
-        "qualified": 7,
-        "qualifiedPct": 87.5,
+        "qualified": 6,
+        "qualifiedPct": 85.7,
         "turnedAway": 0,
         "turnedAwayReasons": [],
-        "consultBooked": 7,
+        "consultBooked": 6,
         "bookRatePct": 100,
-        "bookedPast": 5,
-        "consultHeld": 5,
+        "bookedPast": 4,
+        "consultHeld": 4,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 3,
-        "sentRatePct": 60,
+        "agreementSent": 2,
+        "sentRatePct": 50,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
@@ -818,7 +818,7 @@
           ],
           [
             "Referral",
-            6,
+            5,
             0
           ],
           [
@@ -850,7 +850,7 @@
           ],
           [
             "CRM UI",
-            9,
+            8,
             0
           ],
           [
@@ -869,43 +869,43 @@
             0
           ]
         ],
-        "attributedLeads": 30,
-        "stageMoved": 8,
+        "attributedLeads": 29,
+        "stageMoved": 7,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            30,
+            29,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            8,
+            7,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            7,
+            6,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            7,
+            6,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            5,
+            4,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            3,
+            2,
             "agreementSent",
             "of held"
           ],
@@ -920,8 +920,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794848844776,
-      "to": 1795453644776,
+      "from": 1794850649483,
+      "to": 1795455449483,
       "current": {
         "totalLeads": 71,
         "contacted": 52,
@@ -1134,9 +1134,9 @@
         ]
       },
       "previous": {
-        "totalLeads": 31,
-        "contacted": 8,
-        "contactRatePct": 25.8,
+        "totalLeads": 30,
+        "contacted": 7,
+        "contactRatePct": 23.3,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1144,19 +1144,19 @@
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 1,
-        "qualified": 7,
-        "qualifiedPct": 87.5,
+        "qualified": 6,
+        "qualifiedPct": 85.7,
         "turnedAway": 0,
         "turnedAwayReasons": [],
-        "consultBooked": 7,
+        "consultBooked": 6,
         "bookRatePct": 100,
-        "bookedPast": 5,
-        "consultHeld": 5,
+        "bookedPast": 4,
+        "consultHeld": 4,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 3,
-        "sentRatePct": 60,
+        "agreementSent": 2,
+        "sentRatePct": 50,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
@@ -1170,7 +1170,7 @@
           ],
           [
             "Referral",
-            6,
+            5,
             0
           ],
           [
@@ -1202,7 +1202,7 @@
           ],
           [
             "CRM UI",
-            9,
+            8,
             0
           ],
           [
@@ -1221,43 +1221,43 @@
             0
           ]
         ],
-        "attributedLeads": 31,
-        "stageMoved": 8,
+        "attributedLeads": 30,
+        "stageMoved": 7,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            31,
+            30,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            8,
+            7,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            7,
+            6,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            7,
+            6,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            5,
+            4,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            3,
+            2,
             "agreementSent",
             "of held"
           ],
@@ -1272,12 +1272,12 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792861644776,
-      "to": 1795453644776,
+      "from": 1792863449483,
+      "to": 1795455449483,
       "current": {
-        "totalLeads": 105,
-        "contacted": 60,
-        "contactRatePct": 57.1,
+        "totalLeads": 104,
+        "contacted": 59,
+        "contactRatePct": 56.7,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1285,8 +1285,8 @@
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 2,
-        "qualified": 18,
-        "qualifiedPct": 30,
+        "qualified": 17,
+        "qualifiedPct": 28.8,
         "turnedAway": 1,
         "turnedAwayReasons": [
           [
@@ -1294,15 +1294,15 @@
             1
           ]
         ],
-        "consultBooked": 16,
-        "bookRatePct": 88.9,
-        "bookedPast": 11,
-        "consultHeld": 11,
+        "consultBooked": 15,
+        "bookRatePct": 88.2,
+        "bookedPast": 10,
+        "consultHeld": 10,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 5,
-        "sentRatePct": 45.5,
+        "agreementSent": 4,
+        "sentRatePct": 40,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
@@ -1336,7 +1336,7 @@
           ],
           [
             "Referral",
-            7,
+            6,
             0
           ],
           [
@@ -1423,7 +1423,7 @@
         "byChannel": [
           [
             "CRM UI",
-            52,
+            51,
             0
           ],
           [
@@ -1457,43 +1457,43 @@
             0
           ]
         ],
-        "attributedLeads": 92,
-        "stageMoved": 61,
-        "attributionPct": 87.6,
+        "attributedLeads": 91,
+        "stageMoved": 60,
+        "attributionPct": 87.5,
         "funnel": [
           [
             "New leads",
-            105,
+            104,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            60,
+            59,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            18,
+            17,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            16,
+            15,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            11,
+            10,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            5,
+            4,
             "agreementSent",
             "of held"
           ],
@@ -1599,12 +1599,12 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787677644776,
-      "to": 1795453644776,
+      "from": 1787679449483,
+      "to": 1795455449483,
       "current": {
-        "totalLeads": 111,
-        "contacted": 60,
-        "contactRatePct": 54.1,
+        "totalLeads": 110,
+        "contacted": 59,
+        "contactRatePct": 53.6,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1612,8 +1612,8 @@
         "missedCalls": 9,
         "missedNotReturned": 9,
         "notInPipeline": 18,
-        "qualified": 18,
-        "qualifiedPct": 30,
+        "qualified": 17,
+        "qualifiedPct": 28.8,
         "turnedAway": 1,
         "turnedAwayReasons": [
           [
@@ -1621,15 +1621,15 @@
             1
           ]
         ],
-        "consultBooked": 16,
-        "bookRatePct": 88.9,
-        "bookedPast": 11,
-        "consultHeld": 11,
+        "consultBooked": 15,
+        "bookRatePct": 88.2,
+        "bookedPast": 10,
+        "consultHeld": 10,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 5,
-        "sentRatePct": 45.5,
+        "agreementSent": 4,
+        "sentRatePct": 40,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
@@ -1663,7 +1663,7 @@
           ],
           [
             "Referral",
-            7,
+            6,
             0
           ],
           [
@@ -1750,7 +1750,7 @@
         "byChannel": [
           [
             "CRM UI",
-            52,
+            51,
             0
           ],
           [
@@ -1784,43 +1784,43 @@
             0
           ]
         ],
-        "attributedLeads": 92,
-        "stageMoved": 61,
-        "attributionPct": 82.9,
+        "attributedLeads": 91,
+        "stageMoved": 60,
+        "attributionPct": 82.7,
         "funnel": [
           [
             "New leads",
-            111,
+            110,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            60,
+            59,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            18,
+            17,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            16,
+            15,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            11,
+            10,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            5,
+            4,
             "agreementSent",
             "of held"
           ],
@@ -1927,11 +1927,11 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795453644776,
+      "to": 1795455449483,
       "current": {
-        "totalLeads": 104,
-        "contacted": 60,
-        "contactRatePct": 57.7,
+        "totalLeads": 103,
+        "contacted": 59,
+        "contactRatePct": 57.3,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -1939,8 +1939,8 @@
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 2,
-        "qualified": 18,
-        "qualifiedPct": 30,
+        "qualified": 17,
+        "qualifiedPct": 28.8,
         "turnedAway": 1,
         "turnedAwayReasons": [
           [
@@ -1948,15 +1948,15 @@
             1
           ]
         ],
-        "consultBooked": 16,
-        "bookRatePct": 88.9,
-        "bookedPast": 11,
-        "consultHeld": 11,
+        "consultBooked": 15,
+        "bookRatePct": 88.2,
+        "bookedPast": 10,
+        "consultHeld": 10,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 5,
-        "sentRatePct": 45.5,
+        "agreementSent": 4,
+        "sentRatePct": 40,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
@@ -1990,7 +1990,7 @@
           ],
           [
             "Referral",
-            7,
+            6,
             0
           ],
           [
@@ -2077,7 +2077,7 @@
         "byChannel": [
           [
             "CRM UI",
-            52,
+            51,
             0
           ],
           [
@@ -2111,43 +2111,43 @@
             0
           ]
         ],
-        "attributedLeads": 92,
-        "stageMoved": 61,
-        "attributionPct": 88.5,
+        "attributedLeads": 91,
+        "stageMoved": 60,
+        "attributionPct": 88.3,
         "funnel": [
           [
             "New leads",
-            104,
+            103,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            60,
+            59,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            18,
+            17,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            16,
+            15,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            11,
+            10,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            5,
+            4,
             "agreementSent",
             "of held"
           ],
@@ -2446,11 +2446,11 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795453644776,
+      "to": 1795455449483,
       "current": {
-        "totalLeads": 108,
-        "contacted": 60,
-        "contactRatePct": 55.6,
+        "totalLeads": 107,
+        "contacted": 59,
+        "contactRatePct": 55.1,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
@@ -2458,8 +2458,8 @@
         "missedCalls": 1,
         "missedNotReturned": 1,
         "notInPipeline": 4,
-        "qualified": 18,
-        "qualifiedPct": 30,
+        "qualified": 17,
+        "qualifiedPct": 28.8,
         "turnedAway": 1,
         "turnedAwayReasons": [
           [
@@ -2467,15 +2467,15 @@
             1
           ]
         ],
-        "consultBooked": 16,
-        "bookRatePct": 88.9,
-        "bookedPast": 11,
-        "consultHeld": 11,
+        "consultBooked": 15,
+        "bookRatePct": 88.2,
+        "bookedPast": 10,
+        "consultHeld": 10,
         "showRatePct": 100,
         "noShows": 0,
         "noShowPct": 0,
-        "agreementSent": 5,
-        "sentRatePct": 45.5,
+        "agreementSent": 4,
+        "sentRatePct": 40,
         "signed": 0,
         "signRatePct": 0,
         "leadToSignedPct": 0,
@@ -2509,7 +2509,7 @@
           ],
           [
             "Referral",
-            7,
+            6,
             0
           ],
           [
@@ -2596,7 +2596,7 @@
         "byChannel": [
           [
             "CRM UI",
-            52,
+            51,
             0
           ],
           [
@@ -2630,43 +2630,43 @@
             0
           ]
         ],
-        "attributedLeads": 92,
-        "stageMoved": 61,
-        "attributionPct": 85.2,
+        "attributedLeads": 91,
+        "stageMoved": 60,
+        "attributionPct": 85,
         "funnel": [
           [
             "New leads",
-            108,
+            107,
             "newLeads",
             null
           ],
           [
             "Contacted",
-            60,
+            59,
             "contacted",
             "of leads"
           ],
           [
             "Qualified",
-            18,
+            17,
             "qualified",
             "of contacted"
           ],
           [
             "Consult booked",
-            16,
+            15,
             "consultBooked",
             "of qualified"
           ],
           [
             "Consult held",
-            11,
+            10,
             "consultHeld",
             "of booked"
           ],
           [
             "Agreement sent",
-            5,
+            4,
             "agreementSent",
             "of held"
           ],
@@ -2955,7 +2955,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-23T17:07:24.776Z",
+    "checkedAt": "2026-11-23T17:37:29.483Z",
     "counts": {
       "Call": 63,
       "SMS": 1,
