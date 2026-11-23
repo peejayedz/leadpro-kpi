@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T21:37:22.523Z",
+  "generatedAt": "2026-11-23T22:07:34.519Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,9 +22,9 @@
     "today": {
       "label": "Today",
       "from": 1795413600000,
-      "to": 1795469842523,
+      "to": 1795471654519,
       "current": {
-        "totalLeads": 16,
+        "totalLeads": 18,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -55,7 +55,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            14,
+            15,
+            0
+          ],
+          [
+            "Website Number Pool - Houston",
+            1,
             0
           ],
           [
@@ -72,17 +77,17 @@
         "byChannel": [
           [
             "Third Party",
-            16,
+            18,
             0
           ]
         ],
-        "attributedLeads": 16,
+        "attributedLeads": 18,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            16,
+            18,
             "newLeads",
             null
           ],
@@ -358,9 +363,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795413600000,
-      "to": 1795469842523,
+      "to": 1795471654519,
       "current": {
-        "totalLeads": 16,
+        "totalLeads": 18,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -391,7 +396,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            14,
+            15,
+            0
+          ],
+          [
+            "Website Number Pool - Houston",
+            1,
             0
           ],
           [
@@ -408,17 +418,17 @@
         "byChannel": [
           [
             "Third Party",
-            16,
+            18,
             0
           ]
         ],
-        "attributedLeads": 16,
+        "attributedLeads": 18,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            16,
+            18,
             "newLeads",
             null
           ],
@@ -773,10 +783,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794865042523,
-      "to": 1795469842523,
+      "from": 1794866854519,
+      "to": 1795471654519,
       "current": {
-        "totalLeads": 68,
+        "totalLeads": 70,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -807,12 +817,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            45,
+            46,
             0
           ],
           [
             "Website Number Pool - Houston",
-            14,
+            15,
             0
           ],
           [
@@ -839,7 +849,7 @@
         "byChannel": [
           [
             "Third Party",
-            67,
+            69,
             0
           ],
           [
@@ -848,13 +858,13 @@
             0
           ]
         ],
-        "attributedLeads": 68,
+        "attributedLeads": 70,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            68,
+            70,
             "newLeads",
             null
           ],
@@ -1011,10 +1021,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792877842523,
-      "to": 1795469842523,
+      "from": 1792879654519,
+      "to": 1795471654519,
       "current": {
-        "totalLeads": 151,
+        "totalLeads": 153,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1045,12 +1055,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            97,
+            98,
             0
           ],
           [
             "Website Number Pool - Houston",
-            31,
+            32,
             0
           ],
           [
@@ -1082,7 +1092,7 @@
         "byChannel": [
           [
             "Third Party",
-            141,
+            143,
             0
           ],
           [
@@ -1106,13 +1116,13 @@
             0
           ]
         ],
-        "attributedLeads": 151,
+        "attributedLeads": 153,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            151,
+            153,
             "newLeads",
             null
           ],
@@ -1224,10 +1234,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787693842523,
-      "to": 1795469842523,
+      "from": 1787695654519,
+      "to": 1795471654519,
       "current": {
-        "totalLeads": 156,
+        "totalLeads": 158,
         "contacted": 1,
         "contactRatePct": 0.6,
         "speedToLeadAvgMin": null,
@@ -1258,12 +1268,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            97,
+            98,
             0
           ],
           [
             "Website Number Pool - Houston",
-            31,
+            32,
             0
           ],
           [
@@ -1295,7 +1305,7 @@
         "byChannel": [
           [
             "Third Party",
-            141,
+            143,
             0
           ],
           [
@@ -1319,13 +1329,13 @@
             0
           ]
         ],
-        "attributedLeads": 156,
+        "attributedLeads": 158,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            156,
+            158,
             "newLeads",
             null
           ],
@@ -1448,9 +1458,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1795469842523,
+      "to": 1795471654519,
       "current": {
-        "totalLeads": 151,
+        "totalLeads": 153,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1481,12 +1491,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            97,
+            98,
             0
           ],
           [
             "Website Number Pool - Houston",
-            31,
+            32,
             0
           ],
           [
@@ -1518,7 +1528,7 @@
         "byChannel": [
           [
             "Third Party",
-            141,
+            143,
             0
           ],
           [
@@ -1542,13 +1552,13 @@
             0
           ]
         ],
-        "attributedLeads": 151,
+        "attributedLeads": 153,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            151,
+            153,
             "newLeads",
             null
           ],
@@ -1829,9 +1839,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1795469842523,
+      "to": 1795471654519,
       "current": {
-        "totalLeads": 152,
+        "totalLeads": 154,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1862,12 +1872,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            97,
+            98,
             0
           ],
           [
             "Website Number Pool - Houston",
-            31,
+            32,
             0
           ],
           [
@@ -1899,7 +1909,7 @@
         "byChannel": [
           [
             "Third Party",
-            141,
+            143,
             0
           ],
           [
@@ -1923,13 +1933,13 @@
             0
           ]
         ],
-        "attributedLeads": 152,
+        "attributedLeads": 154,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            152,
+            154,
             "newLeads",
             null
           ],
@@ -2244,7 +2254,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-23T21:37:22.523Z",
+    "checkedAt": "2026-11-23T22:07:34.519Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
