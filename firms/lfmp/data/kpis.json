@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T21:07:23.966Z",
+  "generatedAt": "2026-11-23T21:37:22.057Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795410000000,
-      "to": 1795468043966,
+      "to": 1795469842057,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -394,7 +394,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795468043966,
+      "to": 1795469842057,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -1025,8 +1025,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794863243966,
-      "to": 1795468043966,
+      "from": 1794865042057,
+      "to": 1795469842057,
       "current": {
         "totalLeads": 18,
         "contacted": 0,
@@ -1377,8 +1377,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792876043966,
-      "to": 1795468043966,
+      "from": 1792877842057,
+      "to": 1795469842057,
       "current": {
         "totalLeads": 104,
         "contacted": 59,
@@ -1704,8 +1704,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787692043966,
-      "to": 1795468043966,
+      "from": 1787693842057,
+      "to": 1795469842057,
       "current": {
         "totalLeads": 110,
         "contacted": 59,
@@ -1714,9 +1714,9 @@
         "speedMeasured": 0,
         "within5": 0,
         "within5Pct": 0,
-        "missedCalls": 9,
-        "missedNotReturned": 9,
-        "notInPipeline": 18,
+        "missedCalls": 8,
+        "missedNotReturned": 8,
+        "notInPipeline": 17,
         "qualified": 17,
         "qualifiedPct": 28.8,
         "turnedAway": 1,
@@ -1945,9 +1945,9 @@
         "speedMeasured": 0,
         "within5": 0,
         "within5Pct": 0,
-        "missedCalls": 14,
-        "missedNotReturned": 14,
-        "notInPipeline": 15,
+        "missedCalls": 15,
+        "missedNotReturned": 15,
+        "notInPipeline": 16,
         "qualified": 0,
         "qualifiedPct": null,
         "turnedAway": 0,
@@ -2032,7 +2032,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795468043966,
+      "to": 1795469842057,
       "current": {
         "totalLeads": 103,
         "contacted": 59,
@@ -2551,7 +2551,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795468043966,
+      "to": 1795469842057,
       "current": {
         "totalLeads": 107,
         "contacted": 59,
@@ -3060,7 +3060,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-23T21:07:23.966Z",
+    "checkedAt": "2026-11-23T21:37:22.057Z",
     "counts": {
       "Call": 63,
       "SMS": 1,
