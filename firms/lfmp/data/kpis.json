@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T14:37:27.891Z",
+  "generatedAt": "2026-11-24T15:07:26.243Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795496400000,
-      "to": 1795531047891,
+      "to": 1795532846243,
       "current": {
         "totalLeads": 2,
         "contacted": 0,
@@ -55,12 +55,7 @@
         "bySource": [
           [
             "[DLF] 2027 AI Ready Growth Kit",
-            1,
-            0
-          ],
-          [
-            "Unknown",
-            1,
+            2,
             0
           ]
         ],
@@ -382,7 +377,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795531047891,
+      "to": 1795532846243,
       "current": {
         "totalLeads": 2,
         "contacted": 0,
@@ -415,12 +410,7 @@
         "bySource": [
           [
             "[DLF] 2027 AI Ready Growth Kit",
-            1,
-            0
-          ],
-          [
-            "Unknown",
-            1,
+            2,
             0
           ]
         ],
@@ -1035,8 +1025,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794926247891,
-      "to": 1795531047891,
+      "from": 1794928046243,
+      "to": 1795532846243,
       "current": {
         "totalLeads": 20,
         "contacted": 0,
@@ -1068,12 +1058,12 @@
         "costPerSigned": null,
         "bySource": [
           [
-            "Unknown",
+            "[DLF] 2027 AI Ready Growth Kit",
             10,
             0
           ],
           [
-            "[DLF] 2027 AI Ready Growth Kit",
+            "Unknown",
             9,
             0
           ],
@@ -1387,8 +1377,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792939047891,
-      "to": 1795531047891,
+      "from": 1792940846243,
+      "to": 1795532846243,
       "current": {
         "totalLeads": 106,
         "contacted": 59,
@@ -1426,12 +1416,12 @@
         "bySource": [
           [
             "Unknown",
-            33,
+            32,
             0
           ],
           [
             "[DLF] 2027 AI Ready Growth Kit",
-            12,
+            13,
             0
           ],
           [
@@ -1714,8 +1704,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787755047891,
-      "to": 1795531047891,
+      "from": 1787756846243,
+      "to": 1795532846243,
       "current": {
         "totalLeads": 112,
         "contacted": 59,
@@ -1753,7 +1743,7 @@
         "bySource": [
           [
             "Unknown",
-            34,
+            33,
             0
           ],
           [
@@ -1763,7 +1753,7 @@
           ],
           [
             "[DLF] 2027 AI Ready Growth Kit",
-            12,
+            13,
             0
           ],
           [
@@ -2042,7 +2032,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795531047891,
+      "to": 1795532846243,
       "current": {
         "totalLeads": 105,
         "contacted": 59,
@@ -2080,12 +2070,12 @@
         "bySource": [
           [
             "Unknown",
-            33,
+            32,
             0
           ],
           [
             "[DLF] 2027 AI Ready Growth Kit",
-            12,
+            13,
             0
           ],
           [
@@ -2561,7 +2551,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795531047891,
+      "to": 1795532846243,
       "current": {
         "totalLeads": 109,
         "contacted": 59,
@@ -2599,17 +2589,17 @@
         "bySource": [
           [
             "Unknown",
-            33,
+            32,
+            0
+          ],
+          [
+            "[DLF] 2027 AI Ready Growth Kit",
+            13,
             0
           ],
           [
             "Calendly",
             13,
-            0
-          ],
-          [
-            "[DLF] 2027 AI Ready Growth Kit",
-            12,
             0
           ],
           [
@@ -3070,7 +3060,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-24T14:37:27.891Z",
+    "checkedAt": "2026-11-24T15:07:26.243Z",
     "counts": {
       "Call": 63,
       "SMS": 1,

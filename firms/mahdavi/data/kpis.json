@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T14:37:28.115Z",
+  "generatedAt": "2026-11-24T15:07:24.139Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795500000000,
-      "to": 1795531048115,
+      "to": 1795532844139,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -91,13 +91,13 @@
         ]
       },
       "previous": {
-        "totalLeads": 0,
+        "totalLeads": 1,
         "contacted": 0,
-        "contactRatePct": null,
+        "contactRatePct": 0,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
-        "within5Pct": null,
+        "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
@@ -116,18 +116,30 @@
         "sentRatePct": null,
         "signed": 0,
         "signRatePct": null,
-        "leadToSignedPct": null,
+        "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
-        "bySource": [],
-        "byChannel": [],
-        "attributedLeads": 0,
+        "bySource": [
+          [
+            "Google Ads Assets",
+            1,
+            0
+          ]
+        ],
+        "byChannel": [
+          [
+            "Third Party",
+            1,
+            0
+          ]
+        ],
+        "attributedLeads": 1,
         "stageMoved": 0,
-        "attributionPct": null,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            0,
+            1,
             "newLeads",
             null
           ],
@@ -339,7 +351,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795413600000,
-      "to": 1795531048115,
+      "to": 1795532844139,
       "current": {
         "totalLeads": 20,
         "contacted": 0,
@@ -759,8 +771,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794926248115,
-      "to": 1795531048115,
+      "from": 1794928044139,
+      "to": 1795532844139,
       "current": {
         "totalLeads": 69,
         "contacted": 0,
@@ -982,8 +994,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792939048115,
-      "to": 1795531048115,
+      "from": 1792940844139,
+      "to": 1795532844139,
       "current": {
         "totalLeads": 155,
         "contacted": 0,
@@ -1195,8 +1207,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787755048115,
-      "to": 1795531048115,
+      "from": 1787756844139,
+      "to": 1795532844139,
       "current": {
         "totalLeads": 160,
         "contacted": 1,
@@ -1419,7 +1431,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1795531048115,
+      "to": 1795532844139,
       "current": {
         "totalLeads": 155,
         "contacted": 0,
@@ -1800,7 +1812,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1795531048115,
+      "to": 1795532844139,
       "current": {
         "totalLeads": 156,
         "contacted": 0,
@@ -2215,7 +2227,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-24T14:37:28.115Z",
+    "checkedAt": "2026-11-24T15:07:24.139Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
