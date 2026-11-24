@@ -152,6 +152,18 @@ try {
   const is = RC.reportsIssues(st2, { firms: [{ slug: 'lfmp', name: 'LFMP' }] });
   check(is.length === 1 && is[0].id === 'reports:lfmp' && is[0].kind === 'reports' && is[0].firstSeen === '2026-11-21T07:01:00.000Z' && is[0].title === 'LFMP: Reports build failed', 'bell / Slack issue: one per failed firm, since it first failed');
   check(RC.reportsIssues(null).length === 0, 'no status file yet → no issues');
+  // v1.42.0 (queue item 13): a Reports-only client (no KPI dashboard, not in firms/index.json)
+  await mkdir(join(tmp, 'firms/acme-law'), { recursive: true });
+  await writeFile(join(tmp, RC.configPath('acme-law')), JSON.stringify(RC.newConfig({ slug: 'acme-law', sources: { brightlocal: { locationId: '3839215', rankReportId: '' } }, reportsOnly: { name: 'Acme Law', locationId: 'Po7mOmrwAAslMJZAwIeA', secretKey: 'ACME_LAW' } })));
+  const roPlan = await RP.plan({ root: tmp, hasKey: true, log });
+  check(roPlan.some(f => f.slug === 'acme-law' && f.secretKey === 'ACME_LAW' && f.name === 'Acme Law') && roPlan.some(f => f.slug === 'mahdavi'), 'nightly: a Reports-only client is built with its own PASSPHRASE_<secretKey> (read from its config), next to the KPI firms', JSON.stringify(roPlan));
+  check(!JSON.parse(await readFile(join(tmp, 'firms/index.json'), 'utf8')).some(f => f.slug === 'acme-law'), 'firms/index.json (the KPI firms: syncs, token keeper, admin) is not touched');
+  const roOut = join(tmp, 'out-ro'), roRes = await RP.pull({ root: tmp, slug: 'acme-law', key: 'k', pass: 'its own made-up pass', fetch: fakeBL(), outDir: roOut, log, now: new Date('2026-11-25T07:00:00Z') });
+  const roBack = await decryptJSON(JSON.parse(await readFile(join(roOut, 'acme-law/reports.json'), 'utf8')).enc, 'its own made-up pass');
+  check(roRes.ok && roBack.rankings.summary.tracked === 88, 'pull: encrypted with its own passphrase and opens with it');
+  const MENU = await import('../../scripts/reports-menu.mjs');
+  const mp = await MENU.planReports({ root: tmp + '/', slug: 'acme-law', kind: 'reports' });
+  check(mp.key === 'ACME_LAW' && mp.location === 'Po7mOmrwAAslMJZAwIeA', 'Add to GHL menu: the Reports-only client\'s own secret name + GHL location come from its config', JSON.stringify(mp));
   const statusText = await readFile(join(tmp, RP.STATUS_FILE), 'utf8');
   check(!/rideshare|20\.7|right horse/.test(statusText), 'status file: no numbers and no passphrase (public)');
 } finally { await rm(tmp, { recursive: true, force: true }); }

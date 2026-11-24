@@ -9,7 +9,7 @@
 import { readFile, writeFile, mkdir, rm, appendFile } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { configPath, dataPath, stubPath, withLive } from './reports-core.mjs';
+import { configPath, dataPath, stubPath, withLive, reportsOnlyValue } from './reports-core.mjs';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const env = process.env, log = m => console.log(m);
@@ -22,9 +22,11 @@ const statusFile = slug => `status/menu-link-${slug}-reports.json`;
 // Which firm, and is it in the right state? Returns { key, location } or { error }.
 export async function planReports({ root = ROOT, slug, kind }) {
   if (!SLUG_RE.test(slug || '')) return { error: 'No valid firm slug.' };
-  const index = await readJSON(`${root}firms/index.json`, []), row = index.find(f => f.slug === slug);
+  const index = await readJSON(`${root}firms/index.json`, []), cfg = await readJSON(`${root}${configPath(slug)}`);
+  // v1.42.0 (queue item 13): a Reports-only client (no KPI dashboard) isn't in firms/index.json; its config says who it is
+  const ro = reportsOnlyValue(cfg?.reportsOnly), row = index.find(f => f.slug === slug) || (ro ? { slug, secretKey: ro.secretKey, locationId: ro.locationId } : null);
   if (!row) return { error: `"${slug}" isn't in the firm list.` };
-  const cfg = await readJSON(`${root}${configPath(slug)}`), kpi = await readJSON(`${root}firms/${slug}/config.json`);
+  const kpi = await readJSON(`${root}firms/${slug}/config.json`);
   if (!cfg?.enabled) return { error: `${slug} has no Reports set up.` };
   if (kind === 'reports' && cfg.status === 'live') return { error: `${slug}'s report is already Live (in its GHL menu).` };
   if (kind === 'reports-remove' && cfg.status !== 'live') return { error: `${slug}'s report is a Draft: the Builder removes it without touching GHL.` };

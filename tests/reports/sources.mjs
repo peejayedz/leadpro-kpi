@@ -78,7 +78,20 @@ export async function run({ check, throwsKind }) {
   // ---------------------------------------------------------------- config: six sources, tabs, Draft gating
   const m = FX.configs.mahdavi(), s = FX.configs.sample();
   check(JSON.stringify(RC.tabsFor(m)) === JSON.stringify(['Overview', 'Calls', 'Website leads', 'Google Search', 'Website traffic', 'Google Business Profile', 'Rankings']) && JSON.stringify(RC.tabsFor(s)) === JSON.stringify(['Overview', 'Calls', 'Website leads', 'Google Search', 'Website traffic', 'Google Business Profile', 'Ads']), 'tabs only for linked sources (Mahdavi: no Ads; Sample: no Rankings)');
-  check(JSON.stringify(RC.tabsFor(RC.withSource(m, 'callrail', { unused: true }))) === JSON.stringify(['Google Search', 'Website traffic', 'Google Business Profile', 'Rankings']), '"Not used by this client" → no Overview / Calls / Website leads');
+  check(JSON.stringify(RC.tabsFor(RC.withSource(m, 'callrail', { unused: true }))) === JSON.stringify(['Overview', 'Google Search', 'Website traffic', 'Google Business Profile', 'Rankings']), 'v1.42.0: CallRail "Not used by this client" → no Calls / Website leads; Overview stays (other sources are linked)');
+  // v1.42.0 (queue item 13): any single source is a report: Overview + that source's tab(s)
+  const one = src => RC.tabsFor(RC.newConfig({ slug: 'solo', sources: { [src]: FX.configs.mahdavi().sources[src] } }));
+  check(JSON.stringify(one('callrail')) === JSON.stringify(['Overview', 'Calls', 'Website leads']), 'CallRail only → Overview, Calls, Website leads');
+  check(JSON.stringify(one('brightlocal')) === JSON.stringify(['Overview', 'Rankings']), 'BrightLocal only → Overview, Rankings');
+  check(JSON.stringify(one('searchConsole')) === JSON.stringify(['Overview', 'Google Search']), 'Search Console only → Overview, Google Search');
+  check(JSON.stringify(one('ga4')) === JSON.stringify(['Overview', 'Website traffic']), 'GA4 only → Overview, Website traffic');
+  check(JSON.stringify(RC.tabsFor(RC.newConfig({ slug: 'solo', sources: { callrail: { unused: true }, ga4: FX.configs.mahdavi().sources.ga4 } }))) === JSON.stringify(['Overview', 'Website traffic']), 'a "Not used" source never counts as linked');
+  // Reports-only client (no KPI dashboard): who it is lives in its own config
+  const ro = RC.newConfig({ slug: 'acme-law', sources: { callrail: FX.configs.mahdavi().sources.callrail }, reportsOnly: { name: 'Acme Law', locationId: 'Po7mOmrwAAslMJZAwIeA', secretKey: 'ACME_LAW', agency: 'LFMP', extra: 'x' } });
+  check(JSON.stringify(ro.reportsOnly) === JSON.stringify({ name: 'Acme Law', locationId: 'Po7mOmrwAAslMJZAwIeA', secretKey: 'ACME_LAW' }) && RC.isReportsOnly(ro) && !RC.isReportsOnly(m), 'reportsOnly: name, location, secret NAME only (no passphrase, unknown fields dropped)');
+  let roBad = false; try { RC.newConfig({ slug: 'x', sources: { callrail: FX.configs.mahdavi().sources.callrail }, reportsOnly: { name: 'X', locationId: 'bad', secretKey: 'X' } }); } catch { roBad = true; }
+  check(roBad, 'reportsOnly without a valid GHL location → refused');
+  check(RC.withSource(ro, 'ga4', FX.configs.mahdavi().sources.ga4).reportsOnly?.secretKey === 'ACME_LAW', 'saving accounts later keeps reportsOnly');
   let bad = 0; for (const [k, v] of [['callrail', { companyId: 'x' }], ['ga4', { propertyId: 'abc' }], ['searchConsole', { siteUrl: 'mahdavi.com' }], ['gbp', { locationName: 'accounts/1' }], ['googleAds', { customerId: '123' }]]) { try { RC.withSource(m, k, v); } catch { bad++; } }
   check(bad === 5, 'every source id is checked (CallRail company, GA4 property, Search Console site, Business Profile location, 10-digit Ads id)');
   check(RC.withSource(m, 'googleAds', { customerId: '123-456-7890', name: 'X' }).sources.googleAds.customerId === '1234567890' && !('ga4' in RC.withSource(m, 'ga4', null).sources), 'Ads id dashes removed; null unlinks');

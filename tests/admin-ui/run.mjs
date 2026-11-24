@@ -254,7 +254,11 @@ try {
     check(!(await pg.$('[data-lv-greet]')), `${tag}: same day, next load: no greeting`);
     await cg.close();
   }
+  // v1.42.0 (queue item 13): a Reports-only client (no KPI dashboard) has only firms/<slug>/reports-config.json; it's never
+  // in firms/index.json, so the KPI admin never lists it as a firm
+  G.M.overlay.set('firms/zz-reports-only/reports-config.json', JSON.stringify({ v: 1, slug: 'zz-reports-only', enabled: true, status: 'draft', sources: { callrail: { companyId: 'COM123abc', companyName: 'Acme' } }, reportsOnly: { name: 'Acme Reports Only', locationId: 'Po7mOmrwAAslMJZAwIeA', secretKey: 'ZZ_REPORTS_ONLY' } }) + '\n');
   let { ctx, page } = await openPage(G);
+  check(!(await slugs(page)).includes('zz-reports-only') && !(await page.textContent('#firmRows')).includes('Acme Reports Only'), 'home: a Reports-only client (reports-config.json only, not in firms/index.json) is not listed as a KPI firm');
 
   // ---------------- home ----------------
   // v1.26.0: A–Z by the shown name ("The Mahdavi Law Firm" under M), whatever index.json's order

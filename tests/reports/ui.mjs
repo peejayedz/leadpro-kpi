@@ -52,6 +52,21 @@ for (const [slug, mk, status, extra] of [['zz-report-mahdavi', SRC.configs.mahda
   virtual.set(`/firms/${slug}/data/kpis.json`, JSON.stringify({ location: slug.includes('sample') || slug.includes('zero') ? 'Sample Firm A' : 'The Mahdavi Law Firm' }));
   virtual.set(`/firms/${slug}/reports.html`, RC.STUB_HTML);
 }
+// v1.42.0 (queue item 13): one-source reports (Overview + that tab) and a Reports-only client (no KPI dashboard: no kpis.json,
+// its name in reportsOnly, its own passphrase)
+const SOLO = { 'zz-solo-callrail': 'callrail', 'zz-solo-bl': 'brightlocal', 'zz-solo-sc': 'searchConsole', 'zz-solo-ga4': 'ga4', 'zz-ro-callrail': 'callrail' };
+for (const [slug, src] of Object.entries(SOLO)) {
+  PASS[slug] = `${slug} made-up pass 7`;
+  const full = SRC.configs.mahdavi('draft');
+  const cfg = { ...RC.newConfig({ slug, sources: { [src]: full.sources[src] }, ...(slug.startsWith('zz-ro-') ? { reportsOnly: { name: 'Acme Law', locationId: 'Po7mOmrwAAslMJZAwIeA', secretKey: 'ZZ_RO_CALLRAIL' } } : {}), by: 'Test', at: '2026-11-25T10:00:00Z' }) };
+  await mkdir(join(tmp, 'firms', slug), { recursive: true });
+  await (await import('node:fs/promises')).writeFile(join(tmp, RC.configPath(slug)), JSON.stringify(cfg));
+  await RP.pull({ root: tmp, slug, creds: SRC.allCreds(SA.json), pass: PASS[slug], fetch: SRC.fakeApis({}), outDir: join(tmp, 'out'), log: () => {}, now: SRC.NOW });
+  virtual.set(`/firms/${slug}/reports-config.json`, JSON.stringify(cfg));
+  virtual.set(`/firms/${slug}/reports.json`, await readFile(join(tmp, 'out', slug, 'reports.json'), 'utf8'));
+  if (!slug.startsWith('zz-ro-')) virtual.set(`/firms/${slug}/data/kpis.json`, JSON.stringify({ location: 'The Mahdavi Law Firm' }));
+  virtual.set(`/firms/${slug}/reports.html`, RC.STUB_HTML);
+}
 const PREVIEW_FULL = process.argv[4] || '';
 if (PREVIEW_FULL) virtual.set('/__preview/report-full.html', await readFile(PREVIEW_FULL, 'utf8'));
 // a firm with Reports set up but no build yet, and one without competitors
@@ -84,7 +99,7 @@ const shot = async (page, name, full = true) => { if (SHOTS) { await mkdir(SHOTS
 
 try {
   // ---- locked: lock card, wrong passphrase, right passphrase (saved for the next visit)
-  { const { ctx, page, errs } = await open('/firms/zz-report-draft/reports.html');
+  { const { ctx, page, errs } = await open('/firms/zz-report-draft/reports.html?tab=Rankings');   // v1.42.0: a BrightLocal-only report opens on Overview; these checks read the Rankings tab
     check(await page.locator('.lock').count() === 1 && /same passphrase as your KPI dashboard/.test(await text(page, '.lock')), 'no passphrase → the lock card (same passphrase as the KPI dashboard)');
     check(!(await page.locator('#body').innerText()).match(/20\.7|rideshare/), 'nothing from the report shows while locked');
     await page.fill('#pass', PASS['zz-report-wpp']); await page.click('.lock button');
@@ -95,18 +110,18 @@ try {
     await ctx.close(); }
 
   // ---- #k= link key (as from the GHL menu link): unlocks, then scrubbed from the address bar
-  { const { ctx, page } = await open(`/firms/zz-report-draft/reports.html#k=${encodeURIComponent(PASS['zz-report-draft'])}`);
+  { const { ctx, page } = await open(`/firms/zz-report-draft/reports.html?tab=Rankings#k=${encodeURIComponent(PASS['zz-report-draft'])}`);
     await page.waitForSelector('.r4'); check(!page.url().includes('#k='), '#k=… link key unlocks and is removed from the address bar'); await ctx.close(); }
 
   // ---- the report: every number, control and size
   for (const [w, h] of [[1440, 900], [390, 844]]) for (const scheme of ['light', 'dark']) {
     const tag = `${w}-${scheme}`;
-    const { ctx, page, errs } = await open('/firms/zz-report-draft/reports.html', { w, h, scheme, saved: ['lfmp-pass-zz-report-draft', PASS['zz-report-draft']] });
+    const { ctx, page, errs } = await open('/firms/zz-report-draft/reports.html?tab=Rankings', { w, h, scheme, saved: ['lfmp-pass-zz-report-draft', PASS['zz-report-draft']] });
     await page.waitForSelector('.r4');
     const tiles = await page.locator('.r4 .card').allInnerTexts();
     check(/Average Google position[\s\S]*20\.7[\s\S]*▼ 0\.2[\s\S]*Across 88 tracked keywords/.test(tiles[0]) && /6[\s\S]*of 88 tracked/.test(tiles[1]) && /\+1 \/ \+3/.test(tiles[2]) && /0%[\s\S]*Not in the map results yet/.test(tiles[3]), `${tag}: 4 tiles: 20.7 ▼ 0.2 · 6 of 88 · +1 / +3 · 0%`, tiles.join(' | '));
     check(await text(page, '#firm') === 'The Mahdavi Law Firm' && await text(page, '#sub') === 'LeadPro Reports · Houston, TX', `${tag}: header: firm name + "LeadPro Reports · Houston, TX"`);
-    check(JSON.stringify(await page.locator('#tabs .tab').allInnerTexts()) === '["Rankings"]' && await page.locator('#tabs .tab.on').count() === 1, `${tag}: only BrightLocal linked: only the Rankings tab (gold underline)`);
+    check(JSON.stringify(await page.locator('#tabs .tab').allInnerTexts()) === '["Overview","Rankings"]' && (await text(page, '#tabs .tab.on')) === 'Rankings', `${tag}: only BrightLocal linked: Overview + Rankings (v1.42.0), Rankings open (gold underline)`);
     check(await page.locator('#draft').isVisible() && /Draft/.test(await text(page, '#draft')), `${tag}: Draft banner (not in the GHL menu yet)`);
     check(/BrightLocal Rank Tracker · Oct 31, 2026 vs Oct 9 · checked from Houston, TX/.test(await text(page, '.sec .l')), `${tag}: "BrightLocal Rank Tracker · Oct 31, 2026 vs Oct 9 · checked from Houston, TX"`);
     check(await page.locator('svg[aria-label="Average Google position by month"] polyline').count() === 3 && /May[\s\S]*Oct/.test(await page.locator('svg[aria-label="Average Google position by month"]').innerHTML()), `${tag}: average position by month: 3 lines, May–Oct`);
@@ -267,6 +282,37 @@ try {
   { const { ctx, page } = await openFirm('zz-report-mahdavi');
     let all = ''; for (const tb of await page.locator('#tabs .tab').allInnerTexts()) { await tabTo(page, tb); all += await page.content(); }
     check(![SRC.PII.name, SRC.PII.phone, SRC.PII.recording, SRC.PII.form, '7135550123'].some(x => all.includes(x)), 'no caller name / number / recording / form field anywhere on the page (every tab)');
+    await ctx.close(); }
+  // ---- v1.42.0 (queue item 13): any single source is a report
+  for (const [w, h] of [[1440, 900], [390, 844]]) for (const scheme of ['light', 'dark']) {
+    const tag = `${w}-${scheme}`;
+    for (const [slug, want, overviewHas, overviewHasNot] of [
+      ['zz-solo-callrail', ['Overview', 'Calls', 'Website leads'], /Total calls[\s\S]*Website leads/, /Average Google position|Website &/],
+      ['zz-solo-bl', ['Overview', 'Rankings'], /Google rankings[\s\S]*Average Google position[\s\S]*20\.7/, /Total calls|First-time callers|Website &|Google Ads/],
+      ['zz-solo-sc', ['Overview', 'Google Search'], /Website &(amp;)? Google[\s\S]*Google search clicks/, /Total calls|First-time callers|Average Google position|Website visits|Google Ads/],
+      ['zz-solo-ga4', ['Overview', 'Website traffic'], /Website visits/, /Total calls|First-time callers|Average Google position|Google search clicks|Google Ads/]]) {
+      const { ctx, page, errs } = await open(`/firms/${slug}/reports.html`, { w, h, scheme, saved: [`lfmp-pass-${slug}`, PASS[slug]] });
+      await page.waitForSelector('#body .sum, #body .row', { timeout: 15000 });
+      const tabsNow = await page.locator('#tabs .tab').allInnerTexts(), body = await page.locator('#body').innerText();
+      check(JSON.stringify(tabsNow) === JSON.stringify(want), `${tag} ${slug}: tabs ${want.join(' · ')}`, JSON.stringify(tabsNow));
+      check(overviewHas.test(body) && !overviewHasNot.test(body), `${tag} ${slug}: Overview shows only what is linked (no empty call tiles)`, body.slice(0, 300).replace(/\s+/g, ' '));
+      check(!/First numbers after tonight/.test(body) && await page.locator('#body .card .empty').count() === 0, `${tag} ${slug}: no empty section on Overview`);
+      if (w === 1440 && scheme === 'light') await shot(page, `solo-${slug.slice(8)}-overview-${tag}`);
+      if (w === 390) await shot(page, `solo-${slug.slice(8)}-overview-${tag}`);
+      const second = want[1];
+      await page.click(`#tabs .tab[data-t="${second}"]`); await page.waitForTimeout(150);
+      check(!/First numbers after tonight/.test(await page.locator('#body').innerText()), `${tag} ${slug}: the ${second} tab has its numbers`);
+      if (w === 1440 && scheme === 'light') await shot(page, `solo-${slug.slice(8)}-${second.toLowerCase().replace(/\s+/g, '-')}-${tag}`);
+      check(!errs.length, `${tag} ${slug}: no page errors`, errs.join(' | '));
+      await ctx.close();
+    }
+  }
+  // a Reports-only client: its name from reportsOnly (no kpis.json), its own passphrase, the lock says so
+  { const { ctx, page } = await open('/firms/zz-ro-callrail/reports.html');
+    check(/passphrase your LFMP team gave you/.test(await text(page, '.lock')) && !/KPI dashboard/.test(await text(page, '.lock')), 'Reports-only client: the lock card doesn\'t mention a KPI dashboard');
+    await page.fill('#pass', PASS['zz-ro-callrail']); await page.click('.lock button'); await page.waitForSelector('.r4');
+    check(await text(page, '#firm') === 'Acme Law', 'Reports-only client: its name from its config (no kpis.json)');
+    await shot(page, 'reports-only-client-1440-light');
     await ctx.close(); }
   check(!outside.length, 'nothing loaded from outside the site (fonts aside)', outside.join(' | '));
 } finally { await browser.close(); server.close(); await rm(tmp, { recursive: true, force: true }); }

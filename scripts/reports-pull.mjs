@@ -17,12 +17,12 @@
 // into the stored numbers (400 days by day; history stays) and written back encrypted. Sources without credentials are
 // skipped with one log line. Numbers only. status/reports-status.json gets per-source health (firms[slug].sources).
 
-import { readFile, writeFile, mkdir, appendFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, appendFile, readdir } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { client, BrightLocalError } from './brightlocal.mjs';
-import { ownCallrail, ownCallrailName, pullable, wantsBuild, buildReport, configPath, dataPath, STATUS_PATH, SOURCE_KEYS, SOURCE_LABELS, linkedSources, REPORTS_V2, throughOf, pullWindow, mergeDays, dayList, addDays, asV2 } from './reports-core.mjs';
+import { reportsOnlyValue, ownCallrail, ownCallrailName, pullable, wantsBuild, buildReport, configPath, dataPath, STATUS_PATH, SOURCE_KEYS, SOURCE_LABELS, linkedSources, REPORTS_V2, throughOf, pullWindow, mergeDays, dayList, addDays, asV2 } from './reports-core.mjs';
 import { client as callrail, CallRailError } from './callrail.mjs';
 import { saClient, oauthClient, hostOf } from './google.mjs';
 export { reportsIssues } from './reports-core.mjs';
@@ -49,8 +49,21 @@ export const hasFromEnv = env => ({ brightlocal: env.HAS_KEY === 'true', callrai
 export const hasFromCreds = c => ({ brightlocal: !!c.brightlocal, callrail: !!c.callrail, ga4: !!c.sa, searchConsole: !!c.sa, gbp: !!(c.oauth?.clientId && c.oauth?.clientSecret && c.oauth?.gbpRefresh), googleAds: !!(c.oauth?.clientId && c.oauth?.clientSecret && c.oauth?.adsRefresh && c.oauth?.mccId) });
 
 // ---------------------------------------------------------------- plan
+// v1.42.0 (queue item 13): Reports-only clients (no KPI dashboard) aren't in firms/index.json; their reports-config.json says
+// who they are (reportsOnly: name, locationId, secretKey). A slug that is also a KPI firm stays the KPI firm.
+export async function reportsOnlyFirms(root = '.') {
+  const kpi = new Set((await readJSON(join(root, 'firms/index.json'), [])).map(f => f.slug)), out = [];
+  let names = []; try { names = await readdir(join(root, 'firms')); } catch {}
+  for (const slug of names.sort()) {
+    if (kpi.has(slug) || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) continue;
+    const cfg = await readJSON(join(root, configPath(slug)));
+    const ro = reportsOnlyValue(cfg?.reportsOnly);
+    if (ro) out.push({ slug, name: ro.name || slug, secretKey: ro.secretKey, locationId: ro.locationId, reportsOnly: true });
+  }
+  return out;
+}
 async function anyOwnCallrail(root) {
-  for (const f of await readJSON(join(root, 'firms/index.json'), [])) if (ownCallrail(await readJSON(join(root, configPath(f.slug))))) return true;
+  for (const f of [...await readJSON(join(root, 'firms/index.json'), []), ...await reportsOnlyFirms(root)]) if (ownCallrail(await readJSON(join(root, configPath(f.slug))))) return true;
   return false;
 }
 export async function plan({ root = '.', event = 'schedule', slug = '', hasKey = false, has = null, changed = [], log = console.log }) {
@@ -58,7 +71,7 @@ export async function plan({ root = '.', event = 'schedule', slug = '', hasKey =
   const ready = SOURCE_KEYS.filter(k => has[k]);
   for (const k of SOURCE_KEYS.filter(k => !has[k])) log(`${SOURCE_LABELS[k]} not set yet (${[...new Set(CRED_NAMES[k])].join(', ')}): skipped.`);
   if (!ready.length && !(await anyOwnCallrail(root))) { log('No report source is set up yet: nothing pulled. Add the secrets in Settings → Secrets and variables → Actions.'); return []; }
-  const index = await readJSON(join(root, 'firms/index.json'), []);
+  const index = [...await readJSON(join(root, 'firms/index.json'), []), ...await reportsOnlyFirms(root)];
   const status = await readJSON(join(root, STATUS_FILE), emptyReportsStatus());
   const out = [];
   for (const f of index) {

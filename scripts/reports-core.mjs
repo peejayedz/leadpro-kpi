@@ -70,13 +70,25 @@ export function sourceValue(key, v) {
 }
 export const isLinked = (cfg, key) => { const v = cfg?.sources?.[key]; return !!(v && !v.unused && sourceValue(key, v)); };
 export const linkedSources = cfg => SOURCE_KEYS.filter(k => isLinked(cfg, k));
-export function newConfig({ slug, locationId, rankReportId = '', sources = null, by = '', at = new Date().toISOString() }) {
+// v1.42.0 (queue item 13): a Reports-only client (no KPI dashboard) keeps who it is in its own config, never in
+// firms/index.json (that list is the KPI firms: syncs, token keeper, admin): { name, locationId, secretKey, agency }.
+// Its numbers are encrypted with its own PASSPHRASE_<secretKey> (made on the team site, never shown in a file or log).
+export function reportsOnlyValue(v) {
+  if (!v || typeof v !== 'object') return null;
+  const locationId = String(v.locationId || ''), secretKey = String(v.secretKey || '');
+  if (!/^[A-Za-z0-9]{15,30}$/.test(locationId) || !/^[A-Z0-9]+(_[A-Z0-9]+)*$/.test(secretKey)) return null;
+  return { name: clip(v.name), locationId, secretKey, ...(v.agency === 'WPP' ? { agency: 'WPP' } : {}) };
+}
+export const isReportsOnly = cfg => !!reportsOnlyValue(cfg?.reportsOnly);
+export function newConfig({ slug, locationId, rankReportId = '', sources = null, reportsOnly = null, by = '', at = new Date().toISOString() }) {
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug || '')) throw new Error('A KPI slug is needed.');
   const src = {};
   if (sources) { for (const [k, v] of Object.entries(sources)) { if (!SOURCE_KEYS.includes(k) || v == null) continue; const ok = sourceValue(k, v); if (!ok) throw new Error(`Check the ${SOURCE_LABELS[k]} pick.`); src[k] = ok; } }
   if (locationId != null && locationId !== '') { if (!validLocationId(locationId)) throw new Error('Pick a BrightLocal location.'); src.brightlocal = { locationId: String(locationId), rankReportId: String(rankReportId || '') }; }
   if (!SOURCE_KEYS.some(k => src[k] && !src[k].unused)) throw new Error('Link at least one source.');
-  return { v: REPORTS_V, slug, enabled: true, status: 'draft', sources: src, createdAt: at, createdBy: by, updatedAt: at };
+  const ro = reportsOnly ? reportsOnlyValue(reportsOnly) : null;
+  if (reportsOnly && !ro) throw new Error('A Reports-only client needs its GHL location and secret name.');
+  return { v: REPORTS_V, slug, enabled: true, status: 'draft', sources: src, ...(ro ? { reportsOnly: ro } : {}), createdAt: at, createdBy: by, updatedAt: at };
 }
 // Link (value), mark "Not used by this client" ({unused:true}) or unlink (null) one source.
 export function withSource(cfg, key, value, at = new Date().toISOString()) {
@@ -97,7 +109,9 @@ export const withLive = (cfg, { by, at = new Date().toISOString() }) => (cfg?.st
   ? { ...cfg, published: publishedTabs(cfg) }
   : { ...cfg, status: 'live', liveAt: at, liveBy: String(by || '').slice(0, 60), published: tabsFor(cfg), publishedAt: at, publishedBy: String(by || '').slice(0, 60) });
 // The tabs this config can show (linked sources only), in the approved order.
-export const tabsFor = cfg => TAB_ORDER.filter(t => isLinked(cfg, TAB_SOURCES[t]));
+// v1.42.0 (queue item 13): Overview shows for ANY linked source (a one-source report = Overview + that source's tab); its
+// sections follow what is linked (calls tiles only with CallRail, the rankings strip with BrightLocal, Website & Google).
+export const tabsFor = cfg => { const any = SOURCE_KEYS.some(k => isLinked(cfg, k)); return TAB_ORDER.filter(t => (t === 'Overview' ? any : isLinked(cfg, TAB_SOURCES[t]))); };
 // What a Live report already shows its client. A Live report from Phase 1 (no "published" yet) showed Rankings only.
 export const publishedTabs = cfg => (Array.isArray(cfg?.published) ? cfg.published.filter(t => TAB_ORDER.includes(t)) : cfg?.status === 'live' ? ['Rankings'] : []);
 // Linked tabs a Live report doesn't show its client yet (Draft until "Publish new tabs").

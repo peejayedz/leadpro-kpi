@@ -1,5 +1,13 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.42.0": {
+    "title": "Reports on their own",
+    "summary": "A client can have Reports without a KPI dashboard; every report has an Overview.",
+    "items": [
+      { "type": "improved", "tag": "internal", "text": "Every report has an Overview, even with one source. Without CallRail it shows no call tiles, only what is linked." },
+      { "type": "new", "tag": "internal", "text": "Reports-only clients (no KPI dashboard) build every night with their own passphrase. They are never listed here as KPI firms." }
+    ]
+  },
   "1.41.0": {
     "title": "BrightLocal trial key protected",
     "summary": "The bell says when the team site has paused BrightLocal reads to save the trial key.",

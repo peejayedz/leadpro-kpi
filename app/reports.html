@@ -180,7 +180,7 @@ function donut(a, b) {
   return `<svg viewBox="0 0 200 170" width="100%" height="170" role="img" aria-label="Answered vs missed"><circle cx="100" cy="85" r="62" fill="none" stroke="#eef0f4" stroke-width="22"/><circle cx="100" cy="85" r="62" fill="none" stroke="#1b2a4e" stroke-width="22" stroke-dasharray="${fa} ${Cc}" transform="rotate(-90 100 85)"/><circle cx="100" cy="85" r="62" fill="none" stroke="#d64545" stroke-width="22" stroke-dasharray="${+(Cc - fa).toFixed(1)} ${Cc}" stroke-dashoffset="${-fa}" transform="rotate(-90 100 85)"/><text x="100" y="82" text-anchor="middle" font-size="26" font-weight="800" fill="#16213d">${pc(a, a + b)}%</text><text x="100" y="100" text-anchor="middle" font-size="11" fill="#6b7280">answered</text></svg><div class="legend" style="justify-content:center"><span><i style="background:#1b2a4e"></i>Answered ${a}</span><span><i style="background:#d64545"></i>Missed ${b}</span></div>`;
 }
 const footer = () => {
-  const wpp = kpis?.agency === 'WPP' ? ' · Web Promotion Partners' : '';
+  const wpp = (kpis?.agency || cfg?.reportsOnly?.agency) === 'WPP' ? ' · Web Promotion Partners' : '';
   const when = fmtUpdated(file?.generatedAt);
   return `<footer><span>LeadPro Reports · Data refreshed nightly${when ? ` · Last updated ${esc(when)}` : ''}${wpp}</span><span>Questions? Contact your Client Success Manager.</span></footer>`;
 };
@@ -193,12 +193,12 @@ const draftsShown = () => (DRAFTS ? C.draftTabs(cfg) : []);
 const range = () => C.rangeFor(S.range, R?.through || C.throughOf(file?.generatedAt || new Date().toISOString()));
 
 function head() {
-  const name = kpis?.location || cfg?.firmName || 'LeadPro Reports';
+  const name = kpis?.location || cfg?.reportsOnly?.name || cfg?.firmName || 'LeadPro Reports';   // v1.42.0: a Reports-only client has no kpis.json
   $('firm').textContent = name; document.title = `${name} · LeadPro Reports`;
   const city = R?.location?.city || R?.rankings?.location?.city || '';
   $('sub').textContent = `LeadPro Reports${city ? ` · ${city}` : ''}`;
   const ag = $('agency');
-  if (kpis?.agency === 'WPP') { ag.src = `${ROOT}brand/wpp-logo.png?v=1.34.0`; ag.classList.add('on'); }   // the real WPP logo (KPI v1.34.0); this page is light only
+  if ((kpis?.agency || cfg?.reportsOnly?.agency) === 'WPP') { ag.src = `${ROOT}brand/wpp-logo.png?v=1.34.0`; ag.classList.add('on'); }   // the real WPP logo (KPI v1.34.0); this page is light only
   const dr = draftsShown();
   $('draft').hidden = !cfg?.enabled || (cfg.status === 'live' && !dr.length);
   $('draft').firstElementChild.textContent = cfg?.status === 'live' && dr.length
@@ -212,7 +212,7 @@ function head() {
   $('dtm').innerHTML = C.RANGES.map(([k, l]) => `<button type="button" role="menuitemradio" aria-checked="${k === S.range}" class="${k === S.range ? 'on' : ''}" data-range="${k}">${l}</button>`).join('');
 }
 function lockHtml(err = '') {
-  return `<div class="card lock"><h2>Enter the passphrase</h2><p>This report is private. Use the same passphrase as your KPI dashboard (your LFMP team has it). It's remembered in this browser.</p>
+  return `<div class="card lock"><h2>Enter the passphrase</h2><p>This report is private. ${cfg?.reportsOnly ? 'Use the passphrase your LFMP team gave you' : 'Use the same passphrase as your KPI dashboard (your LFMP team has it)'}. It's remembered in this browser.</p>
   <form id="unlock"><label class="sr" for="pass">Passphrase</label><input id="pass" type="password" autocomplete="current-password" placeholder="Passphrase" required><button type="submit">Unlock</button></form>${err ? `<p class="err" role="alert">${esc(err)}</p>` : ''}</div>${footer()}`;
 }
 function emptyHtml(title, text, h2 = 'Your report') { return `<div class="sec"><div><h2>${esc(h2)}</h2></div></div><div class="card"><div class="empty"><b>${esc(title)}</b>${esc(text)}</div></div>${footer()}`; }
@@ -221,7 +221,9 @@ const waiting = (h2, what) => `${sec(h2, '')}<div class="card"><div class="empty
 // ---------------------------------------------------------------- tabs
 const SRC_WORDS = { gbp: 'your Google Business Profile', ads: 'your Google Ads', organic: 'Google search', direct: 'people calling you directly', other: 'other sources' };
 function overview() {
-  const r = range(), pw = C.periodWords(r.key), Cl = C.callsIn(R.calls, r);
+  const r = range(), pw = C.periodWords(r.key);
+  if (!tabs().includes('Calls')) return overviewNoCalls(r, pw);   // v1.42.0 (queue item 13): no CallRail = no call tiles at all
+  const Cl = C.callsIn(R.calls, r);
   if (!Cl) return waiting('Overview', 'Your calls and website leads');
   const up = Cl.chg.t, top = Cl.src[0];
   const lines = [];
@@ -250,6 +252,31 @@ function overview() {
   h += websiteAndGoogle(r, pw, Cl);
   return h;
 }
+// v1.42.0 (queue item 13): Overview for a report without CallRail: a short summary of what IS linked, then only those
+// sections (the rankings strip, the Website & Google cards). Nothing about calls; no empty section.
+function rankingsStrip() {
+  if (!tabs().includes('Rankings') || !R.rankings) return '';
+  const rs = R.rankings, sm = rs.summary, city = rs.location?.city, bk = bestKeywords(4);
+  return sec('Google rankings', `Where you show up on Google${city ? ` in ${esc(city)}` : ''}. Lower number = higher on the page.`, 'Rankings')
+    + `<div class="row r3">${card('Average Google position', 'BrightLocal', sm.avg ?? '–', avgChip(sm.avgChange), `Across ${sm.tracked} tracked keywords`)}${card('Google map 3-pack', 'BrightLocal', `${sm.mapPack}%`, '', sm.mapPack ? 'of tracked keywords show you in the map 3-pack' : 'Not in the map results yet for tracked keywords')}
+  <div class="card"><div class="ch"><span class="ct">Best keywords</span></div>${bk.length ? `<table><tr><th>Keyword</th><th>Desktop</th><th>Mobile</th><th>Maps</th></tr>${bk.map(k => `<tr><td>${esc(k.k)}</td><td>${rk(k.d)}</td><td>${rk(k.m)}</td><td>${rk(k.l)}</td></tr>`).join('')}</table>` : '<div class="note">No keyword in the top 100 yet.</div>'}</div></div>`;
+}
+function overviewNoCalls(r, pw) {
+  const T = tabs(), Se = T.includes('Google Search') && C.searchIn(R.search, r), Tr = T.includes('Website traffic') && C.trafficIn(R.traffic, r), G = T.includes('Google Business Profile') && C.gbpIn(R.gbp, r), A = T.includes('Ads') && C.adsIn(R.ads, r);
+  const rs = T.includes('Rankings') && R.rankings ? R.rankings.summary : null, best = rs ? bestKeywords(1)[0] : null;
+  const heads = [], lines = [];
+  if (rs) { heads.push(`<span>average Google position ${esc(rs.avg ?? '–')}</span>`); if (best) lines.push(`<li><i class="n1">↗</i><span><b>#${best.best} on Google</b> for "${esc(best.k)}", your best keyword.</span></li>`); lines.push(`<li><i class="g1">✓</i><span><b>${n(rs.tracked)} keyword${rs.tracked === 1 ? '' : 's'}</b> tracked${rs.mapPack ? `, ${rs.mapPack}% in the map 3-pack` : ''}.</span></li>`); }
+  if (Se) { heads.push(`<span>${n(Se.c)} Google search click${Se.c === 1 ? '' : 's'}</span>`); lines.push(`<li><i class="n1">↗</i><span><b>${k1(Se.i)} impressions</b> on Google search${Se.chg.c == null ? '' : `; clicks ${Se.chg.c >= 0 ? 'up' : 'down'} ${Math.abs(Se.chg.c)}%`}.</span></li>`); }
+  if (Tr) { heads.push(`<span>${n(Tr.s)} website visit${Tr.s === 1 ? '' : 's'}</span>`); lines.push(`<li><i class="g1">✓</i><span><b>${Tr.fromGoogle}% of visits</b> came from Google.</span></li>`); }
+  if (G) { heads.push(`<span>${n(G.actions)} profile action${G.actions === 1 ? '' : 's'}</span>`); lines.push(`<li><i class="g1">✓</i><span><b>${n(G.calls)} call${G.calls === 1 ? '' : 's'}</b> and <b>${n(G.dir)} direction request${G.dir === 1 ? '' : 's'}</b> from your Google profile.</span></li>`); }
+  if (A) heads.push(`<span>${C.money(A.cost, A.currency)} on Google Ads</span>`);
+  if (!heads.length) return waiting('Overview', 'Your numbers');
+  const what = heads.length > 1 ? `${heads.slice(0, -1).join(', ')} and ${heads.at(-1)}` : heads[0];
+  let h = `<div class="sum"><div><h1>${esc(pw.now)}: ${what}.</h1><p>The tabs above show each one in detail.</p></div>${lines.length ? `<ul>${lines.slice(0, 3).join('')}</ul>` : ''}</div>`;
+  h += rankingsStrip();
+  h += websiteAndGoogle(r, pw, null);
+  return h;
+}
 const avgChip = c => (c == null || c === 0 ? '' : c > 0 ? `<span class="chg dn">▼ ${Math.abs(c)}</span>` : `<span class="chg up">▲ ${Math.abs(c)}</span>`);
 function bestKeywords(nTop) {
   const kw = R.rankings?.keywords || [];
@@ -267,11 +294,12 @@ function websiteAndGoogle(r, pw, Cl) {
   if (G) cards.push(card('Profile actions', 'Google Business', n(G.actions), chg(G.chg.actions), '', `<div class="mini"><div><b>${n(G.calls)}</b>calls</div><div><b>${n(G.dir)}</b>directions</div><div><b>${n(G.web)}</b>site clicks</div></div>`));
   if (!cards.length && !A) return '';
   if (A) cards.push(card('Cost per lead (ads)', 'Google Ads', C.money(A.cpl, A.currency), cplChip(A), '', `<div class="mini"><div><b>${C.money(A.cost, A.currency)}</b>spent</div><div><b>${n(A.conv)}</b>ad leads</div></div>`));
-  else if (!cfg.sources?.googleAds?.unused) {
+  else if (Cl && !cfg.sources?.googleAds?.unused) {   // v1.42.0: the placeholder talks about calls, so only with CallRail
     const adsCalls = Cl ? Cl.s.ads : null;
     cards.push(`<div class="card"><div class="ch"><span class="ct">Google Ads</span><span class="src">Google Ads</span></div><div class="note" style="margin-top:8px">Not connected yet.${adsCalls != null ? ` Calls from your ads still count on the Calls tab (${n(adsCalls)} ${esc(pw.lower)}).` : ''}</div></div>`);
   }
-  return sec('Website &amp; Google', 'How people find and use your website and Google profile.') + `<div class="row r4">${cards.join('')}</div>`;
+  const rc = Cl ? 'r4' : cards.length >= 4 ? 'r4' : cards.length === 3 ? 'r3' : 'r2';   // v1.42.0: without CallRail the row fits its cards (a phone never shows one half-width card)
+  return sec('Website &amp; Google', 'How people find and use your website and Google profile.') + `<div class="row ${rc}">${cards.join('')}</div>`;
 }
 const cplChip = A => (A.cplChange == null || A.cplChange === 0 ? '' : `<span class="chg ${A.cplChange < 0 ? 'up' : 'dn'}">${A.cplChange < 0 ? '▼' : '▲'} ${C.money(Math.abs(A.cplChange), A.currency)}</span>`);
 const callLegend = pw => `<div class="legend"><span><i style="background:#1b2a4e"></i>${esc(pw.legendNow)}</span><span><i style="background:#c3c9d6"></i>${esc(pw.legendBefore)}</span></div>`;
