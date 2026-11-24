@@ -13,6 +13,22 @@ import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+// FIX 10.0 (24 Nov 2026): no sound from test browsers: --mute-audio + speechSynthesis.speak / media play() stubbed (start /
+// end / ended still fire). Inline so this file stays byte-identical in the three repos.
+const QUIET_INIT = `(() => { try {
+  const S = window.SpeechSynthesis;
+  if (S && S.prototype) S.prototype.speak = function (u) { setTimeout(() => { try { u.dispatchEvent(new Event('start')); u.dispatchEvent(new Event('end')); } catch (e) {} }, 30); };
+  const M = window.HTMLMediaElement;
+  if (M && M.prototype) M.prototype.play = function () { const el = this; setTimeout(() => { try { el.dispatchEvent(new Event('ended')); } catch (e) {} }, 50); return Promise.resolve(); };
+} catch (e) {} })();`;
+function quiet(browser) {
+  const nc = browser.newContext.bind(browser), np = browser.newPage.bind(browser);
+  browser.newContext = async (...a) => { const c = await nc(...a); await c.addInitScript(QUIET_INIT); return c; };
+  browser.newPage = async (...a) => { const p = await np(...a); await p.addInitScript(QUIET_INIT); return p; };
+  return browser;
+}
+
+
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DIR = ['../../page', '../../admin', '..'].map(p => path.resolve(HERE, p)).find(d => fs.existsSync(path.join(d, 'lfmp-session.js')) && fs.existsSync(path.join(d, 'lfmp-ui.css')));
 if (!DIR) throw new Error('lfmp-session.js not found next to this test');
@@ -562,7 +578,7 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = `http://127.0.0.1:${server.address().port}`;
-  const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+  const browser = await quiet(await chromium.launch({ ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), args: ['--mute-audio'] }));
   try {
     for (const [w, h] of [[390, 844], [1440, 900]]) {
       const phone = w < 880;
@@ -685,7 +701,7 @@ window.played = shell.greeting; window.S = S;</script></body></html>`;
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = `http://127.0.0.1:${server.address().port}`;
-  const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+  const browser = await quiet(await chromium.launch({ ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), args: ['--mute-audio'] }));
   const wait = ms => new Promise(r => setTimeout(r, ms));
   try {
     for (const [w, h] of [[1440, 900], [390, 844]]) {
@@ -798,7 +814,7 @@ window.close1 = () => S.panelClose(pn, sh, () => { pn.hidden = true; sh.hidden =
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = `http://127.0.0.1:${server.address().port}`;
-  const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+  const browser = await quiet(await chromium.launch({ ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), args: ['--mute-audio'] }));
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const tx = p => p.evaluate(() => new DOMMatrix(getComputedStyle(document.getElementById('pn')).transform).m41);
   try {
@@ -898,7 +914,7 @@ document.getElementById('bad').addEventListener('click', () => { S.lfmpFetch('/f
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = `http://127.0.0.1:${server.address().port}`;
-  const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+  const browser = await quiet(await chromium.launch({ ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), args: ['--mute-audio'] }));
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const st = p => p.evaluate(() => { const b = document.getElementById('add'), f = b.querySelector('.lv-bz-fill'), w = b.querySelector('.lv-bz-word'), o = document.getElementById('other');
     // filled width = the button width minus the clip-path's right inset (the gold layer is revealed left → right)
@@ -1117,7 +1133,7 @@ window.shell = S.mountShell({ tool, me: { name: 'PJ', first: 'PJ', email: 'pj@ex
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = `http://127.0.0.1:${server.address().port}`;
-  const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+  const browser = await quiet(await chromium.launch({ ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), args: ['--mute-audio'] }));
   const wait = ms => new Promise(r => setTimeout(r, ms));
   // a computer with these voices (the engine's shortlist() orders them: the best 4 of each kind)
   const VOICES = ['Samantha', 'Fred', 'Karen', 'Daniel', 'Moira', 'Google UK English Male', 'Alex', 'Zarvox'].map(name => ({ name, lang: 'en-US', default: false, localService: true, voiceURI: name }));

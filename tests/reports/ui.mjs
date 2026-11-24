@@ -11,6 +11,7 @@ import { join, extname, normalize } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as RC from '../../scripts/reports-core.mjs';
 import * as RP from '../../scripts/reports-pull.mjs';
+import { quiet } from '../quiet-browser.mjs';   // FIX 10.0: no sound from test browsers
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const SHOTS = process.argv[2] || '', PREVIEW = process.argv[3] || '';
@@ -67,7 +68,7 @@ const server = createServer(async (req, res) => {
   res.writeHead(200, { 'Content-Type': TYPES[extname(f)] || 'application/octet-stream' }); res.end(await readFile(f));
 }).listen(0);
 const BASE = `http://127.0.0.1:${server.address().port}`;
-const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+const browser = await quiet(await chromium.launch({ ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), args: ['--mute-audio'] }));
 const outside = [];
 async function open(path, { w = 1440, h = 900, scheme = 'light', saved = null } = {}) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, colorScheme: scheme });

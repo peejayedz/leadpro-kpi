@@ -25,6 +25,7 @@ import { join, extname, normalize } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createMockGitHub } from './mock-github.mjs';
 import { encryptJSON } from '../../scripts/kpi-core.mjs';
+import { quiet } from '../quiet-browser.mjs';   // FIX 10.0: no sound from test browsers
 // v1.32.0 (Part 4): the Builder harness's recorder answers the confirm-first popups for the checks that test other things
 // (recorded in window.__lvResults); Done popups are still closed by these checks themselves.
 const { autoResults } = await import(pathToFileURL(join(fileURLToPath(new URL('../../', import.meta.url)), '../ghl-subaccount-builder/tests/e2e/harness.mjs')).href);
@@ -91,7 +92,7 @@ const BASE = `${ORIGIN}/admin/?repo=peejayedz/leadpro-kpi`;
 
 let failed = 0, passed = 0;
 const check = (v, what) => { if (v) { passed++; console.log(`✓ ${what}`); } else { failed++; console.log(`✗ ${what}`); } };
-const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+const browser = await quiet(await chromium.launch({ ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), args: ['--mute-audio'] }));
 
 // LFMP gets 2 "not in a pipeline" contacts in the last 30 days (as in the live data) whatever the repo files say.
 async function withNip(G) {

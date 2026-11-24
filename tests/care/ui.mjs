@@ -15,6 +15,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createMockGitHub } from '../admin-ui/mock-github.mjs';
 import { startMock } from './mock-ghl.mjs';
 import * as CC from '../../scripts/care-core.mjs';
+import { quiet } from '../quiet-browser.mjs';   // FIX 10.0: no sound from test browsers
 
 const run = promisify(execFile);
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -113,7 +114,7 @@ const server = createServer(async (req, res) => {
 });
 await new Promise(r => server.listen(0, '127.0.0.1', r));
 const ORIGIN = `http://127.0.0.1:${server.address().port}`, ADMIN = `${ORIGIN}/admin/?repo=peejayedz/leadpro-kpi`, DASH = `${ORIGIN}/firms/${SLUG}/`;
-const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+const browser = await quiet(await chromium.launch({ ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), args: ['--mute-audio'] }));
 const SODIUM_STUB = `window.sodium = { ready: Promise.resolve(), from_string: s => new TextEncoder().encode(s), from_base64: b => Uint8Array.from(atob(b), c => c.charCodeAt(0)), to_base64: u => btoa(String.fromCharCode(...u)), crypto_box_seal: (m, pk) => Uint8Array.from([0xEE, ...m]) };`;
 async function open(url, { width = 1440, height = 900, scheme = 'light', admin = true } = {}) {
   const ctx = await browser.newContext({ reducedMotion: 'reduce', viewport: { width, height }, colorScheme: scheme, permissions: ['clipboard-read', 'clipboard-write'] });
