@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T13:07:48.501Z",
+  "generatedAt": "2026-11-24T13:38:07.776Z",
   "location": "Dumas & Sanclemente",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,15 +22,15 @@
     "today": {
       "label": "Today",
       "from": 1795496400000,
-      "to": 1795525668501,
+      "to": 1795527487776,
       "current": {
-        "totalLeads": 0,
+        "totalLeads": 1,
         "contacted": 0,
-        "contactRatePct": null,
+        "contactRatePct": 0,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
-        "within5Pct": null,
+        "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
@@ -49,18 +49,30 @@
         "sentRatePct": null,
         "signed": 0,
         "signRatePct": null,
-        "leadToSignedPct": null,
+        "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
-        "bySource": [],
-        "byChannel": [],
-        "attributedLeads": 0,
+        "bySource": [
+          [
+            "Google Business Profile - Fort Lauderdale",
+            1,
+            0
+          ]
+        ],
+        "byChannel": [
+          [
+            "Third Party",
+            1,
+            0
+          ]
+        ],
+        "attributedLeads": 1,
         "stageMoved": 0,
-        "attributionPct": null,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            0,
+            1,
             "newLeads",
             null
           ],
@@ -372,9 +384,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795525668501,
+      "to": 1795527487776,
       "current": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -404,6 +416,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Google Business Profile - Fort Lauderdale",
+            1,
+            0
+          ],
+          [
             "Google Business Profile - Lutz",
             1,
             0
@@ -412,17 +429,17 @@
         "byChannel": [
           [
             "Third Party",
-            1,
+            2,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -775,10 +792,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794920868501,
-      "to": 1795525668501,
+      "from": 1794922687776,
+      "to": 1795527487776,
       "current": {
-        "totalLeads": 11,
+        "totalLeads": 12,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -819,7 +836,7 @@
           ],
           [
             "Google Business Profile - Fort Lauderdale",
-            2,
+            3,
             0
           ],
           [
@@ -831,17 +848,17 @@
         "byChannel": [
           [
             "Third Party",
-            11,
+            12,
             0
           ]
         ],
-        "attributedLeads": 11,
+        "attributedLeads": 12,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            11,
+            12,
             "newLeads",
             null
           ],
@@ -987,10 +1004,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792933668501,
-      "to": 1795525668501,
+      "from": 1792935487776,
+      "to": 1795527487776,
       "current": {
-        "totalLeads": 35,
+        "totalLeads": 36,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1026,7 +1043,7 @@
           ],
           [
             "Google Business Profile - Fort Lauderdale",
-            9,
+            10,
             0
           ],
           [
@@ -1048,17 +1065,17 @@
         "byChannel": [
           [
             "Third Party",
-            35,
+            36,
             0
           ]
         ],
-        "attributedLeads": 35,
+        "attributedLeads": 36,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            35,
+            36,
             "newLeads",
             null
           ],
@@ -1214,10 +1231,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787749668501,
-      "to": 1795525668501,
+      "from": 1787751487776,
+      "to": 1795527487776,
       "current": {
-        "totalLeads": 68,
+        "totalLeads": 69,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1253,7 +1270,7 @@
           ],
           [
             "Google Business Profile - Fort Lauderdale",
-            17,
+            18,
             0
           ],
           [
@@ -1285,17 +1302,17 @@
         "byChannel": [
           [
             "Third Party",
-            68,
+            69,
             0
           ]
         ],
-        "attributedLeads": 68,
+        "attributedLeads": 69,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            68,
+            69,
             "newLeads",
             null
           ],
@@ -1420,9 +1437,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795525668501,
+      "to": 1795527487776,
       "current": {
-        "totalLeads": 26,
+        "totalLeads": 27,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1458,7 +1475,7 @@
           ],
           [
             "Google Business Profile - Fort Lauderdale",
-            7,
+            8,
             0
           ],
           [
@@ -1480,17 +1497,17 @@
         "byChannel": [
           [
             "Third Party",
-            26,
+            27,
             0
           ]
         ],
-        "attributedLeads": 26,
+        "attributedLeads": 27,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            26,
+            27,
             "newLeads",
             null
           ],
@@ -1859,9 +1876,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795525668501,
+      "to": 1795527487776,
       "current": {
-        "totalLeads": 66,
+        "totalLeads": 67,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1897,7 +1914,7 @@
           ],
           [
             "Google Business Profile - Fort Lauderdale",
-            17,
+            18,
             0
           ],
           [
@@ -1929,17 +1946,17 @@
         "byChannel": [
           [
             "Third Party",
-            66,
+            67,
             0
           ]
         ],
-        "attributedLeads": 66,
+        "attributedLeads": 67,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            66,
+            67,
             "newLeads",
             null
           ],
@@ -2246,7 +2263,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-24T13:07:48.501Z",
+    "checkedAt": "2026-11-24T13:38:07.776Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
