@@ -1,5 +1,21 @@
 {
   "version": 1,
-  "updatedAt": null,
-  "firms": {}
+  "updatedAt": "2026-11-24T19:48:11.605Z",
+  "firms": {
+    "mahdavi": {
+      "ok": true,
+      "at": "2026-11-24T19:48:11.605Z",
+      "request": "20261124-194714-9w45",
+      "keywords": null,
+      "lastOkAt": "2026-11-24T19:48:11.605Z",
+      "sources": {
+        "callrail": {
+          "ok": true,
+          "at": "2026-11-24T19:48:11.605Z",
+          "lastOkAt": "2026-11-24T19:48:11.605Z"
+        }
+      },
+      "runUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45473913955"
+    }
+  }
 }
