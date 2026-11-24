@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T23:07:52.737Z",
+  "generatedAt": "2026-11-24T23:37:44.206Z",
   "location": "Dumas & Sanclemente",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795496400000,
-      "to": 1795561672737,
+      "to": 1795563464206,
       "current": {
         "totalLeads": 2,
         "contacted": 0,
@@ -401,7 +401,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795561672737,
+      "to": 1795563464206,
       "current": {
         "totalLeads": 3,
         "contacted": 0,
@@ -809,8 +809,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794956872737,
-      "to": 1795561672737,
+      "from": 1794958664206,
+      "to": 1795563464206,
       "current": {
         "totalLeads": 12,
         "contacted": 0,
@@ -918,7 +918,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 6,
+        "totalLeads": 5,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -949,7 +949,7 @@
         "bySource": [
           [
             "Website Number Pool",
-            3,
+            2,
             0
           ],
           [
@@ -966,17 +966,17 @@
         "byChannel": [
           [
             "Third Party",
-            6,
+            5,
             0
           ]
         ],
-        "attributedLeads": 6,
+        "attributedLeads": 5,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            6,
+            5,
             "newLeads",
             null
           ],
@@ -1021,8 +1021,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792969672737,
-      "to": 1795561672737,
+      "from": 1792971464206,
+      "to": 1795563464206,
       "current": {
         "totalLeads": 37,
         "contacted": 0,
@@ -1248,8 +1248,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787785672737,
-      "to": 1795561672737,
+      "from": 1787787464206,
+      "to": 1795563464206,
       "current": {
         "totalLeads": 70,
         "contacted": 0,
@@ -1454,7 +1454,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795561672737,
+      "to": 1795563464206,
       "current": {
         "totalLeads": 28,
         "contacted": 0,
@@ -1893,7 +1893,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795561672737,
+      "to": 1795563464206,
       "current": {
         "totalLeads": 68,
         "contacted": 0,
@@ -2280,7 +2280,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-24T23:07:52.737Z",
+    "checkedAt": "2026-11-24T23:37:44.206Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
