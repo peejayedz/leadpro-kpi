@@ -88,6 +88,7 @@ jobs:
           GOOGLE_GBP_REFRESH_TOKEN: ${{ secrets.GOOGLE_GBP_REFRESH_TOKEN }}
           GOOGLE_ADS_REFRESH_TOKEN: ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
           GOOGLE_ADS_MCC_ID: ${{ secrets.GOOGLE_ADS_MCC_ID }}
+          CALLRAIL_OWN_KEY: ${{ secrets[format('CALLRAIL_KEY_{0}', matrix.firm.secretKey)] }} # v1.40.0: only a client with its own CallRail account has one
           PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', matrix.firm.secretKey)] }}
           OUT_DIR: ${{ runner.temp }}/out
           RESULT_FILE: ${{ runner.temp }}/result/${{ matrix.firm.slug }}.json

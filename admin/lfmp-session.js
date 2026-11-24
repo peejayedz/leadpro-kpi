@@ -12,7 +12,7 @@
 //   paintMe(me)                                 // fills [data-me] (name), [data-me-email], [data-me-last] ("Last signed in …")
 //   openTeamSignins()                           // the ⋯ → Team sign-ins dialog (any [data-act="signins"] opens it)
 
-import * as DN from './lfmp-done.js';   // v2.10.0 Done moments (popup + sound + voice; Classic = off)
+import * as DN from './lfmp-done.js';   // v2.10.0 Done moments (popup + sound + voice; Classic = off); v2.11.0 On / Off
 export const TOOLS = [
   { id: 'builder', name: 'Builder', path: '/ghl-subaccount-builder-page/' },
   { id: 'kpi', name: 'Scorecards', path: '/leadpro-kpi/admin/' },
@@ -80,6 +80,14 @@ export function paintMe(me, root = document) {
 // v2.7.0: a browser that blocks site storage throws on the localStorage read itself; every default store goes through this
 export const safeStorage = () => { try { return globalThis.localStorage || null; } catch { return null; } };
 const escH = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+// The Team sign-ins body. v2.11.0 (queue item 10): when the answer carries changes: [{ who, what, at }] (the Builder's
+// Reports key changes: who saved / replaced / removed which key, never a value), a second small table "Reports key changes
+// (last 90 days)" goes under the people; missing or empty = nothing extra (KPI admin / Review admin unchanged).
+export function signinsHtml({ people = [], changes = [] } = {}) {
+  const ppl = Array.isArray(people) ? people : [], ch = (Array.isArray(changes) ? changes : []).slice(0, 50);
+  const changesHtml = ch.length ? `<p class="ey lfmp-signins-sub" style="margin:22px 0 8px">Reports key changes (last 90 days)</p><table class="lfmp-signins lfmp-keychanges"><thead><tr><th scope="col">Who</th><th scope="col">What</th><th scope="col">When</th></tr></thead><tbody>${ch.map(c => `<tr><td data-l="Who"><b>${escH(c?.who)}</b></td><td data-l="What">${escH(c?.what)}</td><td data-l="When">${escH(fmtSignIn(c?.at))}</td></tr>`).join('')}</tbody></table>` : '';
+  return `<div class="lfmp-dlg-b">${ppl.length ? `<table class="lfmp-signins"><thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Last sign-in</th><th scope="col">Sign-ins (30 days)</th></tr></thead><tbody>${ppl.map(p => `<tr><td data-l="Name"><b>${escH(p.name)}</b></td><td data-l="Email">${escH(p.email)}</td><td data-l="Last sign-in">${escH(fmtSignIn(p.last))}</td><td data-l="Sign-ins (30 days)">${Number(p.count30) || 0}</td></tr>`).join('')}</tbody></table>` : '<p class="mut">No sign-ins recorded yet.</p>'}${changesHtml}<p class="mut lfmp-dlg-note">Google sign-ins to the LFMP tools in the last 90 days. Kept on the team site only, never in a repo.</p></div>`;
+}
 export async function openTeamSignins() {
   let d = document.getElementById('lfmpSignins');
   if (!d) {
@@ -92,8 +100,7 @@ export async function openTeamSignins() {
   d.innerHTML = `${head}<p class="mut lfmp-dlg-b">Loading…</p>`;
   if (!d.open) d.showModal();
   try {
-    const { people } = await api('signins');
-    d.innerHTML = `${head}<div class="lfmp-dlg-b">${people.length ? `<table class="lfmp-signins"><thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Last sign-in</th><th scope="col">Sign-ins (30 days)</th></tr></thead><tbody>${people.map(p => `<tr><td data-l="Name"><b>${escH(p.name)}</b></td><td data-l="Email">${escH(p.email)}</td><td data-l="Last sign-in">${escH(fmtSignIn(p.last))}</td><td data-l="Sign-ins (30 days)">${Number(p.count30) || 0}</td></tr>`).join('')}</tbody></table>` : '<p class="mut">No sign-ins recorded yet.</p>'}<p class="mut lfmp-dlg-note">Google sign-ins to the LFMP tools in the last 90 days. Kept on the team site only, never in a repo.</p></div>`;
+    d.innerHTML = `${head}${signinsHtml(await api('signins'))}`;
   } catch (e) {
     d.innerHTML = `${head}<p class="lfmp-dlg-b lfmp-err" role="alert">${escH(e.message || "Couldn't load the sign-ins.")}</p>`;
   }
@@ -237,7 +244,7 @@ export function meHtml(cfg, st = {}, { compact = false } = {}) {
   const ver = `${st.newsDot ? '<span class="lv-ndot" aria-label="new"></span>' : ''}${cfg.version ? `v${escH(String(cfg.version).replace(/^v/, ''))} ` : ''}›`;
   const themeRow = `<div class="lv-mi" role="presentation"><span id="lvThemeL${compact ? 'c' : ''}">Theme</span><div class="lv-sw" role="group" aria-labelledby="lvThemeL${compact ? 'c' : ''}">${THEMES.map(([k, l]) => `<button type="button" class="lv-hit" data-lv="theme" data-v="${k}" aria-pressed="${k === theme}">${l}</button>`).join('')}</div></div>`;
   const testsRow = cfg.showTests ? `<div class="lv-mi" role="presentation"><span id="lvTestsL${compact ? 'c' : ''}">${escH(cfg.showTests.label || 'Show test clients')}</span><button type="button" class="lv-tg lv-hit" role="switch" data-lv="tests" aria-labelledby="lvTestsL${compact ? 'c' : ''}" aria-checked="${!!st.showTests}"></button></div>` : '';
-  // v2.10.0: Done moments (after Theme): "New popup · Sound + voice ›" / "Classic ›"
+  // v2.10.0: Done moments (after Theme): "New popup · Sound + voice ›" / "Classic ›"; v2.11.0: "Off ›" when switched off
   const dn = st.done || DN.readDone(undefined, me);
   const doneRow = row('done', 'Done moments', `${escH(compact ? DN.doneRowShort(dn) : DN.doneRowValue(dn))} ›`);   // FIX 6.1: one line in the name menu
   if (compact) {

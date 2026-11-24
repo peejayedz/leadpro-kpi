@@ -176,6 +176,24 @@ export async function run({ check, throwsKind }) {
     check(!/\b107\b|312|948|mahdavi pass|ya29/.test(pub), 'status file (public): no numbers, no passphrase, no token');
   } finally { await rm(tmp, { recursive: true, force: true }); }
 
+  // ---------------------------------------------------------------- v1.40.0 (item 10): a client's own CallRail key
+  { const tmp2 = await mkdtemp(join(tmpdir(), 'reports-own-'));
+    try {
+      await mkdir(join(tmp2, 'firms/own-firm'), { recursive: true });
+      await writeFile(join(tmp2, 'firms/index.json'), JSON.stringify([{ slug: 'own-firm', name: 'Own Firm', secretKey: 'OWN_FIRM' }]));
+      const ocfg = RC.newConfig({ slug: 'own-firm', sources: { callrail: { companyId: FX.IDS.sample.crCompany, companyName: 'S', accountId: FX.IDS.sample.crAccount, ownKey: true } } });
+      await writeFile(join(tmp2, RC.configPath('own-firm')), JSON.stringify(ocfg));
+      check(RC.ownCallrail(ocfg) && RC.ownCallrailName('own-firm') === 'CALLRAIL_KEY_OWN_FIRM' && RC.withSource(ocfg, 'callrail', { companyId: 'COM1234', ownKey: 'yes' }).sources.callrail.ownKey === undefined, 'config keeps ownKey: true only (secret name CALLRAIL_KEY_<SLUG>)');
+      check((await RP.plan({ root: tmp2, has: {}, log: () => {} })).map(x => x.slug).join() === 'own-firm', 'plan: a firm with its own CallRail key runs even without the agency key');
+      const f3 = FX.fakeApis();
+      const r5 = await RP.pull({ root: tmp2, slug: 'own-firm', creds: { ...FX.allCreds(''), callrail: { key: 'agency-key-xyz1' }, callrailOwn: { key: 'own-key-abcd9' } }, pass: 'own pass', fetch: f3, outDir: join(tmp2, 'out'), now: FX.NOW, log: () => {} });
+      const auth = [...new Set(f3.seen.filter(x => x.url.hostname === 'api.callrail.com').map(x => x.headers.Authorization))];
+      check(r5.ok && JSON.stringify(auth) === JSON.stringify(['Token token="own-key-abcd9"']), 'pull: the client\'s own key is used, never the agency key', auth.join());
+      const logs6 = []; const r6 = await RP.pull({ root: tmp2, slug: 'own-firm', creds: { ...FX.allCreds(''), callrail: { key: 'agency-key-xyz1' } }, pass: 'own pass', fetch: FX.fakeApis(), outDir: join(tmp2, 'out6'), now: FX.NOW, log: x => logs6.push(x) });
+      check(r6.sources.callrail.skipped === 'no_key' && logs6.some(l => /CALLRAIL_KEY_OWN_FIRM\) isn't set/.test(l)), 'own key flagged but not set → CallRail skipped with one log line (the agency key is NOT used)');
+      check(/CALLRAIL_OWN_KEY: \$\{\{ secrets\[format\('CALLRAIL_KEY_\{0\}', matrix\.firm\.secretKey\)\] \}\}/.test(await readFile(join(ROOT, '.github/workflows/reports.yml'), 'utf8')), 'reports.yml: each firm\'s job gets only its own CALLRAIL_KEY_<KEY>');
+    } finally { await rm(tmp2, { recursive: true, force: true }); } }
+
   // ---------------------------------------------------------------- the workflow passes the new secrets by name
   const yml = await readFile(join(ROOT, '.github/workflows/reports.yml'), 'utf8');
   check(['CALLRAIL_API_KEY', 'GOOGLE_REPORTS_SA_JSON', 'GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_GBP_REFRESH_TOKEN', 'GOOGLE_ADS_REFRESH_TOKEN', 'GOOGLE_ADS_MCC_ID'].every(n => yml.includes(`${n}: \${{ secrets.${n} }}`)) && /HAS_CALLRAIL:/.test(yml) && /HAS_ADS:/.test(yml), 'reports.yml: the 7 new secrets by name to the pull job; HAS_* flags to the plan');

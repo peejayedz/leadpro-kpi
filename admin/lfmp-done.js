@@ -1,10 +1,13 @@
-// LFMP tools · Done moments (shared shell 2.10.0, queue item 6; PJ approved 21 Nov). Keep the three copies byte-identical:
+// LFMP tools · Done moments (shared shell 2.11.0; 2.10.0 = queue item 6, PJ approved 21 Nov; 2.11.0 = queue item 10 On / Off). Keep the three copies byte-identical:
 // ghl-subaccount-builder page/, leadpro-kpi admin/, automation-review admin/ (with lfmp-done.css).
 //
 // What plays on YOUR computer when one of YOUR jobs finishes (Builder: new client / Add existing client; KPI admin: New
 // firm; Review admin: package build): a popup that runs with the job's real progress, then a finish style with its own
 // sound and a voice line. lfmp-session.js startJob({ ..., moment: {...} }) drives it; Animation = Classic turns all of it
 // off (exactly what the tools did before: the setup card / working bar, no popup, no sound, no voice).
+// v2.11.0 (queue item 10): "Done moments" On / Off at the top of the panel (enabled: true | false, default On). Off = no
+// popup, no sound and no voice for any job: the usual working bar and Done popup, exactly as today; it overrides
+// Animation (Classic keeps working as before). The voice greeting keeps its own switch and is not touched by Off.
 // Settings: localStorage "lfmp-done" (this computer, this person). The voice also reads the once-a-day greeting when
 // "Voice greeting" is On (DM.speak).
 //
@@ -25,20 +28,22 @@ export const GENDERS = [['guy', 'Guy'], ['girl', 'Girl']];
 export const VOICE_STYLES = [['commander', 'Commander (deep)'], ['robot', 'Robot (flat, buzzy)'], ['control', 'Mission control (calm)'], ['announcer', 'Announcer (upbeat)']];
 export const CALL_ME = ['Nothing', 'Master', 'Commander', 'Boss', 'Chief', 'Captain', 'Sir', 'Team', 'Custom'];
 export const LINE_STYLES = [['commander', 'Commander'], ['report', 'Report'], ['mission', 'Mission'], ['hype', 'Hype'], ['short', 'Short']];
+export const ONOFF = [['on', 'On'], ['off', 'Off']];
+export const OFF_HINT = 'Off = no popup, no sound, no voice for any job (the usual working bar and Done popup, as before). The voice greeting has its own switch below.';
 export const CLASSIC_HINT = 'Classic = exactly what you have today: the setup card and progress, no popup, no sound, no voice. The settings below grey out.';
 export const GREET_HINT = 'When your once-a-day greeting plays, this voice reads it out.';
 
 // PJ's account gets the voice greeting On by default (the team site's own name for him: first "PJ"); everyone else Off.
 export const isPJ = me => String(me?.first || '').trim() === 'PJ' || /^PJ\b/.test(String(me?.name || '').trim());
 export function doneDefaults(me = null) {
-  return { animation: 'new', sound: 'all', style: 'syscheck', gender: 'guy', who: '', voice: 'commander', callme: 'Commander', custom: '', line: 'commander', greet: isPJ(me) ? 'on' : 'off' };
+  return { enabled: true, animation: 'new', sound: 'all', style: 'syscheck', gender: 'guy', who: '', voice: 'commander', callme: 'Commander', custom: '', line: 'commander', greet: isPJ(me) ? 'on' : 'off' };
 }
 const pickFrom = (v, list, d) => (list.some(x => (Array.isArray(x) ? x[0] : x) === v) ? v : d);
 // A saved value is used only when it's one of the choices (an old or edited value falls back to the default).
 export function cleanDone(raw, me = null) {
   const d = doneDefaults(me), r = raw && typeof raw === 'object' ? raw : {};
   return {
-    animation: pickFrom(r.animation, ANIMATIONS, d.animation), sound: pickFrom(r.sound, SOUND_MODES, d.sound), style: pickFrom(r.style, STYLES, d.style),
+    enabled: r.enabled !== false, animation: pickFrom(r.animation, ANIMATIONS, d.animation), sound: pickFrom(r.sound, SOUND_MODES, d.sound), style: pickFrom(r.style, STYLES, d.style),
     gender: pickFrom(r.gender, GENDERS, d.gender), who: typeof r.who === 'string' ? r.who.slice(0, 120) : '', voice: pickFrom(r.voice, VOICE_STYLES, d.voice),
     callme: pickFrom(r.callme, CALL_ME, d.callme), custom: typeof r.custom === 'string' ? r.custom.replace(/[\u0000-\u001f]/g, '').slice(0, 40) : '',
     line: pickFrom(r.line, LINE_STYLES, d.line), greet: r.greet === 'on' || r.greet === 'off' ? r.greet : d.greet,
@@ -48,12 +53,16 @@ const store0 = () => { try { return globalThis.localStorage || null; } catch { r
 export function readDone(store = store0(), me = null) { try { return cleanDone(JSON.parse(store?.getItem(DONE_KEY) || 'null'), me); } catch { return doneDefaults(me); } }
 export function saveDone(s, store = store0(), me = null) { const c = cleanDone(s, me); try { store?.setItem(DONE_KEY, JSON.stringify(c)); } catch {} return c; }
 export const isClassic = s => s?.animation === 'classic';
+// v2.11.0: Off (the On / Off switch at the top) turns every job's popup, sound and voice off, whatever the Animation is.
+export const isOff = s => s?.enabled === false;
+// No popup for jobs: Off, or Animation = Classic.
+export const isQuiet = s => isOff(s) || isClassic(s);
 // The name the voice uses: Nothing = none, Custom = what was typed (none if empty).
 export const callName = s => (s.callme === 'Nothing' ? '' : s.callme === 'Custom' ? String(s.custom || '').trim() : s.callme);
 // The Me row's value: "New popup · Sound + voice ›" / "Classic ›"
-export const doneRowValue = s => (isClassic(s) ? 'Classic' : `New popup · ${(SOUND_MODES.find(m => m[0] === s.sound) || SOUND_MODES[0])[1]}`);
+export const doneRowValue = s => (isOff(s) ? 'Off' : isClassic(s) ? 'Classic' : `New popup · ${(SOUND_MODES.find(m => m[0] === s.sound) || SOUND_MODES[0])[1]}`);
 // FIX 6.1: the desktop name menu keeps it on one line ("New popup ›" / "Classic ›"); the phone Me screen has the full value
-export const doneRowShort = s => (isClassic(s) ? 'Classic' : 'New popup');
+export const doneRowShort = s => (isOff(s) ? 'Off' : isClassic(s) ? 'Classic' : 'New popup');
 // The engine's settings (its own names)
 export const engineCfg = s => ({ mode: s.sound, gender: s.gender, who: s.who, voice: s.voice, callme: s.callme === 'Custom' ? '__custom' : s.callme === 'Nothing' ? '' : s.callme, custom: s.custom, style: s.line });
 
@@ -97,7 +106,7 @@ export const _setDoneHooks = h => { testHooks = h; };
 const hooks = () => testHooks || (HAS_DOM ? window.__lfmpDoneHooks || null : null);
 export function openMoment(o, { store = store0(), me = null } = {}) {
   const s = readDone(store, me);
-  if (isClassic(s) || !HAS_DOM || !window.DM) return null;
+  if (isQuiet(s) || !HAS_DOM || !window.DM) return null;
   const DM = window.DM, L = linesFor(o.tool, o.client, o.steps);
   DM.configure({ ...engineCfg(s), tool: TOOL_OF[o.tool] || 'builder', lines: L });
   DM.configure({ hooks: hooks() });
@@ -145,7 +154,7 @@ const sw = (key, label, opts, on) => `<div class="lv-sw" role="group" aria-label
 const sel = (key, label, opts, on) => `<select data-dm="${key}" aria-label="${escH(label)}">${opts.map(([k, l]) => `<option value="${escH(k)}"${k === on ? ' selected' : ''}>${escH(l)}</option>`).join('')}</select>`;
 const fld = (label, ctrl, hint = '', off = false) => `<div class="lv-dmp-f${off ? ' off' : ''}"><div class="lab">${escH(label)}</div>${ctrl}${hint ? `<p class="hint">${hint}</p>` : ''}</div>`;
 export function donePanelHtml(s, { voices = [], phone = false } = {}) {
-  const C = isClassic(s), name = callName(s), sample = linesFor('builder', 'Boca Dental');
+  const O = isOff(s), C = isQuiet(s), name = callName(s), sample = linesFor('builder', 'Boca Dental');
   const st = STYLES.find(x => x[0] === s.style) || STYLES[2], snd = SOUND_OF[s.style === 'random' ? 'syscheck' : s.style];
   const vs = voices.length ? voices : [''];
   const who = s.who && vs.includes(s.who) ? s.who : vs[0];
@@ -154,11 +163,12 @@ export function donePanelHtml(s, { voices = [], phone = false } = {}) {
   return `<div class="lv-dmp-shade" data-dm-close></div><aside class="lv-dmp" role="dialog" aria-modal="true" aria-labelledby="lvDmpT">
   <div class="lv-dmp-head"><div><p class="ey">Your settings</p><h2 id="lvDmpT">Done moments</h2></div><button type="button" class="lv-dmp-x lv-hit" data-dm-close aria-label="Close"><span class="x" aria-hidden="true">×</span><span class="bk">‹ Me</span></button></div>
   <div class="lv-dmp-body"><section class="lv-dmp-card">
-    <div class="dmh"><h4>Done moments</h4><span class="chip${C ? ' off' : ''}"><span class="dot"></span>${C ? 'Classic' : 'On'}</span></div>
+    <div class="dmh"><h4>Done moments</h4><span class="chip${C ? ' off' : ''}"><span class="dot"></span>${O ? 'Off' : C ? 'Classic' : 'On'}</span></div>
     <p class="dmlead">What plays on your computer when one of your jobs finishes in the Builder, KPI admin or Review admin. Only you hear it, and only for jobs you started.</p>
     <div class="lv-dmp-prev${C ? ' off' : ''}"><div class="dm-pop dm-thumb" data-dm-thumb aria-hidden="true"></div><div><b>${escH(st[1])}</b><small>${s.style === 'random' ? 'A different style and sound each time' : `${escH(snd[1])} sound`} · ${escH(voiceName)}, ${escH((VOICE_STYLES.find(v => v[0] === s.voice) || VOICE_STYLES[0])[1].replace(/ \(.*\)$/, ''))} style</small></div></div>
     <div class="lv-dmp-btns"><button class="btn primary" type="button" data-dm-act="play"${C ? ' disabled' : ''}>▶ Play my done moment</button><button class="btn" type="button" data-dm-act="voice"${C || s.sound !== 'all' ? ' disabled' : ''}>Test voice</button></div>
-    ${fld('Animation', sw('animation', 'Animation', ANIMATIONS, s.animation), escH(CLASSIC_HINT))}
+    ${fld('Done moments', sw('enabled', 'Done moments', ONOFF, O ? 'off' : 'on'), escH(OFF_HINT))}
+    ${fld('Animation', sw('animation', 'Animation', ANIMATIONS, s.animation), escH(CLASSIC_HINT), O)}
     ${fld('Sound', sw('sound', 'Sound', SOUND_MODES, s.sound), '', C)}
     ${fld('Finish style', sel('style', 'Finish style', STYLES, s.style), '', C)}
     ${fld('Voice', sw('gender', 'Voice', GENDERS, s.gender), '', C)}
@@ -190,7 +200,7 @@ export function openDonePanel({ me = null, store = store0(), onChange, greetSamp
   const set = patch => { s = saveDone({ ...s, ...patch }, store, me); paint(); onChange?.(s); };
   host.addEventListener('click', e => {
     if (e.target.closest('[data-dm-close]')) { closeDonePanel(); return; }
-    const b = e.target.closest('button[data-dm]'); if (b) { const k = b.dataset.dm, v = b.dataset.v; set(k === 'gender' ? { gender: v, who: '' } : { [k]: v }); return; }
+    const b = e.target.closest('button[data-dm]'); if (b) { const k = b.dataset.dm, v = b.dataset.v; set(k === 'gender' ? { gender: v, who: '' } : k === 'enabled' ? { enabled: v === 'on' } : { [k]: v }); return; }
     const a = e.target.closest('[data-dm-act]'); if (!a || a.disabled) return;
     if (a.dataset.dmAct === 'play') playSample(s);
     else if (a.dataset.dmAct === 'voice') testVoice(s);

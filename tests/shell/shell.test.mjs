@@ -27,7 +27,7 @@ const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&#3
 const DN = await import(pathToFileURL(path.join(DIR, 'lfmp-done.js')).href);
 const dnStore = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), m }; };
 test('Done moments: defaults (New popup, Sound + voice, Systems check, Guy, best voice, Commander style, "Commander", Commander line); voice greeting On only for PJ', () => {
-  assert.deepEqual(DN.doneDefaults(), { animation: 'new', sound: 'all', style: 'syscheck', gender: 'guy', who: '', voice: 'commander', callme: 'Commander', custom: '', line: 'commander', greet: 'off' });
+  assert.deepEqual(DN.doneDefaults(), { enabled: true, animation: 'new', sound: 'all', style: 'syscheck', gender: 'guy', who: '', voice: 'commander', callme: 'Commander', custom: '', line: 'commander', greet: 'off' });
   assert.equal(DN.doneDefaults({ first: 'PJ', name: 'PJ' }).greet, 'on'); assert.equal(DN.doneDefaults({ first: 'Andy', name: 'Andy Cass' }).greet, 'off');
   assert.equal(DN.DONE_KEY, 'lfmp-done');
 });
@@ -79,6 +79,53 @@ test('Done moments row in the name menu (after Theme: "New popup ›" / "Classic
     assert.match(text(S.meHtml({ me }, { theme: 'auto', done: { ...DN.doneDefaults(), animation: 'classic' } }, { compact })), /Done moments Classic ›/);
     assert.match(text(S.meHtml({ me }, { theme: 'auto', done: { ...DN.doneDefaults(), sound: 'off' } }, { compact })), compact ? /Done moments New popup › / : /Done moments New popup · Off ›/);
   }
+});
+// v2.11.0 (queue item 10): Team sign-ins shows the Reports key changes when the server sends them
+test('Team sign-ins (v2.11.0): changes [{ who, what, at }] → a second table "Reports key changes (last 90 days)" (Who / What / When, phone labels); missing or empty → nothing extra', () => {
+  const people = [{ name: 'PJ', email: 'pj@example.com', last: '2026-11-24T08:00:00Z', count30: 4 }];
+  const plain = S.signinsHtml({ people });
+  assert.ok(!/Reports key changes|lfmp-keychanges/.test(plain), 'no changes → unchanged');
+  assert.equal(S.signinsHtml({ people, changes: [] }), plain, 'empty changes → identical to before');
+  assert.equal(S.signinsHtml({ people, changes: 'x' }), plain, 'not a list → ignored');
+  const h = S.signinsHtml({ people, changes: [{ who: 'PJ', what: 'CallRail key saved (••••3f9a)', at: '2026-11-24T08:10:00Z', value: 'SECRET-MARKER-123' }, { who: 'PJ', what: '<b>x</b>', at: 'bad' }] });
+  assert.match(text(h), /Reports key changes \(last 90 days\) Who What When PJ CallRail key saved \(••••3f9a\) /);
+  assert.match(h, /<td data-l="Who"><b>PJ<\/b><\/td><td data-l="What">CallRail key saved \(••••3f9a\)<\/td><td data-l="When">[A-Z][a-z]{2} \d+ Nov, \d+:\d\d [AP]M<\/td>/);
+  assert.ok(!h.includes('SECRET-MARKER-123'), 'nothing else from a change is shown');
+  assert.ok(h.includes('&lt;b&gt;x&lt;/b&gt;') && !h.includes('<b>x</b>'), 'escaped');
+  assert.equal((S.signinsHtml({ people, changes: Array.from({ length: 80 }, (_, i) => ({ who: 'PJ', what: `k${i}`, at: '2026-11-24T08:10:00Z' })) }).match(/data-l="Who"/g) || []).length, 50, 'at most 50 rows');
+  assert.match(S.signinsHtml({ changes: [{ who: 'PJ', what: 'x', at: '2026-11-24T08:10:00Z' }] }), /No sign-ins recorded yet[\s\S]*Reports key changes/);
+});
+// v2.11.0 (queue item 10): the On / Off switch at the top of the panel
+test('Done moments On / Off (v2.11.0): default On; saved as enabled: true | false in "lfmp-done"; anything else = On; Off overrides Classic; isQuiet = Off or Classic', () => {
+  const st = dnStore();
+  assert.equal(DN.readDone(st).enabled, true, 'default On');
+  DN.saveDone({ ...DN.doneDefaults(), enabled: false }, st);
+  assert.equal(JSON.parse(st.m.get('lfmp-done')).enabled, false); assert.equal(DN.readDone(st).enabled, false);
+  for (const v of [true, 'off', 0, null, undefined]) { st.setItem('lfmp-done', JSON.stringify({ enabled: v })); assert.equal(DN.readDone(st).enabled, true, `enabled ${JSON.stringify(v)} → On`); }
+  st.setItem('lfmp-done', JSON.stringify({ animation: 'new' })); assert.equal(DN.readDone(st).enabled, true, 'a saved setting from before 2.11.0 (no "enabled") = On');
+  const off = { ...DN.doneDefaults(), enabled: false };
+  assert.ok(DN.isOff(off) && DN.isQuiet(off) && !DN.isClassic(off));
+  assert.ok(DN.isQuiet({ ...DN.doneDefaults(), animation: 'classic' }) && !DN.isOff({ ...DN.doneDefaults(), animation: 'classic' }));
+  assert.ok(DN.isQuiet({ ...off, animation: 'classic' }), 'Off + Classic: quiet');
+  assert.ok(!DN.isQuiet(DN.doneDefaults()));
+  assert.equal(DN.doneRowValue(off), 'Off'); assert.equal(DN.doneRowShort(off), 'Off'); assert.equal(DN.doneRowValue({ ...off, animation: 'classic' }), 'Off', 'Off wins over Classic');
+});
+test('Done moments row: "Done moments · Off ›" in the name menu and on the phone Me screen when switched off', () => {
+  for (const compact of [true, false]) assert.match(text(S.meHtml({ me }, { theme: 'auto', done: { ...DN.doneDefaults(), enabled: false } }, { compact })), /Done moments Off ›/, `compact ${compact}`);
+});
+test('Done moments panel (v2.11.0): the first switch is "Done moments: On | Off" with the hint; Off greys out everything below except the voice greeting, disables Play and Test voice, chip "Off"', () => {
+  const on = DN.donePanelHtml(DN.doneDefaults()), off = DN.donePanelHtml({ ...DN.doneDefaults(), enabled: false });
+  const fields = h => [...h.matchAll(/<div class="lv-dmp-f( off)?"><div class="lab">([^<]+)<\/div>/g)].map(m => [m[2], !!m[1]]);
+  assert.deepEqual(fields(on).map(f => f[0]).slice(0, 2), ['Done moments', 'Animation'], 'On / Off first, then Animation');
+  assert.ok(fields(on).every(f => !f[1]), 'On: nothing greyed');
+  assert.match(on, /data-dm="enabled" data-v="on" aria-pressed="true"/); assert.match(off, /data-dm="enabled" data-v="off" aria-pressed="true"/);
+  assert.ok(on.includes(DN.OFF_HINT.replace(/'/g, '&#39;')) || on.includes(DN.OFF_HINT), 'the hint from the preview');
+  assert.deepEqual(fields(off).filter(f => f[1]).map(f => f[0]), ['Animation', 'Sound', 'Finish style', 'Voice', 'Which voice', 'Voice style', 'Call me', 'Line'], 'Off: everything below greyed, except the voice greeting');
+  assert.ok(fields(off).some(f => f[0] === 'Voice greeting' && !f[1]), 'voice greeting keeps its own switch');
+  assert.match(off, /data-dm-act="play" disabled/); assert.match(off, /data-dm-act="voice" disabled/);
+  assert.match(text(off), /Done moments Off What plays/); assert.match(text(on), /Done moments On What plays/);
+  const cl = DN.donePanelHtml({ ...DN.doneDefaults(), animation: 'classic' });
+  assert.ok(fields(cl).find(f => f[0] === 'Animation')[1] === false && fields(cl).find(f => f[0] === 'Sound')[1] === true, 'Classic as before: Animation stays usable, the rest greys');
 });
 test('Done moments: no browser (the team site\'s server imports the shell) → the engine never runs; a job\'s moment is null', () => {
   assert.equal(DN.HAS_DOM, false); assert.equal(DN.openMoment({ tool: 'builder', client: 'X' }), null);
@@ -1125,6 +1172,24 @@ window.shell = S.mountShell({ tool, me: { name: 'PJ', first: 'PJ', email: 'pj@ex
       assert.ok(await C.page.locator('[data-lv-res-shade]').count(), `${tool} Classic: the usual Done popup`);
       assert.deepEqual(await C.page.evaluate(() => window.calls), [], `${tool} Classic: no sound, no voice`);
       await C.ctx.close();
+      // ---- v2.11.0 Off (and Off + Classic): the engine's popup / sound / voice are never called; today's flow exactly
+      for (const extra of [{}, { animation: 'classic' }]) {
+        const O = await ctxFor({ done: { ...DN.doneDefaults(), enabled: false, ...extra } });
+        const lab = `${tool} Off${extra.animation ? ' + Classic' : ''}`;
+        await O.page.goto(`${base}/?tool=${tool}`); await O.page.waitForFunction(() => window.ready && window.DM);
+        await O.page.evaluate(() => { window.dmCalls = []; for (const k of ['play', 'speak', 'sound', 'configure']) { const f = window.DM[k]; window.DM[k] = (...a) => { window.dmCalls.push(k); return f.apply(window.DM, a); }; } });
+        await O.page.evaluate(t => { window.j = S.startJob({ tool: t === 'review' ? 'builder' : t, kind: 'create', client: 'Acme Law', what: 'Fixture job', title: 'Building Acme Law…', host: 'h', moment: { tool: t, steps: ['a', 'b'] } }); }, tool);
+        await wait(300);
+        assert.equal(await O.page.locator('.dm-pop').count(), 0, `${lab}: no popup`);
+        assert.ok(await O.page.locator('[data-lv-jobhost="h"] *').count() > 0, `${lab}: the working bar as today`);
+        assert.equal(await O.page.evaluate(() => window.j.moment), false);
+        await O.page.evaluate(() => window.j.done({ title: 'Done: fixture' })); await wait(1500);
+        assert.ok(await O.page.locator('[data-lv-res-shade]').count(), `${lab}: the usual Done popup`);
+        assert.deepEqual(await O.page.evaluate(() => window.calls), [], `${lab}: no sound, no voice`);
+        assert.deepEqual(await O.page.evaluate(() => window.dmCalls), [], `${lab}: the engine is never called (no play, speak, sound)`);
+        assert.deepEqual(O.errs, [], `${lab}: no page errors`);
+        await O.ctx.close();
+      }
     }
     // ---- the settings panel
     const P = await ctxFor();
@@ -1143,10 +1208,24 @@ window.shell = S.mountShell({ tool, me: { name: 'PJ', first: 'PJ', email: 'pj@ex
     assert.equal(JSON.parse(await P.page.evaluate(() => localStorage.getItem('lfmp-done'))).animation, 'classic');
     await P.page.keyboard.press('Escape'); await P.page.click('[data-lv-top] [data-lv="me"]');
     assert.match(await P.page.locator('[data-lv-top] [data-lv="done"]').innerText(), /Classic ›/, 'the Me row says Classic');
+    // v2.11.0: the On / Off switch at the top (first setting); Off greys everything below except the voice greeting, overrides Classic
+    await P.page.click('[data-lv-top] [data-lv="done"]'); await P.page.waitForSelector('.lv-dmp');
+    assert.equal(await P.page.locator('.lv-dmp-f .lab').first().textContent(), 'Done moments', 'On / Off is the first setting');
+    await P.page.click('.lv-dmp [data-dm="enabled"][data-v="off"]');
+    assert.equal(await P.page.locator('.lv-dmp-f.off').count(), 8, 'Off: Animation and every setting below grey out (Voice greeting stays)');
+    assert.ok(await P.page.locator('.lv-dmp [data-dm-act="play"]').isDisabled() && await P.page.locator('.lv-dmp [data-dm-act="voice"]').isDisabled());
+    assert.match(await P.page.locator('.lv-dmp .dmh .chip').innerText(), /Off/);
+    assert.equal(JSON.parse(await P.page.evaluate(() => localStorage.getItem('lfmp-done'))).enabled, false, 'saved as enabled: false');
+    await P.page.keyboard.press('Escape'); await P.page.click('[data-lv-top] [data-lv="me"]');
+    assert.match(await P.page.locator('[data-lv-top] [data-lv="done"]').innerText(), /Done moments\s*Off ›/, 'the Me row says Off');
+    await P.page.click('[data-lv-top] [data-lv="done"]'); await P.page.waitForSelector('.lv-dmp');
+    await P.page.click('.lv-dmp [data-dm="enabled"][data-v="on"]');
+    assert.equal(JSON.parse(await P.page.evaluate(() => localStorage.getItem('lfmp-done'))).enabled, true, 'back On');
+    assert.equal(await P.page.locator('.lv-dmp-f.off').count(), 7, 'On again: Classic (still picked) greys as before');
     await P.ctx.close();
     // ---- the voice greeting: On = once, with the right text, after a click; Off = never; never after it ends
-    for (const greet of ['on', 'off']) {
-      const G = await ctxFor({ greet: true, done: { ...DN.doneDefaults(), greet } });
+    for (const [greet, enabled] of [['on', true], ['off', true], ['on', false]]) {   // v2.11.0: Done moments Off doesn't touch the voice greeting
+      const G = await ctxFor({ greet: true, done: { ...DN.doneDefaults(), greet, enabled } });
       await G.page.goto(`${base}/?tool=builder`); await G.page.waitForFunction(() => window.ready);
       await G.page.mouse.click(5, 5);   // a click before: Chrome lets the page speak
       await G.page.evaluate(() => { try { localStorage.removeItem('lfmp-greet-day'); localStorage.setItem('lfmp-counts', JSON.stringify({ reviews: { n: 2, at: Date.now() }, scorecards: { n: 1, at: Date.now() }, clients: { n: 3, at: Date.now() } })); } catch {} window.calls.length = 0; window.gp = S.playGreeting({ me: { name: 'PJ', first: 'PJ' }, reads: [] }); });

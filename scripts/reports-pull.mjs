@@ -22,7 +22,7 @@ import { realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { client, BrightLocalError } from './brightlocal.mjs';
-import { pullable, wantsBuild, buildReport, configPath, dataPath, STATUS_PATH, SOURCE_KEYS, SOURCE_LABELS, linkedSources, REPORTS_V2, throughOf, pullWindow, mergeDays, dayList, addDays, asV2 } from './reports-core.mjs';
+import { ownCallrail, ownCallrailName, pullable, wantsBuild, buildReport, configPath, dataPath, STATUS_PATH, SOURCE_KEYS, SOURCE_LABELS, linkedSources, REPORTS_V2, throughOf, pullWindow, mergeDays, dayList, addDays, asV2 } from './reports-core.mjs';
 import { client as callrail, CallRailError } from './callrail.mjs';
 import { saClient, oauthClient, hostOf } from './google.mjs';
 export { reportsIssues } from './reports-core.mjs';
@@ -40,6 +40,7 @@ export const CRED_NAMES = { brightlocal: ['BRIGHTLOCAL_API_KEY'], callrail: ['CA
 export const credsFromEnv = env => ({
   brightlocal: env.BRIGHTLOCAL_API_KEY ? { key: env.BRIGHTLOCAL_API_KEY, secret: env.BRIGHTLOCAL_API_SECRET || '' } : null,
   callrail: env.CALLRAIL_API_KEY ? { key: env.CALLRAIL_API_KEY } : null,
+  callrailOwn: env.CALLRAIL_OWN_KEY ? { key: env.CALLRAIL_OWN_KEY } : null,   // v1.40.0: this firm's own key (CALLRAIL_KEY_<SLUG>), if it has one
   sa: env.GOOGLE_REPORTS_SA_JSON || '',
   oauth: { clientId: env.GOOGLE_OAUTH_CLIENT_ID || '', clientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET || '', gbpRefresh: env.GOOGLE_GBP_REFRESH_TOKEN || '', adsRefresh: env.GOOGLE_ADS_REFRESH_TOKEN || '', mccId: env.GOOGLE_ADS_MCC_ID || '' },
 });
@@ -48,11 +49,15 @@ export const hasFromEnv = env => ({ brightlocal: env.HAS_KEY === 'true', callrai
 export const hasFromCreds = c => ({ brightlocal: !!c.brightlocal, callrail: !!c.callrail, ga4: !!c.sa, searchConsole: !!c.sa, gbp: !!(c.oauth?.clientId && c.oauth?.clientSecret && c.oauth?.gbpRefresh), googleAds: !!(c.oauth?.clientId && c.oauth?.clientSecret && c.oauth?.adsRefresh && c.oauth?.mccId) });
 
 // ---------------------------------------------------------------- plan
+async function anyOwnCallrail(root) {
+  for (const f of await readJSON(join(root, 'firms/index.json'), [])) if (ownCallrail(await readJSON(join(root, configPath(f.slug))))) return true;
+  return false;
+}
 export async function plan({ root = '.', event = 'schedule', slug = '', hasKey = false, has = null, changed = [], log = console.log }) {
   has ||= { brightlocal: !!hasKey };
   const ready = SOURCE_KEYS.filter(k => has[k]);
   for (const k of SOURCE_KEYS.filter(k => !has[k])) log(`${SOURCE_LABELS[k]} not set yet (${[...new Set(CRED_NAMES[k])].join(', ')}): skipped.`);
-  if (!ready.length) { log('No report source is set up yet: nothing pulled. Add the secrets in Settings → Secrets and variables → Actions.'); return []; }
+  if (!ready.length && !(await anyOwnCallrail(root))) { log('No report source is set up yet: nothing pulled. Add the secrets in Settings → Secrets and variables → Actions.'); return []; }
   const index = await readJSON(join(root, 'firms/index.json'), []);
   const status = await readJSON(join(root, STATUS_FILE), emptyReportsStatus());
   const out = [];
@@ -60,7 +65,8 @@ export async function plan({ root = '.', event = 'schedule', slug = '', hasKey =
     if (slug && f.slug !== slug) continue;
     if (event === 'push' && changed.length && !changed.includes(configPath(f.slug))) continue;
     const cfg = await readJSON(join(root, configPath(f.slug)));
-    if (!pullable(cfg) || !linkedSources(cfg).some(k => has[k])) continue;
+    // v1.40.0: a firm with its own CallRail key runs even when the agency key isn't set (the pull job sees its own key)
+    if (!pullable(cfg) || !linkedSources(cfg).some(k => has[k] || (k === 'callrail' && ownCallrail(cfg)))) continue;
     if (event === 'push' && !wantsBuild(cfg, status.firms?.[f.slug])) continue;   // a save without Build now waits for tonight
     out.push({ slug: f.slug, name: f.name || f.slug, secretKey: f.secretKey || secretKeyOf(f.slug), request: cfg.buildRequest?.id || '' });
   }
@@ -74,8 +80,10 @@ export async function plan({ root = '.', event = 'schedule', slug = '', hasKey =
 // shows as broken; the others still update.
 export async function pull({ root = '.', slug, key, secret = '', creds = null, pass, fetch: f = globalThis.fetch, outDir, now = new Date(), log = console.log }) {
   creds ||= { brightlocal: key ? { key, secret } : null, callrail: null, sa: '', oauth: {} };
-  const has = hasFromCreds(creds);
   const cfg = await readJSON(join(root, configPath(slug)));
+  // v1.40.0: a firm marked "own CallRail key" uses only its own key (never the agency key) for CallRail
+  if (ownCallrail(cfg)) creds = { ...creds, callrail: creds.callrailOwn || null };
+  const has = hasFromCreds(creds);
   if (!pullable(cfg)) throw new BrightLocalError(`${slug}: Reports isn't set up (no linked source in ${configPath(slug)}).`, { kind: 'config' });
   if (!pass) throw new BrightLocalError(`${slug}: the firm's KPI passphrase (PASSPHRASE_${secretKeyOf(slug)}) isn't set, so the numbers can't be encrypted.`, { kind: 'config' });
   let old = null;
@@ -86,7 +94,7 @@ export async function pull({ root = '.', slug, key, secret = '', creds = null, p
     rankings: old?.rankings || null, calls: old?.calls || null, search: old?.search || null, traffic: old?.traffic || null, gbp: old?.gbp || null, ads: old?.ads || null };
   const results = {};
   const linked = linkedSources(cfg);
-  for (const k of linked) if (!has[k]) results[k] = { ok: true, skipped: 'no_key' };
+  for (const k of linked) if (!has[k]) { results[k] = { ok: true, skipped: 'no_key' }; if (k === 'callrail' && ownCallrail(cfg)) log(`${slug}: the client's own CallRail key (${ownCallrailName(slug)}) isn't set: CallRail skipped.`); }
   // drop a source's numbers once it's unlinked or "Not used" (nothing stale stays readable)
   for (const [k, field] of [['brightlocal', 'rankings'], ['callrail', 'calls'], ['searchConsole', 'search'], ['ga4', 'traffic'], ['gbp', 'gbp'], ['googleAds', 'ads']]) if (!linked.includes(k)) rep[field] = null;
   const run = async (k, fn) => { if (!linked.includes(k) || !has[k]) return; try { await fn(); results[k] = { ok: true }; } catch (e) { results[k] = { ok: false, kind: e.kind || 'error', message: String(e.message || e).slice(0, 200) }; log(`::warning::${slug}: ${SOURCE_LABELS[k]}: ${results[k].message}`); } };

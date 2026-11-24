@@ -1,5 +1,13 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.40.0": {
+    "title": "Done moments On / Off",
+    "summary": "Done moments can be switched off; a client's own CallRail key is supported in Reports.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "Done moments: On / Off. Switch it off in your name menu → Done moments for no popup, sound or voice on any job: you get the usual progress bar and Done popup. The voice greeting has its own switch." },
+      { "type": "new", "tag": "internal", "text": "Reports: a client with their own CallRail account is built with their own key (set in the Builder), never LFMP's." }
+    ]
+  },
   "1.39.0": {
     "title": "LeadPro Reports: calls, Google and ads",
     "summary": "Reports can now show calls and website leads (CallRail), Google Search, website traffic, Google Business Profile and Google Ads.",

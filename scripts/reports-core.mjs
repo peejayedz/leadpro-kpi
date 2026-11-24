@@ -60,7 +60,7 @@ export function sourceValue(key, v) {
   if (v.unused === true) return { unused: true };
   switch (key) {
     case 'brightlocal': return validLocationId(v.locationId) ? { locationId: String(v.locationId), rankReportId: String(v.rankReportId || '') } : null;
-    case 'callrail': return /^[A-Za-z0-9_-]{3,64}$/.test(String(v.companyId || '')) && (!v.accountId || /^[A-Za-z0-9_-]{3,64}$/.test(String(v.accountId))) ? { ...(v.accountId ? { accountId: String(v.accountId) } : {}), companyId: String(v.companyId), companyName: clip(v.companyName ?? v.name), ...(v.accountName ? { accountName: clip(v.accountName) } : {}) } : null;   // NOTE 7.1: accountId + companyId (one account per firm)
+    case 'callrail': return /^[A-Za-z0-9_-]{3,64}$/.test(String(v.companyId || '')) && (!v.accountId || /^[A-Za-z0-9_-]{3,64}$/.test(String(v.accountId))) ? { ...(v.accountId ? { accountId: String(v.accountId) } : {}), companyId: String(v.companyId), companyName: clip(v.companyName ?? v.name), ...(v.accountName ? { accountName: clip(v.accountName) } : {}), ...(v.ownKey === true ? { ownKey: true } : {}) } : null;   // NOTE 7.1: accountId + companyId (one account per firm); v1.40.0: ownKey = the client's own CallRail key (CALLRAIL_KEY_<SLUG>)
     case 'ga4': { const id = String(v.propertyId || '').replace(/^properties\//, ''); return /^\d{3,15}$/.test(id) ? { propertyId: id, name: clip(v.name) } : null; }
     case 'searchConsole': return /^(sc-domain:[a-z0-9.-]+|https?:\/\/[^\s]+\/)$/i.test(String(v.siteUrl || '')) ? { siteUrl: String(v.siteUrl) } : null;
     case 'gbp': return /^locations\/\d{3,30}$/.test(String(v.locationName || '')) ? { locationName: String(v.locationName), title: clip(v.title) } : null;
@@ -107,6 +107,9 @@ export const draftTabs = cfg => (cfg?.status === 'live' ? tabsFor(cfg).filter(t 
 export const visibleTabs = (cfg, { drafts = false } = {}) => (!cfg?.enabled ? [] : cfg.status !== 'live' || drafts ? tabsFor(cfg) : tabsFor(cfg).filter(t => publishedTabs(cfg).includes(t)));
 export const withPublished = (cfg, { tabs = tabsFor(cfg), by = '', at = new Date().toISOString() } = {}) => ({ ...cfg, published: TAB_ORDER.filter(t => tabs.includes(t)), publishedAt: at, publishedBy: String(by || '').slice(0, 60) });
 // The nightly list: every config that is enabled and has at least one linked source.
+// v1.40.0: does this firm use its own CallRail key (secret CALLRAIL_KEY_<SLUG>) instead of LFMP's agency key?
+export const ownCallrail = cfg => !!(isLinked(cfg, 'callrail') && cfg.sources.callrail.ownKey === true);
+export const ownCallrailName = slug => `CALLRAIL_KEY_${String(slug).toUpperCase().replace(/-/g, '_')}`;
 export const pullable = cfg => !!(cfg && cfg.enabled && linkedSources(cfg).length);
 // A push run builds a firm only when its Build now request is newer than its last run.
 export const wantsBuild = (cfg, status) => !!cfg?.buildRequest?.id && cfg.buildRequest.id !== status?.request;
