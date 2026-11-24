@@ -328,6 +328,13 @@ test('Repo: GHL writes only in ghl-app.mjs (/oauth token calls) and ghl-menu.mjs
     if (f !== 'ghl-menu.mjs') ok(!/custom-menus/.test(t), `${f} mentions custom-menus`);
     // v1.22.0: slack.mjs's one POST goes only to a Slack webhook address (WEBHOOK_RE), never to GHL.
     if (f === 'slack.mjs') { ok(!/leadconnectorhq|gohighlevel|lawfirmmarketingpros/i.test(t) && /WEBHOOK_RE\.test\(url\)/.test(t), 'slack.mjs may only post to a Slack webhook'); continue; }
+    // v1.39.0 (LeadPro Reports): google.mjs's POSTs are Google's READ calls (the token endpoint, GA4 runReport, Search
+    // Console searchAnalytics.query, Google Ads searchStream). Never GHL; nothing else may POST there.
+    if (f === 'google.mjs') {
+      ok(!/leadconnectorhq|gohighlevel|lawfirmmarketingpros/i.test(t), 'google.mjs never talks to GHL');
+      for (const m of t.matchAll(/method:\s*'(POST|PUT|PATCH|DELETE)'/g)) { const near = t.slice(Math.max(0, m.index - 900), m.index + 40); ok(m[1] === 'POST' && /TOKEN_URL|:runReport|searchAnalytics\/query|googleAds:searchStream/.test(near), `google.mjs: unexpected write ${t.slice(m.index, m.index + 60)}`); }
+      continue;
+    }
     for (const m of t.matchAll(/method:\s*'(POST|PUT|PATCH|DELETE)'[^\n]*|ghl\(\s*'[^']*',\s*\{\s*method:\s*'(POST|PUT|PATCH|DELETE)'/g)) {
       const line = m[0];
       ok(/\/contacts\/search/.test(t.slice(Math.max(0, m.index - 120), m.index + 40)) || f === 'sync-chain.mjs', `${f}: unexpected write ${line.slice(0, 60)}`);

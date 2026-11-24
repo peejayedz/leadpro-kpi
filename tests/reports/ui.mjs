@@ -1,5 +1,5 @@
 // v1.37.0 LeadPro Reports: the client page (app/reports.html through a firm stub) in a real browser.
-//   Run:  CHROMIUM_PATH=… node tests/reports/ui.mjs [screenshot-folder] [preview-report.html]
+//   Run:  CHROMIUM_PATH=… node tests/reports/ui.mjs [screenshot-folder] [preview-report.html] [preview-report-full.html]
 // Two test firms are served next to the real files (nothing is written into firms/): a Draft LFMP firm and a Live WPP
 // firm, each with reports.json encrypted from the fixtures. With a preview path, the approved preview is shot at the same
 // sizes (preview-<size>-<scheme>.png) for the side-by-side.
@@ -36,6 +36,23 @@ for (const [slug, status, agency] of [['zz-report-draft', 'draft', null], ['zz-r
   virtual.set(`/firms/${slug}/data/kpis.json`, JSON.stringify({ generatedAt: '2026-11-21T07:00:00Z', location: 'The Mahdavi Law Firm', ...(agency ? { agency } : {}) }));
   virtual.set(`/firms/${slug}/reports.html`, RC.STUB_HTML);
 }
+// v1.39.0: every source (fixtures/sources.mjs): Mahdavi (BrightLocal + CallRail + GA4 + Search Console + Business Profile,
+// no Ads; Draft) and Sample Firm A (CallRail + Google + Ads), plus a Live firm whose newer tabs are still Draft.
+const SRC = await import('./fixtures/sources.mjs');
+const SA = await SRC.fakeServiceAccount();
+Object.assign(PASS, { 'zz-report-mahdavi': 'mahdavi test pass 3', 'zz-report-sample': 'sample test pass 4', 'zz-report-pub': 'live published pass 5', 'zz-report-zero': 'zero conv pass 6' });
+for (const [slug, mk, status, extra] of [['zz-report-mahdavi', SRC.configs.mahdavi, 'draft', {}], ['zz-report-sample', SRC.configs.sample, 'draft', {}], ['zz-report-pub', SRC.configs.mahdavi, 'live', { published: ['Rankings'] }], ['zz-report-zero', SRC.configs.sample, 'draft', {}]]) {
+  const cfg = { ...mk(status), slug, ...extra };
+  await mkdir(join(tmp, 'firms', slug), { recursive: true });
+  await (await import('node:fs/promises')).writeFile(join(tmp, RC.configPath(slug)), JSON.stringify(cfg));
+  await RP.pull({ root: tmp, slug, creds: SRC.allCreds(SA.json), pass: PASS[slug], fetch: SRC.fakeApis({ adsZero: slug === 'zz-report-zero' }), outDir: join(tmp, 'out'), log: () => {}, now: SRC.NOW });
+  virtual.set(`/firms/${slug}/reports-config.json`, JSON.stringify(cfg));
+  virtual.set(`/firms/${slug}/reports.json`, await readFile(join(tmp, 'out', slug, 'reports.json'), 'utf8'));
+  virtual.set(`/firms/${slug}/data/kpis.json`, JSON.stringify({ location: slug.includes('sample') || slug.includes('zero') ? 'Sample Firm A' : 'The Mahdavi Law Firm' }));
+  virtual.set(`/firms/${slug}/reports.html`, RC.STUB_HTML);
+}
+const PREVIEW_FULL = process.argv[4] || '';
+if (PREVIEW_FULL) virtual.set('/__preview/report-full.html', await readFile(PREVIEW_FULL, 'utf8'));
 // a firm with Reports set up but no build yet, and one without competitors
 virtual.set('/firms/zz-report-new/reports-config.json', JSON.stringify(RC.newConfig({ slug: 'zz-report-new', locationId: '3839215' })));
 virtual.set('/firms/zz-report-new/data/kpis.json', JSON.stringify({ location: 'New Firm' }));
@@ -88,7 +105,7 @@ try {
     const tiles = await page.locator('.r4 .card').allInnerTexts();
     check(/Average Google position[\s\S]*20\.7[\s\S]*▼ 0\.2[\s\S]*Across 88 tracked keywords/.test(tiles[0]) && /6[\s\S]*of 88 tracked/.test(tiles[1]) && /\+1 \/ \+3/.test(tiles[2]) && /0%[\s\S]*Not in the map results yet/.test(tiles[3]), `${tag}: 4 tiles: 20.7 ▼ 0.2 · 6 of 88 · +1 / +3 · 0%`, tiles.join(' | '));
     check(await text(page, '#firm') === 'The Mahdavi Law Firm' && await text(page, '#sub') === 'LeadPro Reports · Houston, TX', `${tag}: header: firm name + "LeadPro Reports · Houston, TX"`);
-    check(JSON.stringify(await page.locator('#tabs .tab').allInnerTexts()) === '["Rankings"]' && await page.locator('#tabs .tab.on').count() === 1, `${tag}: Phase 1: only the Rankings tab (gold underline)`);
+    check(JSON.stringify(await page.locator('#tabs .tab').allInnerTexts()) === '["Rankings"]' && await page.locator('#tabs .tab.on').count() === 1, `${tag}: only BrightLocal linked: only the Rankings tab (gold underline)`);
     check(await page.locator('#draft').isVisible() && /Draft/.test(await text(page, '#draft')), `${tag}: Draft banner (not in the GHL menu yet)`);
     check(/BrightLocal Rank Tracker · Oct 31, 2026 vs Oct 9 · checked from Houston, TX/.test(await text(page, '.sec .l')), `${tag}: "BrightLocal Rank Tracker · Oct 31, 2026 vs Oct 9 · checked from Houston, TX"`);
     check(await page.locator('svg[aria-label="Average Google position by month"] polyline').count() === 3 && /May[\s\S]*Oct/.test(await page.locator('svg[aria-label="Average Google position by month"]').innerHTML()), `${tag}: average position by month: 3 lines, May–Oct`);
@@ -126,6 +143,130 @@ try {
   // ---- set up, first build not done yet
   { const { ctx, page } = await open('/firms/zz-report-new/reports.html');
     check(/First report coming soon/.test(await text(page, '#body')), 'set up but not built yet → "First report coming soon" (no lock, nothing to unlock)'); await ctx.close(); }
+  // ================================================================ v1.39.0: every tab (queue items 7–9)
+  const RANGE7 = slug => [`lfmp-report-range-${slug}`, '7d'];
+  async function openFirm(slug, { w = 1440, h = 900, scheme = 'light', range = '7d', qs = '' } = {}) {
+    const ctx = await browser.newContext({ viewport: { width: w, height: h }, colorScheme: scheme });
+    await ctx.addInitScript(([a, b, c, d]) => { try { localStorage.setItem(a, b); if (d) localStorage.setItem(c, d); } catch {} }, [`lfmp-pass-${slug}`, PASS[slug], `lfmp-report-range-${slug}`, range]);
+    const page = await ctx.newPage(); const errs = [];
+    page.on('pageerror', e => errs.push(e.message));
+    await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => { if (!/fonts\.(googleapis|gstatic)\.com/.test(r.request().url())) outside.push(r.request().url()); r.abort(); });
+    await page.goto(`${BASE}/firms/${slug}/reports.html${qs}`); await page.waitForSelector('#body .card');
+    return { ctx, page, errs };
+  }
+  const tabTo = async (page, t) => { await page.click(`#tabs [data-t="${t}"]`); await page.waitForSelector(`#tabs .tab.on[data-t="${t}"]`); };
+  const tiles = page => page.locator('.r4').first().locator('.card').allInnerTexts();
+  const flat = s => s.replace(/([^\s])([▲▼])/g, '$1 $2').replace(/\s+/g, ' ').trim();
+  const PREV_TAB = { Overview: 'overview', Calls: 'calls', 'Website leads': 'leads', 'Google Search': 'search', 'Website traffic': 'traffic', 'Google Business Profile': 'gbp', Ads: 'ads' };
+  for (const [w, h] of [[1440, 900], [390, 844]]) for (const scheme of ['light', 'dark']) {
+    const tag = `${w}-${scheme}`;
+    const { ctx, page, errs } = await openFirm('zz-report-mahdavi', { w, h, scheme });
+    check(JSON.stringify(await page.locator('#tabs .tab').allInnerTexts()) === JSON.stringify(['Overview', 'Calls', 'Website leads', 'Google Search', 'Website traffic', 'Google Business Profile', 'Rankings']), `${tag}: Mahdavi: the 7 linked tabs, no Ads (not linked)`);
+    check(await text(page, '#dtl') === 'Aug 3 – Aug 9, 2026' && await text(page, '#sub') === 'LeadPro Reports · Houston, TX', `${tag}: date pill "Aug 3 – Aug 9, 2026" (Last 7 days) + "LeadPro Reports · Houston, TX"`);
+    // Overview
+    check(flat(await text(page, '.sum h1')) === 'This week: 107 calls and 1 website form.', `${tag}: Overview headline "This week: 107 calls and 1 website form."`, await text(page, '.sum h1'));
+    check(/Calls are up 29% on the week before\. Most came from your Google Business Profile\. 14 calls were missed; that's the main thing to fix\./.test(await text(page, '.sum p')), `${tag}: summary sentence (up 29%, GBP, 14 missed)`, await text(page, '.sum p'));
+    const li = flat((await page.locator('.sum li').allInnerTexts()).join(' | '));
+    check(/40 first-time callers, up 38%/.test(li) && /14 missed calls, up 75%/.test(li) && /#4 on Google for "rideshare accident attorney 77027"/.test(li), `${tag}: the 3 summary points (40 up 38% · 14 up 75% · #4 best keyword)`, li);
+    let t = (await tiles(page)).map(flat);
+    check(/Total calls CallRail 107 ▲ 29% vs 83 the week before/.test(t[0]) && /First-time callers CallRail 40 ▲ 38%/.test(t[1]) && /Answered CallRail 93 ▲ 24% 87% of calls answered/.test(t[2]) && /Missed CallRail 14 ▲ 75% 13% of calls missed/.test(t[3]), `${tag}: Overview tiles 107 / 40 / 93 / 14`, t.join(' | '));
+    check(await page.locator('.r4').first().locator('.card').nth(3).locator('.chg.dn').count() === 1 && await page.locator('.r4').first().locator('.card').nth(0).locator('.chg.up').count() === 1, `${tag}: missed ▲ is red (worse), calls ▲ green`);
+    check(/87%[\s\S]*Answered 93[\s\S]*Missed 14/.test(await text(page, '.r3 .card:nth-child(1)')), `${tag}: donut 87% answered (93 / 14)`);
+    check(/Google Business Profile\s*69[\s\S]*Google Ads\s*18[\s\S]*Google organic\s*8[\s\S]*Direct\s*5[\s\S]*Other\s*7/.test(await text(page, '.r3 .card:nth-child(2)')), `${tag}: where calls came from: GBP 69 · Ads 18 · organic 8 · direct 5 · other 7`);
+    check(await page.locator('svg[aria-label="Calls per day"] polyline').count() === 2 && await page.locator('svg[aria-label="Calls per day"] circle').count() === 7, `${tag}: calls per day: this week (7 points) + the week before`);
+    const wg = flat(await page.locator('.sec', { hasText: 'Website & Google' }).locator('xpath=following-sibling::div[1]').innerText());
+    check(/Google search clicks Search Console 312 ▲ 6% 11\.9k impressions 14\.2 avg position/.test(wg) && /Website visits GA4 948 ▼ 3% 71% from Google 1:42 avg time/.test(wg) && /Profile actions Google Business 186 ▲ 11% 121 calls 43 directions 22 site clicks/.test(wg) && /Google Ads Google Ads Not connected yet\. Calls from your ads still count on the Calls tab \(18 this week\)\./.test(wg), `${tag}: Website & Google: 312 · 948 · 186 · Ads "Not connected yet … (18 this week)"`, wg);
+    check(/Average Google position BrightLocal 20\.7/.test(flat(await text(page, '.row.r3:nth-of-type(n)'))) || /20\.7/.test(await page.locator('.sec', { hasText: 'Google rankings' }).locator('xpath=following-sibling::div[1]').innerText()), `${tag}: Overview rankings section (BrightLocal linked)`);
+    check(!errs.length, `${tag}: no page errors (Overview)`, errs.join(' | '));
+    check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${tag}: Overview: no sideways scroll`);
+    await shot(page, `client-overview-${tag}`);
+    // Calls
+    await tabTo(page, 'Calls');
+    t = (await tiles(page)).map(flat);
+    check(/107 ▲ 29% vs 83 the week before/.test(t[0]) && /93 ▲ 24% 87% of calls$/.test(t[2]) && /14 ▲ 75% 13% of calls$/.test(t[3]), `${tag}: Calls tiles`, t.join(' | '));
+    const ch = await page.locator('svg[aria-label="Calls per day"]').evaluate(e => e.getBoundingClientRect().height);
+    check(await page.locator('svg[aria-label="Calls per day"]').getAttribute('height') === '230' && (w > 760 ? Math.round(ch) === 230 : ch < 200 && ch > 100), `${tag}: Calls per day 230 px tall on desktop; scaled to the width on a phone (FIX 7.1: ${Math.round(ch)} px)`);
+    if (w <= 760) check(await page.evaluate(() => [...document.querySelectorAll('svg.ln')].every(s => { const r = s.getBoundingClientRect(), vb = s.viewBox.baseVal; return Math.abs(r.height - r.width * vb.height / vb.width) < 2; })), `${tag}: every line chart keeps its shape (height follows width)`);
+    const tb = flat(await text(page, '.r2 .tbl'));
+    check(/Google Business Profile 69 64%/.test(tb) && /Other 7 7%/.test(tb) && /Total 107 100%/.test(tb), `${tag}: source detail table (69 · 64% … Total 107 · 100%)`, tb);
+    check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${tag}: Calls: no sideways scroll`);
+    await shot(page, `client-calls-${tag}`);
+    // Website leads
+    await tabTo(page, 'Website leads');
+    t = (await page.locator('.r3 .card').allInnerTexts()).map(flat);
+    check(/Form submissions CallRail forms 1 From mahdavilawfirm\.com · 0 first-time/.test(t[0]) && /All leads this week 108 107 calls \+ 1 form/.test(t[1]) && /Want to see the people behind these\?/.test(await text(page, '.empty')), `${tag}: Website leads: 1 form · 108 leads · the "people behind these" card`, t.join(' | '));
+    await shot(page, `client-leads-${tag}`);
+    // Google Search
+    await tabTo(page, 'Google Search');
+    t = (await tiles(page)).map(flat);
+    check(/Clicks Search Console 312 ▲ 6%/.test(t[0]) && /11,900/.test(t[1]) && /2\.6%/.test(t[2]) && /14\.2 Lower is better/.test(t[3]) && /about 2 days behind/.test(await text(page, '.sec .l')), `${tag}: Google Search 312 · 11,900 · 2.6% · 14.2, "about 2 days behind"`, t.join(' | '));
+    check(await page.locator('.r21 .tbl tr').count() === 6 && /mahdavi law firm\s*103\s*1\.2/.test(await text(page, '.r21 .tbl')), `${tag}: top searches: 5 rows (mahdavi law firm 103 · 1.2)`);
+    await page.click('#allQ'); check(await page.locator('.r21 .tbl tr').count() === 26, `${tag}: "All 25 searches" shows 25`); await page.click('#allQ');
+    await shot(page, `client-search-${tag}`);
+    // Website traffic
+    await tabTo(page, 'Website traffic');
+    t = (await tiles(page)).map(flat);
+    check(/Visits GA4 948 ▼ 3%/.test(t[0]) && /739/.test(t[1]) && /1:42/.test(t[2]) && /Visits that became a lead GA4 3\.5%/.test(t[3]), `${tag}: Website traffic 948 · 739 · 1:42 · 3.5% (key events)`, t.join(' | '));
+    check(/Organic search\s*493[\s\S]*Google Business Profile\s*180[\s\S]*Direct\s*152[\s\S]*Paid search\s*85[\s\S]*Referral\s*38/.test(await text(page, '.r21 .card:nth-child(2)')), `${tag}: where visitors came from 493 · 180 · 152 · 85 · 38`);
+    await shot(page, `client-traffic-${tag}`);
+    // Business Profile
+    await tabTo(page, 'Google Business Profile');
+    t = (await tiles(page)).map(flat);
+    check(/186 ▲ 11%/.test(t[0]) && /121/.test(t[1]) && /43/.test(t[2]) && /22/.test(t[3]) && /3,534[\s\S]*2,191[\s\S]*on Google Search[\s\S]*1,343[\s\S]*on Google Maps/.test(await text(page, '.r2 .card:nth-child(2)')), `${tag}: Business Profile 186 · 121 · 43 · 22; views 3,534 (2,191 Search / 1,343 Maps)`, t.join(' | '));
+    await shot(page, `client-gbp-${tag}`);
+    check(!errs.length, `${tag}: no page errors (all tabs)`, errs.join(' | '));
+    await ctx.close();
+    // Sample Firm A: the Ads tab + the Overview cost-per-lead card
+    { const { ctx: c2, page: p2, errs: e2 } = await openFirm('zz-report-sample', { w, h, scheme });
+      check(JSON.stringify(await p2.locator('#tabs .tab').allInnerTexts()) === JSON.stringify(['Overview', 'Calls', 'Website leads', 'Google Search', 'Website traffic', 'Google Business Profile', 'Ads']), `${tag}: Sample Firm A: Ads tab (linked), no Rankings (not linked)`);
+      const ov = flat(await p2.locator('.sec', { hasText: 'Website & Google' }).locator('xpath=following-sibling::div[1]').innerText());
+      check(/Cost per lead \(ads\) Google Ads \$186 ▼ \$22 \$1,490 spent 8 ad leads/.test(ov), `${tag}: Overview "Cost per lead (ads)" $186 ▼ $22 · $1,490 spent · 8 ad leads`, ov);
+      check(/#/.test(await text(p2, '.sum ul')) === false && /312 Google search clicks/.test(await text(p2, '.sum ul')), `${tag}: no rankings linked → the 3rd point is the search clicks`);
+      await shot(p2, `client-overview-ads-${tag}`);
+      await tabTo(p2, 'Ads');
+      t = (await tiles(p2)).map(flat);
+      check(/Spend Google Ads \$1,490/.test(t[0]) && /Leads from ads Google Ads 8/.test(t[1]) && /Cost per lead Google Ads \$186 ▼ \$22/.test(t[2]) && /Clicks Google Ads 201/.test(t[3]), `${tag}: Ads tiles $1,490 · 8 · $186 ▼ $22 · 201`, t.join(' | '));
+      const camp = flat(await text(p2, '.tbl'));
+      check(/Personal injury · city \$849 4 \$212/.test(camp) && /Car accidents \$402 3 \$134/.test(camp) && /Truck accidents \$239 1 \$239/.test(camp), `${tag}: campaigns $849/4/$212 · $402/3/$134 · $239/1/$239`, camp);
+      check(!e2.length && await p2.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${tag}: Ads: no errors, no sideways scroll`, e2.join(' | '));
+      await shot(p2, `client-ads-${tag}`);
+      await c2.close(); }
+    if (PREVIEW_FULL) for (const [tab, firm] of [['Overview', 'm'], ['Calls', 'm'], ['Website leads', 'm'], ['Google Search', 'm'], ['Website traffic', 'm'], ['Google Business Profile', 'm'], ['Ads', 'a'], ['Overview', 'a']]) {
+      const c3 = await browser.newContext({ viewport: { width: w, height: h }, colorScheme: scheme }); const p3 = await c3.newPage();
+      await p3.goto(`${BASE}/__preview/report-full.html?pv=0&firm=${firm}&tab=${encodeURIComponent(tab)}`); await p3.waitForSelector('#body .card');
+      await shot(p3, `client-${PREV_TAB[tab]}${firm === 'a' && tab === 'Overview' ? '-ads' : ''}-${tag}-PREVIEW`); await c3.close();
+    }
+  }
+  // the date picker: every range, "vs previous period", Escape, remembered per firm; Last 30 days = the sum of the fixture days
+  { const { ctx, page } = await openFirm('zz-report-mahdavi', { range: '' });
+    check(await text(page, '#dtl') === 'Jul 11 – Aug 9, 2026', 'default range: Last 30 days (Jul 11 – Aug 9, 2026)', await text(page, '#dtl'));
+    const rep = await (await import('../../scripts/kpi-core.mjs')).decryptJSON(JSON.parse(virtual.get('/firms/zz-report-mahdavi/reports.json')).enc, PASS['zz-report-mahdavi']);
+    const sum30 = RC.dayList('2026-07-11', '2026-08-09').reduce((a, d) => a + (rep.calls.days[d]?.t || 0), 0);
+    check(flat(await text(page, '.sum h1')).startsWith(`Last 30 days: ${sum30} calls`), `Last 30 days = the sum of the fixture days (${sum30} calls)`, await text(page, '.sum h1'));
+    await page.click('#dt'); check(await page.locator('#dtm').isVisible() && JSON.stringify(await page.locator('#dtm button').allInnerTexts()) === JSON.stringify(['Last 7 days', 'Last 30 days', 'Last 90 days', 'This month', 'Last month']), 'the date menu: Last 7 / 30 / 90 days · This month · Last month');
+    await page.keyboard.press('Escape'); check(!(await page.locator('#dtm').isVisible()), 'Escape closes the date menu');
+    for (const [k, label] of [['90d', 'May 12 – Aug 9, 2026'], ['month', 'Aug 1 – Aug 9, 2026'], ['lastMonth', 'Jul 1 – Jul 31, 2026'], ['7d', 'Aug 3 – Aug 9, 2026']]) { await page.click('#dt'); await page.click(`[data-range="${k}"]`); check(await text(page, '#dtl') === label, `range ${k} → "${label}"`, await text(page, '#dtl')); }
+    check(await page.evaluate(() => localStorage.getItem('lfmp-report-range-zz-report-mahdavi')) === '7d', 'the range is remembered for this firm');
+    await page.click('.sec .go[data-t="Website leads"]'); check(await page.locator('#tabs .tab.on').innerText() === 'Website leads', '"Open Website leads →" opens the tab');
+    await ctx.close(); }
+  // 0 conversions → "–"
+  { const { ctx, page } = await openFirm('zz-report-zero'); await tabTo(page, 'Ads');
+    const t = (await tiles(page)).map(flat);
+    check(/Leads from ads Google Ads 0/.test(t[1]) && /Cost per lead Google Ads –/.test(t[2]) && /\$0|–/.test(await text(page, '.tbl')) && (await page.locator('.tbl tr td:nth-child(4)').allInnerTexts()).every(x => x === '–'), '0 conversions → cost per lead "–" (tile and every campaign)', t.join(' | '));
+    await ctx.close(); }
+  // Draft until Andy: a Live report shows its client only the published tabs; ?drafts=1 (the team) shows the rest under a Draft banner
+  { const { ctx, page } = await openFirm('zz-report-pub');
+    check(JSON.stringify(await page.locator('#tabs .tab').allInnerTexts()) === '["Rankings"]' && !(await page.locator('#draft').isVisible()), 'Live report: the client sees only its published tab (Rankings), no banner; new tabs stay hidden');
+    await ctx.close(); }
+  { const { ctx, page } = await openFirm('zz-report-pub', { qs: '?drafts=1' });
+    check((await page.locator('#tabs .tab').count()) === 7 && await page.locator('#draft').isVisible() && /Draft tabs · Overview, Calls, Website leads, Google Search, Website traffic, Google Business Profile aren't visible to your client yet/.test(await text(page, '#draft')), '?drafts=1 (Open report with drafts): all 7 tabs + the Draft banner naming the draft tabs', await text(page, '#draft'));
+    await shot(page, 'client-drafts-banner-1440-light', false);
+    await ctx.close(); }
+  // numbers only: nothing from a call row or form reaches the page
+  { const { ctx, page } = await openFirm('zz-report-mahdavi');
+    let all = ''; for (const tb of await page.locator('#tabs .tab').allInnerTexts()) { await tabTo(page, tb); all += await page.content(); }
+    check(![SRC.PII.name, SRC.PII.phone, SRC.PII.recording, SRC.PII.form, '7135550123'].some(x => all.includes(x)), 'no caller name / number / recording / form field anywhere on the page (every tab)');
+    await ctx.close(); }
   check(!outside.length, 'nothing loaded from outside the site (fonts aside)', outside.join(' | '));
 } finally { await browser.close(); server.close(); await rm(tmp, { recursive: true, force: true }); }
 console.log(`\n${pass} of ${pass + fail} report page checks passed.`);

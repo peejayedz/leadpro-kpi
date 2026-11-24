@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>LeadPro Reports · Rankings</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>LeadPro Reports</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -71,6 +71,22 @@ th.s{cursor:pointer}th.s:hover{color:var(--ink)}
  .card.tbl{overflow-x:auto}
  footer{flex-direction:column;gap:6px}
 }
+/* ===== Added for Phases 2–4 (from the approved Overview preview + the prototype tabs; same tokens) ===== */
+.sum{margin:22px 0 18px;background:var(--navy);color:#fff;border-radius:14px;padding:22px 26px;display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:center}
+.sum h1{font-size:26px;font-weight:800;letter-spacing:-.4px;line-height:1.2}
+.sum h1 span{color:#f2c46b}
+.sum p{color:#c9d1e3;margin-top:8px;font-size:13.5px;line-height:1.5}
+.sum ul{list-style:none;display:grid;gap:8px}
+.sum li{background:rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;font-size:13px;display:flex;gap:10px;align-items:flex-start;color:#e6eaf3}
+.sum li i{font-style:normal;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;flex:none}
+.g1{background:#2f7d55}.r1{background:#a33a3a}.n1{background:#5a6a92}
+.sec a,.sec .go{font-size:12.5px;color:var(--gold);font-weight:700;text-decoration:none;cursor:pointer}
+.mini{display:flex;gap:18px;margin-top:10px;flex-wrap:wrap}.mini div{font-size:12px;color:var(--muted)}.mini b{display:block;font-size:18px;color:var(--ink)}
+.priv{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center;margin-top:10px}
+.flat{color:var(--muted);background:#f0f1f4}
+.r12{grid-template-columns:1fr 2fr}
+.tab{cursor:pointer;white-space:nowrap}
+@media (max-width:760px){.sum{grid-template-columns:1fr;padding:18px}.sum h1{font-size:21px}.r12{grid-template-columns:1fr}.tabs{gap:0}}
 /* ===== v1.37.0 page parts the static preview didn't need (same tokens) ===== */
 .pill.pdf{cursor:pointer;font:inherit;font-size:12.5px;font-weight:600}
 .agency{display:none}
@@ -84,116 +100,302 @@ th.s{cursor:pointer}th.s:hover{color:var(--ink)}
 .lock button{border:1px solid var(--navy);background:var(--navy);color:#fff;border-radius:8px;padding:9px 14px;font:inherit;font-weight:600;cursor:pointer}
 .lock .err{color:var(--bad);font-size:12.5px;margin-top:8px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-@media (max-width:760px){.draft div{padding:8px 16px}}
-@media print{.ctl,.tools,.draft{display:none}.scroll{max-height:none}}
+/* v1.39.0: the date pill opens a menu (same tokens) */
+.dp{position:relative}
+.pill.dt{cursor:pointer;font:inherit;font-size:12.5px;color:var(--ink)}
+.menu{position:absolute;top:calc(100% + 6px);left:0;z-index:5;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(22,33,61,.12);padding:6px;min-width:190px}
+.menu button{display:flex;justify-content:space-between;gap:12px;width:100%;border:0;background:none;padding:8px 10px;border-radius:7px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer;text-align:left}
+.menu button:hover,.menu button:focus-visible{background:var(--bg);outline:0}.menu button.on{font-weight:700}.menu button.on::after{content:"✓";color:var(--gold)}
+.more{border:0;background:none;color:var(--gold);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;padding:8px 0 0}
+@media (max-width:760px){.draft div{padding:8px 16px}svg.ln{height:auto}}   /* FIX 7.1: line charts scale with the width on phones (no empty band) */
+@media print{.ctl,.tools,.draft,.menu,.more{display:none}.scroll{max-height:none}}
 </style></head><body>
 <header>
  <div class="hd">
   <div class="brand"><svg width="30" height="34" viewBox="0 0 30 34" aria-hidden="true"><path d="M15 1 28 6v11c0 8-6 13.5-13 16C8 30.5 2 25 2 17V6z" fill="#1b2a4e"/><path d="M8 22l5-5 3 3 6-7" stroke="#f2c46b" stroke-width="2.2" fill="none"/><path d="M19 13h3v3" stroke="#f2c46b" stroke-width="2.2" fill="none"/></svg>
    <div><div class="t" id="firm">LeadPro Reports</div><div class="s" id="sub">LeadPro Reports</div></div><img class="agency" id="agency" alt="Web Promotion Partners" height="30"></div>
-  <div class="ctl"><span class="pill"><b>Last 30 days</b> ▾</span><span class="pill">vs previous period ▾</span><button type="button" class="pill pdf" id="pdf">Download PDF</button></div>
+  <div class="ctl"><div class="dp"><button type="button" class="pill dt" id="dt" aria-haspopup="menu" aria-expanded="false"><b id="dtl">Last 30 days</b> ▾</button><div class="menu" id="dtm" role="menu" hidden></div></div><span class="pill">vs previous period ▾</span><button type="button" class="pill pdf" id="pdf">Download PDF</button></div>
  </div>
  <div class="tabs" id="tabs" role="tablist" aria-label="Report sections"></div>
 </header>
 <div class="draft" id="draft" hidden><div>Draft · your LFMP team is reviewing this page. It isn't in your GHL menu yet.</div></div>
 <div class="wrap" id="body"><p class="note" style="margin-top:26px">Loading…</p></div>
 <script type="module">
-// v1.37.0 LeadPro Reports, Phase 1 (Rankings from BrightLocal). The approved client-report look ("Claude outputs/
-// reports-preview/report.html"): same CSS, same header, Phase 1 shows only the Rankings tab. Loaded by the firm stub
-// firms/<slug>/reports.html. Reads only this firm's files: ./reports-config.json (Draft / Live), ./data/kpis.json (name,
-// brand) and ./reports.json (the numbers, encrypted with the firm's KPI passphrase; unlocked with the same passphrase as
-// its KPI dashboard: the #k=… link key from GHL, or the one saved in this browser for this firm, or typed).
+// v1.39.0 LeadPro Reports (queue items 7–9): every tab of the approved client report ("Claude outputs/reports-preview/
+// report-full.html"; Overview = the page PJ approved): Overview, Calls, Website leads (CallRail), Google Search (Search
+// Console), Website traffic (GA4), Google Business Profile, Rankings (BrightLocal, Phase 1), Ads (Google Ads). Tabs show only
+// for linked sources. A Live report shows its client only the tabs the team published ("Publish new tabs", after Andy);
+// ?drafts=1 (the team's "Open report (with drafts)") shows the draft tabs too, under a Draft banner. A whole-report Draft
+// works as in Phase 1. Loaded by the firm stub firms/<slug>/reports.html. Reads only this firm's files: ./reports-config.json,
+// ./data/kpis.json (name, brand) and ./reports.json (numbers only, encrypted with the firm's KPI passphrase; unlocked with
+// the same passphrase as its KPI dashboard: the #k=… link key from GHL, or the one saved in this browser, or typed).
 const PATH_FIRM = /\/firms\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(?:reports\.html)?$/.exec(location.pathname);
-const SLUG = PATH_FIRM ? PATH_FIRM[1] : (new URLSearchParams(location.search).get('firm') || '').toLowerCase();
+const QS = new URLSearchParams(location.search);
+const SLUG = PATH_FIRM ? PATH_FIRM[1] : (QS.get('firm') || '').toLowerCase();
 const ROOT = location.pathname.replace(/(?:firms\/[^/]+|app)\/[^/]*$/, '');
 const FIRM = PATH_FIRM ? './' : `${ROOT}firms/${SLUG}/`;
 const { decryptJSON } = await import(`${ROOT}scripts/kpi-core.mjs`);
+const C = await import(`${ROOT}scripts/reports-core.mjs`);
 const PASS_KEY = `lfmp-pass-${SLUG}`;   // the same saved passphrase as this firm's KPI dashboard
+const RANGE_KEY = `lfmp-report-range-${SLUG}`;
+const DRAFTS = QS.get('drafts') === '1';
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} } };
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const getJSON = async p => { const r = await fetch(`${FIRM}${p}?t=${Date.now()}`, { cache: 'no-store' }); if (r.status === 404) return null; if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); };
 
 let cfg = null, kpis = null, file = null, R = null;
-let S = { tab: 'Rankings', q: '', top: true, sort: 'vol' };
-const TABS = ['Rankings'];   // Phase 1: the other tabs appear as each source is connected
+const S = { tab: QS.get('tab') || '', q: '', top: true, sort: 'vol', range: C.RANGES.some(r => r[0] === store.get(RANGE_KEY)) ? store.get(RANGE_KEY) : C.DEFAULT_RANGE, allQ: false };
 const fmtDay = (iso, year = true) => { const d = new Date(`${iso}T12:00:00Z`); return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...(year ? { year: 'numeric' } : {}), timeZone: 'UTC' }); };
 const fmtUpdated = iso => { const d = new Date(iso || ''); if (Number.isNaN(d.getTime())) return ''; return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' })}, ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' })} ET`; };
 const sign = n => (n > 0 ? `+${n}` : String(n));
-
-const rk = v => v == null ? '<span class="na">–</span>' : `<span class="rk ${v <= 5 ? 't5' : ''}">${v}</span>`;
-function line(series, labels, o) {
-  const W = 620, H = 210, L = 34, Rr = 20, T = 12, B = 26, mn = o.min, mx = o.max, x = i => L + i * (W - L - Rr) / Math.max(labels.length - 1, 1), y = v => { let t = (v - mn) / (mx - mn); t = 1 - t; return T + (1 - t) * (H - T - B); };
+const n = x => Number(x || 0).toLocaleString('en-US');
+const pc = (a, b) => (b ? Math.round(a / b * 100) : 0);
+const k1 = v => (v >= 10000 ? `${Math.round(v / 100) / 10}k` : n(v));
+const mmss = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
+// the preview's change chip: ▲ green / ▼ red, or reversed for "lower is better" numbers (missed calls)
+const chg = (p, { invert = false } = {}) => (p == null ? '' : p === 0 ? '<span class="chg flat">0%</span>' : `<span class="chg ${(p > 0) !== invert ? 'up' : 'dn'}">${p > 0 ? '▲' : '▼'} ${Math.abs(p)}%</span>`);
+const rk = v => (v == null ? '<span class="na">–</span>' : `<span class="rk ${v <= 5 ? 't5' : ''}">${v}</span>`);
+const card = (t, src, v, c, note, mini) => `<div class="card"><div class="ch"><span class="ct">${t}</span>${src ? `<span class="src">${src}</span>` : ''}</div><div><span class="big">${v}</span>${c || ''}</div>${note ? `<div class="note">${note}</div>` : ''}${mini || ''}</div>`;
+const bars = (list, c) => { const mx = Math.max(...list.map(x => x[1])) || 1; return `<div class="bl">${list.map(([k, v]) => `<div><div class="t"><span>${esc(k)}</span><b>${n(v)}</b></div><div class="b"><div style="width:${Math.max(v / mx * 100, 1.5)}%${c ? `;background:${c}` : ''}"></div></div></div>`).join('')}</div>`; };
+const sec = (h2, l, go) => `<div class="sec"><div><h2>${h2}</h2>${l ? `<div class="l">${l}</div>` : ''}</div>${go && tabs().includes(go) ? `<span class="go" data-t="${esc(go)}" role="link" tabindex="0">Open ${esc(go)} →</span>` : ''}</div>`;
+const niceMax = v => { const raw = Math.max(v, 1) / 3, p = 10 ** Math.floor(Math.log10(raw)); const step = [1, 2, 2.5, 5, 10].map(m => m * p).find(s => s >= raw); return { max: step * 3, ticks: [0, step, step * 2, step * 3].map(x => Math.round(x * 10) / 10) }; };
+const dayLabel = d => new Date(`${d}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+function lineSvg(series, labels, o) {
+  const W = o.w || 560, H = o.h || 190, L = 34, Rr = 22, T = 10, B = 26, mn = o.min ?? 0, mx = o.max, len = Math.max(labels.length - 1, 1);
+  const x = i => L + i * (W - L - Rr) / len, y = v => { let t = (v - mn) / (mx - mn); if (o.inv) t = 1 - t; return T + (1 - t) * (H - T - B); };
+  const every = labels.length <= 8 ? 1 : Math.ceil(labels.length / 7);
   let g = '';
-  o.ticks.forEach(v => g += `<line x1="${L}" x2="${W - Rr}" y1="${y(v)}" y2="${y(v)}" stroke="#eef0f4"/><text x="${L - 7}" y="${y(v) + 4}" font-size="10" fill="#6b7280" text-anchor="end">${v}</text>`);
-  labels.forEach((l, i) => g += `<text x="${x(i)}" y="${H - 7}" font-size="10" fill="#6b7280" text-anchor="middle">${esc(l)}</text>`);
-  series.forEach(s => { const pts = s.d.map((v, i) => (v == null ? null : [x(i), y(v), v, i])).filter(Boolean); g += `<polyline points="${pts.map(p => `${p[0]},${p[1]}`).join(' ')}" fill="none" stroke="${s.c}" stroke-width="2.4"/>`; pts.forEach(p => g += `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#fff" stroke="${s.c}" stroke-width="2"><title>${esc(labels[p[3]])}: ${p[2]}</title></circle>`); });
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Average Google position by month">${g}</svg>`;
+  o.ticks.forEach(v => g += `<line x1="${L}" x2="${W - Rr}" y1="${y(v)}" y2="${y(v)}" stroke="#eef0f4"/><text x="${L - 8}" y="${y(v) + 4}" font-size="10" fill="#6b7280" text-anchor="end">${v}</text>`);
+  labels.forEach((l, i) => { if (i % every === 0 || i === labels.length - 1 && labels.length <= 8) g += `<text x="${x(i)}" y="${H - 6}" font-size="10" fill="#6b7280" text-anchor="middle">${esc(l)}</text>`; });
+  series.forEach(s => {
+    const pts = s.d.map((v, i) => (v == null ? null : [x(i), y(v), v, i])).filter(Boolean);
+    g += `<polyline points="${pts.map(p => `${p[0]},${p[1]}`).join(' ')}" fill="none" stroke="${s.c}" stroke-width="${s.w || 2.6}"/>`;
+    if (s.dots !== false && labels.length <= 31) pts.forEach(p => g += `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#fff" stroke="${s.c}" stroke-width="2"><title>${esc(labels[p[3]])}: ${p[2]}</title></circle>`);
+  });
+  return `<svg class="ln" viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${esc(o.label || 'chart')}">${g}</svg>`;
 }
-// the y-axis: the preview's 15–25 when the numbers fit, otherwise widened in 2.5 steps (inverted: lower = higher on the chart)
-function axis(values) {
-  const v = values.filter(n => n != null); if (!v.length) return { min: 15, max: 25, ticks: [15, 17.5, 20, 22.5, 25] };
-  let min = Math.min(15, Math.floor(Math.min(...v) / 2.5) * 2.5), max = Math.max(25, Math.ceil(Math.max(...v) / 2.5) * 2.5);
-  if (min < 1) min = 0; const step = (max - min) / 4;
-  return { min, max, ticks: [0, 1, 2, 3, 4].map(i => Math.round((min + i * step) * 10) / 10) };
+function donut(a, b) {
+  const Cc = 389.6, fa = +(a + b ? a / (a + b) * Cc : 0).toFixed(1);
+  return `<svg viewBox="0 0 200 170" width="100%" height="170" role="img" aria-label="Answered vs missed"><circle cx="100" cy="85" r="62" fill="none" stroke="#eef0f4" stroke-width="22"/><circle cx="100" cy="85" r="62" fill="none" stroke="#1b2a4e" stroke-width="22" stroke-dasharray="${fa} ${Cc}" transform="rotate(-90 100 85)"/><circle cx="100" cy="85" r="62" fill="none" stroke="#d64545" stroke-width="22" stroke-dasharray="${+(Cc - fa).toFixed(1)} ${Cc}" stroke-dashoffset="${-fa}" transform="rotate(-90 100 85)"/><text x="100" y="82" text-anchor="middle" font-size="26" font-weight="800" fill="#16213d">${pc(a, a + b)}%</text><text x="100" y="100" text-anchor="middle" font-size="11" fill="#6b7280">answered</text></svg><div class="legend" style="justify-content:center"><span><i style="background:#1b2a4e"></i>Answered ${a}</span><span><i style="background:#d64545"></i>Missed ${b}</span></div>`;
 }
-const bars = (list, c) => { const mx = Math.max(...list.map(x => x[1])) || 1; return `<div class="bl">${list.map(([k, v]) => `<div><div class="t"><span>${esc(k)}</span><b>${v}</b></div><div class="b"><div style="width:${Math.max(v / mx * 100, 1.5)}%;background:${c}"></div></div></div>`).join('')}</div>`; };
-const kpi = (t, v, c, n) => `<div class="card"><div class="ch"><span class="ct">${t}</span><span class="src">BrightLocal</span></div><div><span class="big">${v}</span>${c || ''}</div><div class="note">${n}</div></div>`;
 const footer = () => {
   const wpp = kpis?.agency === 'WPP' ? ' · Web Promotion Partners' : '';
   const when = fmtUpdated(file?.generatedAt);
   return `<footer><span>LeadPro Reports · Data refreshed nightly${when ? ` · Last updated ${esc(when)}` : ''}${wpp}</span><span>Questions? Contact your Client Success Manager.</span></footer>`;
 };
 
+// ---------------------------------------------------------------- which tabs
+// Linked sources only; a Live report shows its published tabs (plus the drafts with ?drafts=1). A tab whose numbers
+// haven't arrived yet still shows (with "first numbers after tonight's update").
+const tabs = () => C.visibleTabs(cfg, { drafts: DRAFTS });
+const draftsShown = () => (DRAFTS ? C.draftTabs(cfg) : []);
+const range = () => C.rangeFor(S.range, R?.through || C.throughOf(file?.generatedAt || new Date().toISOString()));
+
 function head() {
   const name = kpis?.location || cfg?.firmName || 'LeadPro Reports';
   $('firm').textContent = name; document.title = `${name} · LeadPro Reports`;
-  $('sub').textContent = `LeadPro Reports${R?.location?.city ? ` · ${R.location.city}` : ''}`;
+  const city = R?.location?.city || R?.rankings?.location?.city || '';
+  $('sub').textContent = `LeadPro Reports${city ? ` · ${city}` : ''}`;
   const ag = $('agency');
   if (kpis?.agency === 'WPP') { ag.src = `${ROOT}brand/wpp-logo.png?v=1.34.0`; ag.classList.add('on'); }   // the real WPP logo (KPI v1.34.0); this page is light only
-  $('draft').hidden = !cfg?.enabled || cfg.status === 'live';
-  $('tabs').innerHTML = TABS.map(t => `<span class="tab ${t === S.tab ? 'on' : ''}" role="tab" aria-selected="${t === S.tab}" data-t="${esc(t)}" style="cursor:pointer">${esc(t)}</span>`).join('');
+  const dr = draftsShown();
+  $('draft').hidden = !cfg?.enabled || (cfg.status === 'live' && !dr.length);
+  $('draft').firstElementChild.textContent = cfg?.status === 'live' && dr.length
+    ? `Draft tabs · ${dr.join(', ')} ${dr.length === 1 ? 'isn\'t' : 'aren\'t'} visible to your client yet. Your LFMP team publishes ${dr.length === 1 ? 'it' : 'them'} after review.`
+    : 'Draft · your LFMP team is reviewing this page. It isn\'t in your GHL menu yet.';
+  const T = tabs();
+  if (!T.includes(S.tab)) S.tab = T[0] || '';
+  $('tabs').innerHTML = T.map(t => `<span class="tab ${t === S.tab ? 'on' : ''}" role="tab" tabindex="0" aria-selected="${t === S.tab}" data-t="${esc(t)}">${esc(t)}</span>`).join('');
+  const r = range();
+  $('dtl').textContent = R ? C.rangeLabel(r) : C.RANGES.find(x => x[0] === S.range)[1];
+  $('dtm').innerHTML = C.RANGES.map(([k, l]) => `<button type="button" role="menuitemradio" aria-checked="${k === S.range}" class="${k === S.range ? 'on' : ''}" data-range="${k}">${l}</button>`).join('');
 }
 function lockHtml(err = '') {
   return `<div class="card lock"><h2>Enter the passphrase</h2><p>This report is private. Use the same passphrase as your KPI dashboard (your LFMP team has it). It's remembered in this browser.</p>
   <form id="unlock"><label class="sr" for="pass">Passphrase</label><input id="pass" type="password" autocomplete="current-password" placeholder="Passphrase" required><button type="submit">Unlock</button></form>${err ? `<p class="err" role="alert">${esc(err)}</p>` : ''}</div>${footer()}`;
 }
-function emptyHtml(title, text) { return `<div class="sec"><div><h2>Google rankings</h2></div></div><div class="card"><div class="empty"><b>${esc(title)}</b>${esc(text)}</div></div>${footer()}`; }
+function emptyHtml(title, text, h2 = 'Your report') { return `<div class="sec"><div><h2>${esc(h2)}</h2></div></div><div class="card"><div class="empty"><b>${esc(title)}</b>${esc(text)}</div></div>${footer()}`; }
+const waiting = (h2, what) => `${sec(h2, '')}<div class="card"><div class="empty"><b>First numbers after tonight's update</b>${esc(what)} appear here after the next nightly update.</div></div>`;
 
-function draw() {
-  head();
-  if (!cfg?.enabled) { $('body').innerHTML = emptyHtml('Not set up yet', 'Your LFMP team hasn\'t set up this report yet.'); return; }
-  if (!file) { $('body').innerHTML = emptyHtml('First report coming soon', 'Your rankings appear here after the first nightly update.'); return; }
-  if (!R) return;
-  const sm = R.summary, rep = R.report, N = sm.tracked;
+// ---------------------------------------------------------------- tabs
+const SRC_WORDS = { gbp: 'your Google Business Profile', ads: 'your Google Ads', organic: 'Google search', direct: 'people calling you directly', other: 'other sources' };
+function overview() {
+  const r = range(), pw = C.periodWords(r.key), Cl = C.callsIn(R.calls, r);
+  if (!Cl) return waiting('Overview', 'Your calls and website leads');
+  const up = Cl.chg.t, top = Cl.src[0];
+  const lines = [];
+  lines.push(`<li><i class="g1">✓</i><span><b>${Cl.f} first-time caller${Cl.f === 1 ? '' : 's'}</b>${Cl.chg.f == null ? '' : `, ${Cl.chg.f >= 0 ? 'up' : 'down'} ${Math.abs(Cl.chg.f)}%`}. New people are finding you.</span></li>`);
+  lines.push(`<li><i class="r1">!</i><span><b>${Cl.m} missed call${Cl.m === 1 ? '' : 's'}</b>${Cl.chg.m == null ? '' : `, ${Cl.chg.m >= 0 ? 'up' : 'down'} ${Math.abs(Cl.chg.m)}%`}. Each one is a possible case.</span></li>`);
+  const best = bestKeywords(1)[0], Se = C.searchIn(R.search, r);
+  if (best) lines.push(`<li><i class="n1">↗</i><span><b>#${best.best} on Google</b> for "${esc(best.k)}", your best keyword.</span></li>`);
+  else if (Se) lines.push(`<li><i class="n1">↗</i><span><b>${n(Se.c)} Google search click${Se.c === 1 ? '' : 's'}</b> to your website${Se.chg.c == null ? '' : `, ${Se.chg.c >= 0 ? 'up' : 'down'} ${Math.abs(Se.chg.c)}%`}.</span></li>`);
+  let h = `<div class="sum"><div><h1>${esc(pw.now)}: <span>${n(Cl.t)} call${Cl.t === 1 ? '' : 's'}</span> and <span>${n(Cl.forms)} website form${Cl.forms === 1 ? '' : 's'}.</span></h1>
+  <p>${up == null ? '' : `Calls are ${up >= 0 ? 'up' : 'down'} ${Math.abs(up)}% on ${esc(pw.before)}. `}${top ? `Most came from ${SRC_WORDS[top[2]]}. ` : ''}${Cl.m} call${Cl.m === 1 ? ' was' : 's were'} missed${Cl.chg.m > 0 ? '; that\'s the main thing to fix' : ''}.</p></div>
+  <ul>${lines.join('')}</ul></div>`;
+  h += callTiles(Cl, pw, true);
+  h += `<div class="row r3"><div class="card"><div class="ch"><span class="ct">Answered vs missed</span></div>${donut(Cl.a, Cl.m)}</div>
+  <div class="card"><div class="ch"><span class="ct">Where calls came from</span></div>${Cl.src.length ? bars(Cl.src) : '<div class="note">No calls in this period.</div>'}</div>
+  <div class="card"><div class="ch"><span class="ct">Calls per day</span>${callLegend(pw)}</div>${callsLine(Cl, r)}</div></div>`;
+  h += sec('Website leads', 'Form submissions from your website. Names stay in your LeadPro contacts.', 'Website leads');
+  h += `<div class="row r2"><div class="card"><div class="ch"><span class="ct">Form submissions</span><span class="src">CallRail forms</span></div><div><span class="big">${n(Cl.forms)}</span></div><div class="note">From ${esc(R.site || 'your website')} · ${Cl.formsFirst} first-time submission${Cl.formsFirst === 1 ? '' : 's'}</div><div class="priv">Counts only. To see who submitted, open Contacts in LeadPro.</div></div>
+  <div class="card"><div class="ch"><span class="ct">Leads ${esc(pw.lower)} by type</span></div>${bars([['Phone calls', Cl.t], ['Website forms', Cl.forms]], '#b8862b')}</div></div>`;
+  if (tabs().includes('Rankings') && R.rankings) {
+    const rs = R.rankings, sm = rs.summary, city = rs.location?.city;
+    h += sec('Google rankings', `Where you show up on Google${city ? ` in ${esc(city)}` : ''}. Lower number = higher on the page.`, 'Rankings');
+    const bk = bestKeywords(4);
+    h += `<div class="row r3">${card('Average Google position', 'BrightLocal', sm.avg ?? '–', avgChip(sm.avgChange), `Across ${sm.tracked} tracked keywords`)}${card('Google map 3-pack', 'BrightLocal', `${sm.mapPack}%`, '', sm.mapPack ? 'of tracked keywords show you in the map 3-pack' : 'Not in the map results yet for tracked keywords')}
+  <div class="card"><div class="ch"><span class="ct">Best keywords</span></div>${bk.length ? `<table><tr><th>Keyword</th><th>Desktop</th><th>Mobile</th><th>Maps</th></tr>${bk.map(k => `<tr><td>${esc(k.k)}</td><td>${rk(k.d)}</td><td>${rk(k.m)}</td><td>${rk(k.l)}${k.change > 0 ? ` <small style="color:#1f9d55;font-weight:700">▲${k.change}</small>` : ''}</td></tr>`).join('')}</table>` : '<div class="note">No keyword in the top 20 yet.</div>'}</div></div>`;
+  }
+  h += websiteAndGoogle(r, pw, Cl);
+  return h;
+}
+const avgChip = c => (c == null || c === 0 ? '' : c > 0 ? `<span class="chg dn">▼ ${Math.abs(c)}</span>` : `<span class="chg up">▲ ${Math.abs(c)}</span>`);
+function bestKeywords(nTop) {
+  const kw = R.rankings?.keywords || [];
+  // the best ranks (any search; a tie goes to the keyword ranked on more searches), listed by desktop rank
+  const ranked = k => [k.d, k.m, k.l].filter(v => v != null).length;
+  return kw.map(k => ({ ...k, best: Math.min(...[k.d, k.m, k.l].map(v => v ?? Infinity)) })).filter(k => k.best !== Infinity)
+    .sort((a, b) => a.best - b.best || ranked(b) - ranked(a)).slice(0, nTop)
+    .sort((a, b) => (a.d ?? 99) - (b.d ?? 99) || a.best - b.best);
+}
+function websiteAndGoogle(r, pw, Cl) {
+  const T = tabs(), cards = [];
+  const Se = T.includes('Google Search') && C.searchIn(R.search, r), Tr = T.includes('Website traffic') && C.trafficIn(R.traffic, r), G = T.includes('Google Business Profile') && C.gbpIn(R.gbp, r), A = T.includes('Ads') && C.adsIn(R.ads, r);
+  if (Se) cards.push(card('Google search clicks', 'Search Console', n(Se.c), chg(Se.chg.c), '', `<div class="mini"><div><b>${k1(Se.i)}</b>impressions</div><div><b>${Se.pos ?? '–'}</b>avg position</div></div>`));
+  if (Tr) cards.push(card('Website visits', 'GA4', n(Tr.s), chg(Tr.chg.s), '', `<div class="mini"><div><b>${Tr.fromGoogle}%</b>from Google</div><div><b>${mmss(Tr.dur)}</b>avg time</div></div>`));
+  if (G) cards.push(card('Profile actions', 'Google Business', n(G.actions), chg(G.chg.actions), '', `<div class="mini"><div><b>${n(G.calls)}</b>calls</div><div><b>${n(G.dir)}</b>directions</div><div><b>${n(G.web)}</b>site clicks</div></div>`));
+  if (!cards.length && !A) return '';
+  if (A) cards.push(card('Cost per lead (ads)', 'Google Ads', C.money(A.cpl, A.currency), cplChip(A), '', `<div class="mini"><div><b>${C.money(A.cost, A.currency)}</b>spent</div><div><b>${n(A.conv)}</b>ad leads</div></div>`));
+  else if (!cfg.sources?.googleAds?.unused) {
+    const adsCalls = Cl ? Cl.s.ads : null;
+    cards.push(`<div class="card"><div class="ch"><span class="ct">Google Ads</span><span class="src">Google Ads</span></div><div class="note" style="margin-top:8px">Not connected yet.${adsCalls != null ? ` Calls from your ads still count on the Calls tab (${n(adsCalls)} ${esc(pw.lower)}).` : ''}</div></div>`);
+  }
+  return sec('Website &amp; Google', 'How people find and use your website and Google profile.') + `<div class="row r4">${cards.join('')}</div>`;
+}
+const cplChip = A => (A.cplChange == null || A.cplChange === 0 ? '' : `<span class="chg ${A.cplChange < 0 ? 'up' : 'dn'}">${A.cplChange < 0 ? '▼' : '▲'} ${C.money(Math.abs(A.cplChange), A.currency)}</span>`);
+const callLegend = pw => `<div class="legend"><span><i style="background:#1b2a4e"></i>${esc(pw.legendNow)}</span><span><i style="background:#c3c9d6"></i>${esc(pw.legendBefore)}</span></div>`;
+function callsLine(Cl, r, h) {
+  const ax = niceMax(Math.max(...Cl.daily, ...Cl.prev.daily, 1));
+  const prev = Cl.prev.daily.slice(0, Cl.daily.length);
+  return lineSvg([{ d: prev, c: '#c3c9d6', w: 2, dots: false }, { d: Cl.daily, c: '#1b2a4e' }], C.dayList(r.from, r.to).map(dayLabel), { h: h || 190, max: ax.max, ticks: ax.ticks, label: 'Calls per day' });
+}
+function callTiles(Cl, pw, overviewNotes) {
+  return `<div class="row r4">${card('Total calls', 'CallRail', n(Cl.t), chg(Cl.chg.t), `vs ${n(Cl.prev.t)} ${esc(pw.before)}`)}${card('First-time callers', 'CallRail', n(Cl.f), chg(Cl.chg.f), 'New potential clients')}${card('Answered', 'CallRail', n(Cl.a), chg(Cl.chg.a), `${pc(Cl.a, Cl.t)}% of calls${overviewNotes ? ' answered' : ''}`)}${card('Missed', 'CallRail', n(Cl.m), chg(Cl.chg.m, { invert: true }), `${pc(Cl.m, Cl.t)}% of calls${overviewNotes ? ' missed' : ''}`)}</div>`;
+}
+function calls() {
+  const r = range(), pw = C.periodWords(r.key), Cl = C.callsIn(R.calls, r);
+  if (!Cl) return waiting('Calls', 'Your calls');
+  let h = sec('Calls', 'Every call to your tracking numbers. Names and recordings stay in CallRail and your LeadPro contacts.');
+  h += callTiles(Cl, pw, false);
+  h += `<div class="row r21"><div class="card"><div class="ch"><span class="ct">Calls per day</span>${callLegend(pw)}</div>${callsLine(Cl, r, 230)}</div>
+  <div class="card"><div class="ch"><span class="ct">Answered vs missed</span></div>${donut(Cl.a, Cl.m)}</div></div>`;
+  h += `<div class="row r2"><div class="card"><div class="ch"><span class="ct">Calls by source</span></div>${Cl.src.length ? bars(Cl.src) : '<div class="note">No calls in this period.</div>'}</div>
+  <div class="card tbl"><div class="ch"><span class="ct">By source, detail</span></div><table><tr><th>Source</th><th>Calls</th><th>Share</th></tr>${Cl.src.map(s => `<tr><td>${esc(s[0])}</td><td>${n(s[1])}</td><td>${pc(s[1], Cl.t)}%</td></tr>`).join('')}<tr><td><b>Total</b></td><td><b>${n(Cl.t)}</b></td><td>${Cl.t ? '100%' : '–'}</td></tr></table></div></div>`;
+  return h;
+}
+function leads() {
+  const r = range(), pw = C.periodWords(r.key), Cl = C.callsIn(R.calls, r);
+  if (!Cl) return waiting('Website leads', 'Your website leads');
+  let h = sec('Website leads', 'Form submissions from your website. We show counts only; open Contacts in LeadPro to see who submitted.');
+  h += `<div class="row r3">${card('Form submissions', 'CallRail forms', n(Cl.forms), '', `From ${esc(R.site || 'your website')} · ${Cl.formsFirst} first-time`)}${card(`All leads ${esc(pw.lower)}`, '', n(Cl.t + Cl.forms), '', `${n(Cl.t)} call${Cl.t === 1 ? '' : 's'} + ${n(Cl.forms)} form${Cl.forms === 1 ? '' : 's'}`)}<div class="card"><div class="ch"><span class="ct">Calls vs forms</span></div>${bars([['Phone calls', Cl.t], ['Website forms', Cl.forms]], '#b8862b')}</div></div>`;
+  h += '<div class="card"><div class="empty"><b>Want to see the people behind these?</b>Open Contacts in your LeadPro menu. Reports never show names, phone numbers or messages.</div></div>';
+  return h;
+}
+function search() {
+  const r = range(), Se = C.searchIn(R.search, r);
+  if (!Se) return waiting('Google Search', 'Your Google Search numbers');
+  let h = sec('Google Search', 'How often your site shows and gets clicked in Google results. Google Search data runs about 2 days behind.');
+  h += `<div class="row r4">${card('Clicks', 'Search Console', n(Se.c), chg(Se.chg.c))}${card('Impressions', 'Search Console', n(Se.i))}${card('Click rate', 'Search Console', Se.ctr == null ? '–' : `${Se.ctr.toFixed(1)}%`)}${card('Avg position', 'Search Console', Se.pos ?? '–', '', 'Lower is better')}</div>`;
+  const ax = niceMax(Math.max(...Se.daily, 1)), q = S.allQ ? Se.top : Se.top.slice(0, 5);
+  h += `<div class="row r21"><div class="card"><div class="ch"><span class="ct">Clicks per day</span></div>${lineSvg([{ d: Se.daily, c: '#1b2a4e' }], C.dayList(r.from, r.to).map(dayLabel), { h: 220, max: ax.max, ticks: ax.ticks, label: 'Clicks per day' })}</div>
+  <div class="card tbl"><div class="ch"><span class="ct">Top searches</span></div>${q.length ? `<table><tr><th>Search</th><th>Clicks</th><th>Pos.</th></tr>${q.map(x => `<tr><td>${esc(x[0])}</td><td>${n(x[1])}</td><td>${x[2]}</td></tr>`).join('')}</table>${Se.top.length > 5 ? `<button type="button" class="more" id="allQ">${S.allQ ? 'Show the top 5' : `All ${Se.top.length} searches (last 90 days)`}</button>` : ''}` : '<div class="note">No searches with clicks yet.</div>'}</div></div>`;
+  return h;
+}
+function traffic() {
+  const r = range(), Tr = C.trafficIn(R.traffic, r);
+  if (!Tr) return waiting('Website traffic', 'Your website traffic');
+  let h = sec('Website traffic', 'Visits to your website from every channel.');
+  h += `<div class="row r4">${card('Visits', 'GA4', n(Tr.s), chg(Tr.chg.s))}${card('Visitors', 'GA4', n(Tr.u))}${card('Avg time on site', 'GA4', mmss(Tr.dur))}${Tr.leadRate != null ? card('Visits that became a lead', 'GA4', `${Tr.leadRate.toFixed(1)}%`, '', 'Key events in GA4 ÷ visits') : ''}</div>`;
+  const ax = niceMax(Math.max(...Tr.daily, 1));
+  h += `<div class="row r21"><div class="card"><div class="ch"><span class="ct">Visits per day</span></div>${lineSvg([{ d: Tr.daily, c: '#1b2a4e' }], C.dayList(r.from, r.to).map(dayLabel), { h: 220, max: ax.max, ticks: ax.ticks, label: 'Visits per day' })}</div>
+  <div class="card"><div class="ch"><span class="ct">Where visitors came from</span></div>${Tr.channels.length ? bars(Tr.channels.slice(0, 6)) : '<div class="note">No visits in this period.</div>'}</div></div>`;
+  return h;
+}
+function gbp() {
+  const r = range(), G = C.gbpIn(R.gbp, r);
+  if (!G) return waiting('Google Business Profile', 'Your Google Business Profile numbers');
+  let h = sec('Google Business Profile', 'What people did after finding you on Google Search and Maps.');
+  h += `<div class="row r4">${card('Total actions', 'Google Business', n(G.actions), chg(G.chg.actions))}${card('Calls from profile', 'Google Business', n(G.calls))}${card('Direction requests', 'Google Business', n(G.dir))}${card('Website clicks', 'Google Business', n(G.web))}</div>`;
+  h += `<div class="row r2"><div class="card"><div class="ch"><span class="ct">Actions</span></div>${bars([['Calls', G.calls], ['Directions', G.dir], ['Website clicks', G.web]])}</div>
+  <div class="card"><div class="ch"><span class="ct">Profile views</span><span class="src">Google Business</span></div><div class="big">${n(G.views)}</div><div class="mini"><div><b>${n(G.vs)}</b>on Google Search</div><div><b>${n(G.vm)}</b>on Google Maps</div></div></div></div>`;
+  return h;
+}
+function ads() {
+  const r = range(), A = C.adsIn(R.ads, r);
+  if (!A) return waiting('Ads', 'Your Google Ads numbers');
+  let h = sec('Ads', 'Google Ads spend and the leads it brought in.');
+  h += `<div class="row r4">${card('Spend', 'Google Ads', C.money(A.cost, A.currency))}${card('Leads from ads', 'Google Ads', n(A.conv), '', 'Conversions in Google Ads')}${card('Cost per lead', 'Google Ads', C.money(A.cpl, A.currency), cplChip(A))}${card('Clicks', 'Google Ads', n(A.clicks))}</div>`;
+  h += `<div class="card tbl"><div class="ch"><span class="ct">Campaigns</span></div>${A.campaigns.length ? `<table><tr><th>Campaign</th><th>Spend</th><th>Leads</th><th>Cost per lead</th></tr>${A.campaigns.map(c => `<tr><td>${esc(c.name)}</td><td>${C.money(c.cost, A.currency)}</td><td>${n(c.conv)}</td><td>${C.money(c.cpl, A.currency)}</td></tr>`).join('')}</table>` : '<div class="note">No ad spend in this period.</div>'}</div>`;
+  return h;
+}
+function rankings() {
+  if (!R.rankings) return waiting('Google rankings', 'Your rankings');
+  const RR = R.rankings, sm = RR.summary, rep = RR.report, N = sm.tracked;
+  const kpi = (t, v, c, nn) => card(t, 'BrightLocal', v, c, nn);
   let h = '';
   const vs = rep.prevRunAt ? ` vs ${fmtDay(rep.prevRunAt, false)}` : '';
   h += `<div class="sec"><div><h2>Google rankings</h2><div class="l">BrightLocal Rank Tracker · ${esc(fmtDay(rep.runAt))}${esc(vs)}${rep.checkedFrom ? ` · checked from ${esc(rep.checkedFrom)}` : ''}. Lower number = higher on the page. Rankings update after each BrightLocal run, not with the date picker.</div></div></div>`;
-  const ch = sm.avgChange == null || sm.avgChange === 0 ? '' : sm.avgChange > 0 ? `<span class="chg dn">▼ ${Math.abs(sm.avgChange)}</span>` : `<span class="chg up">▲ ${Math.abs(sm.avgChange)}</span>`;
-  h += `<div class="row r4">${kpi('Average Google position', sm.avg ?? '–', ch, `Across ${N} tracked keywords`)}${kpi('Keywords in the top 20', sm.top20, '', `of ${N} tracked, any search`)}${kpi('Movement', `${sign(sm.movement.keyword)} / ${sign(sm.movement.positional)}`, '', 'keyword / positional change')}${kpi('Google map 3-pack', `${sm.mapPack}%`, '', sm.mapPack ? 'of keywords show you in the map 3-pack' : 'Not in the map results yet')}</div>`;
-  const H = R.history, ax = axis([...H.desktop, ...H.mobile, ...H.localFinder]);
-  h += `<div class="row r21"><div class="card"><div class="ch"><span class="ct">Average position by month (higher on the chart = better)</span><div class="legend"><span><i style="background:#1b2a4e"></i>Desktop</span><span><i style="background:#b8862b"></i>Mobile</span><span><i style="background:#4a78c2"></i>Local Finder</span></div></div>${H.months.length ? line([{ d: H.localFinder, c: '#4a78c2' }, { d: H.mobile, c: '#b8862b' }, { d: H.desktop, c: '#1b2a4e' }], H.months, ax) : '<div class="empty">The monthly trend appears after the first runs.</div>'}</div>
-  <div class="card"><div class="ch"><span class="ct">Positions mix (desktop)</span></div>${bars(R.mix.bands, '#b8862b')}<div class="note">Rankings past page 1 can shift from day to day; watch the trend.</div></div></div>`;
-  let rows = R.keywords.map(k => ({ ...k, v: k.vol === '<10' ? 5 : Number(String(k.vol).replace(/[^0-9.]/g, '')) || 0 }));
+  h += `<div class="row r4">${kpi('Average Google position', sm.avg ?? '–', avgChip(sm.avgChange), `Across ${N} tracked keywords`)}${kpi('Keywords in the top 20', sm.top20, '', `of ${N} tracked, any search`)}${kpi('Movement', `${sign(sm.movement.keyword)} / ${sign(sm.movement.positional)}`, '', 'keyword / positional change')}${kpi('Google map 3-pack', `${sm.mapPack}%`, '', sm.mapPack ? 'of keywords show you in the map 3-pack' : 'Not in the map results yet')}</div>`;
+  const H = RR.history, ax = axis([...H.desktop, ...H.mobile, ...H.localFinder]);
+  h += `<div class="row r21"><div class="card"><div class="ch"><span class="ct">Average position by month (higher on the chart = better)</span><div class="legend"><span><i style="background:#1b2a4e"></i>Desktop</span><span><i style="background:#b8862b"></i>Mobile</span><span><i style="background:#4a78c2"></i>Local Finder</span></div></div>${H.months.length ? lineSvg([{ d: H.localFinder, c: '#4a78c2', w: 2.4 }, { d: H.mobile, c: '#b8862b', w: 2.4 }, { d: H.desktop, c: '#1b2a4e', w: 2.4 }], H.months, { w: 620, h: 210, min: ax.min, max: ax.max, inv: true, ticks: ax.ticks, label: 'Average Google position by month' }) : '<div class="empty">The monthly trend appears after the first runs.</div>'}</div>
+  <div class="card"><div class="ch"><span class="ct">Positions mix (desktop)</span></div>${bars(RR.mix.bands, '#b8862b')}<div class="note">Rankings past page 1 can shift from day to day; watch the trend.</div></div></div>`;
+  let rows = RR.keywords.map(k => ({ ...k, v: k.vol === '<10' ? 5 : Number(String(k.vol).replace(/[^0-9.]/g, '')) || 0 }));
   if (S.top) rows = rows.filter(r => r.d || r.m || r.l);
   if (S.q) rows = rows.filter(r => r.k.toLowerCase().includes(S.q.toLowerCase()));
   const key = S.sort; rows.sort((a, b) => key === 'vol' ? b.v - a.v : key === 'kw' ? a.k.localeCompare(b.k) : ((a[key] ?? 99) - (b[key] ?? 99)));
   h += `<div class="card tbl"><div class="tools"><input id="q" placeholder="Search keywords…" aria-label="Search keywords" value="${esc(S.q)}"><div class="sw"><button type="button" data-top="1" class="${S.top ? 'on' : ''}">In top 20 (${sm.top20})</button><button type="button" data-top="0" class="${!S.top ? 'on' : ''}">All ${N}</button></div><span class="note" style="margin:0">Click a column to sort · "–" = not in the top 20</span></div>
   <div class="scroll"><table><tr><th class="s" data-s="kw">Keyword</th><th class="s" data-s="vol">Monthly searches</th><th class="s" data-s="d">Desktop</th><th class="s" data-s="m">Mobile</th><th class="s" data-s="l">Maps</th><th>Change</th></tr>
   ${rows.map(r => `<tr><td>${esc(r.k)}</td><td>${esc(r.vol)}</td><td>${rk(r.d)}</td><td>${rk(r.m)}</td><td>${rk(r.l)}</td><td>${r.change > 0 ? `<b style="color:#1f9d55">▲ ${r.change}</b>` : r.change < 0 ? `<b style="color:#d64545">▼ ${-r.change}</b>` : '<span class="na">–</span>'}</td></tr>`).join('') || '<tr><td colspan="6" class="na">No keywords match.</td></tr>'}</table></div></div>`;
-  if (R.competitors?.names?.length && R.competitors.rows?.length) {
+  if (RR.competitors?.names?.length && RR.competitors.rows?.length) {
     h += `<div class="sec"><div><h2>You vs. competitors</h2><div class="l">Desktop Google ranks, ${esc(fmtDay(rep.runAt, false))} run.</div></div></div>
-  <div class="card tbl"><table><tr><th>Keyword</th><th>You</th>${R.competitors.names.map(n => `<th>${esc(n)}</th>`).join('')}</tr>${R.competitors.rows.map(c => `<tr><td>${esc(c[0])}</td>${c.slice(1).map(v => `<td>${rk(v)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+  <div class="card tbl"><table><tr><th>Keyword</th><th>You</th>${RR.competitors.names.map(x => `<th>${esc(x)}</th>`).join('')}</tr>${RR.competitors.rows.map(c => `<tr><td>${esc(c[0])}</td>${c.slice(1).map(v => `<td>${rk(v)}</td>`).join('')}</tr>`).join('')}</table></div>`;
   }
-  h += footer();
-  $('body').innerHTML = h;
-  const q = $('q'); if (q) q.oninput = e => { S.q = e.target.value; draw(); const n = $('q'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
+  return h;
 }
-async function unlock(pass) { R = await decryptJSON(file.enc, pass); store.set(PASS_KEY, pass); }
+// the y-axis for ranks: the preview's 15–25 when the numbers fit, otherwise widened in 2.5 steps (inverted)
+function axis(values) {
+  const v = values.filter(x => x != null); if (!v.length) return { min: 15, max: 25, ticks: [15, 17.5, 20, 22.5, 25] };
+  let min = Math.min(15, Math.floor(Math.min(...v) / 2.5) * 2.5); const max = Math.max(25, Math.ceil(Math.max(...v) / 2.5) * 2.5);
+  if (min < 1) min = 0; const step = (max - min) / 4;
+  return { min, max, ticks: [0, 1, 2, 3, 4].map(i => Math.round((min + i * step) * 10) / 10) };
+}
+const VIEWS = { Overview: overview, Calls: calls, 'Website leads': leads, 'Google Search': search, 'Website traffic': traffic, 'Google Business Profile': gbp, Rankings: rankings, Ads: ads };
+
+function draw() {
+  head();
+  if (!cfg?.enabled) { $('body').innerHTML = emptyHtml('Not set up yet', 'Your LFMP team hasn\'t set up this report yet.'); return; }
+  if (!file) { $('body').innerHTML = emptyHtml('First report coming soon', 'Your numbers appear here after the first nightly update.'); return; }
+  if (!R) return;
+  if (!S.tab) { $('body').innerHTML = emptyHtml('Coming soon', 'Your LFMP team is getting this report ready.'); return; }
+  $('body').innerHTML = VIEWS[S.tab]() + footer();
+  const q = $('q'); if (q) q.oninput = e => { S.q = e.target.value; draw(); const nq = $('q'); nq.focus(); nq.setSelectionRange(nq.value.length, nq.value.length); };
+}
+async function unlock(pass) { R = C.asV2(await decryptJSON(file.enc, pass)); store.set(PASS_KEY, pass); }
+const menuOpen = open => { $('dtm').hidden = !open; $('dt').setAttribute('aria-expanded', String(open)); if (open) ($('dtm').querySelector('.on') || $('dtm').firstElementChild)?.focus(); };
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-t]'); if (t) { S.tab = t.dataset.t; draw(); return; }
+  if (e.target.closest('#dt')) { menuOpen($('dtm').hidden); return; }
+  const rg = e.target.closest('[data-range]'); if (rg) { S.range = rg.dataset.range; store.set(RANGE_KEY, S.range); menuOpen(false); draw(); $('dt').focus(); return; }
+  if (!e.target.closest('#dtm') && !$('dtm').hidden) menuOpen(false);
+  const t = e.target.closest('[data-t]'); if (t) { S.tab = t.dataset.t; S.allQ = false; draw(); if (t.classList.contains('go')) window.scrollTo(0, 0); return; }
+  if (e.target.closest('#allQ')) { S.allQ = !S.allQ; draw(); return; }
   const tp = e.target.closest('[data-top]'); if (tp) { S.top = tp.dataset.top === '1'; draw(); return; }
   const so = e.target.closest('[data-s]'); if (so && R) { S.sort = so.dataset.s; draw(); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('dtm').hidden) { menuOpen(false); $('dt').focus(); return; }
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('[data-t]')) { e.preventDefault(); e.target.click(); return; }
+  if (!$('dtm').hidden && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { e.preventDefault(); const b = [...$('dtm').querySelectorAll('button')], i = b.indexOf(document.activeElement); b[(i + (e.key === 'ArrowDown' ? 1 : -1) + b.length) % b.length].focus(); }
 });
 document.addEventListener('submit', async e => {
   if (e.target.id !== 'unlock') return; e.preventDefault();

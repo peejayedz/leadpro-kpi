@@ -1,5 +1,14 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.39.0": {
+    "title": "LeadPro Reports: calls, Google and ads",
+    "summary": "Reports can now show calls and website leads (CallRail), Google Search, website traffic, Google Business Profile and Google Ads.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "The nightly Reports build reads CallRail, Search Console, GA4, Google Business Profile and Google Ads for every client that has them linked in the Builder. Counts only: no names, numbers or recordings. Each source starts once PJ adds its key." },
+      { "type": "new", "tag": "internal", "text": "New tabs stay a Draft until the team presses Publish new tabs after Andy's review; clients keep seeing only the tabs already approved." },
+      { "type": "improved", "tag": "internal", "text": "A broken source (for example GA4 with no access) shows in the bell and the Slack DM once, with what to do about it." }
+    ]
+  },
   "1.38.0": {
     "title": "Done moments",
     "summary": "Setting up a new firm now runs in a popup that ends with a finish animation, a sound and a voice line.",

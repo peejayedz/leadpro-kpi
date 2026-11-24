@@ -1,8 +1,12 @@
-name: LeadPro Reports (BrightLocal)
+name: LeadPro Reports
 # v1.37.0 Phase 1: the nightly Rank Tracker pull for every firm with Reports set up (firms/<slug>/reports-config.json),
 # next to the KPI sync. "Build now" in the Builder commits a build request to that file; the push below builds just
 # that firm. Numbers only, encrypted with the firm's KPI passphrase (scripts/reports-pull.mjs). Read only toward
 # BrightLocal; nothing here touches GHL. No BRIGHTLOCAL_API_KEY yet → the plan says so and nothing runs (no alerts).
+# v1.39.0 (queue items 7–9): also CallRail, Search Console, GA4, Business Profile and Google Ads, each read only, numbers
+# only. A source without its secrets is skipped with one log line. Secrets (names only): CALLRAIL_API_KEY,
+# GOOGLE_REPORTS_SA_JSON, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_GBP_REFRESH_TOKEN,
+# GOOGLE_ADS_REFRESH_TOKEN, GOOGLE_ADS_MCC_ID.
 run-name: "Reports ${{ inputs.slug || (github.event_name == 'push' && 'Build now') || 'all firms' }}"
 
 on:
@@ -44,6 +48,10 @@ jobs:
           EVENT: ${{ github.event_name }}
           SLUG: ${{ inputs.slug }}
           HAS_KEY: ${{ secrets.BRIGHTLOCAL_API_KEY != '' }}
+          HAS_CALLRAIL: ${{ secrets.CALLRAIL_API_KEY != '' }}
+          HAS_GOOGLE_SA: ${{ secrets.GOOGLE_REPORTS_SA_JSON != '' }}
+          HAS_GBP: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID != '' && secrets.GOOGLE_OAUTH_CLIENT_SECRET != '' && secrets.GOOGLE_GBP_REFRESH_TOKEN != '' }}
+          HAS_ADS: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID != '' && secrets.GOOGLE_OAUTH_CLIENT_SECRET != '' && secrets.GOOGLE_ADS_REFRESH_TOKEN != '' && secrets.GOOGLE_ADS_MCC_ID != '' }}
           BEFORE: ${{ github.event.before }}
         run: |
           if [ "$EVENT" = "push" ] && [ -n "$BEFORE" ] && git cat-file -e "$BEFORE" 2>/dev/null; then
@@ -51,12 +59,12 @@ jobs:
           fi
           node scripts/reports-pull.mjs plan
 
-  # One job per firm: each sees only BrightLocal's key and its own firm's passphrase.
+  # One job per firm: each sees only the agency source keys and its own firm's passphrase.
   pull:
     needs: plan
     if: needs.plan.outputs.count != '0'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       max-parallel: 5
@@ -68,11 +76,18 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "20"
-      - name: Pull BrightLocal Rank Tracker
+      - name: Pull the linked sources (numbers only)
         env:
           SLUG: ${{ matrix.firm.slug }}
           BRIGHTLOCAL_API_KEY: ${{ secrets.BRIGHTLOCAL_API_KEY }}
           BRIGHTLOCAL_API_SECRET: ${{ secrets.BRIGHTLOCAL_API_SECRET }}
+          CALLRAIL_API_KEY: ${{ secrets.CALLRAIL_API_KEY }}
+          GOOGLE_REPORTS_SA_JSON: ${{ secrets.GOOGLE_REPORTS_SA_JSON }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          GOOGLE_GBP_REFRESH_TOKEN: ${{ secrets.GOOGLE_GBP_REFRESH_TOKEN }}
+          GOOGLE_ADS_REFRESH_TOKEN: ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
+          GOOGLE_ADS_MCC_ID: ${{ secrets.GOOGLE_ADS_MCC_ID }}
           PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', matrix.firm.secretKey)] }}
           OUT_DIR: ${{ runner.temp }}/out
           RESULT_FILE: ${{ runner.temp }}/result/${{ matrix.firm.slug }}.json

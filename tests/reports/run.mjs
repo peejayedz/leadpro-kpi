@@ -91,7 +91,7 @@ try {
   await writeFile(join(tmp, RC.configPath('mahdavi')), JSON.stringify(cfg));
   await writeFile(join(tmp, RC.configPath('emery')), JSON.stringify({ ...RC.newConfig({ slug: 'emery', locationId: '4100999' }), enabled: false }));
   const logs = []; const log = m => logs.push(m);
-  check((await RP.plan({ root: tmp, hasKey: false, log })).length === 0 && /BrightLocal key not set yet/.test(logs[0]), 'no key: plan is empty, one clear log line (no alert)', logs[0]);
+  check((await RP.plan({ root: tmp, hasKey: false, log })).length === 0 && /BrightLocal not set yet \(BRIGHTLOCAL_API_KEY\): skipped/.test(logs[0]) && /No report source is set up yet: nothing pulled/.test(logs.at(-1)), 'no key: plan is empty, one clear log line per source + one summary (no alert)', logs.join(' | '));
   const all = await RP.plan({ root: tmp, hasKey: true, log });
   check(JSON.stringify(all) === JSON.stringify([{ slug: 'mahdavi', name: 'The Mahdavi Law Firm', secretKey: 'MAHDAVI', request: '' }]), 'nightly: only firms with Reports enabled and a location (lfmp has none, emery is off)');
   check((await RP.plan({ root: tmp, hasKey: true, event: 'push', changed: [RC.configPath('mahdavi')], log })).length === 0, 'push without a Build now request (Save & build tonight) → waits for tonight');
@@ -106,13 +106,14 @@ try {
   const file = JSON.parse(await readFile(join(out, 'mahdavi/reports.json'), 'utf8'));
   check(Object.keys(file).join(',') === 'v,generatedAt,enc' && file.enc.alg === 'AES-GCM-256/PBKDF2-SHA256' && !JSON.stringify(file).includes('rideshare'), 'reports.json: only { v, generatedAt, enc } in the clear (same scheme as details.enc.json)');
   const back = await decryptJSON(file.enc, 'right horse battery');
-  check(back.summary.avg === 20.7 && back.summary.top20 === 6 && back.keywords.length === 88, 'encryption round trip with the firm\'s passphrase');
+  check(back.v === 2 && back.rankings.summary.avg === 20.7 && back.rankings.summary.top20 === 6 && back.rankings.keywords.length === 88 && back.calls === null, 'encryption round trip with the firm\'s passphrase (v2: rankings + one slot per source)');
   let wrong = false; try { await decryptJSON(file.enc, 'another firms passphrase'); } catch { wrong = true; }
   check(wrong, 'another firm\'s passphrase can\'t read it');
   check(await throwsKind(() => RP.pull({ root: tmp, slug: 'mahdavi', key: 'k', pass: '', fetch: fakeBL(), outDir: out, log }), 'config'), 'no passphrase secret → config error (nothing written in the clear)');
   check(await throwsKind(() => RP.pull({ root: tmp, slug: 'emery', key: 'k', pass: 'x', fetch: fakeBL(), outDir: out, log }), 'config'), 'Reports off → config error');
   await writeFile(join(tmp, RC.configPath('lfmp')), JSON.stringify(RC.newConfig({ slug: 'lfmp', locationId: '4100502' })));
-  check(await throwsKind(() => RP.pull({ root: tmp, slug: 'lfmp', key: 'k', pass: 'x', fetch: fakeBL(), outDir: out, log }), 'no_report'), 'a location without a Rank Tracker report → no_report');
+  const nr = await RP.pull({ root: tmp, slug: 'lfmp', key: 'k', pass: 'x', fetch: fakeBL(), outDir: out, log });
+  check(!nr.ok && nr.sources.brightlocal.kind === 'no_report', 'a location without a Rank Tracker report → BrightLocal no_report (that source shows broken)');
 
   const res = join(tmp, 'res'); await mkdir(res);
   await writeFile(join(res, 'mahdavi.json'), JSON.stringify(ok));
@@ -141,5 +142,6 @@ const preview = await readFile(join(ROOT, 'tests/reports/approved.css'), 'utf8')
 check(preview === null || page.includes(preview.trim()), 'app/reports.html carries the approved CSS unchanged (tests/reports/approved.css)');
 check(!/fetch\([^)]*firms\/\$\{(?!SLUG)/.test(page) && /const FIRM = PATH_FIRM \? '\.\/'/.test(page) && /lfmp-pass-\$\{SLUG\}/.test(page), 'client page reads only its own firm\'s files; same saved passphrase as the dashboard');
 
+await import('./sources.mjs').then(m => m.run({ check, throwsKind }));
 console.log(`\n${pass} of ${pass + fail} reports tests pass.`);
 process.exitCode = fail ? 1 : 0;
