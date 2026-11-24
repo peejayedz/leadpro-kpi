@@ -2,6 +2,9 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.40.0 a client's own CallRail key + Done moments On / Off (queue item 10; with Builder v1.34.x + Review admin v1.18.0; shell 2.11.0): pushed 24 Nov 2026
+- `ownCallrail(cfg)` / `ownCallrailName(slug)` in reports-core.mjs; reports.yml passes `CALLRAIL_KEY_<KEY>` to that firm's job only. The agency keys are now saved from the Builder's Reports → Settings into these same Actions secrets (names unchanged). Test browsers are muted (tests/quiet-browser.mjs, FIX 10.0).
+
 ## v1.39.0 LeadPro Reports Phases 2–4 (CallRail, Search Console, GA4, Business Profile, Google Ads; queue items 7–9, one build; with Builder v1.33.0): LIVE 24 Nov 2026
 - KPI `e2cee3db` → Builder `a6a83e9` + `93be37e` (team site admin-site ec6e5dfa55432c4f, run 45354445488). No key is set yet: every source shows its calm "not set" state; nothing is pulled.
 - `scripts/callrail.mjs` (one account per firm: store accountId + companyId; 429 back-off) and `scripts/google.mjs` (Web Crypto JWT robot for GA4 / Search Console; OAuth refresh for Business Profile + Google Ads v26 through the MCC, no developer token) are the only places that talk to those APIs. `reports.json` v2 = 400 days by day per source, encrypted with the KPI passphrase; status has per-source health; one bell issue per broken source.
