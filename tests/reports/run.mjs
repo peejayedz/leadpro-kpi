@@ -48,6 +48,18 @@ check(await throwsKind(() => BL.client({ key: '' }), 'no_key'), 'no key → "Bri
   check(u.searchParams.get('expires') === exp && u.searchParams.get('sig') === await BL.signature('k', 's', exp), 'with a secret: expires (+30 min) and sig = base64 HMAC-SHA1(key + expires)');
   check(await BL.signature('k', 's', exp) === 'AcTvjnPSLFjzpJDq7BybUIxLH7M=', 'signature: the value openssl gives (HMAC-SHA1 of "k1700001800" with "s", base64)');
 }
+// v1.41.0 (queue item 12): the request counter (a trial key = 1,000 requests in total) + every page of the location search
+{
+  const f = fakeBL(); const c = BL.client({ key: 'k', fetch: f });
+  await c.locations(); await c.reports('3839215');
+  check(c.stats.requests === 2 && f.calls.length === 2, 'stats.requests counts every request the client sent (2)');
+  const pages = []; const pf = async url => { const u = new URL(url); pages.push(u.searchParams.get('page') || '1'); const n = Number(u.searchParams.get('page') || 1);
+    return new Response(JSON.stringify({ success: true, response: { total_pages: 3, results: [{ 'location-id': 1000 + n, 'location-name': `Firm ${n}` }] } })); };
+  const pc = BL.client({ key: 'k', fetch: pf }), all = await pc.locations('');
+  check(all.length === 3 && pages.join(',') === '1,2,3' && pc.stats.requests === 3, 'locations: every page when the answer says total_pages (3 pages → 3 requests, no cap)');
+  const one = BL.client({ key: 'k', fetch: async () => new Response(JSON.stringify({ success: true, response: { results: Array.from({ length: 1365 }, (_, i) => ({ 'location-id': 5000 + i, 'location-name': `Loc ${i}` })) } })) });
+  check((await one.locations('')).length === 1365 && one.stats.requests === 1, 'locations: 1,365 in one answer = 1 request, all kept');
+}
 check(await throwsKind(() => BL.client({ key: 'bad', fetch: fakeBL({ status: 401 }) }).locations(), 'auth'), 'a refused key → kind auth');
 check(await throwsKind(() => BL.client({ key: 'k', fetch: fakeBL({ status: 503 }) }).locations(), 'server'), 'BrightLocal 5xx → kind server');
 check(await throwsKind(() => BL.client({ key: 'k', fetch: async () => { throw new Error('down'); } }).locations(), 'network'), 'no answer → kind network');
@@ -115,13 +127,26 @@ try {
   const nr = await RP.pull({ root: tmp, slug: 'lfmp', key: 'k', pass: 'x', fetch: fakeBL(), outDir: out, log });
   check(!nr.ok && nr.sources.brightlocal.kind === 'no_report', 'a location without a Rank Tracker report → BrightLocal no_report (that source shows broken)');
 
+  // v1.41.0 (queue item 12): per firm only get-all + results + history; the account-wide location search only for a firm with
+  // no stored location and no name in its config
+  check(ok.blRequests === 4, 'first pull with no stored location and no name in the config: get-all + results + history + 1 location search = 4 requests', String(ok.blRequests));
+  const named = RC.withSource(cfg, 'brightlocal', { locationId: '3839215', rankReportId: '', locationName: 'The Mahdavi Law Firm', city: 'Houston, TX' });
+  check(named.sources.brightlocal.locationName === 'The Mahdavi Law Firm' && named.sources.brightlocal.city === 'Houston, TX', 'config: the BrightLocal pick keeps the location name and city (public)');
+  await writeFile(join(tmp, RC.configPath('mahdavi')), JSON.stringify(named));
+  const f3 = fakeBL(); const ok3 = await RP.pull({ root: tmp, slug: 'mahdavi', key: 'k', pass: 'right horse battery', fetch: f3, outDir: join(tmp, 'out3'), log, now: new Date('2026-11-21T07:00:00Z') });
+  check(ok3.ok && ok3.blRequests === 3 && !f3.calls.some(u => u.pathname.endsWith('/locations/search')), 'pull with the name in the config: exactly 3 requests (get-all, results, history), no location search', `${ok3.blRequests}`);
+  const back3 = await decryptJSON(JSON.parse(await readFile(join(tmp, 'out3/mahdavi/reports.json'), 'utf8')).enc, 'right horse battery');
+  check(back3.rankings.location?.name === 'The Mahdavi Law Firm', 'the report still names the location');
+  await writeFile(join(tmp, RC.configPath('mahdavi')), JSON.stringify(RC.withBuildRequest(cfg, { id: 'req-1', by: 'PJ' })));
   const res = join(tmp, 'res'); await mkdir(res);
   await writeFile(join(res, 'mahdavi.json'), JSON.stringify(ok));
   await writeFile(join(res, 'lfmp.json'), JSON.stringify({ slug: 'lfmp', ok: false, kind: 'auth', message: 'BrightLocal refused the key' }));
   const st = await RP.finish({ root: tmp, matrix: [{ slug: 'mahdavi', request: 'req-1' }, { slug: 'lfmp' }], resultsDir: res, dataDir: out, runUrl: 'https://github.com/x/actions/runs/1', now: new Date('2026-11-21T07:01:00Z'), log });
   check(st.firms.mahdavi.ok && st.firms.mahdavi.keywords === 88 && st.firms.mahdavi.request === 'req-1' && (await readFile(join(tmp, RC.dataPath('mahdavi')), 'utf8')).includes('"enc"'), 'finish: reports.json copied in, status ok with 88 keywords and the request id');
+  check(st.brightlocal?.requests === 4, 'finish: the nightly\'s BrightLocal requests are added to status.brightlocal.requests (4)', JSON.stringify(st.brightlocal));
   check(!st.firms.lfmp.ok && st.firms.lfmp.kind === 'auth' && st.firms.lfmp.firstFailedAt === '2026-11-21T07:01:00.000Z', 'finish: a failed firm keeps its kind, reason and first-failed time');
   const st2 = await RP.finish({ root: tmp, matrix: [{ slug: 'lfmp' }], resultsDir: join(tmp, 'none'), dataDir: out, now: new Date('2026-11-22T07:01:00Z'), log });
+  check(st2.brightlocal?.requests === 4, 'finish: a run without BrightLocal requests keeps the total');
   check(st2.firms.lfmp.kind === 'crashed' && st2.firms.lfmp.firstFailedAt === '2026-11-21T07:01:00.000Z' && st2.firms.mahdavi.ok, 'finish: still failing keeps the first-failed time; other firms untouched');
   check(!RP.wantsBuild || RC.wantsBuild(RC.withBuildRequest(cfg, { id: 'req-1' }), st.firms.mahdavi) === false, 'after the run the same request isn\'t built again');
   const is = RC.reportsIssues(st2, { firms: [{ slug: 'lfmp', name: 'LFMP' }] });

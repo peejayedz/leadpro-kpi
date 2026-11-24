@@ -814,6 +814,8 @@ async function deleteFirm(slug, secretKey, name) {
 const CHECK_MS = 5 * 60e3;
 const BASE_TITLE = document.title;
 const SEEN_KEY = 'leadpro-admin-seen', LIVE_KEY = 'leadpro-admin-live', LOCAL_RESOLVED = 'leadpro-admin-resolved';
+const BL_USAGE_URL = '/api/reports/catalog?usage=1';   // a Pages Function on the team site, not a file
+let blUsage = null;   // v1.41.0: the BrightLocal trial key counter (/api/reports/catalog?usage=1)
 let syncStatus = null, keeperStatus = null, removedLog = null, issues = [], issuesRead = false, chainInfo = {}, lastCheck = 0, checkErr = null, checkTimer = null, checking = null;
 const subNames = {}, expanded = new Set(), issueMsg = {};
 const readStore = (k, d) => { try { return JSON.parse(store.get(k)) ?? d; } catch { return d; } };
@@ -839,6 +841,8 @@ async function refreshIssues({ reloadKpis = false } = {}) {
       keeperStatus = await getJSON('status/token-keeper.json').catch(() => null);
       removedLog = await getJSON('status/removed.json').catch(() => null);   // v1.28.0: "Scorecard removed" notices (7 days)
       const reportsStatus = await getJSON('status/reports-status.json').catch(() => null);   // v1.37.0 LeadPro Reports (absent until the first build)
+      // v1.41.0 (queue item 12): the BrightLocal trial key counter (team site; numbers only). Paused at 800 → an amber notice
+      blUsage = await fetch(BL_USAGE_URL, { credentials: 'same-origin', headers: { Accept: 'application/json' } }).then(r => (r.ok ? r.json() : null)).then(j => j?.brightlocal || null).catch(() => null);
       issues = GC.buildIssues({ keeperStatus, syncStatus, chain: chainInfo, firms, configs, kpis, now: Date.now(), reportsStatus });   // v1.29.1: greet-count.mjs
       trackLive(); lastCheck = Date.now(); checkErr = null;
     } catch (e) { checkErr = e.message; }
@@ -922,6 +926,12 @@ function removedHtml() {
   if (!list.length) return '';
   return `<div class="nnotices">${list.map(e => `<div class="note nnotice" data-notice="removed"><b>Scorecard removed · ${esc(e.name || e.slug)}</b> · ${esc(ago(e.at))} by ${esc(e.by || 'someone')} from the Builder.${e.menu === 'removed' ? ' Its "KPI Dashboard" link was taken out of the GHL menu.' : ''}</div>`).join('')}</div>`;
 }
+// v1.41.0 (queue item 12): an amber notice (not counted in the badge) while the BrightLocal trial key is at its 800 pause
+function blPauseHtml() {
+  if (!blUsage?.paused) return '';
+  const n = x => Number(x || 0).toLocaleString('en-US');
+  return `<div class="nnotices"><div class="warnbox nnotice" data-notice="blpause"><b>BrightLocal trial key: ${n(blUsage.used)} of ${n(blUsage.limit || 1000)} requests used</b><br>The team site stopped reading BrightLocal at ${n(blUsage.pauseAt || 800)} (the saved location list keeps working; the nightly keeps going for linked firms). Once it's a paid key, untick "This is a trial key" in the Builder → Reports → Settings. <a class="linkbtn" href="/ghl-subaccount-builder-page/#reports/settings">Open Reports settings</a></div></div>`;
+}
 function paintPanel() {
   const seen = seenSet(), open = listed(), notices = issues.filter(i => !inBadge(i)), n = open.filter(i => !seen.has(seenKey(i))).length;
   const nip = pipelineNotices(firms, kpis);   // amber notices, never counted in the badge or tab title
@@ -936,7 +946,7 @@ function paintPanel() {
       ${checkErr ? `<div class="errbox small">Couldn't check everything: ${esc(checkErr)}</div>` : ''}
     </div>
     <section class="njobs" aria-label="Recent jobs"><h4 class="lbl2">Recent jobs</h4>${jobsListHtml()}</section>
-    ${removedHtml()}
+    ${removedHtml()}${blPauseHtml()}
     ${mpos.length ? `<div class="nnotices">${mpos.map(f => `<div class="warnbox nnotice" data-notice="menupos"><b>Menu position: paste the CSS in GHL</b> · ${esc(fname(f))}<br><a href="${esc(hashFor('list', f.slug))}">Open Setup → GHL menu link</a></div>`).join('')}</div>` : ''}
     ${notices.length || nip.length ? `<div class="nnotices">${nip.map(x => { const u = contactsUrl(x.slug); return `<div class="warnbox nnotice"><b>New contacts not in pipeline</b> · ${esc(x.name)} · ${x.count} in the last 30 days<br>${x.count === 1 ? 'A contact' : `${x.count} contacts`} came in by form, chat, booking, call, text or email but ${x.count === 1 ? 'has' : 'have'} no opportunity in any pipeline, so ${x.count === 1 ? 'it isn\'t' : 'they aren\'t'} counted in New leads. What to do: check the firm's lead intake in GHL (the chat widget, form and call workflows) and make sure each one creates an opportunity in the lead pipeline, then add these contacts to it. ${u ? `<a class="linkbtn" href="${esc(u)}" target="_blank" rel="noopener">Open contacts in GHL</a> · ` : ''}<button class="linkbtn" type="button" data-n="firm" data-slug="${esc(x.slug)}">Go to firm</button></div>`; }).join('')}${notices.map(i => { const f = firmOf(i.slug); if (i.kind === 'unmapped') { const d = issueText(i); return `<div class="warnbox nnotice" data-notice="unmapped"><b>${esc(d.title)}</b> · ${esc(f ? fname(f) : i.slug)} · since ${esc(ago(i.firstSeen))}<br>${d.what} <button class="linkbtn" type="button" data-n="map" data-slug="${esc(i.slug)}">${f && careOf(f) ? 'Map pipelines' : 'Edit mapping'}</button> · <button class="linkbtn" type="button" data-n="firm" data-slug="${esc(i.slug)}">Go to firm</button></div>`; } return `<div class="warnbox nnotice"><b>Holding previous numbers</b> · ${esc(f?.name || i.slug)} · hold ${i.count} of 3, since ${esc(ago(i.firstSeen))}<br>GHL returned fewer calls or messages than the last sync${i.reason ? ` (${esc(i.reason)})` : ''}, so the dashboard keeps the previous numbers. Nothing to do: it usually clears on the next sync. After 3 holds it publishes with a "may be incomplete" note, which shows here as an issue. <button class="linkbtn" type="button" data-n="firm" data-slug="${esc(i.slug)}">Go to firm</button></div>`; }).join('')}</div>` : ''}
     ${open.length ? open.map(i => issueHtml(i, seen)).join('')

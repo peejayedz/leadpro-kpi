@@ -28,13 +28,18 @@ export class BrightLocalError extends Error {
   constructor(message, { status = 0, kind = 'api' } = {}) { super(message); this.status = status; this.kind = kind; }
 }
 
-// client({ key, secret, fetch, now }) → { locations(q), reports(locationId), results(campaignId), history(campaignId) }
+// client({ key, secret, fetch, now }) → { locations(q), reports(locationId), results(campaignId), history(campaignId), stats }
+// v1.41.0 (queue item 12): stats.requests counts every request this client sent (a trial key allows 1,000 in total; the
+// nightly writes its count to status/reports-status.json, the team site counts its own in KV). locations() reads every page
+// when BrightLocal's answer says there are more (no cap here; the team site sorts the whole list).
 export function client({ key, secret = '', fetch: f = globalThis.fetch, now = () => Date.now(), base = BL_BASE } = {}) {
   if (!key) throw new BrightLocalError('BrightLocal key not set yet', { kind: 'no_key' });
+  const stats = { requests: 0 };
   async function get(path, params = {}) {
     const q = new URLSearchParams({ 'api-key': key, ...params });
     if (secret) { const expires = String(Math.floor(now() / 1000) + 1800); q.set('expires', expires); q.set('sig', await signature(key, secret, expires)); }
     let r;
+    stats.requests++;
     try { r = await f(`${base}${path}?${q}`, { headers: { Accept: 'application/json' } }); }
     catch (e) { throw new BrightLocalError(`BrightLocal didn't answer (${e.message})`, { kind: 'network' }); }
     const text = await r.text();
@@ -45,12 +50,21 @@ export function client({ key, secret = '', fetch: f = globalThis.fetch, now = ()
     return j.response ?? j;
   }
   return {
-    locations: async (q = '') => readLocations(await get('/v2/clients-and-locations/locations/search', { q })),
+    locations: async (q = '') => {
+      const first = await get('/v2/clients-and-locations/locations/search', { q }), out = readLocations(first);
+      for (let page = 2, pages = pagesOf(first); page <= Math.min(pages, MAX_PAGES); page++) out.push(...readLocations(await get('/v2/clients-and-locations/locations/search', { q, page: String(page) })));
+      return out;
+    },
     reports: async locationId => readReports(await get('/v2/lsrc/get-all', { 'location-id': String(locationId) })),
     results: async campaignId => readResults(await get('/v2/lsrc/results/get', { 'campaign-id': String(campaignId) })),
     history: async campaignId => readHistory(await get('/v2/lsrc/history/get', { 'campaign-id': String(campaignId) })),
+    stats,
   };
 }
+// More pages only when the answer says so (total_pages / pages / last_page); BrightLocal's location search usually answers
+// with every match at once. MAX_PAGES keeps a wrong answer from looping.
+export const MAX_PAGES = 20;
+export const pagesOf = resp => { const n = Number(resp?.total_pages ?? resp?.pages ?? resp?.last_page ?? resp?.meta?.total_pages ?? 1); return Number.isFinite(n) && n > 1 ? Math.floor(n) : 1; };
 const errText = j => { const e = j?.errors || j?.error; return typeof e === 'string' ? e : e && typeof e === 'object' ? Object.values(e).flat().join('; ') : ''; };
 const num = v => (v === null || v === undefined || v === '' || Number.isNaN(Number(v)) ? null : Number(v));
 const rank = v => { const n = num(v); return n && n > 0 ? n : null; };   // 0 / "" / null = not found

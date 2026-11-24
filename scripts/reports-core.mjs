@@ -59,7 +59,7 @@ export function sourceValue(key, v) {
   if (!v || typeof v !== 'object') return null;
   if (v.unused === true) return { unused: true };
   switch (key) {
-    case 'brightlocal': return validLocationId(v.locationId) ? { locationId: String(v.locationId), rankReportId: String(v.rankReportId || '') } : null;
+    case 'brightlocal': return validLocationId(v.locationId) ? { locationId: String(v.locationId), rankReportId: String(v.rankReportId || ''), ...(v.locationName ? { locationName: clip(v.locationName) } : {}), ...(v.city ? { city: clip(v.city) } : {}) } : null;   // v1.41.0: + the location's name / city (public; the nightly no longer searches every location)
     case 'callrail': return /^[A-Za-z0-9_-]{3,64}$/.test(String(v.companyId || '')) && (!v.accountId || /^[A-Za-z0-9_-]{3,64}$/.test(String(v.accountId))) ? { ...(v.accountId ? { accountId: String(v.accountId) } : {}), companyId: String(v.companyId), companyName: clip(v.companyName ?? v.name), ...(v.accountName ? { accountName: clip(v.accountName) } : {}), ...(v.ownKey === true ? { ownKey: true } : {}) } : null;   // NOTE 7.1: accountId + companyId (one account per firm); v1.40.0: ownKey = the client's own CallRail key (CALLRAIL_KEY_<SLUG>)
     case 'ga4': { const id = String(v.propertyId || '').replace(/^properties\//, ''); return /^\d{3,15}$/.test(id) ? { propertyId: id, name: clip(v.name) } : null; }
     case 'searchConsole': return /^(sc-domain:[a-z0-9.-]+|https?:\/\/[^\s]+\/)$/i.test(String(v.siteUrl || '')) ? { siteUrl: String(v.siteUrl) } : null;

@@ -99,15 +99,21 @@ export async function pull({ root = '.', slug, key, secret = '', creds = null, p
   for (const [k, field] of [['brightlocal', 'rankings'], ['callrail', 'calls'], ['searchConsole', 'search'], ['ga4', 'traffic'], ['gbp', 'gbp'], ['googleAds', 'ads']]) if (!linked.includes(k)) rep[field] = null;
   const run = async (k, fn) => { if (!linked.includes(k) || !has[k]) return; try { await fn(); results[k] = { ok: true }; } catch (e) { results[k] = { ok: false, kind: e.kind || 'error', message: String(e.message || e).slice(0, 200) }; log(`::warning::${slug}: ${SOURCE_LABELS[k]}: ${results[k].message}`); } };
 
+  let blRequests = 0;
   await run('brightlocal', async () => {
-    const bl = client({ key: creds.brightlocal.key, secret: creds.brightlocal.secret || '', fetch: f });
+    const bl = client({ key: creds.brightlocal.key, secret: creds.brightlocal.secret || '', fetch: async (...a) => { blRequests++; return f(...a); } });
     const src = cfg.sources.brightlocal;
     const reports = await bl.reports(src.locationId);
     const report = (src.rankReportId && reports.find(r => r.id === String(src.rankReportId))) || reports[0];
     if (!report) throw new BrightLocalError(`BrightLocal has no Rank Tracker report for location ${src.locationId}.`, { kind: 'no_report' });
     const [res, history] = await Promise.all([bl.results(report.id), bl.history(report.id)]);
+    // v1.41.0 (queue item 12): get-all + results + history only. The location's name / city come from the stored report or
+    // the config (the Builder saves them); the whole-account location search runs only for a firm that has neither.
     let location = null;
-    try { location = (await bl.locations('')).find(l => l.id === String(src.locationId)) || null; } catch {}
+    if (old?.location && String(old.location.id) === String(src.locationId)) location = old.location;
+    else if (src.locationName) location = { id: String(src.locationId), name: src.locationName, city: src.city || '' };
+    else { try { location = (await bl.locations('')).find(l => l.id === String(src.locationId)) || null; } catch {} }
+
     rep.rankings = buildReport({ slug, location, report, results: res, history, now });
     rep.location = rep.rankings.location || rep.location;
     log(`${slug}: ${rep.rankings.summary.tracked} keywords read from BrightLocal (report ${report.id}, run ${rep.rankings.report.runAt || 'unknown'}).`);
@@ -160,7 +166,7 @@ export async function pull({ root = '.', slug, key, secret = '', creds = null, p
   await mkdir(join(outDir, slug), { recursive: true });
   await writeFile(join(outDir, slug, 'reports.json'), `${JSON.stringify(file)}\n`);
   const ok = Object.values(results).every(r => r.ok);
-  return { slug, ok, sources: results, keywords: rep.rankings?.summary?.tracked ?? null, ...(ok ? {} : { kind: 'source', message: Object.entries(results).filter(([, r]) => !r.ok).map(([k, r]) => `${SOURCE_LABELS[k]}: ${r.message}`).join(' · ').slice(0, 200) }) };
+  return { slug, ok, sources: results, keywords: rep.rankings?.summary?.tracked ?? null, ...(blRequests ? { blRequests } : {}), ...(ok ? {} : { kind: 'source', message: Object.entries(results).filter(([, r]) => !r.ok).map(([k, r]) => `${SOURCE_LABELS[k]}: ${r.message}`).join(' · ').slice(0, 200) }) };
 }
 
 // ---------------------------------------------------------------- finish (one commit)
@@ -189,6 +195,11 @@ export async function finish({ root = '.', matrix = [], resultsDir, dataDir, run
       ...(Object.keys(sources).length ? { sources } : {}), ...(runUrl ? { runUrl } : {}) };
     log(`${ok ? '✓' : '✗'} ${m.slug}${ok ? '' : ` (${next.firms[m.slug].kind}: ${next.firms[m.slug].message})`}`);
   }
+  // v1.41.0 (queue item 12): every BrightLocal request the nightly sent, added up for good (numbers only). The team site
+  // adds its own count (KV) to show "Trial key · N of 1,000 requests used" and pause its catalog reads at 800.
+  let blAdd = 0;
+  for (const m of matrix) { const res = await readJSON(join(resultsDir, `${m.slug}.json`)); blAdd += Number(res?.blRequests) || 0; }
+  if (blAdd || prev.brightlocal) next.brightlocal = { requests: (Number(prev.brightlocal?.requests) || 0) + blAdd, at: blAdd ? at : prev.brightlocal?.at || at };
   next.updatedAt = at;
   await mkdir(join(root, 'status'), { recursive: true });
   await writeFile(join(root, STATUS_FILE), `${JSON.stringify(next, null, 2)}\n`);

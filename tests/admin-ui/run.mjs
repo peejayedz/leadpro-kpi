@@ -77,6 +77,8 @@ const NIP = [{ contactId: 'cFixture0001', name: 'Jordan Fixture', email: 'jordan
 const NIP_ENV = JSON.stringify(await encryptJSON({ generatedAt: new Date().toISOString(), notInPipeline: NIP, leads: [] }, NIP_PASS, 1000));
 
 const server = createServer(async (req, res) => {
+  // v1.41.0: /api/reports/catalog?usage=1 (the team site's Pages Function, not api.mjs) = the BrightLocal trial key counter
+  if (new URL(req.url, 'http://x').pathname === '/api/reports/catalog') { T.usageCalls = (T.usageCalls || 0) + 1; res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ brightlocal: T.blUsage || { used: 3, team: 3, nightly: 0, trial: true, limit: 1000, pauseAt: 800, paused: false } })); }
   if (new URL(req.url, 'http://x').pathname.startsWith('/api/')) return ACCESS.serve(req, res, { env: T.env, deps: T.deps, email: T.email });
   // Cloudflare Access: this site's logout (Sign out calls it before the team-wide logout)
   if (req.url.startsWith('/cdn-cgi/access/logout')) { T.logouts = (T.logouts || 0) + 1; res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<!doctype html><title>Logged out</title>'); }
