@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T19:07:23.119Z",
+  "generatedAt": "2026-11-24T19:37:27.974Z",
   "location": "Emery Law Office",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,8 +22,104 @@
     "today": {
       "label": "Today",
       "from": 1795496400000,
-      "to": 1795547243119,
+      "to": 1795549047974,
       "current": {
+        "totalLeads": 4,
+        "contacted": 0,
+        "contactRatePct": 0,
+        "speedToLeadAvgMin": null,
+        "speedMeasured": 0,
+        "within5": 0,
+        "within5Pct": 0,
+        "missedCalls": 0,
+        "missedNotReturned": 0,
+        "notInPipeline": 0,
+        "qualified": 0,
+        "qualifiedPct": null,
+        "turnedAway": 0,
+        "turnedAwayReasons": [],
+        "consultBooked": 0,
+        "bookRatePct": null,
+        "bookedPast": 0,
+        "consultHeld": 0,
+        "showRatePct": null,
+        "noShows": 0,
+        "noShowPct": null,
+        "agreementSent": 0,
+        "sentRatePct": null,
+        "signed": 0,
+        "signRatePct": null,
+        "leadToSignedPct": 0,
+        "adSpend": null,
+        "costPerSigned": null,
+        "bySource": [
+          [
+            "Google Business Profile - Louisville",
+            3,
+            0
+          ],
+          [
+            "Website Number Pool",
+            1,
+            0
+          ]
+        ],
+        "byChannel": [
+          [
+            "Third Party",
+            4,
+            0
+          ]
+        ],
+        "attributedLeads": 4,
+        "stageMoved": 0,
+        "attributionPct": 100,
+        "funnel": [
+          [
+            "New leads",
+            4,
+            "newLeads",
+            null
+          ],
+          [
+            "Contacted",
+            0,
+            "contacted",
+            "of leads"
+          ],
+          [
+            "Qualified",
+            0,
+            "qualified",
+            "of contacted"
+          ],
+          [
+            "Consult booked",
+            0,
+            "consultBooked",
+            "of qualified"
+          ],
+          [
+            "Consult held",
+            0,
+            "consultHeld",
+            "of booked"
+          ],
+          [
+            "Agreement sent",
+            0,
+            "agreementSent",
+            "of held"
+          ],
+          [
+            "Signed",
+            0,
+            "signed",
+            "of sent"
+          ]
+        ]
+      },
+      "previous": {
         "totalLeads": 3,
         "contacted": 0,
         "contactRatePct": 0,
@@ -78,97 +174,6 @@
           [
             "New leads",
             3,
-            "newLeads",
-            null
-          ],
-          [
-            "Contacted",
-            0,
-            "contacted",
-            "of leads"
-          ],
-          [
-            "Qualified",
-            0,
-            "qualified",
-            "of contacted"
-          ],
-          [
-            "Consult booked",
-            0,
-            "consultBooked",
-            "of qualified"
-          ],
-          [
-            "Consult held",
-            0,
-            "consultHeld",
-            "of booked"
-          ],
-          [
-            "Agreement sent",
-            0,
-            "agreementSent",
-            "of held"
-          ],
-          [
-            "Signed",
-            0,
-            "signed",
-            "of sent"
-          ]
-        ]
-      },
-      "previous": {
-        "totalLeads": 2,
-        "contacted": 0,
-        "contactRatePct": 0,
-        "speedToLeadAvgMin": null,
-        "speedMeasured": 0,
-        "within5": 0,
-        "within5Pct": 0,
-        "missedCalls": 0,
-        "missedNotReturned": 0,
-        "notInPipeline": 0,
-        "qualified": 0,
-        "qualifiedPct": null,
-        "turnedAway": 0,
-        "turnedAwayReasons": [],
-        "consultBooked": 0,
-        "bookRatePct": null,
-        "bookedPast": 0,
-        "consultHeld": 0,
-        "showRatePct": null,
-        "noShows": 0,
-        "noShowPct": null,
-        "agreementSent": 0,
-        "sentRatePct": null,
-        "signed": 0,
-        "signRatePct": null,
-        "leadToSignedPct": 0,
-        "adSpend": null,
-        "costPerSigned": null,
-        "bySource": [
-          [
-            "Google Business Profile - Louisville",
-            2,
-            0
-          ]
-        ],
-        "byChannel": [
-          [
-            "Third Party",
-            2,
-            0
-          ]
-        ],
-        "attributedLeads": 2,
-        "stageMoved": 0,
-        "attributionPct": 100,
-        "funnel": [
-          [
-            "New leads",
-            2,
             "newLeads",
             null
           ],
@@ -394,9 +399,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795547243119,
+      "to": 1795549047974,
       "current": {
-        "totalLeads": 8,
+        "totalLeads": 9,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -427,7 +432,7 @@
         "bySource": [
           [
             "Google Business Profile - Louisville",
-            5,
+            6,
             0
           ],
           [
@@ -439,17 +444,17 @@
         "byChannel": [
           [
             "Third Party",
-            8,
+            9,
             0
           ]
         ],
-        "attributedLeads": 8,
+        "attributedLeads": 9,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            8,
+            9,
             "newLeads",
             null
           ],
@@ -758,10 +763,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794942443119,
-      "to": 1795547243119,
+      "from": 1794944247974,
+      "to": 1795549047974,
       "current": {
-        "totalLeads": 11,
+        "totalLeads": 12,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -792,7 +797,7 @@
         "bySource": [
           [
             "Google Business Profile - Louisville",
-            6,
+            7,
             0
           ],
           [
@@ -809,17 +814,17 @@
         "byChannel": [
           [
             "Third Party",
-            11,
+            12,
             0
           ]
         ],
-        "attributedLeads": 11,
+        "attributedLeads": 12,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            11,
+            12,
             "newLeads",
             null
           ],
@@ -943,10 +948,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792955243119,
-      "to": 1795547243119,
+      "from": 1792957047974,
+      "to": 1795549047974,
       "current": {
-        "totalLeads": 11,
+        "totalLeads": 12,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -977,7 +982,7 @@
         "bySource": [
           [
             "Google Business Profile - Louisville",
-            6,
+            7,
             0
           ],
           [
@@ -994,17 +999,17 @@
         "byChannel": [
           [
             "Third Party",
-            11,
+            12,
             0
           ]
         ],
-        "attributedLeads": 11,
+        "attributedLeads": 12,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            11,
+            12,
             "newLeads",
             null
           ],
@@ -1128,10 +1133,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787771243119,
-      "to": 1795547243119,
+      "from": 1787773047974,
+      "to": 1795549047974,
       "current": {
-        "totalLeads": 11,
+        "totalLeads": 12,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1162,7 +1167,7 @@
         "bySource": [
           [
             "Google Business Profile - Louisville",
-            6,
+            7,
             0
           ],
           [
@@ -1179,17 +1184,17 @@
         "byChannel": [
           [
             "Third Party",
-            11,
+            12,
             0
           ]
         ],
-        "attributedLeads": 11,
+        "attributedLeads": 12,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            11,
+            12,
             "newLeads",
             null
           ],
@@ -1314,9 +1319,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795547243119,
+      "to": 1795549047974,
       "current": {
-        "totalLeads": 11,
+        "totalLeads": 12,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1347,7 +1352,7 @@
         "bySource": [
           [
             "Google Business Profile - Louisville",
-            6,
+            7,
             0
           ],
           [
@@ -1364,17 +1369,17 @@
         "byChannel": [
           [
             "Third Party",
-            11,
+            12,
             0
           ]
         ],
-        "attributedLeads": 11,
+        "attributedLeads": 12,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            11,
+            12,
             "newLeads",
             null
           ],
@@ -1662,9 +1667,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795547243119,
+      "to": 1795549047974,
       "current": {
-        "totalLeads": 11,
+        "totalLeads": 12,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1695,7 +1700,7 @@
         "bySource": [
           [
             "Google Business Profile - Louisville",
-            6,
+            7,
             0
           ],
           [
@@ -1712,17 +1717,17 @@
         "byChannel": [
           [
             "Third Party",
-            11,
+            12,
             0
           ]
         ],
-        "attributedLeads": 11,
+        "attributedLeads": 12,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            11,
+            12,
             "newLeads",
             null
           ],
@@ -2012,7 +2017,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-24T19:07:23.119Z",
+    "checkedAt": "2026-11-24T19:37:27.974Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
