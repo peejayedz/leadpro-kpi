@@ -1,0 +1,17 @@
+{
+  "v": 1,
+  "slug": "mahdavi",
+  "enabled": true,
+  "status": "draft",
+  "sources": {
+    "callrail": {
+      "accountId": "ACC01994df150817351bfd192b81282fa87",
+      "companyId": "COM01994df1519d7adc9a45800b21620bf9",
+      "companyName": "The Mahdavi Law Firm PLLC",
+      "accountName": "The Mahdavi Law Firm PLLC"
+    }
+  },
+  "createdAt": "2026-11-24T19:46:05.031Z",
+  "createdBy": "PJ",
+  "updatedAt": "2026-11-24T19:46:05.031Z"
+}

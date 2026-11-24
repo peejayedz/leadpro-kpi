@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>LeadPro Reports</title>
+</head>
+<body>
+<!-- Firm stub: loads the shared report page (app/reports.html). It reads this firm's slug from the URL path and loads
+     ./reports-config.json, ./reports.json (encrypted) and ./data/kpis.json (brand) from here. -->
+<p id="stubMsg" style="font:14px system-ui,sans-serif;color:#666;padding:24px">Loading…</p>
+<script>
+var page = '../../app/reports.html';   // the shared report page (two folders up from firms/<slug>/)
+fetch(page, { cache: 'no-store' })
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+  .then(html => { document.open(); document.write(html); document.close(); })
+  .catch(e => { document.getElementById('stubMsg').textContent = 'Could not load the report (' + e.message + '). Please refresh.'; });
+</script>
+</body>
+</html>
