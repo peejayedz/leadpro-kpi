@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T15:37:27.622Z",
+  "generatedAt": "2026-11-24T16:07:27.844Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795500000000,
-      "to": 1795534647622,
+      "to": 1795536447844,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -368,7 +368,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795413600000,
-      "to": 1795534647622,
+      "to": 1795536447844,
       "current": {
         "totalLeads": 21,
         "contacted": 0,
@@ -500,12 +500,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            11,
+            12,
             0
           ],
           [
             "Website Number Pool - Houston",
-            6,
+            5,
             0
           ]
         ],
@@ -589,12 +589,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            39,
+            40,
             0
           ],
           [
             "Website Number Pool - Houston",
-            20,
+            19,
             0
           ],
           [
@@ -793,8 +793,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794929847622,
-      "to": 1795534647622,
+      "from": 1794931647844,
+      "to": 1795536447844,
       "current": {
         "totalLeads": 70,
         "contacted": 0,
@@ -941,12 +941,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            55,
+            56,
             0
           ],
           [
             "Website Number Pool - Houston",
-            16,
+            15,
             0
           ],
           [
@@ -1021,8 +1021,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1792942647622,
-      "to": 1795534647622,
+      "from": 1792944447844,
+      "to": 1795536447844,
       "current": {
         "totalLeads": 156,
         "contacted": 0,
@@ -1055,12 +1055,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            98,
+            99,
             0
           ],
           [
             "Website Number Pool - Houston",
-            33,
+            32,
             0
           ],
           [
@@ -1239,8 +1239,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787758647622,
-      "to": 1795534647622,
+      "from": 1787760447844,
+      "to": 1795536447844,
       "current": {
         "totalLeads": 161,
         "contacted": 1,
@@ -1273,12 +1273,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            98,
+            99,
             0
           ],
           [
             "Website Number Pool - Houston",
-            33,
+            32,
             0
           ],
           [
@@ -1468,7 +1468,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1795534647622,
+      "to": 1795536447844,
       "current": {
         "totalLeads": 156,
         "contacted": 0,
@@ -1501,12 +1501,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            98,
+            99,
             0
           ],
           [
             "Website Number Pool - Houston",
-            33,
+            32,
             0
           ],
           [
@@ -1854,7 +1854,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1795534647622,
+      "to": 1795536447844,
       "current": {
         "totalLeads": 157,
         "contacted": 0,
@@ -1887,12 +1887,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            98,
+            99,
             0
           ],
           [
             "Website Number Pool - Houston",
-            33,
+            32,
             0
           ],
           [
@@ -2274,7 +2274,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-24T15:37:27.622Z",
+    "checkedAt": "2026-11-24T16:07:27.844Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
