@@ -2,6 +2,10 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.41.0 BrightLocal trial key (queue item 12, with Builder v1.36.0): LIVE 25 Nov 2026 (`e2c0d8bc`)
+- `scripts/brightlocal.mjs` `stats.requests` + every page of the location search; the nightly sends get-all + results + history per linked firm (3 requests; the location name / city from the stored report or the config's `locationName` / `city`); `finish` adds them to `status/reports-status.json` → `brightlocal.requests`.
+- Admin bell: amber notice "BrightLocal trial key: N of 1,000 requests used" while the team site has paused at 800 (reads `/api/reports/catalog?usage=1`).
+
 ## v1.40.0 a client's own CallRail key + Done moments On / Off (queue item 10; with Builder v1.34.x + Review admin v1.18.0; shell 2.11.0): pushed 24 Nov 2026
 - `ownCallrail(cfg)` / `ownCallrailName(slug)` in reports-core.mjs; reports.yml passes `CALLRAIL_KEY_<KEY>` to that firm's job only. The agency keys are now saved from the Builder's Reports → Settings into these same Actions secrets (names unchanged). Test browsers are muted (tests/quiet-browser.mjs, FIX 10.0).
 
