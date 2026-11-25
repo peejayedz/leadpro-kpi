@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T15:37:47.908Z",
+  "generatedAt": "2026-11-25T23:16:46.513Z",
   "location": "Dumas & Sanclemente",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,9 +22,9 @@
     "today": {
       "label": "Today",
       "from": 1795582800000,
-      "to": 1795621067908,
+      "to": 1795648606513,
       "current": {
-        "totalLeads": 1,
+        "totalLeads": 5,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -54,7 +54,17 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Google Business Profile - Lutz",
+            2,
+            0
+          ],
+          [
             "Website Number Pool",
+            2,
+            0
+          ],
+          [
+            "PMAX- Google Ads Extension Number",
             1,
             0
           ]
@@ -62,17 +72,17 @@
         "byChannel": [
           [
             "Third Party",
-            1,
+            5,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 5,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            5,
             "newLeads",
             null
           ],
@@ -406,9 +416,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795621067908,
+      "to": 1795648606513,
       "current": {
-        "totalLeads": 4,
+        "totalLeads": 8,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -439,11 +449,16 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            2,
+            4,
             0
           ],
           [
             "Website Number Pool",
+            2,
+            0
+          ],
+          [
+            "PMAX- Google Ads Extension Number",
             1,
             0
           ],
@@ -456,17 +471,17 @@
         "byChannel": [
           [
             "Third Party",
-            4,
+            8,
             0
           ]
         ],
-        "attributedLeads": 4,
+        "attributedLeads": 8,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            4,
+            8,
             "newLeads",
             null
           ],
@@ -509,7 +524,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 3,
+        "totalLeads": 6,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -539,30 +554,30 @@
         "costPerSigned": null,
         "bySource": [
           [
-            "Website Number Pool",
-            2,
+            "Google Business Profile - Lutz",
+            3,
             0
           ],
           [
-            "Google Business Profile - Lutz",
-            1,
+            "Website Number Pool",
+            3,
             0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            3,
+            6,
             0
           ]
         ],
-        "attributedLeads": 3,
+        "attributedLeads": 6,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            3,
+            6,
             "newLeads",
             null
           ],
@@ -819,10 +834,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795016267908,
-      "to": 1795621067908,
+      "from": 1795043806513,
+      "to": 1795648606513,
       "current": {
-        "totalLeads": 13,
+        "totalLeads": 14,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -868,24 +883,24 @@
           ],
           [
             "PMAX- Google Ads Extension Number",
-            1,
+            2,
             0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            13,
+            14,
             0
           ]
         ],
-        "attributedLeads": 13,
+        "attributedLeads": 14,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            13,
+            14,
             "newLeads",
             null
           ],
@@ -928,7 +943,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 5,
+        "totalLeads": 6,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -958,35 +973,30 @@
         "costPerSigned": null,
         "bySource": [
           [
-            "Website Number Pool",
-            2,
-            0
-          ],
-          [
             "Google Business Profile - Lutz",
-            2,
+            3,
             0
           ],
           [
-            "Google Business Profile - Fort Lauderdale",
-            1,
+            "Website Number Pool",
+            3,
             0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            5,
+            6,
             0
           ]
         ],
-        "attributedLeads": 5,
+        "attributedLeads": 6,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            5,
+            6,
             "newLeads",
             null
           ],
@@ -1031,10 +1041,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793029067908,
-      "to": 1795621067908,
+      "from": 1793056606513,
+      "to": 1795648606513,
       "current": {
-        "totalLeads": 38,
+        "totalLeads": 40,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1065,22 +1075,22 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            18,
-            0
-          ],
-          [
-            "Google Business Profile - Fort Lauderdale",
-            10,
+            19,
             0
           ],
           [
             "Website Number Pool",
-            8,
+            9,
+            0
+          ],
+          [
+            "Google Business Profile - Fort Lauderdale",
+            9,
             0
           ],
           [
             "PMAX- Google Ads Extension Number",
-            1,
+            2,
             0
           ],
           [
@@ -1092,17 +1102,17 @@
         "byChannel": [
           [
             "Third Party",
-            38,
+            40,
             0
           ]
         ],
-        "attributedLeads": 38,
+        "attributedLeads": 40,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            38,
+            40,
             "newLeads",
             null
           ],
@@ -1145,7 +1155,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 33,
+        "totalLeads": 35,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1176,12 +1186,12 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            21,
+            22,
             0
           ],
           [
             "Google Business Profile - Fort Lauderdale",
-            8,
+            9,
             0
           ],
           [
@@ -1203,17 +1213,17 @@
         "byChannel": [
           [
             "Third Party",
-            33,
+            35,
             0
           ]
         ],
-        "attributedLeads": 33,
+        "attributedLeads": 35,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            33,
+            35,
             "newLeads",
             null
           ],
@@ -1258,10 +1268,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787845067908,
-      "to": 1795621067908,
+      "from": 1787872606513,
+      "to": 1795648606513,
       "current": {
-        "totalLeads": 71,
+        "totalLeads": 75,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1292,7 +1302,7 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            39,
+            41,
             0
           ],
           [
@@ -1302,12 +1312,12 @@
           ],
           [
             "Website Number Pool",
-            10,
+            11,
             0
           ],
           [
             "PMAX- Google Ads Extension Number",
-            1,
+            2,
             0
           ],
           [
@@ -1329,17 +1339,17 @@
         "byChannel": [
           [
             "Third Party",
-            71,
+            75,
             0
           ]
         ],
-        "attributedLeads": 71,
+        "attributedLeads": 75,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            71,
+            75,
             "newLeads",
             null
           ],
@@ -1464,9 +1474,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795621067908,
+      "to": 1795648606513,
       "current": {
-        "totalLeads": 29,
+        "totalLeads": 33,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1497,7 +1507,12 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            12,
+            14,
+            0
+          ],
+          [
+            "Website Number Pool",
+            8,
             0
           ],
           [
@@ -1506,13 +1521,8 @@
             0
           ],
           [
-            "Website Number Pool",
-            7,
-            0
-          ],
-          [
             "PMAX- Google Ads Extension Number",
-            1,
+            2,
             0
           ],
           [
@@ -1524,17 +1534,17 @@
         "byChannel": [
           [
             "Third Party",
-            29,
+            33,
             0
           ]
         ],
-        "attributedLeads": 29,
+        "attributedLeads": 33,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            29,
+            33,
             "newLeads",
             null
           ],
@@ -1903,9 +1913,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795621067908,
+      "to": 1795648606513,
       "current": {
-        "totalLeads": 69,
+        "totalLeads": 73,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1936,7 +1946,7 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            38,
+            40,
             0
           ],
           [
@@ -1946,12 +1956,12 @@
           ],
           [
             "Website Number Pool",
-            9,
+            10,
             0
           ],
           [
             "PMAX- Google Ads Extension Number",
-            1,
+            2,
             0
           ],
           [
@@ -1973,17 +1983,17 @@
         "byChannel": [
           [
             "Third Party",
-            69,
+            73,
             0
           ]
         ],
-        "attributedLeads": 69,
+        "attributedLeads": 73,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            69,
+            73,
             "newLeads",
             null
           ],
@@ -2290,7 +2300,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-25T15:37:47.908Z",
+    "checkedAt": "2026-11-25T23:16:46.513Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
