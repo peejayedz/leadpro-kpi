@@ -2,6 +2,11 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.42.0 Reports on their own (queue item 13, with Builder v1.37.0): LIVE 25 Nov 2026 (`dfe0761b`)
+- `tabsFor`: Overview whenever any source is linked. `app/reports.html` `overviewNoCalls`: without CallRail no call tiles, only the linked sections.
+- Reports-only clients: `reports-config.json` → `reportsOnly { name, locationId, secretKey, agency }`, never in firms/index.json. `reports-pull.mjs` `reportsOnlyFirms` adds them to the nightly with their own PASSPHRASE_<secretKey>; `reports-menu.mjs` plan reads location + secret name from the config.
+- **OPEN (PJ, ANSWER 13.1):** a Reports-only client that later gets a KPI dashboard keeps two slugs/passphrases; merge later if it happens.
+
 ## v1.41.0 BrightLocal trial key (queue item 12, with Builder v1.36.0): LIVE 25 Nov 2026 (`e2c0d8bc`)
 - `scripts/brightlocal.mjs` `stats.requests` + every page of the location search; the nightly sends get-all + results + history per linked firm (3 requests; the location name / city from the stored report or the config's `locationName` / `city`); `finish` adds them to `status/reports-status.json` → `brightlocal.requests`.
 - Admin bell: amber notice "BrightLocal trial key: N of 1,000 requests used" while the team site has paused at 800 (reads `/api/reports/catalog?usage=1`).
