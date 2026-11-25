@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-25T01:43:51.809Z",
+  "updatedAt": "2026-11-25T02:11:57.149Z",
   "lastRun": {
-    "at": "2026-11-25T01:43:51.809Z",
-    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45527050610",
+    "at": "2026-11-25T02:11:57.149Z",
+    "url": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45530627649",
     "event": "workflow_dispatch",
     "chained": true
   },
@@ -11,13 +11,13 @@
     "value": "on",
     "offSince": null
   },
-  "lastAnySuccessAt": "2026-11-25T01:43:51.809Z",
+  "lastAnySuccessAt": "2026-11-25T02:11:57.149Z",
   "firms": {
     "mahdavi": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-25T01:43:51.809Z",
-      "lastSuccessAt": "2026-11-25T01:43:51.809Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45527050610",
+      "lastAttemptAt": "2026-11-25T02:11:57.149Z",
+      "lastSuccessAt": "2026-11-25T02:11:57.149Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45530627649",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -50,13 +50,13 @@
     },
     "lfmp": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-25T01:43:51.809Z",
-      "lastSuccessAt": "2026-11-25T01:43:51.809Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45527050610",
+      "lastAttemptAt": "2026-11-25T02:11:57.149Z",
+      "lastSuccessAt": "2026-11-25T02:11:57.149Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45530627649",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
-          "form": 2,
+          "form": 3,
           "survey": 0,
           "chat": 0,
           "booking": 0,
@@ -69,7 +69,7 @@
           "noInboundSignal": 6
         },
         "last90": {
-          "form": 2,
+          "form": 3,
           "survey": 0,
           "chat": 0,
           "booking": 0,
@@ -85,9 +85,9 @@
     },
     "hedayati-law-group-p-c": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-25T01:43:51.809Z",
-      "lastSuccessAt": "2026-11-25T01:43:51.809Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45527050610",
+      "lastAttemptAt": "2026-11-25T02:11:57.149Z",
+      "lastSuccessAt": "2026-11-25T02:11:57.149Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45530627649",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -120,9 +120,9 @@
     },
     "emery-law-office": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-25T01:43:51.809Z",
-      "lastSuccessAt": "2026-11-25T01:43:51.809Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45527050610",
+      "lastAttemptAt": "2026-11-25T02:11:57.149Z",
+      "lastSuccessAt": "2026-11-25T02:11:57.149Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45530627649",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -155,9 +155,9 @@
     },
     "zz-test-2": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-25T01:43:51.809Z",
-      "lastSuccessAt": "2026-11-25T01:43:51.809Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45527050610",
+      "lastAttemptAt": "2026-11-25T02:11:57.149Z",
+      "lastSuccessAt": "2026-11-25T02:11:57.149Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45530627649",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -190,9 +190,9 @@
     },
     "boca-dental": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-25T01:43:51.809Z",
-      "lastSuccessAt": "2026-11-25T01:43:51.809Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45527050610",
+      "lastAttemptAt": "2026-11-25T02:11:57.149Z",
+      "lastSuccessAt": "2026-11-25T02:11:57.149Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45530627649",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
@@ -225,9 +225,9 @@
     },
     "dumas-and-sanclemente": {
       "status": "ok",
-      "lastAttemptAt": "2026-11-25T01:43:51.809Z",
-      "lastSuccessAt": "2026-11-25T01:43:51.809Z",
-      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45527050610",
+      "lastAttemptAt": "2026-11-25T02:11:57.149Z",
+      "lastSuccessAt": "2026-11-25T02:11:57.149Z",
+      "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45530627649",
       "failStreak": 0,
       "notInPipeline": {
         "last30": {
