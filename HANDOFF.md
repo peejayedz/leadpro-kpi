@@ -2,6 +2,9 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.45.0 Reports page brand row (queue item 16): LIVE 25 Nov 2026 (`f510448e`)
+- `app/reports.html` `brandRow()`: LeadPro mark + word, agency (LFMP masks from `brand/lfmp-logo.css`, or the WPP logo), client logo (`img.client-img`) or name (`.firm-word`). Source: `reports-config.json` `brand` { agency, name, logo? } (`reports-core.mjs` `brandValue` / `withBrand`, logo ≤ 430000 chars); without `brand` it falls back to the KPI agency + firm name. Tests: `tests/reports/ui.mjs`.
+
 ## v1.44.0 Change a firm's passphrase from the Builder (queue item 15): LIVE 25 Nov 2026 (`a2a9be5a`)
 - `.github/workflows/pass-rotate.yml` (concurrency group `sync`) + `scripts/pass-rotate.mjs` (plan / encrypt / wait / menu): re-locks `data/details.enc.json` + `reports.json` from PASSPHRASE_<KEY> to PASSPHRASE_NEW_<KEY> with a check; waits on `status/pass-rotate-<slug>.json` (finished → done, abort / no answer before the swap → back).
 - `menu-link.yml` kind `pass` → `ghl-menu.mjs updateLinkUrls` (guarded PUT of the firm's own KPI Dashboard / Reports link, same id, only the URL). Tests: `tests/pass/run.mjs`.
