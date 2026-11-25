@@ -67,6 +67,24 @@ for (const [slug, src] of Object.entries(SOLO)) {
   if (!slug.startsWith('zz-ro-')) virtual.set(`/firms/${slug}/data/kpis.json`, JSON.stringify({ location: 'The Mahdavi Law Firm' }));
   virtual.set(`/firms/${slug}/reports.html`, RC.STUB_HTML);
 }
+// v1.45.0 (queue item 16): the brand row. zz-brand-logo = a client logo (as the Builder copies it from the record),
+// zz-brand-wpp = a WPP client without a logo (its name as text), zz-solo-* = no brand block (name from kpis.json)
+const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAUCAYAAAA9djs/AAAAJklEQVR42u3OMQEAAAgDoJnc6FrDBQIpQj0lkpKSkpKSkpKSkpKSUuQBAFUEOWEAAAAASUVORK5CYII=';
+// Boca Dental's real logo as the Builder saved it on its record (the review pages use the same copy), when the Builder repo
+// is next to this one; else a tiny made-up PNG
+let BOCA_LOGO = { src: PNG, w: 64, h: 20 };
+try { const r = JSON.parse(await readFile(join(ROOT, '../ghl-subaccount-builder/records/boca-dental-cugbqo.json'), 'utf8')); if (r.logo?.src) BOCA_LOGO = { src: r.logo.src, w: r.logo.w, h: r.logo.h }; } catch {}
+for (const [slug, brand] of [['zz-brand-boca', { agency: 'WPP', name: 'Boca Dental', logo: BOCA_LOGO }], ['zz-brand-mahdavi', { agency: 'LFMP', name: 'The Mahdavi Law Firm' }]]) {
+  PASS[slug] = `${slug} made-up pass 8`;
+  const cfg = RC.newConfig({ slug, sources: { callrail: SRC.configs.mahdavi('draft').sources.callrail }, brand, by: 'Test', at: '2026-11-25T10:00:00Z' });
+  await mkdir(join(tmp, 'firms', slug), { recursive: true });
+  await (await import('node:fs/promises')).writeFile(join(tmp, RC.configPath(slug)), JSON.stringify(cfg));
+  await RP.pull({ root: tmp, slug, creds: SRC.allCreds(SA.json), pass: PASS[slug], fetch: SRC.fakeApis({}), outDir: join(tmp, 'out'), log: () => {}, now: SRC.NOW });
+  virtual.set(`/firms/${slug}/reports-config.json`, JSON.stringify(cfg));
+  virtual.set(`/firms/${slug}/reports.json`, await readFile(join(tmp, 'out', slug, 'reports.json'), 'utf8'));
+  virtual.set(`/firms/${slug}/data/kpis.json`, JSON.stringify({ location: brand.name }));
+  virtual.set(`/firms/${slug}/reports.html`, RC.STUB_HTML);
+}
 const PREVIEW_FULL = process.argv[4] || '';
 if (PREVIEW_FULL) virtual.set('/__preview/report-full.html', await readFile(PREVIEW_FULL, 'utf8'));
 // a firm with Reports set up but no build yet, and one without competitors
@@ -153,7 +171,7 @@ try {
   { const { ctx, page } = await open('/firms/zz-report-wpp/reports.html', { saved: ['lfmp-pass-zz-report-wpp', PASS['zz-report-wpp']] });
     await page.waitForSelector('.r4');
     check(!(await page.locator('#draft').isVisible()), 'Live: no Draft banner');
-    check(/· Web Promotion Partners/.test(await text(page, 'footer')) && await page.locator('#agency.on').count() === 1 && /wpp-logo\.png/.test(await page.locator('#agency').getAttribute('src')), 'WPP firm: "· Web Promotion Partners" in the footer + the real WPP logo');
+    check(/· Web Promotion Partners/.test(await text(page, 'footer')) && /wpp-logo\.png/.test(await page.locator('#bb .wpp-logo').getAttribute('src')) && await page.locator('#agency.on').count() === 0, 'WPP firm: "· Web Promotion Partners" in the footer + the real WPP logo (v1.45.0: in the brand row)');
     await shot(page, 'client-report-wpp-live-1440-light', false);
     await ctx.close(); }
   // ---- set up, first build not done yet
@@ -313,6 +331,29 @@ try {
     await page.fill('#pass', PASS['zz-ro-callrail']); await page.click('.lock button'); await page.waitForSelector('.r4');
     check(await text(page, '#firm') === 'Acme Law', 'Reports-only client: its name from its config (no kpis.json)');
     await shot(page, 'reports-only-client-1440-light');
+    await ctx.close(); }
+  // ---- v1.45.0 (queue item 16): the brand row (LeadPro | agency | client), locked + unlocked, phone, PDF
+  for (const [w, h] of [[1440, 900], [390, 844], [360, 780]]) {
+    for (const [slug, agency, client, label] of [['zz-brand-boca', 'wpp', 'img', 'LeadPro, Web Promotion Partners and Boca Dental'], ['zz-brand-mahdavi', 'lfmp', 'name', 'LeadPro, Law Firm Marketing Pros and The Mahdavi Law Firm'], ['zz-solo-callrail', 'lfmp', 'name', 'LeadPro, Law Firm Marketing Pros and The Mahdavi Law Firm']]) {
+      for (const locked of [true, false]) {
+        const { ctx, page, errs } = await open(`/firms/${slug}/reports.html`, { w, h, saved: locked ? null : [`lfmp-pass-${slug}`, PASS[slug]] });
+        await page.waitForSelector('#bb .b', { timeout: 10000 }); await page.waitForTimeout(300);
+        const tag = `${w} ${slug} ${locked ? 'locked' : 'unlocked'}`;
+        const bb = await page.evaluate(() => ({ n: document.querySelectorAll('#bb .b').length, label: document.getElementById('bb').getAttribute('aria-label'), lp: /LeadPro/.test(document.querySelector('#bb .lp-word')?.textContent || ''), lfmp: !!document.querySelector('#bb .lfmp-logo .ink'), lfmpMask: getComputedStyle(document.querySelector('#bb .lfmp-logo .ink') || document.body).webkitMaskImage || '', wpp: !!document.querySelector('#bb .wpp-logo'), img: !!document.querySelector('#bb .client-img'), word: document.querySelector('#bb .firm-word')?.textContent || '', shield: !!document.querySelector('.hd .brand svg'), sx: document.documentElement.scrollWidth <= innerWidth + 1, oneLine: (() => { const r = [...document.querySelectorAll('#bb .b')].map(b => { const q = b.getBoundingClientRect(); return q.top + q.height / 2; }); return Math.max(...r) - Math.min(...r) < 4; })() }));
+        check(bb.n === 3 && bb.lp && bb.label === label, `${tag}: LeadPro | agency | client, aria-label "${label}"`, JSON.stringify(bb));
+        check(agency === 'lfmp' ? bb.lfmp && /data:image\/png/.test(bb.lfmpMask) && !bb.wpp : bb.wpp && !bb.lfmp, `${tag}: the ${agency.toUpperCase()} logo (the review pages')`);
+        check(client === 'img' ? bb.img && !bb.word : !bb.img && /Mahdavi|Boca/.test(bb.word), `${tag}: ${client === 'img' ? 'the client logo image' : 'no logo → the client name as text'}`);
+        check(!bb.shield && bb.sx && bb.oneLine, `${tag}: no old shield icon; one line; no sideways scroll`, JSON.stringify({ shield: bb.shield, sx: bb.sx, oneLine: bb.oneLine }));
+        if (locked) check(await page.locator('.lock').count() === 1 && !/Total calls|346/.test(await page.locator('#body').innerText()), `${tag}: the lock card, no numbers before unlock`);
+        if (w !== 360 && slug !== 'zz-solo-callrail') await shot(page, `brand-${slug.slice(9)}-${locked ? 'locked' : 'unlocked'}-${w}`, false);
+        check(!errs.length, `${tag}: no page errors`, errs.join(' | '));
+        await ctx.close();
+      }
+    }
+  }
+  { const { ctx, page } = await open('/firms/zz-brand-boca/reports.html', { saved: ['lfmp-pass-zz-brand-boca', PASS['zz-brand-boca']] });
+    await page.waitForSelector('#bb .client-img'); await page.emulateMedia({ media: 'print' });
+    check(await page.locator('#brow').isVisible() && await page.locator('#bb .wpp-logo').isVisible() && await page.locator('#bb .client-img').isVisible(), 'Download PDF (print): the brand row is kept');
     await ctx.close(); }
   check(!outside.length, 'nothing loaded from outside the site (fonts aside)', outside.join(' | '));
 } finally { await browser.close(); server.close(); await rm(tmp, { recursive: true, force: true }); }

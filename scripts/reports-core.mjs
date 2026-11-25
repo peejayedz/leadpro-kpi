@@ -80,7 +80,16 @@ export function reportsOnlyValue(v) {
   return { name: clip(v.name), locationId, secretKey, ...(v.agency === 'WPP' ? { agency: 'WPP' } : {}) };
 }
 export const isReportsOnly = cfg => !!reportsOnlyValue(cfg?.reportsOnly);
-export function newConfig({ slug, locationId, rankReportId = '', sources = null, reportsOnly = null, by = '', at = new Date().toISOString() }) {
+// v1.45.0 (queue item 16): the client page's brand row = { agency: 'LFMP' | 'WPP', name, logo?: { src (data URL), w, h } }, the
+// same logo the review pages use (the Builder record's logo, a copy, ≤ 420 KB). Public by nature (it's on the client's site).
+const LOGO_RE = /^data:image\/(png|jpeg|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$/;
+export function brandValue(v) {
+  if (!v || typeof v !== 'object') return null;
+  const logo = v.logo && LOGO_RE.test(String(v.logo.src || '')) && String(v.logo.src).length <= 430000 ? { src: String(v.logo.src), w: Math.round(+v.logo.w) || 0, h: Math.round(+v.logo.h) || 0 } : null;
+  return { agency: v.agency === 'WPP' ? 'WPP' : 'LFMP', name: clip(v.name), ...(logo ? { logo } : {}) };
+}
+export const withBrand = (cfg, brand, at = new Date().toISOString()) => { const b = brandValue(brand); return b ? { ...cfg, brand: b, updatedAt: at } : cfg; };
+export function newConfig({ slug, locationId, rankReportId = '', sources = null, reportsOnly = null, brand = null, by = '', at = new Date().toISOString() }) {
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug || '')) throw new Error('A KPI slug is needed.');
   const src = {};
   if (sources) { for (const [k, v] of Object.entries(sources)) { if (!SOURCE_KEYS.includes(k) || v == null) continue; const ok = sourceValue(k, v); if (!ok) throw new Error(`Check the ${SOURCE_LABELS[k]} pick.`); src[k] = ok; } }
@@ -88,7 +97,8 @@ export function newConfig({ slug, locationId, rankReportId = '', sources = null,
   if (!SOURCE_KEYS.some(k => src[k] && !src[k].unused)) throw new Error('Link at least one source.');
   const ro = reportsOnly ? reportsOnlyValue(reportsOnly) : null;
   if (reportsOnly && !ro) throw new Error('A Reports-only client needs its GHL location and secret name.');
-  return { v: REPORTS_V, slug, enabled: true, status: 'draft', sources: src, ...(ro ? { reportsOnly: ro } : {}), createdAt: at, createdBy: by, updatedAt: at };
+  const br = brand ? brandValue(brand) : null;
+  return { v: REPORTS_V, slug, enabled: true, status: 'draft', sources: src, ...(ro ? { reportsOnly: ro } : {}), ...(br ? { brand: br } : {}), createdAt: at, createdBy: by, updatedAt: at };
 }
 // Link (value), mark "Not used by this client" ({unused:true}) or unlink (null) one source.
 export function withSource(cfg, key, value, at = new Date().toISOString()) {

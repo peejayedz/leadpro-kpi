@@ -109,10 +109,21 @@ th.s{cursor:pointer}th.s:hover{color:var(--ink)}
 .more{border:0;background:none;color:var(--gold);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;padding:8px 0 0}
 @media (max-width:760px){.draft div{padding:8px 16px}svg.ln{height:auto}}   /* FIX 7.1: line charts scale with the width on phones (no empty band) */
 @media print{.ctl,.tools,.draft,.menu,.more{display:none}.scroll{max-height:none}}
+/* ===== v1.45.0 (queue item 16, preview report-brand.html): brand row like the review pages: LeadPro | agency | client ===== */
+.brow{border-bottom:1px solid var(--line);background:#fff}.brow-in{max-width:1180px;margin:0 auto;padding:16px 24px}
+.bb{display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap}
+.bb .b{display:flex;align-items:center;gap:8px;min-width:0}
+.bb .b + .b{padding-left:20px;border-left:1px solid var(--line)}
+.lp-word{font:600 22px/1 Inter,system-ui,sans-serif;letter-spacing:-.01em;color:var(--ink)}.lp-word span{color:var(--gold)}
+.bb .wpp-logo{display:block;height:30px;width:auto}
+.bb .client-img{display:block;height:34px;width:auto;max-width:220px;object-fit:contain;background:#fff;padding:6px 10px;border-radius:8px;box-sizing:content-box}
+.bb .firm-word{font:600 19px/1.2 Inter,system-ui,sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+@media (max-width:760px){.brow-in{padding:12px 16px}.bb{gap:10px;flex-wrap:nowrap}.bb .b + .b{padding-left:10px}.bb .b svg{width:26px;height:26px}.bb .b{gap:6px}.lp-word{font-size:17px}.lfmp-logo{width:96px!important;height:28px!important}.bb .wpp-logo{height:24px}.bb .client-img{height:30px;max-width:92px;padding:0;background:none}.bb .firm-word{font-size:14px;max-width:110px}}
 </style></head><body>
 <header>
+ <div class="brow" id="brow" hidden><div class="brow-in"><div class="bb" id="bb" role="img" aria-label="LeadPro"></div></div></div>
  <div class="hd">
-  <div class="brand"><svg width="30" height="34" viewBox="0 0 30 34" aria-hidden="true"><path d="M15 1 28 6v11c0 8-6 13.5-13 16C8 30.5 2 25 2 17V6z" fill="#1b2a4e"/><path d="M8 22l5-5 3 3 6-7" stroke="#f2c46b" stroke-width="2.2" fill="none"/><path d="M19 13h3v3" stroke="#f2c46b" stroke-width="2.2" fill="none"/></svg>
+  <div class="brand">
    <div><div class="t" id="firm">LeadPro Reports</div><div class="s" id="sub">LeadPro Reports</div></div><img class="agency" id="agency" alt="Web Promotion Partners" height="30"></div>
   <div class="ctl"><div class="dp"><button type="button" class="pill dt" id="dt" aria-haspopup="menu" aria-expanded="false"><b id="dtl">Last 30 days</b> ▾</button><div class="menu" id="dtm" role="menu" hidden></div></div><span class="pill">vs previous period ▾</span><button type="button" class="pill pdf" id="pdf">Download PDF</button></div>
  </div>
@@ -192,13 +203,29 @@ const tabs = () => C.visibleTabs(cfg, { drafts: DRAFTS });
 const draftsShown = () => (DRAFTS ? C.draftTabs(cfg) : []);
 const range = () => C.rangeFor(S.range, R?.through || C.throughOf(file?.generatedAt || new Date().toISOString()));
 
+// v1.45.0 (queue item 16): the review pages' brand row (LeadPro | LFMP or WPP | the client's logo, or its name as text).
+// From reports-config.json "brand" (the Builder copies the record's logo there); before unlock too (nothing secret in it).
+function brandRow() {
+  const b = cfg?.brand || {}, agency = (b.agency || cfg?.reportsOnly?.agency || kpis?.agency) === 'WPP' ? 'WPP' : 'LFMP';
+  const name = b.name || cfg?.reportsOnly?.name || kpis?.location || cfg?.firmName || '';
+  const agencyName = agency === 'WPP' ? 'Web Promotion Partners' : 'Law Firm Marketing Pros';
+  const logo = b.logo && /^data:image\/(png|jpeg|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$/.test(b.logo.src || '') ? b.logo : null;
+  if (!document.getElementById('lfmpLogoCss')) document.head.insertAdjacentHTML('beforeend', `<link rel="stylesheet" id="lfmpLogoCss" href="${ROOT}brand/lfmp-logo.css">`);
+  const mark = '<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="#b8862b"/><path d="M8 24 L14 17 L18 20 L26 11" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 11 H26 V16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  $('bb').innerHTML = `<div class="b">${mark}<span class="lp-word">Lead<span>Pro</span></span></div>`
+    + `<div class="b">${agency === 'WPP' ? `<img class="wpp-logo" src="${ROOT}brand/wpp-logo.png?v=1.34.0" alt="" height="30">` : '<span class="lfmp-logo" aria-hidden="true"><i class="ink"></i><i class="gold"></i></span>'}</div>`
+    + (name || logo ? `<div class="b">${logo ? `<img class="client-img" src="${logo.src}" alt=""${+logo.w && +logo.h ? ` width="${Math.round(+logo.w)}" height="${Math.round(+logo.h)}"` : ''}>` : `<span class="firm-word">${esc(name)}</span>`}</div>` : '');
+  $('bb').setAttribute('aria-label', `LeadPro, ${agencyName}${name ? ` and ${name}` : ''}`);
+  $('brow').hidden = false;
+}
 function head() {
+  brandRow();
   const name = kpis?.location || cfg?.reportsOnly?.name || cfg?.firmName || 'LeadPro Reports';   // v1.42.0: a Reports-only client has no kpis.json
   $('firm').textContent = name; document.title = `${name} · LeadPro Reports`;
   const city = R?.location?.city || R?.rankings?.location?.city || '';
   $('sub').textContent = `LeadPro Reports${city ? ` · ${city}` : ''}`;
   const ag = $('agency');
-  if ((kpis?.agency || cfg?.reportsOnly?.agency) === 'WPP') { ag.src = `${ROOT}brand/wpp-logo.png?v=1.34.0`; ag.classList.add('on'); }   // the real WPP logo (KPI v1.34.0); this page is light only
+  // v1.45.0 (queue item 16): the agency logo now sits in the brand row above (LFMP or WPP), so the old WPP spot here stays empty
   const dr = draftsShown();
   $('draft').hidden = !cfg?.enabled || (cfg.status === 'live' && !dr.length);
   $('draft').firstElementChild.textContent = cfg?.status === 'live' && dr.length

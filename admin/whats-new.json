@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.45.0": {
+    "title": "Logos on the client report",
+    "summary": "The client Reports page (still a Draft) shows LeadPro, the agency and the client's logo across the top.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "The client Reports page has a logo row at the top: LeadPro on the left, the agency and the client's own logo on the right (the client's name when there's no logo). It stays on one line on phones too." }
+    ]
+  },
   "1.44.0": {
     "title": "Change a passphrase from the Builder",
     "summary": "PJ can change a firm's dashboard passphrase from the Builder; the files and GHL links follow safely.",
