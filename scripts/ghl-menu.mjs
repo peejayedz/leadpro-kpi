@@ -61,6 +61,17 @@ export function guardMenu(method, path, body, checked = null) {
     if (rp) return;
     throw new Error('Blocked: a menu link must be "KPI Dashboard", for exactly one sub-account, opening inside GHL (iframe), pointing at a LeadPro dashboard.');
   }
+  // v1.44.0 (queue item 15, PJ-approved): Change passphrase updates the URL of the firm's OWN "KPI Dashboard" / "Reports"
+  // link, just read and checked (same id, same settings, the same firm's page); nothing else of the link changes.
+  if (m === 'PUT') {
+    const id = (/^\/custom-menus\/([A-Za-z0-9-]{10,40})$/.exec(p) || [])[1];
+    const same = checked && String(checked.id || checked._id) === id && body && body.title === checked.title;
+    const shape = body && body.showOnCompany === false && body.showOnLocation === true && body.showToAllLocations === false && Array.isArray(body.locations) && body.locations.length === 1
+      && LOC_RE.test(body.locations[0]) && body.openMode === 'iframe' && body.allowCamera === false && body.allowMicrophone === false && typeof body.url === 'string'
+      && ((body.title === MENU_TITLE && body.url.startsWith(`${PAGES}firms/`)) || (body.title === REPORTS_TITLE && REPORTS_URL_RE.test(body.url)));
+    if (id && same && shape) return;
+    throw new Error('Blocked: only the URL of the firm\'s own "KPI Dashboard" / "Reports" link, just checked, may be changed.');
+  }
   throw new Error(`Blocked: the menu-link step may not call ${m} ${p.replace(/[A-Za-z0-9]{15,}/g, ':id')} on GHL.`);
 }
 
@@ -202,4 +213,25 @@ export async function removeReportsLink({ token, locationId, slug }) {
   if (!ours) return 'none';
   try { await call('DELETE', `/custom-menus/${ours.id || ours._id}`, { token, checked: ours }); return 'removed'; }
   catch (e) { return `failed:${e.status ?? 0}`; }
+}
+
+// ---------------------------------------------------------------- v1.44.0 (queue item 15): Change passphrase
+// The firm's own links (isOurLink / isOurReportsLink, read with one GET) get the new passphrase in their URL with a PUT of the
+// same body (same id, title, settings). A link that doesn't carry "#k=" is left alone (nothing to change). Never printed.
+export const kpiUrl = (slug, passphrase) => `${PAGES}firms/${slug}/#k=${encodeURIComponent(passphrase)}`;
+export async function updateLinkUrls({ token, locationId, slug, passphrase }) {
+  const out = { kpi: 'none', reports: 'none' };
+  if (!token) return { kpi: 'skipped-no-token', reports: 'skipped-no-token' };
+  if (!LOC_RE.test(locationId || '') || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug || '') || !passphrase) return { kpi: 'failed:input', reports: 'failed:input' };
+  let list;
+  try { list = listOf(await call('GET', '/custom-menus/', { token })); } catch (e) { return { kpi: `failed:${e.status ?? 0}`, reports: `failed:${e.status ?? 0}` }; }
+  for (const [k, ours, body] of [['kpi', list.find(m => isOurLink(m, { locationId, slug }) && !String(m.url).includes('/reports.html')), u => menuBody({ locationId, url: u })],
+    ['reports', list.find(m => isOurReportsLink(m, { locationId, slug })), u => reportsMenuBody({ locationId, url: u })]]) {
+    if (!ours) continue;
+    if (!String(ours.url).includes('#k=')) { out[k] = 'skipped-no-passphrase'; continue; }
+    const url = k === 'kpi' ? kpiUrl(slug, passphrase) : reportsUrl(slug, passphrase);
+    try { await call('PUT', `/custom-menus/${idOf(ours)}`, { token, body: body(url), checked: ours, secrets: [passphrase, url] }); out[k] = 'updated'; }
+    catch (e) { out[k] = `failed:${e.status ?? 0}`; }
+  }
+  return out;
 }

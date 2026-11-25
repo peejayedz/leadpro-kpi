@@ -1,5 +1,12 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.44.0": {
+    "title": "Change a passphrase from the Builder",
+    "summary": "PJ can change a firm's dashboard passphrase from the Builder; the files and GHL links follow safely.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "Changing a firm's passphrase in the Builder re-locks its dashboard details and its report with the new one (checked), updates its GHL menu links, and rolls everything back if a step fails." }
+    ]
+  },
   "1.43.0": {
     "title": "New clients stand out",
     "summary": "Clients added this week have a NEW tag and sit at the top; Reports settings is in your name menu.",

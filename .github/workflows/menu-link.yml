@@ -19,7 +19,7 @@ on:
       # v1.37.0 LeadPro Reports: "reports" = add the client's "Reports" link (a Draft report goes Live); "reports-remove" =
       # remove that link and the report's files (scripts/reports-menu.mjs). Empty / "kpi" = the KPI steps, unchanged.
       kind:
-        description: "kpi (default) · reports · reports-remove"
+        description: "kpi (default) · reports · reports-remove · pass"
         required: false
         default: "kpi"
 
@@ -52,6 +52,7 @@ jobs:
         run: |
           if [ "$NF_KIND" = "kpi" ]; then node scripts/new-firm.mjs menu-plan
           elif [ "$NF_KIND" = "reports" ] || [ "$NF_KIND" = "reports-remove" ]; then node scripts/reports-menu.mjs plan
+          elif [ "$NF_KIND" = "pass" ]; then node scripts/pass-rotate.mjs plan
           else echo "Refused: unknown kind \"$NF_KIND\""; exit 1; fi
 
   menu-link:
@@ -104,6 +105,21 @@ jobs:
             sleep $((i * 5))
           done
           exit 1
+      # v1.44.0 (queue item 15): Change passphrase: the firm's own KPI Dashboard / Reports links get the new passphrase in
+      # their URL (same ids, same settings; scripts/pass-rotate.mjs menu). PASSPHRASE_<KEY> is already the new one.
+      - name: Passphrase in the menu links
+        if: env.NF_KIND == 'pass'
+        env:
+          GHL_MENU_TOKEN: ${{ secrets.GHL_MENU_TOKEN }}
+          NF_PASSPHRASE: ${{ secrets[format('PASSPHRASE_{0}', needs.prepare.outputs.key)] }}
+          NF_LOCATION: ${{ needs.prepare.outputs.location }}
+        run: |
+          node scripts/pass-rotate.mjs menu || rc=$?
+          git config user.name "kpi-sync-bot"
+          git config user.email "kpi-sync-bot@users.noreply.github.com"
+          git add "status/menu-link-$NF_SLUG-pass.json" 2>/dev/null || true
+          if ! git diff --cached --quiet; then git commit -m "Menu links for $NF_SLUG: passphrase updated"; for i in 1 2 3; do git pull --rebase --quiet origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && break; sleep $((i * 5)); done; fi
+          exit ${rc:-0}
       # v1.32.1: when the link isn't added, keep GHL's reason (status/menu-link-<slug>.json: slug, request id, time, result
       # code and the plain-words reason; no link, no passphrase) so KPI admin / the Builder can show it in the popup.
       - name: Save why the link wasn't added

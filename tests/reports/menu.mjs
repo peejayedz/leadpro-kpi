@@ -71,7 +71,7 @@ try {
 } finally { await rm(tmp, { recursive: true, force: true }); }
 
 const yml = await readFile(join(ROOT, '.github/workflows/menu-link.yml'), 'utf8');
-check(/kind:\n\s+description: "kpi \(default\) · reports · reports-remove"\n\s+required: false\n\s+default: "kpi"/.test(yml), 'menu-link.yml: optional kind, default kpi');
+check(/kind:\n\s+description: "kpi \(default\) · reports · reports-remove · pass"\n\s+required: false\n\s+default: "kpi"/.test(yml), 'menu-link.yml: optional kind, default kpi');
 check((yml.match(/if: env\.NF_KIND == 'kpi'/g) || []).length === 2 && /node scripts\/new-firm\.mjs menu$/m.test(yml) && /node scripts\/new-firm\.mjs go-live/.test(yml), 'the KPI steps run only for kind kpi, unchanged');
 check(/else echo "Refused: unknown kind/.test(yml), 'an unknown kind is refused');
 console.log(`\n${pass} of ${pass + fail} reports menu tests pass.`);

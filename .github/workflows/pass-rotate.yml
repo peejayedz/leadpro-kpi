@@ -1,0 +1,62 @@
+name: Change a firm's dashboard passphrase (from the Builder)
+# v1.44.0 (queue item 15). Started only by the Builder's Change passphrase (PJ only), after it saved the new value as the
+# Actions secret PASSPHRASE_NEW_<KEY> (sealed, from the team site). Runs in the SAME concurrency group as the sync, so no
+# sync writes a file with the old passphrase meanwhile, and holds it until the Builder has swapped PASSPHRASE_<KEY>
+# (scripts/pass-rotate.mjs). Re-locks data/details.enc.json + reports.json, checked; rolls back on "abort" or no answer.
+# PUBLIC LOGS: step names, slugs, counts and states only. No passphrase is ever printed or committed in the clear.
+run-name: "Passphrase ${{ inputs.slug }} [${{ inputs.request }}]"
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Firm slug"
+        required: true
+      request:
+        description: "Builder request id (to find this run)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+env:
+  NF_SLUG: ${{ inputs.slug }}
+  NF_REQUEST: ${{ inputs.request }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      key: ${{ steps.plan.outputs.key }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Check the firm
+        id: plan
+        run: node scripts/pass-rotate.mjs plan
+
+  rotate:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PASS_OLD: ${{ secrets[format('PASSPHRASE_{0}', needs.plan.outputs.key)] }}
+      PASS_NEW: ${{ secrets[format('PASSPHRASE_NEW_{0}', needs.plan.outputs.key)] }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Re-lock the files with the new passphrase (checked)
+        run: node scripts/pass-rotate.mjs encrypt
+      - name: Wait for the Builder (secret swapped, menu links), then finish or roll back
+        run: node scripts/pass-rotate.mjs wait
