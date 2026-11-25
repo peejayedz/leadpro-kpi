@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T09:37:46.665Z",
+  "generatedAt": "2026-11-25T10:07:45.481Z",
   "location": "Dumas & Sanclemente",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795582800000,
-      "to": 1795599466665,
+      "to": 1795601265481,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -377,7 +377,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795599466665,
+      "to": 1795601265481,
       "current": {
         "totalLeads": 3,
         "contacted": 0,
@@ -785,8 +785,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1794994666665,
-      "to": 1795599466665,
+      "from": 1794996465481,
+      "to": 1795601265481,
       "current": {
         "totalLeads": 12,
         "contacted": 0,
@@ -997,8 +997,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793007466665,
-      "to": 1795599466665,
+      "from": 1793009265481,
+      "to": 1795601265481,
       "current": {
         "totalLeads": 37,
         "contacted": 0,
@@ -1224,8 +1224,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787823466665,
-      "to": 1795599466665,
+      "from": 1787825265481,
+      "to": 1795601265481,
       "current": {
         "totalLeads": 70,
         "contacted": 0,
@@ -1430,7 +1430,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795599466665,
+      "to": 1795601265481,
       "current": {
         "totalLeads": 28,
         "contacted": 0,
@@ -1869,7 +1869,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795599466665,
+      "to": 1795601265481,
       "current": {
         "totalLeads": 68,
         "contacted": 0,
@@ -2256,7 +2256,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-25T09:37:46.665Z",
+    "checkedAt": "2026-11-25T10:07:45.481Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
