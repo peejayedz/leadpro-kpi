@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T14:37:44.615Z",
+  "generatedAt": "2026-11-25T15:07:38.586Z",
   "location": "Dumas & Sanclemente",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,15 +22,15 @@
     "today": {
       "label": "Today",
       "from": 1795582800000,
-      "to": 1795617464615,
+      "to": 1795619258586,
       "current": {
-        "totalLeads": 0,
+        "totalLeads": 1,
         "contacted": 0,
-        "contactRatePct": null,
+        "contactRatePct": 0,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
-        "within5Pct": null,
+        "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
@@ -49,18 +49,30 @@
         "sentRatePct": null,
         "signed": 0,
         "signRatePct": null,
-        "leadToSignedPct": null,
+        "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
-        "bySource": [],
-        "byChannel": [],
-        "attributedLeads": 0,
+        "bySource": [
+          [
+            "Website Number Pool",
+            1,
+            0
+          ]
+        ],
+        "byChannel": [
+          [
+            "Third Party",
+            1,
+            0
+          ]
+        ],
+        "attributedLeads": 1,
         "stageMoved": 0,
-        "attributionPct": null,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            0,
+            1,
             "newLeads",
             null
           ],
@@ -394,9 +406,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795617464615,
+      "to": 1795619258586,
       "current": {
-        "totalLeads": 3,
+        "totalLeads": 4,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -431,6 +443,11 @@
             0
           ],
           [
+            "Website Number Pool",
+            1,
+            0
+          ],
+          [
             "Google Business Profile - Fort Lauderdale",
             1,
             0
@@ -439,17 +456,17 @@
         "byChannel": [
           [
             "Third Party",
-            3,
+            4,
             0
           ]
         ],
-        "attributedLeads": 3,
+        "attributedLeads": 4,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            3,
+            4,
             "newLeads",
             null
           ],
@@ -802,10 +819,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795012664615,
-      "to": 1795617464615,
+      "from": 1795014458586,
+      "to": 1795619258586,
       "current": {
-        "totalLeads": 12,
+        "totalLeads": 13,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -840,12 +857,12 @@
             0
           ],
           [
-            "Google Business Profile - Fort Lauderdale",
-            3,
+            "Website Number Pool",
+            4,
             0
           ],
           [
-            "Website Number Pool",
+            "Google Business Profile - Fort Lauderdale",
             3,
             0
           ],
@@ -858,17 +875,17 @@
         "byChannel": [
           [
             "Third Party",
-            12,
+            13,
             0
           ]
         ],
-        "attributedLeads": 12,
+        "attributedLeads": 13,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            12,
+            13,
             "newLeads",
             null
           ],
@@ -1014,10 +1031,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793025464615,
-      "to": 1795617464615,
+      "from": 1793027258586,
+      "to": 1795619258586,
       "current": {
-        "totalLeads": 37,
+        "totalLeads": 38,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1058,7 +1075,7 @@
           ],
           [
             "Website Number Pool",
-            7,
+            8,
             0
           ],
           [
@@ -1075,17 +1092,17 @@
         "byChannel": [
           [
             "Third Party",
-            37,
+            38,
             0
           ]
         ],
-        "attributedLeads": 37,
+        "attributedLeads": 38,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            37,
+            38,
             "newLeads",
             null
           ],
@@ -1241,10 +1258,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787841464615,
-      "to": 1795617464615,
+      "from": 1787843258586,
+      "to": 1795619258586,
       "current": {
-        "totalLeads": 70,
+        "totalLeads": 71,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1285,7 +1302,7 @@
           ],
           [
             "Website Number Pool",
-            9,
+            10,
             0
           ],
           [
@@ -1312,17 +1329,17 @@
         "byChannel": [
           [
             "Third Party",
-            70,
+            71,
             0
           ]
         ],
-        "attributedLeads": 70,
+        "attributedLeads": 71,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            70,
+            71,
             "newLeads",
             null
           ],
@@ -1447,9 +1464,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795617464615,
+      "to": 1795619258586,
       "current": {
-        "totalLeads": 28,
+        "totalLeads": 29,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1490,7 +1507,7 @@
           ],
           [
             "Website Number Pool",
-            6,
+            7,
             0
           ],
           [
@@ -1507,17 +1524,17 @@
         "byChannel": [
           [
             "Third Party",
-            28,
+            29,
             0
           ]
         ],
-        "attributedLeads": 28,
+        "attributedLeads": 29,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            28,
+            29,
             "newLeads",
             null
           ],
@@ -1886,9 +1903,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795617464615,
+      "to": 1795619258586,
       "current": {
-        "totalLeads": 68,
+        "totalLeads": 69,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1929,7 +1946,7 @@
           ],
           [
             "Website Number Pool",
-            8,
+            9,
             0
           ],
           [
@@ -1956,17 +1973,17 @@
         "byChannel": [
           [
             "Third Party",
-            68,
+            69,
             0
           ]
         ],
-        "attributedLeads": 68,
+        "attributedLeads": 69,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            68,
+            69,
             "newLeads",
             null
           ],
@@ -2273,7 +2290,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-25T14:37:44.615Z",
+    "checkedAt": "2026-11-25T15:07:38.586Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
