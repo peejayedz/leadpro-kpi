@@ -163,6 +163,11 @@ export function startSession() {
 //   pageHeadHtml({...}) · rowHtml({...}) build the page title, search, filter and list rows in the same look.
 // The pure *Html functions return strings (unit-tested in tests: shell.test.mjs, identical in all three repos).
 // =====================================================================================================================
+// v2.12.0 (queue item 14): the Builder's Reports settings, from every tool's name menu / Me screen
+export const REPORTS_SETTINGS_URL = '/ghl-subaccount-builder-page/#reports/settings';
+const RS_COUNT_URL = '/api/reports/catalog?connected=1';   // a team-site function (names only, no call to any source)
+export const RS_TOTAL = 5;
+export const reportsSettingsValue = n => (Number.isInteger(n) ? `${n} of ${RS_TOTAL} connected ›` : '›');
 export const SHELL_TOOLS = [
   { id: 'builder', label: 'Clients', title: 'Clients', path: '/ghl-subaccount-builder-page/', plus: 'New sub-account',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></svg>' },
@@ -247,16 +252,18 @@ export function meHtml(cfg, st = {}, { compact = false } = {}) {
   // v2.10.0: Done moments (after Theme): "New popup · Sound + voice ›" / "Classic ›"; v2.11.0: "Off ›" when switched off
   const dn = st.done || DN.readDone(undefined, me);
   const doneRow = row('done', 'Done moments', `${escH(compact ? DN.doneRowShort(dn) : DN.doneRowValue(dn))} ›`);   // FIX 6.1: one line in the name menu
+  // v2.12.0 (queue item 14): Reports settings, right under Done moments: "N of 5 connected ›" (agency keys set; a cheap count)
+  const rsRow = cfg.reportsSettings === false ? '' : row('rsettings', 'Reports settings', escH(reportsSettingsValue(st.rs)));
   if (compact) {
     return `<div class="lv-mh">${avHtml(me)}<div><b class="lv-n">${escH(me.name || me.email || '')}</b><small class="lv-l">${escH(lastSignInText(me))}</small></div></div>
-<div class="lv-mc">${themeRow}${doneRow}${testsRow}${cfg.onRefresh ? row('refresh', 'Refresh now', st.updated ? `updated ${escH(st.updated)}` : '') : ''}
+<div class="lv-mc">${themeRow}${doneRow}${rsRow}${testsRow}${cfg.onRefresh ? row('refresh', 'Refresh now', st.updated ? `updated ${escH(st.updated)}` : '') : ''}
   ${row('news', "What's new", ver)}${row('signins', 'Team sign-ins', '›')}${row('install', 'Install the app', '›')}
   <div class="lv-dv" role="separator"></div><button type="button" class="lv-mi out" data-lv="signout" role="menuitem">Sign out</button></div>`;
   }
   return `<div class="lv-me-who">${avHtml(me, false)}<div><div class="lv-n">${escH(me.name || me.email || '')}</div><div class="lv-l">${escH(lastSignInText(me))}</div></div></div>
 <p class="lv-gl">Settings</p><div class="lv-mlist">
   <div class="lv-mi" role="presentation"><span id="lvThemeL">Theme</span><div class="lv-sw" role="group" aria-labelledby="lvThemeL">${THEMES.map(([k, l]) => `<button type="button" class="lv-hit" data-lv="theme" data-v="${k}" aria-pressed="${k === theme}">${l}</button>`).join('')}</div></div>
-  ${doneRow}
+  ${doneRow}${rsRow}
   ${cfg.showTests ? `<div class="lv-mi" role="presentation"><span id="lvTestsL">${escH(cfg.showTests.label || 'Show test clients')}</span><button type="button" class="lv-tg lv-hit" role="switch" data-lv="tests" aria-labelledby="lvTestsL" aria-checked="${!!st.showTests}"></button></div>` : ''}
   ${cfg.onRefresh ? row('refresh', 'Refresh now', st.updated ? `updated ${escH(st.updated)}` : '') : ''}
 </div>
@@ -433,6 +440,30 @@ export function displayName(name) {
 }
 // v1.17.0: every list (Clients, Scorecards, Reviews) is A–Z by display name, case-insensitive, ignoring a leading
 // "The " ("The Mahdavi Law Firm" sorts under M). Use: list.sort(byName(x => x.name)).
+// ---------------------------------------------------------------- v2.12.0 (queue item 14): "NEW" on recently added clients
+// A Builder record made by New client or Add existing client less than 7 days ago (its createdAt): a gold NEW pill after
+// the name, "Added today / yesterday / Nov 25" first in the grey line, and pinned to the top of the list (newest first)
+// within whatever the filter shows. Same answer in the four lists (Clients, Scorecards, Reviews, Reports): newInfo() looks
+// the client up with the brandFor() keys.
+export const NEW_DAYS = 7;
+const DAY = 864e5;
+export function isNewClient(createdAt, now = Date.now()) { const t = Date.parse(createdAt || ''); return Number.isFinite(t) && t <= now + 5 * 60e3 && now - t < NEW_DAYS * DAY; }
+export function addedText(createdAt, now = Date.now()) {
+  const t = new Date(createdAt || ''); if (Number.isNaN(t.getTime())) return '';
+  const day = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(), n = Math.round((day(new Date(now)) - day(t)) / DAY);
+  return n <= 0 ? 'Added today' : n === 1 ? 'Added yesterday' : `Added ${t.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+}
+export function newInfo(rows, keys = {}, now = Date.now()) {
+  const k = keys || {};
+  const row = (rows || []).find(r => (k.id && r.id === k.id) || (k.reviewCode && r.reviewCode === k.reviewCode) || (k.kpiSlug && r.kpiSlug === k.kpiSlug) || (k.locationId && r.locationId === k.locationId));
+  return row && isNewClient(row.createdAt, now) ? { isNew: true, createdAt: row.createdAt, added: addedText(row.createdAt, now) } : { isNew: false, createdAt: '', added: '' };
+}
+// New clients first (newest first), then the list's own order (A–Z). info(item) → newInfo(...) for that item.
+export function newFirst(items, info) {
+  const withI = items.map((x, i) => ({ x, i, n: info(x) }));
+  return withI.sort((a, b) => (a.n.isNew === b.n.isNew ? (a.n.isNew ? String(b.n.createdAt).localeCompare(String(a.n.createdAt)) || a.i - b.i : a.i - b.i) : a.n.isNew ? -1 : 1)).map(w => w.x);
+}
+export const NEW_PILL = '<span class="lv-new">New</span>';
 export const nameKey = name => displayName(name).replace(/^the\s+/i, '').toLowerCase();
 export const byName = get => (a, b) => nameKey(get(a)).localeCompare(nameKey(get(b)), 'en', { sensitivity: 'base', numeric: true }) || String(get(a)).localeCompare(String(get(b)));
 // The Builder's client records (private repo, records/<id>.json) through the team site, read only:
@@ -456,7 +487,7 @@ function readBuilderRecords(ghFetch) {
       const recs = await Promise.all(files.map(f => ghFetch('GET', `${REPO}/contents/records/${f.name}?ref=main`, null, { raw: true })
         .then(x => (x.ok ? x.text() : null)).then(t => (t ? JSON.parse(t) : null)).catch(() => null)));
       return recs.filter(x => x && x.id && x.businessName).map(x => ({ id: x.id, name: displayName(x.businessName), locationId: x.locationId || '',
-        reviewCode: x.review?.code || '', kpiSlug: x.kpi?.slug || '', linkSent: x.review?.linkSent || null, brand: brandOf(x) }));
+        reviewCode: x.review?.code || '', kpiSlug: x.kpi?.slug || x.reports?.slug || '', linkSent: x.review?.linkSent || null, brand: brandOf(x), createdAt: x.createdAt || '' }));   // v2.12.0: createdAt (the NEW pill)
     } catch { return []; }
   })();
 }
@@ -493,11 +524,13 @@ export function showNewsCard({ version, title, line, onSee, onGot }) {
 export const hideNewsCard = () => { if (typeof document !== 'undefined') document.querySelector('[data-lv-news]')?.remove(); };
 
 // One list row. cells: desktop columns after the name (HTML strings); phone: phoneRight (default: the first cell) + ›.
-export function rowHtml({ name, sub = '', subPhone, cells = [], phoneRight, open = 'Open ›', attrs = '', label }) {
+export function rowHtml({ name, sub = '', subPhone, cells = [], phoneRight, open = 'Open ›', attrs = '', label, isNew = false, added = '' }) {
   const subP = subPhone ?? sub;
-  const subHtml = subP === sub ? (sub ? `<div class="lv-mt">${escH(sub)}</div>` : '')
-    : `${sub ? `<div class="lv-mt lv-d">${escH(sub)}</div>` : ''}${subP ? `<div class="lv-mt lv-p">${escH(subP)}</div>` : ''}`;
-  return `<div class="lv-row" role="button" tabindex="0" aria-label="${escH(label || `Open ${name}`)}" ${attrs}><div class="lv-c0"><div class="lv-nm">${escH(name)}</div>${subHtml}</div>${cells.map(c => `<div class="lv-c">${c}</div>`).join('')}${open ? `<div class="lv-c lv-op">${escH(open)}</div>` : ''}<div class="lv-c lv-pr">${phoneRight ?? cells[0] ?? ''}</div><span class="lv-chev" aria-hidden="true">›</span></div>`;
+  // v2.12.0: a new client's grey line starts with the gold "Added today" (first, so a phone never cuts it off)
+  const ad = isNew && added ? `<span class="lv-added">${escH(added)}</span>` : '', line = t => (ad ? (t ? `${ad} · ${escH(t)}` : ad) : escH(t));
+  const subHtml = subP === sub ? (sub || ad ? `<div class="lv-mt">${line(sub)}</div>` : '')
+    : `${sub || ad ? `<div class="lv-mt lv-d">${line(sub)}</div>` : ''}${subP || ad ? `<div class="lv-mt lv-p">${line(subP)}</div>` : ''}`;
+  return `<div class="lv-row${isNew ? ' lv-isnew' : ''}" role="button" tabindex="0" aria-label="${escH(label || `Open ${name}`)}${isNew ? ' (new)' : ''}" ${attrs}><div class="lv-c0"><div class="lv-nm">${isNew ? `<span class="lv-nmt">${escH(name)}</span>${NEW_PILL}` : escH(name)}</div>${subHtml}</div>${cells.map(c => `<div class="lv-c">${c}</div>`).join('')}${open ? `<div class="lv-c lv-op">${escH(open)}</div>` : ''}<div class="lv-c lv-pr">${phoneRight ?? cells[0] ?? ''}</div><span class="lv-chev" aria-hidden="true">›</span></div>`;
 }
 export const statusHtml = (tone, label) => `<span class="lv-st ${escH(tone)}"><b></b>${escH(label)}</span>`;
 export const bigHtml = (n, small, red = false) => `<span class="lv-big${red ? ' red' : ''}">${escH(n)}<small>${escH(small)}</small></span>`;
@@ -511,9 +544,11 @@ export const reducedMotion = () => { try { return !!globalThis.matchMedia?.('(pr
 export const LOAD_LIMIT_MS = 20000;
 export const LOAD_SLOW_TEXT = 'This is taking longer than 20 seconds. Check your connection, then try again.';
 // The 3-block LFMP mark rising in a loop + "Loading clients…" (animated dots), centred where the list will be.
-export function loadingHtml(what = 'clients') {
+// v2.12.0 (queue item 14): a whole list / page load sits in the middle of the SCREEN (lv-load-page: fixed, centred, under
+// the top bar and the tabs, clicks pass through); page: false = a small loader inside a card / panel (stays in place).
+export function loadingHtml(what = 'clients', { page = true } = {}) {
   const t = `Loading ${escH(what)}`;
-  return `<div class="lv-load" role="status" aria-label="${t}…" data-lv-loading><span class="lv-load-mk" aria-hidden="true"><i></i><i></i><i></i></span><span class="lv-load-t" aria-hidden="true">${t}<span class="lv-dots"></span></span></div>`;
+  return `<div class="lv-load${page ? ' lv-load-page' : ''}" role="status" aria-label="${t}…" data-lv-loading><span class="lv-load-mk" aria-hidden="true"><i></i><i></i><i></i></span><span class="lv-load-t" aria-hidden="true">${t}<span class="lv-dots"></span></span></div>`;
 }
 // Never spin forever: rejects after 20 s (error.code "slow"), so the tool shows its own error / Retry state.
 export function withLoadLimit(promise, ms = LOAD_LIMIT_MS) {
@@ -1023,7 +1058,7 @@ export function startJob(o = {}) {
   // v2.10.0 Done moments: a job started with moment: { tool, steps?, open?, workSub?, sub? } (Builder new client / Add existing
   // client, KPI admin New firm, Review admin package build) runs in the Done moments popup instead of the working bar, unless
   // the person's Animation is Classic (then exactly as before). Only on this browser: teammates never see or hear it.
-  const M = o.moment && hasDoc() ? DN.openMoment({ tool: o.moment.tool || tool, client: o.client, steps: o.moment.steps, workSub: o.moment.workSub || (o.title ? `${o.title.replace(/…$/, '')}. You can hide this and keep working.` : undefined), sub: o.moment.sub, onOpen: o.moment.open }, { me: o.moment.me || null }) : null;
+  const M = o.moment && hasDoc() ? DN.openMoment({ tool: o.moment.tool || tool, client: o.client, steps: o.moment.steps, workSub: o.moment.workSub || (o.title ? `${o.title.replace(/…$/, '')}. You can hide this and keep working.` : undefined), sub: o.moment.sub, onOpen: o.moment.open, done: o.moment.done }, { me: o.moment.me || null }) : null;
   const bar = o.host && !M ? mountWorkBar(o.host, { title: o.title || `${o.what || 'Working'}…`, hint: o.hint, kind: entry.kind, client: entry.client, typicalMs: o.typicalMs, t0 }) : null;
   let mp = 0, mLine = String(o.title || '').replace(/…$/, ''), mSteps = '';
   const mTick = () => M?.progress(mp, `${mLine}${mSteps}`);
@@ -1370,7 +1405,7 @@ export function mountShell(cfg) {
   html.classList.add('lfmp-v2');
   // v2.5.0: every tool has a bell. A tool without its own (Builder, Review admin) gets the shell's: recent jobs.
   if (!cfg.bell) cfg = { ...cfg, bell: { jobs: true, label: 'Notifications' } };
-  const st = { theme: getTheme(), showTests: !!cfg.showTests?.on, updated: cfg.updated || '', newsDot: !!cfg.newsDot, bell: Number(cfg.bellCount) || 0, meOpen: false, done: DN.readDone(undefined, cfg.me) };
+  const st = { theme: getTheme(), showTests: !!cfg.showTests?.on, updated: cfg.updated || '', newsDot: !!cfg.newsDot, bell: Number(cfg.bellCount) || 0, meOpen: false, done: DN.readDone(undefined, cfg.me), rs: null };
   const bellTotal = () => st.bell + newJobResults();
   const full = () => ({ ...cfg, newsDot: st.newsDot, bellCount: bellTotal() });
   doc.querySelectorAll('[data-lv-top],[data-lv-ptop],[data-lv-tabs],[data-lv-me]').forEach(n => n.remove());
@@ -1437,6 +1472,11 @@ export function mountShell(cfg) {
     else if (a === 'signins') { closeMe(); openTeamSignins(); }
     else if (a === 'news') { closeMe(); cfg.onNews?.(); }
     else if (a === 'install') { closeMe(); install(); }
+    else if (a === 'rsettings') {   // v2.12.0: the Builder's Reports settings (from the KPI / Review admin: the team site's Builder)
+      closeMe();
+      if (cfg.tool === 'builder' && location.pathname.startsWith('/ghl-subaccount-builder-page/')) location.hash = '#reports/settings';
+      else location.href = REPORTS_SETTINGS_URL;
+    }
     else if (a === 'done') {   // v2.10.0: the Done moments settings (side panel; a full screen on a phone)
       closeMe();
       DN.openDonePanel({ me: cfg.me, onChange: s => { st.done = s; paintMe(); },
@@ -1459,6 +1499,9 @@ export function mountShell(cfg) {
   const paintBell = () => { const n = bellTotal(); $$('[data-lv-badge]').forEach(x => { x.textContent = n; x.hidden = !n; }); $$('[data-lv="bell"]').forEach(x => x.setAttribute('aria-label', `${cfg.bell?.label || 'Notifications'}${n ? `: ${n}` : ''}`)); const p = jobsPop(); if (p) p.innerHTML = jobsListHtml(); };
   doc.addEventListener('lfmp-jobs', paintBell);
   addEventListener('storage', e => { if (e.key === JOBS_KEY || e.key === JOBS_BELL_KEY) paintBell(); });
+  // v2.12.0: "N of 5 connected" for the Reports settings row (one small read per page; any failure = just "›")
+  if (cfg.reportsSettings !== false && typeof fetch === 'function') fetch(RS_COUNT_URL, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    .then(r => (r.ok ? r.json() : null)).then(j => { if (Number.isInteger(j?.connected)) { st.rs = j.connected; paintMe(); } }).catch(() => {});
   noteHere(cfg.tool);
   doc.addEventListener('visibilitychange', () => { if (doc.visibilityState !== 'visible') return; noteHere(cfg.tool); if (!doc.querySelector('[data-lv-greet]')) showWaitingResults(cfg.tool); });
   doc.addEventListener('click', onClick);

@@ -743,3 +743,14 @@ div.lv-mi{cursor:default} div.lv-mi:hover{background:none}
   .lv-chips .lv-needs{border-color:var(--red);color:var(--red)}
   .lv-chips .lv-needs span{color:var(--red)}
 }
+/* v2.12.0 (queue item 14): a whole list / page load sits in the middle of the screen (the tools' bars stay on top, clicks
+   pass through); the animated dots no longer push the words off centre (they hang to the right of the text) */
+.lv-load.lv-load-page{position:fixed;inset:0;z-index:5;min-height:0;padding:0;pointer-events:none}
+.lv-load-t{position:relative}.lv-load-t .lv-dots{position:absolute;left:100%;top:0}
+/* v2.12.0: NEW on clients added in the last 7 days (the pill after the name; "Added today" first in the grey line) */
+.lv-new{display:inline-flex;align-items:center;margin-left:8px;padding:2px 8px;border-radius:999px;background:#e0a93a;color:#1a1405;font:800 10.5px var(--b);letter-spacing:.08em;text-transform:uppercase;vertical-align:2px;flex:none}
+.lv-added{color:#c9922a;font-weight:600}
+.lv-row.lv-isnew .lv-nm{display:flex;align-items:center;min-width:0}   /* a long name shortens; the pill always shows */
+.lv-row.lv-isnew .lv-nmt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:root.lfmp-v2[data-theme="dark"] .lv-added{color:#e8b44a}
+@media (prefers-color-scheme:dark){:root.lfmp-v2:not([data-theme="light"]) .lv-added{color:#e8b44a}}

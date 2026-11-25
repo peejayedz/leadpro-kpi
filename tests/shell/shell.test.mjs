@@ -90,7 +90,7 @@ test('Voice greeting text: daypart, Call me or the first name, zeros and missing
 test('Done moments row in the name menu (after Theme: "New popup ›" / "Classic ›", one line) and on the phone Me screen (Settings group, after Theme: "New popup · Sound + voice ›")', () => {
   for (const compact of [true, false]) {
     const h = S.meHtml({ me }, { theme: 'auto', done: DN.doneDefaults() }, { compact });
-    const t = text(h); assert.match(t, compact ? /Theme Light Dark Auto Done moments New popup › / : /Theme Light Dark Auto Done moments New popup · Sound \+ voice ›/, `compact ${compact}`);   // FIX 6.1: one line in the name menu
+    const t = text(h); assert.match(t, compact ? /Theme Light Dark Auto Done moments New popup › Reports settings › / : /Theme Light Dark Auto Done moments New popup · Sound \+ voice › Reports settings ›/, `compact ${compact}`);   // FIX 6.1: one line in the name menu
     assert.match(h, /data-lv="done" role="menuitem"/);
     assert.match(text(S.meHtml({ me }, { theme: 'auto', done: { ...DN.doneDefaults(), animation: 'classic' } }, { compact })), /Done moments Classic ›/);
     assert.match(text(S.meHtml({ me }, { theme: 'auto', done: { ...DN.doneDefaults(), sound: 'off' } }, { compact })), compact ? /Done moments New popup › / : /Done moments New popup · Off ›/);
@@ -219,7 +219,7 @@ test('Me (identical in all three tools): avatar, name, Last signed in · SETTING
   const h = S.meHtml({ tool: 'kpi', me, version: '1.23.0', showTests: { label: 'Show test clients' }, onRefresh() {},
     extras: { title: 'Scorecards', items: [{ label: 'Sync', value: 'every 30 min' }] } },   // extras are ignored: no tool-only section
     { theme: 'dark', showTests: true, updated: '4:57 PM', newsDot: true });
-  assert.equal(text(h), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Settings Theme Light Dark Auto Done moments New popup · Sound + voice › Show test clients Refresh now updated 4:57 PM Team Team sign-ins › What's new v1.23.0 › Install the app › Sign out`);
+  assert.equal(text(h), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Settings Theme Light Dark Auto Done moments New popup · Sound + voice › Reports settings › Show test clients Refresh now updated 4:57 PM Team Team sign-ins › What's new v1.23.0 › Install the app › Sign out`);
   assert.match(h, /data-v="dark" aria-pressed="true"/); assert.match(h, /data-v="auto" aria-pressed="false"/);
   assert.match(h, /role="switch" data-lv="tests" aria-labelledby="lvTestsL" aria-checked="true"/);
   assert.match(h, /data-lv="news" role="menuitem"><span>What&#39;s new<\/span><span class="lv-v"><span class="lv-ndot"/, 'unseen What\'s new: the dot is on its row');
@@ -228,16 +228,16 @@ test('Me (identical in all three tools): avatar, name, Last signed in · SETTING
   const same = S.SHELL_TOOLS.map(t => S.meHtml({ tool: t.id, me, version: '1', showTests: {}, onRefresh() {} }, {}));
   assert.equal(new Set(same).size, 1, 'Me is the same in every tool');
   const plain = S.meHtml({ tool: 'review', me }, {});
-  assert.equal(text(plain), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Settings Theme Light Dark Auto Done moments New popup · Sound + voice › Team Team sign-ins › What's new › Install the app › Sign out`);
+  assert.equal(text(plain), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Settings Theme Light Dark Auto Done moments New popup · Sound + voice › Reports settings › Team Team sign-ins › What's new › Install the app › Sign out`);
 });
 test('the name menu (v2.4.0, compact): name + Last signed in · Theme Light/Dark/Auto · [tests · Refresh] · What\'s new (version) · Team sign-ins · Install · Sign out', () => {
   const h = S.meHtml({ tool: 'kpi', me, version: '1.28.0', showTests: { label: 'Show test clients' }, onRefresh() {} }, { theme: 'auto', showTests: false, updated: '4:57 PM' }, { compact: true });
-  assert.equal(text(h), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Theme Light Dark Auto Done moments New popup › Show test clients Refresh now updated 4:57 PM What's new v1.28.0 › Team sign-ins › Install the app › Sign out`);
+  assert.equal(text(h), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Theme Light Dark Auto Done moments New popup › Reports settings › Show test clients Refresh now updated 4:57 PM What's new v1.28.0 › Team sign-ins › Install the app › Sign out`);
   assert.match(h, /^<div class="lv-mh"><span class="lv-av">PJ<\/span><div><b class="lv-n">Pee Jay Edrozo<\/b><small class="lv-l">Last signed in /);
   assert.match(h, /<div class="lv-dv" role="separator"><\/div><button type="button" class="lv-mi out" data-lv="signout" role="menuitem">Sign out<\/button><\/div>$/);
   assert.doesNotMatch(h, /lv-gl/, 'no group labels in the compact menu');
   assert.match(h, /data-v="auto" aria-pressed="true"/);
-  assert.equal(text(S.meHtml({ tool: 'review', me }, {}, { compact: true })), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Theme Light Dark Auto Done moments New popup › What's new › Team sign-ins › Install the app › Sign out`);
+  assert.equal(text(S.meHtml({ tool: 'review', me }, {}, { compact: true })), `PJ Pee Jay Edrozo ${S.lastSignInText(me)} Theme Light Dark Auto Done moments New popup › Reports settings › What's new › Team sign-ins › Install the app › Sign out`);
   assert.ok(!S.meHtml({ tool: 'review', me: { name: '<b>x</b>' } }, {}, { compact: true }).includes('<b>x</b>'), 'escaped');
 });
 
@@ -369,7 +369,7 @@ test('loadBuilderRecords v2.4.2: another GitHub reader (the team site\'s server)
   const seen = [];
   const gh = async (m, p, b, o) => { seen.push([m, p]); if (p.endsWith('/contents/records?ref=main')) return Response.json([{ type: 'file', name: 'a1.json' }]); return new Response(JSON.stringify({ id: 'a1', businessName: 'Acme Law P.C', review: { code: 'acme' }, kpi: { slug: 'acme' } }), { status: 200 }); };
   const recs = await S.loadBuilderRecords({ gh });
-  assert.deepEqual(recs, [{ id: 'a1', name: 'Acme Law P.C.', locationId: '', reviewCode: 'acme', kpiSlug: 'acme', linkSent: null, brand: 'LFMP' }]);   // v2.7.0: + brand (no brand on the record = LFMP)
+  assert.deepEqual(recs, [{ id: 'a1', name: 'Acme Law P.C.', locationId: '', reviewCode: 'acme', kpiSlug: 'acme', linkSent: null, brand: 'LFMP', createdAt: '' }]);   // v2.7.0: + brand (no brand on the record = LFMP); v2.12.0: + createdAt (NEW)
   assert.ok(seen.every(([m]) => m === 'GET') && seen.length === 2);
   assert.equal(await S.loadBuilderRecords({ gh: async () => { throw new Error('down'); } }).then(r => r.length), 0, 'never throws');
 });
@@ -609,7 +609,7 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
         assert.equal(await page.getAttribute(`${bar} [data-lv="me"]`, 'aria-expanded'), 'true');
         { const mh = await page.locator(`${me} .lv-mh`).innerText(); assert.ok(mh.includes('Pee Jay Edrozo') && mh.includes(S.lastSignInText({ lastSignIn: '2026-11-16T11:31:00Z' })), mh); }
         const items = await page.locator(`${me} .lv-mi`).evaluateAll(els => els.map(e => (e.firstElementChild || e).textContent.trim()));
-        assert.deepEqual(items, ['Theme', 'Done moments', 'Show test clients', 'Refresh now', "What's new", 'Team sign-ins', 'Install the app', 'Sign out'], `${tool} ${w}: name menu items`);
+        assert.deepEqual(items, ['Theme', 'Done moments', 'Reports settings', 'Show test clients', 'Refresh now', "What's new", 'Team sign-ins', 'Install the app', 'Sign out'], `${tool} ${w}: name menu items`);
         assert.equal(await page.locator(`${bar} .lv-av [data-lv-dot], ${bar} .lv-av .lv-dot`).count(), 0, 'no dot on the avatar');
         assert.equal(await page.locator(`${me} [data-lv="news"] .lv-ndot`).count(), 1, 'the new dot is on the What\'s new row');
         assert.equal(await page.evaluate(s => { const r = document.querySelector(s).getBoundingClientRect(); return r.right <= innerWidth && r.left >= 0 && r.bottom <= innerHeight; }, me), true, `${tool} ${w}: the menu is fully on screen`);
@@ -631,7 +631,7 @@ document.querySelector('.lv-row').addEventListener('click', () => log.push('row'
           await page.click('.lv-tabs [data-lv="metab"]'); await page.waitForSelector('[data-lv-me]:not([hidden]) .lv-mlist');
           assert.equal(await page.locator(`${me}:not([hidden])`).count(), 0, 'name menu closed');
           const sitems = await page.locator('[data-lv-me] .lv-mi').evaluateAll(els => els.map(e => (e.firstElementChild || e).textContent.trim()));
-          assert.deepEqual(sitems, ['Theme', 'Done moments', 'Show test clients', 'Refresh now', 'Team sign-ins', "What's new", 'Install the app', 'Sign out'], `${tool}: Me screen items`);
+          assert.deepEqual(sitems, ['Theme', 'Done moments', 'Reports settings', 'Show test clients', 'Refresh now', 'Team sign-ins', "What's new", 'Install the app', 'Sign out'], `${tool}: Me screen items`);
           assert.equal(await page.getAttribute('.lv-tabs [data-lv="metab"]', 'aria-current'), 'page', 'Me tab gold while open');
           // a tool's toast (z-index 70, like the Builder's What's new) never covers Me; the bottom tabs stay on top of Me
           const covered = await page.evaluate(() => {
@@ -1253,5 +1253,87 @@ window.shell = S.mountShell({ tool, me: { name: 'PJ', first: 'PJ', email: 'pj@ex
       assert.equal((await G.page.evaluate(() => window.calls)).filter(c => c[0] === 'speak').length, greet === 'on' ? 1 : 0, 'nothing after the greeting has ended');
       await G.ctx.close();
     }
+  } finally { await browser.close(); server.close(); }
+});
+
+// ---------------------------------------------------------------- v2.12.0 (queue item 14)
+test('v2.12.0 NEW: under 7 days only; "Added today / yesterday / Nov 25"; new clients first (newest first), then the list\'s A–Z; the same lookup as brandFor', () => {
+  const now = new Date(2026, 10, 25, 15, 0).getTime(), ago = d => new Date(now - d * 864e5).toISOString();
+  assert.equal(S.isNewClient(ago(0.1), now), true); assert.equal(S.isNewClient(ago(6.9), now), true);
+  assert.equal(S.isNewClient(ago(7), now), false, 'gone at day 7'); assert.equal(S.isNewClient('', now), false); assert.equal(S.isNewClient(ago(-1), now), false, 'never a future date');
+  assert.equal(S.addedText(new Date(2026, 10, 25, 9, 0).toISOString(), now), 'Added today');
+  assert.equal(S.addedText(new Date(2026, 10, 24, 23, 0).toISOString(), now), 'Added yesterday');
+  assert.equal(S.addedText(new Date(2026, 10, 20, 12, 0).toISOString(), now), 'Added Nov 20');
+  const rows = [{ id: 'a', kpiSlug: 'alpha', createdAt: ago(1) }, { id: 'z', reviewCode: 'zed', createdAt: ago(0.2) }, { id: 'o', locationId: 'L1', createdAt: ago(30) }];
+  assert.equal(S.newInfo(rows, { kpiSlug: 'alpha' }, now).isNew, true); assert.equal(S.newInfo(rows, { reviewCode: 'zed' }, now).added, 'Added today');
+  assert.equal(S.newInfo(rows, { locationId: 'L1' }, now).isNew, false); assert.equal(S.newInfo(rows, { kpiSlug: 'nope' }, now).isNew, false, 'no Builder record = not new');
+  const list = ['Acme', 'Bravo', 'Old', 'Zed'], info = { Acme: S.newInfo(rows, { id: 'a' }, now), Zed: S.newInfo(rows, { id: 'z' }, now) };
+  assert.deepEqual(S.newFirst(list, x => info[x] || { isNew: false }), ['Zed', 'Acme', 'Bravo', 'Old'], 'new first, newest first; then A–Z as given');
+  const h = S.rowHtml({ name: 'Zed Law', sub: 'LFMP · Houston', isNew: true, added: 'Added today' });
+  assert.match(h, /<div class="lv-nm"><span class="lv-nmt">Zed Law<\/span><span class="lv-new">New<\/span><\/div><div class="lv-mt"><span class="lv-added">Added today<\/span> · LFMP · Houston<\/div>/);
+  assert.match(h, /class="lv-row lv-isnew"/); assert.doesNotMatch(S.rowHtml({ name: 'A', sub: 'b' }), /lv-new|lv-added/, 'an older client: unchanged');
+  assert.match(V2, /\.lv-new\{[^}]*background:#e0a93a;color:#1a1405;font:800 10\.5px[^}]*text-transform:uppercase/, 'the pill: #e0a93a / #1a1405, 10.5 px, 800, uppercase');
+});
+test('v2.12.0 Reports settings row: under Done moments in the name menu and the Me screen, "N of 5 connected ›"; page loads sit mid-screen', () => {
+  const st = { theme: 'dark', done: null, rs: 2 };
+  for (const compact of [true, false]) {
+    const h = S.meHtml({ me }, st, { compact });
+    assert.match(h, /data-lv="done"[\s\S]*?<\/button><button type="button" class="lv-mi" data-lv="rsettings" role="menuitem"><span>Reports settings<\/span><span class="lv-v">2 of 5 connected ›<\/span><\/button>/, `${compact ? 'name menu' : 'Me screen'}: right under Done moments`);
+  }
+  assert.equal(S.reportsSettingsValue(0), '0 of 5 connected ›'); assert.equal(S.reportsSettingsValue(5), '5 of 5 connected ›'); assert.equal(S.reportsSettingsValue(null), '›', 'not read yet: just the arrow');
+  assert.doesNotMatch(S.meHtml({ me, reportsSettings: false }, st, { compact: true }), /rsettings/, 'a tool can leave it out');
+  assert.match(S.loadingHtml('clients'), /class="lv-load lv-load-page"/); assert.match(S.loadingHtml('the names', { page: false }), /class="lv-load"/);
+  assert.match(V2, /\.lv-load\.lv-load-page\{position:fixed;inset:0;[^}]*pointer-events:none\}/);
+});
+tb('v2.12.0 in Chromium: the loading mark + its words centred on the screen (±2 px, 1440 + 390); Reports settings row "0 / 2 / 5 of 5" opens #reports/settings from every tool', { timeout: 120000 }, async () => {
+  const { chromium } = createRequire(path.join(pwDir, 'package.json'))('./index.js');
+  const PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/lfmp-ui.css"></head><body><div id="app"><main class="lv-in" id="main"></main></div>
+<script type="module">import * as S from '/lfmp-session.js'; const q = new URLSearchParams(location.search);
+window.shell = S.mountShell({ tool: q.get('tool') || 'builder', me: { name: 'Pee Jay Edrozo', email: 'pj@example.com' }, root: document.getElementById('app'), version: '1.0.0', greet: false, jobs: false });
+document.getElementById('main').innerHTML = S.pageHeadHtml({ title: 'X', search: { placeholder: 'Search' } }) + (q.get('load') ? S.loadingHtml('clients') : '<div class="lv-list">' + S.rowHtml({ name: 'A', sub: 'b' }) + '</div>'); window.ready = true;</script></body></html>`;
+  let connected = 2;
+  const server = http.createServer((req, res) => {
+    const u = new URL(req.url, 'http://x');
+    if (u.pathname === '/' || u.pathname.endsWith('/admin/') || u.pathname.endsWith('-page/')) { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(PAGE); }
+    if (/^\/lfmp-(session|ui|done)\.(js|css)$/.test(u.pathname) && fs.existsSync(path.join(DIR, u.pathname.slice(1)))) { res.writeHead(200, { 'Content-Type': u.pathname.endsWith('.js') ? 'text/javascript' : 'text/css' }); return res.end(fs.readFileSync(path.join(DIR, u.pathname.slice(1)))); }
+    if (u.pathname === '/api/reports/catalog' && u.searchParams.get('connected') === '1') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ connected, of: 5 })); }
+    res.writeHead(404); res.end();
+  });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const browser = await quiet(await chromium.launch({ ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), args: ['--mute-audio'] }));
+  try {
+    for (const [w, h] of [[1440, 900], [390, 844]]) {
+      const page = await browser.newPage({ viewport: { width: w, height: h } });
+      await page.goto(`${base}/ghl-subaccount-builder-page/?load=1`); await page.waitForFunction(() => window.ready);
+      const m = await page.evaluate(() => { const r = e => e.getBoundingClientRect(), mk = r(document.querySelector('.lv-load-mk')), t = document.querySelector('.lv-load-t'), tr = r(t.firstChild.nodeType === 3 ? (() => { const g = document.createRange(); g.selectNodeContents(t.firstChild); return g; })() : t);
+        return { vx: innerWidth / 2, vy: innerHeight / 2, mx: mk.left + mk.width / 2, tx: tr.left + tr.width / 2, cy: (mk.top + tr.bottom) / 2, pe: getComputedStyle(document.querySelector('.lv-load')).pointerEvents }; });
+      assert.ok(Math.abs(m.mx - m.vx) <= 2, `${w}: the mark is centred left-right (${m.mx} vs ${m.vx})`);
+      assert.ok(Math.abs(m.tx - m.mx) <= 2, `${w}: the words are centred under the mark (${m.tx} vs ${m.mx})`);
+      assert.ok(Math.abs(m.cy - m.vy) <= 2, `${w}: mark + words centred top-bottom (${m.cy} vs ${m.vy})`);
+      assert.equal(m.pe, 'none', 'clicks pass through');
+      await page.close();
+    }
+    for (const n of [0, 2, 5]) {
+      connected = n;
+      for (const [tool, path0] of [['builder', '/ghl-subaccount-builder-page/'], ['kpi', '/leadpro-kpi/admin/'], ['review', '/automation-review/admin/']]) {
+        const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+        await page.goto(`${base}${path0}?tool=${tool}`); await page.waitForFunction(() => window.ready);
+        await page.click('[data-lv-top] [data-lv="me"]');
+        await page.waitForFunction(v => document.querySelector('[data-lv-top] [data-lv="rsettings"]')?.textContent.includes(v), `${n} of 5 connected ›`);
+        const order = await page.$$eval('[data-lv-top] [data-lv-pop] .lv-mi', els => els.map(e => e.dataset.lv || ''));
+        assert.equal(order[order.indexOf('done') + 1], 'rsettings', `${tool}: right under Done moments`);
+        if (n === 2) {
+          await page.click('[data-lv-top] [data-lv="rsettings"]'); await page.waitForTimeout(300);
+          assert.equal(new URL(page.url()).pathname + new URL(page.url()).hash, '/ghl-subaccount-builder-page/#reports/settings', `${tool}: opens the Builder's Reports settings`);
+        }
+        await page.close();
+      }
+    }
+    const phone = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    await phone.goto(`${base}/leadpro-kpi/admin/?tool=kpi`); await phone.waitForFunction(() => window.ready);
+    await phone.click('[data-lv-tabs] [data-lv="metab"]');
+    await phone.waitForFunction(() => /Reports settings\s*\d of 5 connected ›/.test(document.querySelector('[data-lv-me] [data-lv="rsettings"]')?.innerText || ''));
+    await phone.close();
   } finally { await browser.close(); server.close(); }
 });

@@ -70,6 +70,7 @@ import { SYNC_PROBLEMS, notInPipelineList, ghlContactUrl, perfView, PERF_PERIODS
 import { decryptJSON } from '../scripts/kpi-core.mjs';
 import * as GC from './greet-count.mjs';   // v1.29.1: the "Needs attention" count (list + greeting)
 import { PRACTICE_TYPES, practiceTypeOf, practiceLabel, isCare, countsOnly as countsOnlyOf, BUCKETS, BUCKET_HINTS, careInitialState, unchosen, buildPipelineMap, applyCare, mapOf } from '../scripts/care-core.mjs';
+import { newInfo, newFirst } from './lfmp-session.js';   // v1.43.0 (queue item 14): NEW pill + pinned order
 import { startSession, ghFetch, api, signOut, ApiError, paintMe, mountShell, pageHeadHtml, brandFor, brandSub, brandWord, brandCounts, getBrandFilter, setBrandFilter, wireListFilter, updateListHead, rowHtml as lvRow, statusHtml as lvStatus, bigHtml, loadingHtml, loadErrorHtml, withLoadLimit, fadeIn, panelOpen, panelClose, showNewsCard, hideNewsCard, newsLine, loadBuilderRecords, displayName, busyButton, noteCount, startJob, jobsListHtml, markJobsBellSeen, newJobResults, confirmAction } from './lfmp-session.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -431,6 +432,9 @@ const fname = f => displayName(builderNames[f.slug] || f.name);
 // v1.33.0: LFMP / WPP from the Builder record (shared shell brandFor: KPI slug or GHL location; no record = LFMP)
 let builderRows = [], brandFilter = getBrandFilter();
 const firmBrand = f => brandFor(builderRows, { kpiSlug: f.slug, locationId: configs[f.slug]?.locationId || f.locationId || '' });
+// v1.43.0 (queue item 14): NEW for a client whose Builder record was made / added less than 7 days ago (the shell's lookup)
+const lvNow = () => (globalThis.__LV_NOW ? Number(globalThis.__LV_NOW) : Date.now());   // tests can pin the clock
+const firmNew = f => newInfo(builderRows, { kpiSlug: f.slug, locationId: configs[f.slug]?.locationId || f.locationId || '' }, lvNow());
 const inBrand = (list, b = brandFilter) => (b === 'LFMP' || b === 'WPP' ? list.filter(f => firmBrand(f) === b) : list);
 function applyNames(recs) {
   builderRows = recs || [];
@@ -509,7 +513,7 @@ function firmRow(f) {
     : n == null ? bigHtml('—', `${noun} · ${phone ? '90 d' : '90 days'}`, redNum)
     : `<span class="lv-big${redNum ? ' red' : ''}" data-leads="${n}"${tr ? ` title="${esc(`${n} ${noun} in the last 90 days, ${tr.label}`)}"` : ''}>${n}<small>${noun} · ${phone ? '90 d' : '90 days'}${tr ? ` <span class="lv-tr ${tr.dir}" data-trend="${tr.dir}">${esc(tr.text)}</span>` : ''}</small></span>`);
   // v1.33.0: with every brand shown the grey line starts with the brand ("WPP · Dental · …")
-  return lvRow({ name: fname(f), sub: brandSub(firmBrand(f), brandFilter, sub), subPhone: brandSub(firmBrand(f), brandFilter, subPhone), label: `Open ${fname(f)}`,
+  return lvRow({ ...firmNew(f), name: fname(f), sub: brandSub(firmBrand(f), brandFilter, sub), subPhone: brandSub(firmBrand(f), brandFilter, subPhone), label: `Open ${fname(f)}`,
     attrs: `data-slug="${esc(f.slug)}" data-row${dpSlug === f.slug ? ' data-sel' : ''} title="${esc(k?.generatedAt ? `Last sync ${fmtTime(k.generatedAt)}` : 'No data yet')}"`,
     cells: [status.replace('<span class="lv-st', '<span data-state="status" class="lv-st'), leads(false)], phoneRight: leads(true) });
 }
@@ -552,7 +556,7 @@ function paintList() {
   const host = $('firmList'); if (!host) return;
   const fn = FILTERS.find(x => x[0] === listFilter)[2];
   const pool = inBrand(listFilter === 'test' ? firms : visibleFirms());   // v1.33.0: the brand filter first
-  const shown = sortFirms(pool.filter(f => fn(f) && matchesQuery(f)), fname);   // v1.26.0: A–Z by the shown name (every filter + search)
+  const shown = newFirst(sortFirms(pool.filter(f => fn(f) && matchesQuery(f)), fname), firmNew);   // v1.26.0: A–Z by the shown name (every filter + search); v1.43.0: new clients first
   const hiddenTests = !showTests && listFilter !== 'test' ? inBrand(firms).filter(f => isTest(f) && fn(f) && matchesQuery(f)).length : 0;
   host.innerHTML = !firms.length ? `<div class="lv-list lv-empty"><p>No firms yet.</p><button class="lv-plus" type="button" data-new-firm>+ Add the first firm</button></div>`
     : shown.length ? `<div class="lv-list" id="firmRows" style="--lv-cols:${LIST_COLS}">${shown.map(firmRow).join('')}</div>`
@@ -1215,7 +1219,7 @@ function nipHtml(f) {
     if (!s.list.length) return `${listBtn}<p class="meta">The encrypted details have no contacts from the last 30 days (they may have been added to a pipeline since the last sync).</p>${teamLine}`;
     return `${listBtn}<ul class="nip">${s.list.map(c => nipRow(c, f)).join('')}</ul>${teamLine}`;
   }
-  if (s?.state === 'loading') return `${listBtn}${loadingHtml('the names')}`;
+  if (s?.state === 'loading') return `${listBtn}${loadingHtml('the names', { page: false })}`;   // v1.43.0: a small loader in the card
   const err = s?.state === 'error' ? `<div class="ferr">${esc(s.err)}</div>` : '';
   const noStore = passStore === false;
   return `${listBtn}<p class="meta">Unlock to see who (newest first):</p>

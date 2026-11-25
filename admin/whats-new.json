@@ -1,5 +1,14 @@
 {
   "_about": "Plain-language What's new cards for the ADMIN page only (admin/news.mjs). The client dashboards read CHANGELOG.md's [client] lines and never this file. One entry per version: summary (one line) and items (type new | improved | fixed, tag client | internal, text). A version missing here falls back to wording made from CHANGELOG.md.",
+  "1.43.0": {
+    "title": "New clients stand out",
+    "summary": "Clients added this week have a NEW tag and sit at the top; Reports settings is in your name menu.",
+    "items": [
+      { "type": "new", "tag": "internal", "text": "Clients added in the last 7 days have a gold NEW tag and \"Added today\" (or the date), and sit at the top of the list, newest first." },
+      { "type": "new", "tag": "internal", "text": "Your name menu has Reports settings, with how many of the 5 report connections are set up." },
+      { "type": "improved", "tag": "internal", "text": "While the list loads, the LFMP mark sits in the middle of the screen." }
+    ]
+  },
   "1.42.0": {
     "title": "Reports on their own",
     "summary": "A client can have Reports without a KPI dashboard; every report has an Overview.",

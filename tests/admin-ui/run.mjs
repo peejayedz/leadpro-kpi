@@ -205,7 +205,7 @@ try {
     check(/PJ Drozo/.test(meText) && /Last signed in/.test(meText) && await p0.isVisible(`${me0} [data-lv="signout"]`) && !/Lock|Forget token/.test(meText), 'Me: name, last sign-in and Sign out (no Lock, no Forget token)');
     // the name menu (v1.29.0): Theme · Show test clients · Refresh now · What's new + version · Team sign-ins · Install the app · Sign out
     const items = await p0.$$eval(`${me0} .lv-mi`, els => els.map(e => (e.firstElementChild || e).textContent.trim()));
-    check(items.join('|') === "Theme|Done moments|Show test clients|Refresh now|What's new|Team sign-ins|Install the app|Sign out" && /Theme Light Dark Auto/.test(meText) && new RegExp(`What's new v${LATEST.replace(/\./g, '\\.')}`).test(meText) && !(await p0.$(`${me0} .lv-gl`)), `name menu: the same items as every tool, no tool extras (${items.join(' · ')})`);
+    check(items.join('|') === "Theme|Done moments|Reports settings|Show test clients|Refresh now|What's new|Team sign-ins|Install the app|Sign out" && /Theme Light Dark Auto/.test(meText) && new RegExp(`What's new v${LATEST.replace(/\./g, '\\.')}`).test(meText) && !(await p0.$(`${me0} .lv-gl`)), `name menu: the same items as every tool, no tool extras (${items.join(' · ')})`);
     await p0.keyboard.press('Escape');
     check(await p0.isHidden('[data-lv-top] [data-lv-pop]'), 'Esc closes Me');
     check(await storageClean(p0), 'nothing secret in localStorage / sessionStorage');
