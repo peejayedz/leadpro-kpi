@@ -2,6 +2,9 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.43.0 NEW marker + Reports settings in the name menu (queue item 14, shared shell 2.12.0): LIVE 25 Nov 2026 (`6a5f4c3c`)
+- Scorecards rows: `firmNew` (shell `newInfo` by kpiSlug / locationId) → NEW pill + pinned first (only clients added after 2026-11-25T10:22Z, for 7 days). `loadingHtml('the names', { page: false })` keeps the card loader in place.
+
 ## v1.42.0 Reports on their own (queue item 13, with Builder v1.37.0): LIVE 25 Nov 2026 (`dfe0761b`)
 - `tabsFor`: Overview whenever any source is linked. `app/reports.html` `overviewNoCalls`: without CallRail no call tiles, only the linked sections.
 - Reports-only clients: `reports-config.json` → `reportsOnly { name, locationId, secretKey, agency }`, never in firms/index.json. `reports-pull.mjs` `reportsOnlyFirms` adds them to the nightly with their own PASSPHRASE_<secretKey>; `reports-menu.mjs` plan reads location + secret name from the config.
