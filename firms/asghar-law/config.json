@@ -1,0 +1,99 @@
+{
+  "locationName": "Asghar Law",
+  "practiceArea": "Immigration",
+  "locationId": "jNPK4GVaUP3jxJgQvfZd",
+  "title": "",
+  "showUnlockButton": false,
+  "brand": "LeadPro",
+  "brandFooter": "LeadPro",
+  "timezone": "America/New_York",
+  "ghlAppBase": "https://app.lawfirmmarketingpros.com",
+  "lookbackDays": 400,
+  "minSample": 5,
+  "_pipelinesNote": "Pipeline names to include. Empty = every pipeline. firms/<slug>/discovery.json lists every pipeline and stage name.",
+  "pipelines": [
+    "Lead Stages"
+  ],
+  "_stagesNote": "Stage names for each funnel step; must match GHL exactly (case does not matter). A later step counts as every earlier step, so list only the stages that first prove each step. Filled in by the admin page's mapping panel.",
+  "stages": {
+    "contacted": [
+      "a0ccee01-3ec7-42d8-9b56-058885580c27"
+    ],
+    "qualified": [
+      "841bfa2d-85a4-4185-bd88-2b4aa484f099"
+    ],
+    "consultBooked": [
+      "4fc997a4-8460-42ff-a2de-f18338f1ede1"
+    ],
+    "consultHeld": [
+      "8524ce6b-5c99-4460-8ffd-c535dd2dd9bf",
+      "9d339f20-edbc-4ace-ad40-5e163fc8bfd3",
+      "70c3ef48-2e90-4fb3-b3ce-101a0d268e2b",
+      "9efb36f4-3539-4c4c-8422-4eb313ff1484"
+    ],
+    "agreementSent": [
+      "8524ce6b-5c99-4460-8ffd-c535dd2dd9bf"
+    ],
+    "signed": [
+      "0cfb44cc-571b-45c7-a4fa-503cad343c1c"
+    ],
+    "noShow": [
+      "20352b36-bcfa-465f-b512-221efacc2190"
+    ]
+  },
+  "tags": {
+    "contacted": [
+      "contacted"
+    ],
+    "consultBooked": [],
+    "consultHeld": [
+      "showed"
+    ],
+    "noShow": [
+      "no show",
+      "no-show",
+      "noshow"
+    ],
+    "agreementSent": [
+      "agreement sent",
+      "proposal sent",
+      "contract sent"
+    ],
+    "signed": []
+  },
+  "_turnedAwayNote": "Why leads were turned away: a tag starting with tagPrefix (e.g. 'turned away: wrong practice area'), else the GHL lost reason, else the stage name if it's listed in stages.",
+  "turnedAway": {
+    "tagPrefix": "turned away:",
+    "stages": [
+      "9d339f20-edbc-4ace-ad40-5e163fc8bfd3",
+      "70c3ef48-2e90-4fb3-b3ce-101a0d268e2b",
+      "364f0a35-bdc4-44ed-b481-06504eab24b1"
+    ],
+    "reasonLabels": {
+      "9d339f20-edbc-4ace-ad40-5e163fc8bfd3": "Not a fit after consultation",
+      "70c3ef48-2e90-4fb3-b3ce-101a0d268e2b": "Referred to another firm",
+      "364f0a35-bdc4-44ed-b481-06504eab24b1": "Referred out, accepted"
+    }
+  },
+  "_bookingNote": "A consult = an appointment on a calendar whose name contains one of these words. Empty list = every calendar counts.",
+  "booking": {
+    "calendarKeywords": []
+  },
+  "_adSpendNote": "Monthly ad spend in dollars, by YYYY-MM. Spread evenly over the month's days for any date range. Used for cost per signed case.",
+  "adSpend": {
+    "monthly": {},
+    "defaultMonthly": null
+  },
+  "fields": {
+    "speedToLead": "Speed to Lead (min)",
+    "firstContacted": "First Contacted Date",
+    "contactMethod": "Contact Method"
+  },
+  "stageMatch": "id",
+  "pipelineIds": [
+    {
+      "id": "PJQ0ME1XsKaJWfK99YKv",
+      "name": "Lead Stages"
+    }
+  ]
+}

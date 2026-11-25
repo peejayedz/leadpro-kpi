@@ -61,5 +61,16 @@
     "tokenSource": "app",
     "createdBy": "builder",
     "practiceType": "medical"
+  },
+  {
+    "slug": "asghar-law",
+    "secretKey": "ASGHAR_LAW",
+    "name": "Asghar Law",
+    "practiceArea": "Immigration",
+    "locationId": "jNPK4GVaUP3jxJgQvfZd",
+    "createdAt": "2026-11-25T18:22:25.063Z",
+    "tokenSource": "app",
+    "createdBy": "builder",
+    "status": "draft"
   }
 ]
