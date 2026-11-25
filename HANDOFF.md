@@ -2,6 +2,10 @@
 
 The README is the full reference and CHANGELOG.md the history. This file covers where the work stands and what to know before changing things.
 
+## v1.44.0 Change a firm's passphrase from the Builder (queue item 15): LIVE 25 Nov 2026 (`a2a9be5a`)
+- `.github/workflows/pass-rotate.yml` (concurrency group `sync`) + `scripts/pass-rotate.mjs` (plan / encrypt / wait / menu): re-locks `data/details.enc.json` + `reports.json` from PASSPHRASE_<KEY> to PASSPHRASE_NEW_<KEY> with a check; waits on `status/pass-rotate-<slug>.json` (finished → done, abort / no answer before the swap → back).
+- `menu-link.yml` kind `pass` → `ghl-menu.mjs updateLinkUrls` (guarded PUT of the firm's own KPI Dashboard / Reports link, same id, only the URL). Tests: `tests/pass/run.mjs`.
+
 ## v1.43.0 NEW marker + Reports settings in the name menu (queue item 14, shared shell 2.12.0): LIVE 25 Nov 2026 (`6a5f4c3c`)
 - Scorecards rows: `firmNew` (shell `newInfo` by kpiSlug / locationId) → NEW pill + pinned first (only clients added after 2026-11-25T10:22Z, for 7 days). `loadingHtml('the names', { page: false })` keeps the card loader in place.
 
