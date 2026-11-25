@@ -1258,12 +1258,15 @@ window.shell = S.mountShell({ tool, me: { name: 'PJ', first: 'PJ', email: 'pj@ex
 
 // ---------------------------------------------------------------- v2.12.0 (queue item 14)
 test('v2.12.0 NEW: under 7 days only; "Added today / yesterday / Nov 25"; new clients first (newest first), then the list\'s A–Z; the same lookup as brandFor', () => {
-  const now = new Date(2026, 10, 25, 15, 0).getTime(), ago = d => new Date(now - d * 864e5).toISOString();
+  const now = Date.parse(S.NEW_SINCE) + 10 * 864e5, ago = d => new Date(now - d * 864e5).toISOString();
+  // ANSWER 14.1: only clients added after the go-live time (NEW_SINCE) ever get the pill
+  assert.equal(S.isNewClient(new Date(Date.parse(S.NEW_SINCE) - 3600e3).toISOString(), Date.parse(S.NEW_SINCE) + 3600e3), false, 'added just before go-live: never');
+  assert.equal(S.isNewClient(new Date(Date.parse(S.NEW_SINCE) + 60e3).toISOString(), Date.parse(S.NEW_SINCE) + 3600e3), true, 'added just after go-live: new');
   assert.equal(S.isNewClient(ago(0.1), now), true); assert.equal(S.isNewClient(ago(6.9), now), true);
   assert.equal(S.isNewClient(ago(7), now), false, 'gone at day 7'); assert.equal(S.isNewClient('', now), false); assert.equal(S.isNewClient(ago(-1), now), false, 'never a future date');
-  assert.equal(S.addedText(new Date(2026, 10, 25, 9, 0).toISOString(), now), 'Added today');
-  assert.equal(S.addedText(new Date(2026, 10, 24, 23, 0).toISOString(), now), 'Added yesterday');
-  assert.equal(S.addedText(new Date(2026, 10, 20, 12, 0).toISOString(), now), 'Added Nov 20');
+  assert.equal(S.addedText(new Date(2026, 10, 25, 9, 0).toISOString(), new Date(2026, 10, 25, 15, 0).getTime()), 'Added today');
+  assert.equal(S.addedText(new Date(2026, 10, 24, 23, 0).toISOString(), new Date(2026, 10, 25, 15, 0).getTime()), 'Added yesterday');
+  assert.equal(S.addedText(new Date(2026, 10, 20, 12, 0).toISOString(), new Date(2026, 10, 25, 15, 0).getTime()), 'Added Nov 20');
   const rows = [{ id: 'a', kpiSlug: 'alpha', createdAt: ago(1) }, { id: 'z', reviewCode: 'zed', createdAt: ago(0.2) }, { id: 'o', locationId: 'L1', createdAt: ago(30) }];
   assert.equal(S.newInfo(rows, { kpiSlug: 'alpha' }, now).isNew, true); assert.equal(S.newInfo(rows, { reviewCode: 'zed' }, now).added, 'Added today');
   assert.equal(S.newInfo(rows, { locationId: 'L1' }, now).isNew, false); assert.equal(S.newInfo(rows, { kpiSlug: 'nope' }, now).isNew, false, 'no Builder record = not new');

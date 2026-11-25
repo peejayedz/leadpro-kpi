@@ -109,6 +109,9 @@ export function openMoment(o, { store = store0(), me = null } = {}) {
   if (isQuiet(s) || !HAS_DOM || !window.DM) return null;
   const DM = window.DM, L = linesFor(o.tool, o.client, o.steps);
   if (o.done) L.done = fill(o.done, String(o.client || '').trim() || 'the client', '');   // v2.12.0: a job's own finish line ("Reports set up · {c}")
+  // v2.12.0 (FIX 14.1): the rows the animation lists = only what this job touches (a CallRail-only report never shows
+  // Rankings / Search / Traffic as online); the last "Tests" row stays. Reports' terminal lines follow the same list.
+  if (Array.isArray(o.mods) && o.mods.length) { L.mods = o.mods.map(String); if (o.tool === 'reports') L.term = [L.term[0], L.term[1], ...L.mods.map(m => `✓ ${m.toLowerCase()}`), ...L.term.slice(5)]; }
   DM.configure({ ...engineCfg(s), tool: TOOL_OF[o.tool] || 'builder', lines: L });
   DM.configure({ hooks: hooks() });
   const style = s.style === 'random' ? STYLE_IDS[Math.floor(Math.random() * STYLE_IDS.length)] : s.style;

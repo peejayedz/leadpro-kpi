@@ -446,8 +446,11 @@ export function displayName(name) {
 // within whatever the filter shows. Same answer in the four lists (Clients, Scorecards, Reviews, Reports): newInfo() looks
 // the client up with the brandFor() keys.
 export const NEW_DAYS = 7;
+// ANSWER 14.1 (PJ): only clients added AFTER this release went live get the pill (both New client and Add existing client);
+// anything added before the go-live time never does. NEW_SINCE = that go-live time (set when shell 2.12.0 was pushed).
+export const NEW_SINCE = '2026-11-25T10:22:00.000Z';
 const DAY = 864e5;
-export function isNewClient(createdAt, now = Date.now()) { const t = Date.parse(createdAt || ''); return Number.isFinite(t) && t <= now + 5 * 60e3 && now - t < NEW_DAYS * DAY; }
+export function isNewClient(createdAt, now = Date.now(), since = NEW_SINCE) { const t = Date.parse(createdAt || ''); return Number.isFinite(t) && t >= Date.parse(since) && t <= now + 5 * 60e3 && now - t < NEW_DAYS * DAY; }
 export function addedText(createdAt, now = Date.now()) {
   const t = new Date(createdAt || ''); if (Number.isNaN(t.getTime())) return '';
   const day = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(), n = Math.round((day(new Date(now)) - day(t)) / DAY);
@@ -1058,7 +1061,7 @@ export function startJob(o = {}) {
   // v2.10.0 Done moments: a job started with moment: { tool, steps?, open?, workSub?, sub? } (Builder new client / Add existing
   // client, KPI admin New firm, Review admin package build) runs in the Done moments popup instead of the working bar, unless
   // the person's Animation is Classic (then exactly as before). Only on this browser: teammates never see or hear it.
-  const M = o.moment && hasDoc() ? DN.openMoment({ tool: o.moment.tool || tool, client: o.client, steps: o.moment.steps, workSub: o.moment.workSub || (o.title ? `${o.title.replace(/…$/, '')}. You can hide this and keep working.` : undefined), sub: o.moment.sub, onOpen: o.moment.open, done: o.moment.done }, { me: o.moment.me || null }) : null;
+  const M = o.moment && hasDoc() ? DN.openMoment({ tool: o.moment.tool || tool, client: o.client, steps: o.moment.steps, workSub: o.moment.workSub || (o.title ? `${o.title.replace(/…$/, '')}. You can hide this and keep working.` : undefined), sub: o.moment.sub, onOpen: o.moment.open, done: o.moment.done, mods: o.moment.mods }, { me: o.moment.me || null }) : null;
   const bar = o.host && !M ? mountWorkBar(o.host, { title: o.title || `${o.what || 'Working'}…`, hint: o.hint, kind: entry.kind, client: entry.client, typicalMs: o.typicalMs, t0 }) : null;
   let mp = 0, mLine = String(o.title || '').replace(/…$/, ''), mSteps = '';
   const mTick = () => M?.progress(mp, `${mLine}${mSteps}`);
