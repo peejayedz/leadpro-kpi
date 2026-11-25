@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-25T18:23:43.830Z",
+  "updatedAt": "2026-11-25T19:59:06.018Z",
   "open": {
     "system:no-link": {
       "kind": "no-link",
@@ -10,61 +10,13 @@
       "firstSeen": "2026-11-25T16:07:05Z",
       "sentAt": "2026-11-25T18:23:43.830Z"
     },
-    "mahdavi:stale": {
-      "kind": "stale",
-      "slug": "mahdavi",
-      "name": "The Mahdavi Law Firm",
-      "title": "No successful sync in 3 hours",
-      "firstSeen": "2026-11-25T16:27:16.436Z",
-      "sentAt": "2026-11-25T18:23:43.830Z"
-    },
-    "lfmp:stale": {
-      "kind": "stale",
-      "slug": "lfmp",
-      "name": "Law Firm Marketing Pros (LFMP)",
-      "title": "No successful sync in 3 hours",
-      "firstSeen": "2026-11-25T16:27:16.436Z",
-      "sentAt": "2026-11-25T18:23:43.830Z"
-    },
-    "hedayati-law-group-p-c:stale": {
-      "kind": "stale",
-      "slug": "hedayati-law-group-p-c",
-      "name": "Hedayati Law Group, P.C",
-      "title": "No successful sync in 3 hours",
-      "firstSeen": "2026-11-25T16:27:16.436Z",
-      "sentAt": "2026-11-25T18:23:43.830Z"
-    },
-    "emery-law-office:stale": {
-      "kind": "stale",
-      "slug": "emery-law-office",
-      "name": "Emery Law Office",
-      "title": "No successful sync in 3 hours",
-      "firstSeen": "2026-11-25T16:27:16.436Z",
-      "sentAt": "2026-11-25T18:23:43.830Z"
-    },
-    "zz-test-2:stale": {
-      "kind": "stale",
-      "slug": "zz-test-2",
-      "name": "ZZ TEST 2",
-      "title": "No successful sync in 3 hours",
-      "firstSeen": "2026-11-25T16:27:16.436Z",
-      "sentAt": "2026-11-25T18:23:43.830Z"
-    },
-    "dumas-and-sanclemente:stale": {
-      "kind": "stale",
-      "slug": "dumas-and-sanclemente",
-      "name": "Dumas & Sanclemente",
-      "title": "No successful sync in 3 hours",
-      "firstSeen": "2026-11-25T16:27:16.436Z",
-      "sentAt": "2026-11-25T18:23:43.830Z"
-    },
-    "boca-dental:stale": {
-      "kind": "stale",
-      "slug": "boca-dental",
-      "name": "Boca Dental",
-      "title": "No successful sync in 3 hours",
-      "firstSeen": "2026-11-25T16:27:16.436Z",
-      "sentAt": "2026-11-25T18:23:43.830Z"
+    "system:no-sync": {
+      "kind": "no-sync",
+      "slug": null,
+      "name": "All firms",
+      "title": "No firm has synced in 96 min",
+      "firstSeen": "2026-11-25T19:08:23.034Z",
+      "sentAt": "2026-11-25T19:59:06.018Z"
     }
   }
 }
