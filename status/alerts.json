@@ -1,14 +1,5 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-25T23:21:39.013Z",
-  "open": {
-    "system:keeper-stale": {
-      "kind": "keeper-stale",
-      "slug": null,
-      "name": "All firms",
-      "title": "Token keeper hasn't run in 6 hours",
-      "firstSeen": "2026-11-25T20:25:06.011Z",
-      "sentAt": "2026-11-25T23:21:39.013Z"
-    }
-  }
+  "updatedAt": "2026-11-25T23:43:36.761Z",
+  "open": {}
 }
