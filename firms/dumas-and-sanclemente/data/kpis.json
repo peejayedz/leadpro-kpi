@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-26T12:07:44.032Z",
+  "generatedAt": "2026-11-26T12:37:38.336Z",
   "location": "Dumas & Sanclemente",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795669200000,
-      "to": 1795694864032,
+      "to": 1795696658336,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -387,7 +387,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795694864032,
+      "to": 1795696658336,
       "current": {
         "totalLeads": 8,
         "contacted": 0,
@@ -805,8 +805,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795090064032,
-      "to": 1795694864032,
+      "from": 1795091858336,
+      "to": 1795696658336,
       "current": {
         "totalLeads": 14,
         "contacted": 0,
@@ -1012,10 +1012,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793102864032,
-      "to": 1795694864032,
+      "from": 1793104658336,
+      "to": 1795696658336,
       "current": {
-        "totalLeads": 40,
+        "totalLeads": 38,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1046,7 +1046,7 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            19,
+            18,
             0
           ],
           [
@@ -1056,7 +1056,7 @@
           ],
           [
             "Google Business Profile - Fort Lauderdale",
-            9,
+            8,
             0
           ],
           [
@@ -1073,17 +1073,17 @@
         "byChannel": [
           [
             "Third Party",
-            40,
+            38,
             0
           ]
         ],
-        "attributedLeads": 40,
+        "attributedLeads": 38,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            40,
+            38,
             "newLeads",
             null
           ],
@@ -1126,7 +1126,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 35,
+        "totalLeads": 37,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1157,12 +1157,12 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            22,
+            23,
             0
           ],
           [
             "Google Business Profile - Fort Lauderdale",
-            9,
+            10,
             0
           ],
           [
@@ -1184,17 +1184,17 @@
         "byChannel": [
           [
             "Third Party",
-            35,
+            37,
             0
           ]
         ],
-        "attributedLeads": 35,
+        "attributedLeads": 37,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            35,
+            37,
             "newLeads",
             null
           ],
@@ -1239,8 +1239,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787918864032,
-      "to": 1795694864032,
+      "from": 1787920658336,
+      "to": 1795696658336,
       "current": {
         "totalLeads": 75,
         "contacted": 0,
@@ -1445,7 +1445,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795694864032,
+      "to": 1795696658336,
       "current": {
         "totalLeads": 33,
         "contacted": 0,
@@ -1884,7 +1884,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795694864032,
+      "to": 1795696658336,
       "current": {
         "totalLeads": 73,
         "contacted": 0,
@@ -2271,7 +2271,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-26T12:07:44.032Z",
+    "checkedAt": "2026-11-26T12:37:38.336Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
