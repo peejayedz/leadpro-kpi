@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-26T20:07:38.941Z",
+  "generatedAt": "2026-11-26T20:37:39.155Z",
   "location": "Dumas & Sanclemente",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,15 +22,15 @@
     "today": {
       "label": "Today",
       "from": 1795669200000,
-      "to": 1795723658941,
+      "to": 1795725459155,
       "current": {
-        "totalLeads": 0,
+        "totalLeads": 1,
         "contacted": 0,
-        "contactRatePct": null,
+        "contactRatePct": 0,
         "speedToLeadAvgMin": null,
         "speedMeasured": 0,
         "within5": 0,
-        "within5Pct": null,
+        "within5Pct": 0,
         "missedCalls": 0,
         "missedNotReturned": 0,
         "notInPipeline": 0,
@@ -49,18 +49,30 @@
         "sentRatePct": null,
         "signed": 0,
         "signRatePct": null,
-        "leadToSignedPct": null,
+        "leadToSignedPct": 0,
         "adSpend": null,
         "costPerSigned": null,
-        "bySource": [],
-        "byChannel": [],
-        "attributedLeads": 0,
+        "bySource": [
+          [
+            "Website Number Pool",
+            1,
+            0
+          ]
+        ],
+        "byChannel": [
+          [
+            "Third Party",
+            1,
+            0
+          ]
+        ],
+        "attributedLeads": 1,
         "stageMoved": 0,
-        "attributionPct": null,
+        "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            0,
+            1,
             "newLeads",
             null
           ],
@@ -409,9 +421,9 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795723658941,
+      "to": 1795725459155,
       "current": {
-        "totalLeads": 8,
+        "totalLeads": 9,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -447,7 +459,7 @@
           ],
           [
             "Website Number Pool",
-            2,
+            3,
             0
           ],
           [
@@ -464,17 +476,17 @@
         "byChannel": [
           [
             "Third Party",
-            8,
+            9,
             0
           ]
         ],
-        "attributedLeads": 8,
+        "attributedLeads": 9,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            8,
+            9,
             "newLeads",
             null
           ],
@@ -837,10 +849,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795118858941,
-      "to": 1795723658941,
+      "from": 1795120659155,
+      "to": 1795725459155,
       "current": {
-        "totalLeads": 10,
+        "totalLeads": 11,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -870,13 +882,13 @@
         "costPerSigned": null,
         "bySource": [
           [
-            "Google Business Profile - Lutz",
+            "Website Number Pool",
             4,
             0
           ],
           [
-            "Website Number Pool",
-            3,
+            "Google Business Profile - Lutz",
+            4,
             0
           ],
           [
@@ -893,17 +905,17 @@
         "byChannel": [
           [
             "Third Party",
-            10,
+            11,
             0
           ]
         ],
-        "attributedLeads": 10,
+        "attributedLeads": 11,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            10,
+            11,
             "newLeads",
             null
           ],
@@ -1054,10 +1066,10 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793131658941,
-      "to": 1795723658941,
+      "from": 1793133459155,
+      "to": 1795725459155,
       "current": {
-        "totalLeads": 37,
+        "totalLeads": 38,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1093,7 +1105,7 @@
           ],
           [
             "Website Number Pool",
-            8,
+            9,
             0
           ],
           [
@@ -1115,17 +1127,17 @@
         "byChannel": [
           [
             "Third Party",
-            37,
+            38,
             0
           ]
         ],
-        "attributedLeads": 37,
+        "attributedLeads": 38,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            37,
+            38,
             "newLeads",
             null
           ],
@@ -1281,10 +1293,10 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787947658941,
-      "to": 1795723658941,
+      "from": 1787949459155,
+      "to": 1795725459155,
       "current": {
-        "totalLeads": 75,
+        "totalLeads": 76,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1325,7 +1337,7 @@
           ],
           [
             "Website Number Pool",
-            11,
+            12,
             0
           ],
           [
@@ -1352,17 +1364,17 @@
         "byChannel": [
           [
             "Third Party",
-            75,
+            76,
             0
           ]
         ],
-        "attributedLeads": 75,
+        "attributedLeads": 76,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            75,
+            76,
             "newLeads",
             null
           ],
@@ -1487,9 +1499,9 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795723658941,
+      "to": 1795725459155,
       "current": {
-        "totalLeads": 33,
+        "totalLeads": 34,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1525,7 +1537,7 @@
           ],
           [
             "Website Number Pool",
-            8,
+            9,
             0
           ],
           [
@@ -1547,17 +1559,17 @@
         "byChannel": [
           [
             "Third Party",
-            33,
+            34,
             0
           ]
         ],
-        "attributedLeads": 33,
+        "attributedLeads": 34,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            33,
+            34,
             "newLeads",
             null
           ],
@@ -1600,7 +1612,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 31,
+        "totalLeads": 32,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1631,7 +1643,7 @@
         "bySource": [
           [
             "Google Business Profile - Lutz",
-            20,
+            21,
             0
           ],
           [
@@ -1658,17 +1670,17 @@
         "byChannel": [
           [
             "Third Party",
-            31,
+            32,
             0
           ]
         ],
-        "attributedLeads": 31,
+        "attributedLeads": 32,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            31,
+            32,
             "newLeads",
             null
           ],
@@ -1926,9 +1938,9 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795723658941,
+      "to": 1795725459155,
       "current": {
-        "totalLeads": 73,
+        "totalLeads": 74,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -1969,7 +1981,7 @@
           ],
           [
             "Website Number Pool",
-            10,
+            11,
             0
           ],
           [
@@ -1996,17 +2008,17 @@
         "byChannel": [
           [
             "Third Party",
-            73,
+            74,
             0
           ]
         ],
-        "attributedLeads": 73,
+        "attributedLeads": 74,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            73,
+            74,
             "newLeads",
             null
           ],
@@ -2313,7 +2325,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-26T20:07:38.941Z",
+    "checkedAt": "2026-11-26T20:37:39.155Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
