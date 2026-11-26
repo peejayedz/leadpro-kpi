@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-26T21:37:22.939Z",
+  "generatedAt": "2026-11-26T22:07:23.204Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795672800000,
-      "to": 1795729042939,
+      "to": 1795730843204,
       "current": {
         "totalLeads": 3,
         "contacted": 0,
@@ -398,7 +398,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795413600000,
-      "to": 1795729042939,
+      "to": 1795730843204,
       "current": {
         "totalLeads": 46,
         "contacted": 0,
@@ -499,7 +499,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 52,
+        "totalLeads": 53,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -535,7 +535,7 @@
           ],
           [
             "Website Number Pool - Houston",
-            18,
+            19,
             0
           ],
           [
@@ -552,17 +552,17 @@
         "byChannel": [
           [
             "Third Party",
-            52,
+            53,
             0
           ]
         ],
-        "attributedLeads": 52,
+        "attributedLeads": 53,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            52,
+            53,
             "newLeads",
             null
           ],
@@ -833,10 +833,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795124242939,
-      "to": 1795729042939,
+      "from": 1795126043204,
+      "to": 1795730843204,
       "current": {
-        "totalLeads": 60,
+        "totalLeads": 59,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -872,7 +872,7 @@
           ],
           [
             "Website Number Pool - Houston",
-            11,
+            10,
             0
           ],
           [
@@ -904,7 +904,7 @@
         "byChannel": [
           [
             "Third Party",
-            59,
+            58,
             0
           ],
           [
@@ -913,13 +913,13 @@
             0
           ]
         ],
-        "attributedLeads": 60,
+        "attributedLeads": 59,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            60,
+            59,
             "newLeads",
             null
           ],
@@ -950,7 +950,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 70,
+        "totalLeads": 71,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -986,7 +986,7 @@
           ],
           [
             "Website Number Pool - Houston",
-            22,
+            23,
             0
           ],
           [
@@ -1008,17 +1008,17 @@
         "byChannel": [
           [
             "Third Party",
-            70,
+            71,
             0
           ]
         ],
-        "attributedLeads": 70,
+        "attributedLeads": 71,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            70,
+            71,
             "newLeads",
             null
           ],
@@ -1051,8 +1051,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793137042939,
-      "to": 1795729042939,
+      "from": 1793138843204,
+      "to": 1795730843204,
       "current": {
         "totalLeads": 181,
         "contacted": 0,
@@ -1269,8 +1269,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787953042939,
-      "to": 1795729042939,
+      "from": 1787954843204,
+      "to": 1795730843204,
       "current": {
         "totalLeads": 186,
         "contacted": 1,
@@ -1498,7 +1498,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1795729042939,
+      "to": 1795730843204,
       "current": {
         "totalLeads": 181,
         "contacted": 0,
@@ -1884,7 +1884,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1795729042939,
+      "to": 1795730843204,
       "current": {
         "totalLeads": 182,
         "contacted": 0,
@@ -2304,7 +2304,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-26T21:37:22.939Z",
+    "checkedAt": "2026-11-26T22:07:23.204Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
