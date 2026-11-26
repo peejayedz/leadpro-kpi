@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-26T23:07:26.782Z",
+  "generatedAt": "2026-11-26T23:37:25.193Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795672800000,
-      "to": 1795734446782,
+      "to": 1795736245193,
       "current": {
         "totalLeads": 3,
         "contacted": 0,
@@ -398,7 +398,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795413600000,
-      "to": 1795734446782,
+      "to": 1795736245193,
       "current": {
         "totalLeads": 46,
         "contacted": 0,
@@ -499,7 +499,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 53,
+        "totalLeads": 54,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -530,7 +530,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            32,
+            33,
             0
           ],
           [
@@ -552,17 +552,17 @@
         "byChannel": [
           [
             "Third Party",
-            53,
+            54,
             0
           ]
         ],
-        "attributedLeads": 53,
+        "attributedLeads": 54,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            53,
+            54,
             "newLeads",
             null
           ],
@@ -833,10 +833,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795129646782,
-      "to": 1795734446782,
+      "from": 1795131445193,
+      "to": 1795736245193,
       "current": {
-        "totalLeads": 59,
+        "totalLeads": 58,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -867,7 +867,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            36,
+            35,
             0
           ],
           [
@@ -904,7 +904,7 @@
         "byChannel": [
           [
             "Third Party",
-            58,
+            57,
             0
           ],
           [
@@ -913,13 +913,13 @@
             0
           ]
         ],
-        "attributedLeads": 59,
+        "attributedLeads": 58,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            59,
+            58,
             "newLeads",
             null
           ],
@@ -981,12 +981,12 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            41,
+            42,
             0
           ],
           [
             "Website Number Pool - Houston",
-            23,
+            22,
             0
           ],
           [
@@ -1051,8 +1051,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793142446782,
-      "to": 1795734446782,
+      "from": 1793144245193,
+      "to": 1795736245193,
       "current": {
         "totalLeads": 181,
         "contacted": 0,
@@ -1269,8 +1269,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787958446782,
-      "to": 1795734446782,
+      "from": 1787960245193,
+      "to": 1795736245193,
       "current": {
         "totalLeads": 186,
         "contacted": 1,
@@ -1498,7 +1498,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1795734446782,
+      "to": 1795736245193,
       "current": {
         "totalLeads": 181,
         "contacted": 0,
@@ -1884,7 +1884,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1795734446782,
+      "to": 1795736245193,
       "current": {
         "totalLeads": 182,
         "contacted": 0,
@@ -2304,7 +2304,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-26T23:07:26.782Z",
+    "checkedAt": "2026-11-26T23:37:25.193Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
