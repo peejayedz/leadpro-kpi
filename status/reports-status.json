@@ -1,21 +1,21 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-25T17:48:09.768Z",
+  "updatedAt": "2026-11-26T17:31:08.375Z",
   "firms": {
     "mahdavi": {
       "ok": true,
-      "at": "2026-11-25T17:48:09.768Z",
+      "at": "2026-11-26T17:31:08.375Z",
       "request": "20261124-194714-9w45",
       "keywords": null,
-      "lastOkAt": "2026-11-25T17:48:09.768Z",
+      "lastOkAt": "2026-11-26T17:31:08.375Z",
       "sources": {
         "callrail": {
           "ok": true,
-          "at": "2026-11-25T17:48:09.768Z",
-          "lastOkAt": "2026-11-25T17:48:09.768Z"
+          "at": "2026-11-26T17:31:08.375Z",
+          "lastOkAt": "2026-11-26T17:31:08.375Z"
         }
       },
-      "runUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45668434601"
+      "runUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45868313977"
     }
   }
 }
