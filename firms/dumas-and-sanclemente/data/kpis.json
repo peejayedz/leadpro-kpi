@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-26T12:37:38.336Z",
+  "generatedAt": "2026-11-26T13:07:42.235Z",
   "location": "Dumas & Sanclemente",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795669200000,
-      "to": 1795696658336,
+      "to": 1795698462235,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -387,7 +387,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795696658336,
+      "to": 1795698462235,
       "current": {
         "totalLeads": 8,
         "contacted": 0,
@@ -495,7 +495,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 6,
+        "totalLeads": 7,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -533,22 +533,27 @@
             "Website Number Pool",
             3,
             0
+          ],
+          [
+            "Google Business Profile - Fort Lauderdale",
+            1,
+            0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            6,
+            7,
             0
           ]
         ],
-        "attributedLeads": 6,
+        "attributedLeads": 7,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            6,
+            7,
             "newLeads",
             null
           ],
@@ -805,10 +810,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795091858336,
-      "to": 1795696658336,
+      "from": 1795093662235,
+      "to": 1795698462235,
       "current": {
-        "totalLeads": 14,
+        "totalLeads": 13,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -848,12 +853,12 @@
             0
           ],
           [
-            "Google Business Profile - Fort Lauderdale",
-            3,
+            "PMAX- Google Ads Extension Number",
+            2,
             0
           ],
           [
-            "PMAX- Google Ads Extension Number",
+            "Google Business Profile - Fort Lauderdale",
             2,
             0
           ]
@@ -861,17 +866,17 @@
         "byChannel": [
           [
             "Third Party",
-            14,
+            13,
             0
           ]
         ],
-        "attributedLeads": 14,
+        "attributedLeads": 13,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            14,
+            13,
             "newLeads",
             null
           ],
@@ -914,7 +919,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 6,
+        "totalLeads": 7,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -952,22 +957,27 @@
             "Website Number Pool",
             3,
             0
+          ],
+          [
+            "Google Business Profile - Fort Lauderdale",
+            1,
+            0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            6,
+            7,
             0
           ]
         ],
-        "attributedLeads": 6,
+        "attributedLeads": 7,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            6,
+            7,
             "newLeads",
             null
           ],
@@ -1012,8 +1022,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793104658336,
-      "to": 1795696658336,
+      "from": 1793106462235,
+      "to": 1795698462235,
       "current": {
         "totalLeads": 38,
         "contacted": 0,
@@ -1239,8 +1249,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787920658336,
-      "to": 1795696658336,
+      "from": 1787922462235,
+      "to": 1795698462235,
       "current": {
         "totalLeads": 75,
         "contacted": 0,
@@ -1445,7 +1455,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795696658336,
+      "to": 1795698462235,
       "current": {
         "totalLeads": 33,
         "contacted": 0,
@@ -1884,7 +1894,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795696658336,
+      "to": 1795698462235,
       "current": {
         "totalLeads": 73,
         "contacted": 0,
@@ -2271,7 +2281,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-26T12:37:38.336Z",
+    "checkedAt": "2026-11-26T13:07:42.235Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
