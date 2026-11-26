@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-26T03:37:24.403Z",
+  "generatedAt": "2026-11-26T04:07:24.095Z",
   "location": "Law Firm Marketing Pros",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795582800000,
-      "to": 1795664244403,
+      "to": 1795666044095,
       "current": {
         "totalLeads": 3,
         "contacted": 0,
@@ -404,7 +404,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795664244403,
+      "to": 1795666044095,
       "current": {
         "totalLeads": 6,
         "contacted": 0,
@@ -1077,8 +1077,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795059444403,
-      "to": 1795664244403,
+      "from": 1795061244095,
+      "to": 1795666044095,
       "current": {
         "totalLeads": 21,
         "contacted": 0,
@@ -1429,8 +1429,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793072244403,
-      "to": 1795664244403,
+      "from": 1793074044095,
+      "to": 1795666044095,
       "current": {
         "totalLeads": 109,
         "contacted": 59,
@@ -1756,8 +1756,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787888244403,
-      "to": 1795664244403,
+      "from": 1787890044095,
+      "to": 1795666044095,
       "current": {
         "totalLeads": 115,
         "contacted": 59,
@@ -2084,7 +2084,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795664244403,
+      "to": 1795666044095,
       "current": {
         "totalLeads": 109,
         "contacted": 59,
@@ -2603,7 +2603,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795664244403,
+      "to": 1795666044095,
       "current": {
         "totalLeads": 113,
         "contacted": 59,
@@ -3112,7 +3112,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-26T03:37:24.403Z",
+    "checkedAt": "2026-11-26T04:07:24.095Z",
     "counts": {
       "Call": 64,
       "SMS": 1,
