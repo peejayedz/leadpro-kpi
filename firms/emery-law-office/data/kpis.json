@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-26T02:07:24.414Z",
+  "generatedAt": "2026-11-26T02:37:24.915Z",
   "location": "Emery Law Office",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795582800000,
-      "to": 1795658844414,
+      "to": 1795660644915,
       "current": {
         "totalLeads": 3,
         "contacted": 0,
@@ -120,7 +120,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 4,
+        "totalLeads": 5,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -155,6 +155,11 @@
             0
           ],
           [
+            "Unknown",
+            1,
+            0
+          ],
+          [
             "Website Number Pool",
             1,
             0
@@ -163,17 +168,17 @@
         "byChannel": [
           [
             "Third Party",
-            4,
+            5,
             0
           ]
         ],
-        "attributedLeads": 4,
+        "attributedLeads": 5,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            4,
+            5,
             "newLeads",
             null
           ],
@@ -421,7 +426,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795658844414,
+      "to": 1795660644915,
       "current": {
         "totalLeads": 13,
         "contacted": 0,
@@ -790,8 +795,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795054044414,
-      "to": 1795658844414,
+      "from": 1795055844915,
+      "to": 1795660644915,
       "current": {
         "totalLeads": 16,
         "contacted": 0,
@@ -980,8 +985,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793066844414,
-      "to": 1795658844414,
+      "from": 1793068644915,
+      "to": 1795660644915,
       "current": {
         "totalLeads": 16,
         "contacted": 0,
@@ -1170,8 +1175,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787882844414,
-      "to": 1795658844414,
+      "from": 1787884644915,
+      "to": 1795660644915,
       "current": {
         "totalLeads": 16,
         "contacted": 0,
@@ -1361,7 +1366,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795658844414,
+      "to": 1795660644915,
       "current": {
         "totalLeads": 16,
         "contacted": 0,
@@ -1714,7 +1719,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795658844414,
+      "to": 1795660644915,
       "current": {
         "totalLeads": 16,
         "contacted": 0,
@@ -2069,7 +2074,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-26T02:07:24.414Z",
+    "checkedAt": "2026-11-26T02:37:24.915Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
