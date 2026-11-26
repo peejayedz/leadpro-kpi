@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-26T19:07:32.604Z",
+  "generatedAt": "2026-11-26T19:37:23.389Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795672800000,
-      "to": 1795720052604,
+      "to": 1795721843389,
       "current": {
         "totalLeads": 3,
         "contacted": 0,
@@ -398,7 +398,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795413600000,
-      "to": 1795720052604,
+      "to": 1795721843389,
       "current": {
         "totalLeads": 46,
         "contacted": 0,
@@ -833,8 +833,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795115252604,
-      "to": 1795720052604,
+      "from": 1795117043389,
+      "to": 1795721843389,
       "current": {
         "totalLeads": 62,
         "contacted": 0,
@@ -1051,8 +1051,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793128052604,
-      "to": 1795720052604,
+      "from": 1793129843389,
+      "to": 1795721843389,
       "current": {
         "totalLeads": 181,
         "contacted": 0,
@@ -1269,8 +1269,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787944052604,
-      "to": 1795720052604,
+      "from": 1787945843389,
+      "to": 1795721843389,
       "current": {
         "totalLeads": 186,
         "contacted": 1,
@@ -1498,7 +1498,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1795720052604,
+      "to": 1795721843389,
       "current": {
         "totalLeads": 181,
         "contacted": 0,
@@ -1884,7 +1884,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1795720052604,
+      "to": 1795721843389,
       "current": {
         "totalLeads": 182,
         "contacted": 0,
@@ -2304,7 +2304,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-26T19:07:32.604Z",
+    "checkedAt": "2026-11-26T19:37:23.389Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
