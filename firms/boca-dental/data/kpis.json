@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T18:53:52.707Z",
+  "generatedAt": "2026-11-27T19:07:51.212Z",
   "location": "Boca Dental",
   "targets": {
     "leadToSignedPct": 8,
@@ -34,7 +34,7 @@
     "today": {
       "label": "Today",
       "from": 1795755600000,
-      "to": 1795805632707,
+      "to": 1795806471212,
       "current": {
         "totalLeads": 3,
         "enquiries": 3,
@@ -108,7 +108,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795805632707,
+      "to": 1795806471212,
       "current": {
         "totalLeads": 38,
         "enquiries": 38,
@@ -181,8 +181,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795200832707,
-      "to": 1795805632707,
+      "from": 1795201671212,
+      "to": 1795806471212,
       "current": {
         "totalLeads": 43,
         "enquiries": 43,
@@ -218,11 +218,11 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793213632707,
-      "to": 1795805632707,
+      "from": 1793214471212,
+      "to": 1795806471212,
       "current": {
-        "totalLeads": 223,
-        "enquiries": 223,
+        "totalLeads": 222,
+        "enquiries": 222,
         "contacted": 0,
         "booked": 0,
         "attended": 0,
@@ -255,8 +255,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1788029632707,
-      "to": 1795805632707,
+      "from": 1788030471212,
+      "to": 1795806471212,
       "current": {
         "totalLeads": 707,
         "enquiries": 707,
@@ -293,7 +293,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795805632707,
+      "to": 1795806471212,
       "current": {
         "totalLeads": 206,
         "enquiries": 206,
@@ -367,7 +367,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795805632707,
+      "to": 1795806471212,
       "current": {
         "totalLeads": 465,
         "enquiries": 465,
@@ -443,7 +443,7 @@
     "graduatedAt": "2026-11-20T14:25:38.635Z"
   },
   "sync": {
-    "checkedAt": "2026-11-27T18:53:52.707Z",
+    "checkedAt": "2026-11-27T19:07:51.212Z",
     "holds": 0,
     "heldSince": null,
     "incomplete": false
