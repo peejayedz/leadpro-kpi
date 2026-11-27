@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T16:37:26.406Z",
+  "generatedAt": "2026-11-27T17:07:30.489Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795759200000,
-      "to": 1795797446406,
+      "to": 1795799250489,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -91,7 +91,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 2,
+        "totalLeads": 3,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -121,6 +121,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Google Business Profile - Houston",
+            1,
+            0
+          ],
+          [
             "Website Number Pool - Houston",
             1,
             0
@@ -134,17 +139,17 @@
         "byChannel": [
           [
             "Third Party",
-            2,
+            3,
             0
           ]
         ],
-        "attributedLeads": 2,
+        "attributedLeads": 3,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            2,
+            3,
             "newLeads",
             null
           ],
@@ -361,7 +366,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795413600000,
-      "to": 1795797446406,
+      "to": 1795799250489,
       "current": {
         "totalLeads": 46,
         "contacted": 0,
@@ -462,7 +467,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 54,
+        "totalLeads": 57,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -493,7 +498,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            33,
+            34,
             0
           ],
           [
@@ -503,29 +508,29 @@
           ],
           [
             "Google Ads Assets - PMAX Houston",
-            1,
+            2,
             0
           ],
           [
             "Google Ads Assets",
-            1,
+            2,
             0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            54,
+            57,
             0
           ]
         ],
-        "attributedLeads": 54,
+        "attributedLeads": 57,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            54,
+            57,
             "newLeads",
             null
           ],
@@ -796,10 +801,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795192646406,
-      "to": 1795797446406,
+      "from": 1795194450489,
+      "to": 1795799250489,
       "current": {
-        "totalLeads": 58,
+        "totalLeads": 55,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -830,7 +835,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            35,
+            34,
             0
           ],
           [
@@ -840,16 +845,16 @@
           ],
           [
             "Google Ads Assets",
-            5,
-            0
-          ],
-          [
-            "Google Ads Assets - PMAX Houston",
-            3,
+            4,
             0
           ],
           [
             "Newsletter",
+            2,
+            0
+          ],
+          [
+            "Google Ads Assets - PMAX Houston",
             2,
             0
           ],
@@ -867,7 +872,7 @@
         "byChannel": [
           [
             "Third Party",
-            57,
+            54,
             0
           ],
           [
@@ -876,13 +881,13 @@
             0
           ]
         ],
-        "attributedLeads": 58,
+        "attributedLeads": 55,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            58,
+            55,
             "newLeads",
             null
           ],
@@ -913,7 +918,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 66,
+        "totalLeads": 69,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -944,7 +949,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            40,
+            41,
             0
           ],
           [
@@ -954,12 +959,12 @@
           ],
           [
             "Google Ads Assets",
-            2,
+            3,
             0
           ],
           [
             "Google Ads Assets - PMAX Houston",
-            1,
+            2,
             0
           ],
           [
@@ -971,17 +976,17 @@
         "byChannel": [
           [
             "Third Party",
-            66,
+            69,
             0
           ]
         ],
-        "attributedLeads": 66,
+        "attributedLeads": 69,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            66,
+            69,
             "newLeads",
             null
           ],
@@ -1014,8 +1019,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793205446406,
-      "to": 1795797446406,
+      "from": 1793207250489,
+      "to": 1795799250489,
       "current": {
         "totalLeads": 181,
         "contacted": 0,
@@ -1232,8 +1237,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1788021446406,
-      "to": 1795797446406,
+      "from": 1788023250489,
+      "to": 1795799250489,
       "current": {
         "totalLeads": 186,
         "contacted": 1,
@@ -1461,7 +1466,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1795797446406,
+      "to": 1795799250489,
       "current": {
         "totalLeads": 181,
         "contacted": 0,
@@ -1847,7 +1852,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1795797446406,
+      "to": 1795799250489,
       "current": {
         "totalLeads": 182,
         "contacted": 0,
@@ -2267,7 +2272,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-27T16:37:26.406Z",
+    "checkedAt": "2026-11-27T17:07:30.489Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
