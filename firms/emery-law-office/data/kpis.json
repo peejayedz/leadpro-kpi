@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T15:37:22.400Z",
+  "generatedAt": "2026-11-27T16:07:30.607Z",
   "location": "Emery Law Office",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795755600000,
-      "to": 1795793842400,
+      "to": 1795795650607,
       "current": {
         "totalLeads": 1,
         "contacted": 0,
@@ -389,7 +389,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795793842400,
+      "to": 1795795650607,
       "current": {
         "totalLeads": 15,
         "contacted": 0,
@@ -492,7 +492,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -522,6 +522,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Website Number Pool",
+            1,
+            0
+          ],
+          [
             "Google Ads Extension Number",
             1,
             0
@@ -530,17 +535,17 @@
         "byChannel": [
           [
             "Third Party",
-            1,
+            2,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -770,10 +775,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795189042400,
-      "to": 1795793842400,
+      "from": 1795190850607,
+      "to": 1795795650607,
       "current": {
-        "totalLeads": 17,
+        "totalLeads": 16,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -809,7 +814,7 @@
           ],
           [
             "Website Number Pool",
-            5,
+            4,
             0
           ],
           [
@@ -821,17 +826,17 @@
         "byChannel": [
           [
             "Third Party",
-            17,
+            16,
             0
           ]
         ],
-        "attributedLeads": 17,
+        "attributedLeads": 16,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            17,
+            16,
             "newLeads",
             null
           ],
@@ -874,7 +879,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 1,
+        "totalLeads": 2,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -904,6 +909,11 @@
         "costPerSigned": null,
         "bySource": [
           [
+            "Website Number Pool",
+            1,
+            0
+          ],
+          [
             "Google Ads Extension Number",
             1,
             0
@@ -912,17 +922,17 @@
         "byChannel": [
           [
             "Third Party",
-            1,
+            2,
             0
           ]
         ],
-        "attributedLeads": 1,
+        "attributedLeads": 2,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            1,
+            2,
             "newLeads",
             null
           ],
@@ -967,8 +977,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793201842400,
-      "to": 1795793842400,
+      "from": 1793203650607,
+      "to": 1795795650607,
       "current": {
         "totalLeads": 18,
         "contacted": 0,
@@ -1157,8 +1167,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1788017842400,
-      "to": 1795793842400,
+      "from": 1788019650607,
+      "to": 1795795650607,
       "current": {
         "totalLeads": 18,
         "contacted": 0,
@@ -1348,7 +1358,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795793842400,
+      "to": 1795795650607,
       "current": {
         "totalLeads": 18,
         "contacted": 0,
@@ -1701,7 +1711,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795793842400,
+      "to": 1795795650607,
       "current": {
         "totalLeads": 18,
         "contacted": 0,
@@ -2056,7 +2066,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-27T15:37:22.400Z",
+    "checkedAt": "2026-11-27T16:07:30.607Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
