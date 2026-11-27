@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T22:37:21.876Z",
+  "generatedAt": "2026-11-27T23:07:26.367Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795759200000,
-      "to": 1795819041876,
+      "to": 1795820846367,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -366,7 +366,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795413600000,
-      "to": 1795819041876,
+      "to": 1795820846367,
       "current": {
         "totalLeads": 46,
         "contacted": 0,
@@ -467,7 +467,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 63,
+        "totalLeads": 64,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -515,22 +515,27 @@
             "Google Ads Assets",
             2,
             0
+          ],
+          [
+            "Facebook Ads PI Quiz",
+            1,
+            0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            63,
+            64,
             0
           ]
         ],
-        "attributedLeads": 63,
+        "attributedLeads": 64,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            63,
+            64,
             "newLeads",
             null
           ],
@@ -801,10 +806,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795214241876,
-      "to": 1795819041876,
+      "from": 1795216046367,
+      "to": 1795820846367,
       "current": {
-        "totalLeads": 49,
+        "totalLeads": 48,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -860,7 +865,7 @@
           ],
           [
             "Facebook Ads PI Quiz",
-            2,
+            1,
             0
           ],
           [
@@ -872,7 +877,7 @@
         "byChannel": [
           [
             "Third Party",
-            48,
+            47,
             0
           ],
           [
@@ -881,13 +886,13 @@
             0
           ]
         ],
-        "attributedLeads": 49,
+        "attributedLeads": 48,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            49,
+            48,
             "newLeads",
             null
           ],
@@ -918,7 +923,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 68,
+        "totalLeads": 69,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -958,6 +963,11 @@
             0
           ],
           [
+            "Facebook Ads PI Quiz",
+            2,
+            0
+          ],
+          [
             "Google Ads Assets - PMAX Houston",
             2,
             0
@@ -966,27 +976,22 @@
             "Google Ads Assets",
             2,
             0
-          ],
-          [
-            "Facebook Ads PI Quiz",
-            1,
-            0
           ]
         ],
         "byChannel": [
           [
             "Third Party",
-            68,
+            69,
             0
           ]
         ],
-        "attributedLeads": 68,
+        "attributedLeads": 69,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            68,
+            69,
             "newLeads",
             null
           ],
@@ -1019,8 +1024,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793227041876,
-      "to": 1795819041876,
+      "from": 1793228846367,
+      "to": 1795820846367,
       "current": {
         "totalLeads": 181,
         "contacted": 0,
@@ -1237,8 +1242,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1788043041876,
-      "to": 1795819041876,
+      "from": 1788044846367,
+      "to": 1795820846367,
       "current": {
         "totalLeads": 186,
         "contacted": 1,
@@ -1466,7 +1471,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1795819041876,
+      "to": 1795820846367,
       "current": {
         "totalLeads": 181,
         "contacted": 0,
@@ -1852,7 +1857,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1795819041876,
+      "to": 1795820846367,
       "current": {
         "totalLeads": 182,
         "contacted": 0,
@@ -2272,7 +2277,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-27T22:37:21.876Z",
+    "checkedAt": "2026-11-27T23:07:26.367Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
