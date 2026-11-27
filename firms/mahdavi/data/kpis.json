@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T18:07:26.755Z",
+  "generatedAt": "2026-11-27T18:37:25.082Z",
   "location": "The Mahdavi Law Firm",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795759200000,
-      "to": 1795802846755,
+      "to": 1795804645082,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -366,7 +366,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795413600000,
-      "to": 1795802846755,
+      "to": 1795804645082,
       "current": {
         "totalLeads": 46,
         "contacted": 0,
@@ -467,7 +467,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 58,
+        "totalLeads": 60,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -498,7 +498,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            35,
+            37,
             0
           ],
           [
@@ -520,17 +520,17 @@
         "byChannel": [
           [
             "Third Party",
-            58,
+            60,
             0
           ]
         ],
-        "attributedLeads": 58,
+        "attributedLeads": 60,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            58,
+            60,
             "newLeads",
             null
           ],
@@ -801,10 +801,10 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795198046755,
-      "to": 1795802846755,
+      "from": 1795199845082,
+      "to": 1795804645082,
       "current": {
-        "totalLeads": 54,
+        "totalLeads": 52,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -835,7 +835,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            33,
+            31,
             0
           ],
           [
@@ -872,7 +872,7 @@
         "byChannel": [
           [
             "Third Party",
-            53,
+            51,
             0
           ],
           [
@@ -881,13 +881,13 @@
             0
           ]
         ],
-        "attributedLeads": 54,
+        "attributedLeads": 52,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            54,
+            52,
             "newLeads",
             null
           ],
@@ -918,7 +918,7 @@
         ]
       },
       "previous": {
-        "totalLeads": 69,
+        "totalLeads": 70,
         "contacted": 0,
         "contactRatePct": 0,
         "speedToLeadAvgMin": null,
@@ -949,7 +949,7 @@
         "bySource": [
           [
             "Google Business Profile - Houston",
-            41,
+            42,
             0
           ],
           [
@@ -976,17 +976,17 @@
         "byChannel": [
           [
             "Third Party",
-            69,
+            70,
             0
           ]
         ],
-        "attributedLeads": 69,
+        "attributedLeads": 70,
         "stageMoved": 0,
         "attributionPct": 100,
         "funnel": [
           [
             "New leads",
-            69,
+            70,
             "newLeads",
             null
           ],
@@ -1019,8 +1019,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793210846755,
-      "to": 1795802846755,
+      "from": 1793212645082,
+      "to": 1795804645082,
       "current": {
         "totalLeads": 181,
         "contacted": 0,
@@ -1237,8 +1237,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1788026846755,
-      "to": 1795802846755,
+      "from": 1788028645082,
+      "to": 1795804645082,
       "current": {
         "totalLeads": 186,
         "contacted": 1,
@@ -1466,7 +1466,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793509200000,
-      "to": 1795802846755,
+      "to": 1795804645082,
       "current": {
         "totalLeads": 181,
         "contacted": 0,
@@ -1852,7 +1852,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790830800000,
-      "to": 1795802846755,
+      "to": 1795804645082,
       "current": {
         "totalLeads": 182,
         "contacted": 0,
@@ -2272,7 +2272,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-27T18:07:26.755Z",
+    "checkedAt": "2026-11-27T18:37:25.082Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
