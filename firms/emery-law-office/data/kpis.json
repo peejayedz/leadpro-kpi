@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T08:07:23.532Z",
+  "generatedAt": "2026-11-27T08:37:23.294Z",
   "location": "Emery Law Office",
   "targets": {
     "leadToSignedPct": 8,
@@ -22,7 +22,7 @@
     "today": {
       "label": "Today",
       "from": 1795755600000,
-      "to": 1795766843532,
+      "to": 1795768643294,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -377,7 +377,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795766843532,
+      "to": 1795768643294,
       "current": {
         "totalLeads": 14,
         "contacted": 0,
@@ -746,8 +746,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795162043532,
-      "to": 1795766843532,
+      "from": 1795163843294,
+      "to": 1795768643294,
       "current": {
         "totalLeads": 17,
         "contacted": 0,
@@ -936,8 +936,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793174843532,
-      "to": 1795766843532,
+      "from": 1793176643294,
+      "to": 1795768643294,
       "current": {
         "totalLeads": 17,
         "contacted": 0,
@@ -1126,8 +1126,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787990843532,
-      "to": 1795766843532,
+      "from": 1787992643294,
+      "to": 1795768643294,
       "current": {
         "totalLeads": 17,
         "contacted": 0,
@@ -1317,7 +1317,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795766843532,
+      "to": 1795768643294,
       "current": {
         "totalLeads": 17,
         "contacted": 0,
@@ -1670,7 +1670,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795766843532,
+      "to": 1795768643294,
       "current": {
         "totalLeads": 17,
         "contacted": 0,
@@ -2025,7 +2025,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-27T08:07:23.532Z",
+    "checkedAt": "2026-11-27T08:37:23.294Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
