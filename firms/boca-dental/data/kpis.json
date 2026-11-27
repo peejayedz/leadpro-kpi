@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T10:07:42.036Z",
+  "generatedAt": "2026-11-27T10:37:49.124Z",
   "location": "Boca Dental",
   "targets": {
     "leadToSignedPct": 8,
@@ -34,7 +34,7 @@
     "today": {
       "label": "Today",
       "from": 1795755600000,
-      "to": 1795774062036,
+      "to": 1795775869124,
       "current": {
         "totalLeads": 0,
         "enquiries": 0,
@@ -108,7 +108,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795774062036,
+      "to": 1795775869124,
       "current": {
         "totalLeads": 35,
         "enquiries": 35,
@@ -181,8 +181,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795169262036,
-      "to": 1795774062036,
+      "from": 1795171069124,
+      "to": 1795775869124,
       "current": {
         "totalLeads": 47,
         "enquiries": 47,
@@ -218,8 +218,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793182062036,
-      "to": 1795774062036,
+      "from": 1793183869124,
+      "to": 1795775869124,
       "current": {
         "totalLeads": 229,
         "enquiries": 229,
@@ -255,8 +255,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1787998062036,
-      "to": 1795774062036,
+      "from": 1787999869124,
+      "to": 1795775869124,
       "current": {
         "totalLeads": 705,
         "enquiries": 705,
@@ -293,7 +293,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795774062036,
+      "to": 1795775869124,
       "current": {
         "totalLeads": 203,
         "enquiries": 203,
@@ -367,7 +367,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795774062036,
+      "to": 1795775869124,
       "current": {
         "totalLeads": 462,
         "enquiries": 462,
@@ -443,7 +443,7 @@
     "graduatedAt": "2026-11-20T14:25:38.635Z"
   },
   "sync": {
-    "checkedAt": "2026-11-27T10:07:42.036Z",
+    "checkedAt": "2026-11-27T10:37:49.124Z",
     "holds": 0,
     "heldSince": null,
     "incomplete": false
