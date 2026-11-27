@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-27T04:07:13.424Z",
-  "lastRunAt": "2026-11-27T04:07:13.424Z",
-  "lastOkAt": "2026-11-27T04:07:13.424Z",
-  "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45938034369",
+  "updatedAt": "2026-11-27T05:07:14.512Z",
+  "lastRunAt": "2026-11-27T05:07:14.512Z",
+  "lastOkAt": "2026-11-27T05:07:14.512Z",
+  "lastRunUrl": "https://github.com/peejayedz/leadpro-kpi/actions/runs/45943849234",
   "lastRefreshAt": "2026-11-26T17:37:21.172Z",
   "agencyExpiresAt": "2026-11-27T17:37:20.172Z",
   "appInstalls": 26,
@@ -11,22 +11,22 @@
   "problem": null,
   "firms": {
     "zz-test-2": {
-      "lastMintAt": "2026-11-27T04:07:13.424Z",
+      "lastMintAt": "2026-11-27T05:07:14.512Z",
       "problem": null,
       "since": null
     },
     "boca-dental": {
-      "lastMintAt": "2026-11-27T04:07:13.424Z",
+      "lastMintAt": "2026-11-27T05:07:14.512Z",
       "problem": null,
       "since": null
     },
     "dumas-and-sanclemente": {
-      "lastMintAt": "2026-11-27T04:07:13.424Z",
+      "lastMintAt": "2026-11-27T05:07:14.512Z",
       "problem": null,
       "since": null
     },
     "asghar-law": {
-      "lastMintAt": "2026-11-27T04:07:13.424Z",
+      "lastMintAt": "2026-11-27T05:07:14.512Z",
       "problem": null,
       "since": null
     }
