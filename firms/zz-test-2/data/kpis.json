@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-28T04:37:30.357Z",
+  "generatedAt": "2026-11-28T05:07:27.562Z",
   "location": "ZZ TEST 2",
   "targets": {
     "leadToSignedPct": 8,
@@ -21,8 +21,8 @@
   "periods": {
     "today": {
       "label": "Today",
-      "from": 1795755600000,
-      "to": 1795840650357,
+      "from": 1795842000000,
+      "to": 1795842447562,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -184,8 +184,8 @@
     },
     "yesterday": {
       "label": "Yesterday",
-      "from": 1795669200000,
-      "to": 1795755600000,
+      "from": 1795755600000,
+      "to": 1795842000000,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -348,7 +348,7 @@
     "thisWeek": {
       "label": "This week",
       "from": 1795410000000,
-      "to": 1795840650357,
+      "to": 1795842447562,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -685,8 +685,8 @@
     },
     "last7": {
       "label": "Last 7 days",
-      "from": 1795235850357,
-      "to": 1795840650357,
+      "from": 1795237647562,
+      "to": 1795842447562,
       "current": {
         "totalLeads": 0,
         "contacted": 0,
@@ -848,8 +848,8 @@
     },
     "last30": {
       "label": "Last 30 days",
-      "from": 1793248650357,
-      "to": 1795840650357,
+      "from": 1793250447562,
+      "to": 1795842447562,
       "current": {
         "totalLeads": 3,
         "contacted": 2,
@@ -1023,8 +1023,8 @@
     },
     "last90": {
       "label": "Last 90 days",
-      "from": 1788064650357,
-      "to": 1795840650357,
+      "from": 1788066447562,
+      "to": 1795842447562,
       "current": {
         "totalLeads": 3,
         "contacted": 2,
@@ -1199,7 +1199,7 @@
     "thisMonth": {
       "label": "This month",
       "from": 1793505600000,
-      "to": 1795840650357,
+      "to": 1795842447562,
       "current": {
         "totalLeads": 3,
         "contacted": 2,
@@ -1537,7 +1537,7 @@
     "thisQuarter": {
       "label": "This quarter",
       "from": 1790827200000,
-      "to": 1795840650357,
+      "to": 1795842447562,
       "current": {
         "totalLeads": 3,
         "contacted": 2,
@@ -1889,7 +1889,7 @@
     "graduatedAt": null
   },
   "sync": {
-    "checkedAt": "2026-11-28T04:37:30.357Z",
+    "checkedAt": "2026-11-28T05:07:27.562Z",
     "counts": {
       "Call": 0,
       "SMS": 0,
